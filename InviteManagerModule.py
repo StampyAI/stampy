@@ -3,7 +3,7 @@ import asyncio
 import discord
 
 
-class InviteManagerModule(object):
+class InviteManagerModule(Module):
 
 	def canProcessMessage(self, message, client=None):
 		if isatme(message):
