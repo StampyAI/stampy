@@ -1,26 +1,27 @@
-import database
+from database import Database
 import json
 
 class Utilities:
+    
     __instance = None
     db = None
-
-    def __init__(self,dbPath=None):
-        if Utilities.__instance != None:
-            raise Exception("This class is a singleton!")
-        else:
-            self.db = database.Database(dbPath)
-            Utilities.__instance = self
-
 
     @staticmethod 
     def getInstance(dbPath=None):
         if Utilities.__instance == None:
-            Utilities(dbPath)
-            return Utilities.__instance
+            Utilities()
+            Utilities.db = Database(dbPath)
+        return Utilities.__instance
+
+    def __init__(self):
+        if Utilities.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            Utilities.__instance = self
     
+
     def addVote(self,user,votedFor):
-        query = "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},(SELECT votecount FROM uservotes WHERE user = {0} AND votedFor = {1})+1)".format(user,votedFor)
+        query = "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount FROM uservotes WHERE user = {0} AND votedFor = {1}),0)+1)".format(user,votedFor)
         self.db.query(query)
         self.db.commit()
 
@@ -32,9 +33,11 @@ class Utilities:
         self.db.query('INSERT INTO questions VALUES (?,?,?,?,?);',(url,username,title,text,False))
         self.db.commit()
     
+    #Shouldn't be adding where clauses to the 'table' param.. 
+    #TODO: Fix this crap
     def getNextQuestion(self,columns="*"):
         return self.db.getLast("questions WHERE replied=False",columns)
-    
+    #TODO: see above
     def getRandomQuestion(self,columns="*"):
         return self.db.getLast("questions WHERE replied=False ORDER BY RANDOM()",columns)
     
