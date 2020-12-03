@@ -4,14 +4,13 @@ A module that searches the titles, descriptions and transcripts of videos, to fi
 import sys
 import re
 import os
-from stam import isatme, Module
+from module import Module
+import discord
 
-
-
-class VideoSearchModule(Module):
+class VideoSearch(Module):
 	"""Module to search for videos"""
-
 	def __init__(self):
+		Module.__init__(self)
 		# self.re_search = re.compile(r"""video search (?P<query>\w+)""")
 		# self.re_search = re.compile(r"""(([wW]hat( video)?|[wW]hich (video))('s| is| was)? ?(that|the|it)? ?|[Vv]ideo ?[Ss]earch) (?P<query>.+)""")
 		self.re_search = re.compile(r"""((([Ww]hich|[Ww]hat) vid(eo)? (is|was) (it|that))|
@@ -22,6 +21,7 @@ class VideoSearchModule(Module):
 		self.subsdir = "./subs/"
 		self.videos = []
 		self.loadvideos()
+		
 
 
 	class Video():
@@ -142,8 +142,8 @@ class VideoSearchModule(Module):
 
 
 	def canProcessMessage(self, message, client=None):
-		if isatme(message):
-			text = isatme(message)
+		if self.isatme(message):
+			text = self.isatme(message)
 
 			m = re.match(self.re_search, text)
 			if m:
@@ -166,8 +166,8 @@ class VideoSearchModule(Module):
 		return reply
 
 	async def processMessage(self, message, client):
-		if isatme(message):
-			text = isatme(message)
+		if self.isatme(message):
+			text = self.self.isatme(message)
 
 			m = re.match(self.re_search, text)
 			if m:

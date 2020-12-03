@@ -9,156 +9,34 @@ import traceback
 from datetime import datetime, timezone, timedelta
 import html
 import json
-import re
 
 import numpy as np
-
 import discord
 from dotenv import load_dotenv
 
-import googleapiclient.discovery
-
 import sentience
-
 import utilities
+
+
+load_dotenv()
 
 client = discord.Client()
 
-dbPath = os.getenv('DATABASE_PATH')
-utils = utilities.Utilities.getInstance(dbPath)
-		
-print("Stampy DB Connected: {0}".format(utils.db.connected))
+#dbPath = os.getenv('DATABASE_PATH')	
+#utils = Utilities.getInstance('stampy.db')
+utils = utilities.Utilities.getInstance(os.getenv('DATABASE_PATH'))
 
+utils.TOKEN = os.getenv('DISCORD_TOKEN')
+utils.GUILD = os.getenv('DISCORD_GUILD')
+utils.YTAPIKEY = os.getenv('YOUTUBE_API_KEY')
+utils.DBPATH = os.getenv('DATABASE_PATH')
 
-class Module(object):
-	"""Informal Interface specification for modules
-	These represent packets of functionality. For each message,
-	we show it to each module and ask if it can process the message,
-	then give it to the module that's most confident"""
-
-	def canProcessMessage(self, message, client=None):
-		"""Look at the message and decide if you want to handle it
-		Return a pair of values: (confidence rating out of 10, message)
-		Including a response message is optional, use an empty string to just indicate a confidence
-		If confidence is more than zero, and the message is empty, `processMessage` may be called
-		`canProcessMessage` should contain only operations which can be executed safely even if another module reports a higher confidence and ends up being the one to respond.
-		If your module is going to do something that only makes sense if it gets to repond, put that in `processMessage` instead
-
-		Rough Guide:
-		0 -> "This message isn't meant for this module, I have no idea what to do with it"
-		1 -> "I could give a generic reply if I have to, as a last resort"
-		2 -> "I can give a slightly better than generic reply, if I have to. e.g. I realise this is a question but don't know what it's asking"
-		3 -> "I can probably handle this message with ok results, but I'm a frivolous/joke module"
-		4 -> 
-		5 -> "I can definitely handle this message with ok results, but probably other modules could too"
-		6 -> "I can definitely handle this message with good results, but probably other modules could too"
-		7 -> "This is a valid command specifically for this module, and the module is 'for fun' functionality"
-		8 -> "This is a valid command specifically for this module, and the module is medium importance functionality"
-		9 -> "This is a valid command specifically for this module, and the module is important functionality"
-		10 -> "This is a valid command specifically for this module, and the module is critical functionality"
-
-		Ties are broken in module priority order. You can also return a float if you really want
-		"""
-		# By default, we have 0 confidence that we can answer this, and our response is ""
-		return (0, "")
-
-	async def processMessage(self, message, client=None):
-		"""Handle the message, return a string which is your response.
-		This is an async function so it can interact with the Discord API if it needs to"""
-		return (0, "")
-
-	# def canProcessReaction(self, reaction, client=None):
-	# 	return (0, "")
-
-	async def processReactionEvent(self, reaction, user, eventtype='REACTION_ADD', client=None):
-		"""eventtype can be 'REACTION_ADD' or 'REACTION_REMOVE'
-		Use this to allow modules to handle adding and removing reactions on messages"""
-		return (0, "")
-
-	async def processRawReactionEvent(self, event, client=None):
-		"""event is a discord.RawReactionActionEvent object
-		Use this to allow modules to handle adding and removing reactions on messages"""
-		return (0, "")
-
-	def __str__(self):
-		return "Dummy Module"
-
-
-def isatme(message):
-	"""Determine if the message is directed at Stampy
-	If it's not, return False. If it is, strip away the name part and return the remainder of the message"""
-
-	text = message.content
-	atme = False
-	re_atme = re.compile(r"^@?[Ss]tampy\W? ")
-	text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", 'Stampy', text)
-	if subs:
-		atme = True
-	
-	if (re_atme.match(text) is not None) or re.search(r'^[sS][,:]? ', text):
-		atme = True
-		print("X At me because re_atme matched or starting with [sS][,:]? ")
-		text = text.partition(" ")[2]
-	elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
-		text = re.sub(",? @?[sS](tampy)?$", "", text)
-		atme = True
-		print("X At me because it ends with stampy")
-
-	if type(message.channel) == discord.DMChannel:
-		print("X At me because DM")
-		atme = True  # DMs are always at you
-
-	if atme:
-		return text
-	else:
-		print("Message is Not At Me")
-		return False
-
-
-class QQManager(Module):
-	#utils = utilities.Utilities.getInstance()
-	print(utils.getRandomQuestion("text"))
-
-	"""Module to manage commands about the question queue"""
-	def __init__(self):
-		self.re_nextq = re.compile(r""".*(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et(’|')?s have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
-?([Dd]o you have|([Hh]ave you )?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?""")
-
-	def canProcessMessage(self, message, client=None):
-		if isatme(message):
-			text = isatme(message)
-
-			if re.match(r"([hH]ow many questions (are (there )?)?in|[hH]ow (long is|long's)) (the|your)( question)? queue( now)?\??", text):
-				if qq:
-					if len(qq) == 1:
-						result = "There's one question in the queue"
-					else:
-						result = "There are %d questions in the queue" % len(qq)
-				else:
-					result = "The question queue is empty"
-				return (9, result)
-			elif self.re_nextq.match(text):  # we're being asked for the next question
-				return (9, "")  # Popping a question off the stack modifies things, so just return a "yes, we can handle this" and let processMessage do it
-
-		# This is either not at me, or not something we can handle
-		return (0, "")
-
-	async def processMessage(self, message, client):
-		if isatme(message):
-			text = isatme(message)
-
-			if self.re_nextq.match(text):
-				result = get_latest_question()
-				if result:
-					return (10, result)
-				else:
-					return (8, "There are no questions in the queue")
-			else:
-				print("Shouldn't be able to get here")
-				return (0, "") 
-
-	def __str__(self):
-		return "Question Queue Manager"
+from module import Module
+from vote import Stamps
+from question import QQManager
+from reply import Reply
+from videosearch import VideoSearch
+from invitemanager import InviteManager
 
 
 @client.event
@@ -183,8 +61,7 @@ async def on_message(message):
 
 	if hasattr(message.channel, 'name') and message.channel.name == "general":
 		print("Last message was no longer us")
-		global lastmessagewasYTquestion
-		lastmessagewasYTquestion = False
+		utils.lastmessagewasYTquestion = False
 
 	if message.content == 'bot test':
 		response = "I'm alive!"
@@ -281,152 +158,6 @@ async def on_message(message):
 	print("########################################################")
 
 
-def tds(s):
-	"""Make a timedelta object of s seconds"""
-	return timedelta(seconds=s)
-
-
-def check_for_new_youtube_comments():
-	"""Consider getting the latest comments from the channel
-	Returns a list of dicts if there are new comments
-	Returns [] if it checked and there are no new ones 
-	Returns None if it didn't check because it's too soon to check again"""
-
-	# print("Checking for new YT comments")
-
-	global latestcommentts
-	global lastcheckts
-	global ytcooldown
-
-	now = datetime.now(timezone.utc)
-
-	# print("It has been this long since I last called the YT API: " + str(now - lastcheckts))
-	# print("Current cooldown is: " + str(ytcooldown))
-	if (now - lastcheckts) > ytcooldown:
-		print("Hitting YT API")
-		lastcheckts = now
-	else:
-		print("YT waiting >%s\t- " % str(ytcooldown - (now - lastcheckts)), end='')
-		return None
-
-	api_service_name = "youtube"
-	api_version = "v3"
-	DEVELOPER_KEY = YTAPIKEY
-
-	youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
-
-	request = youtube.commentThreads().list(
-		part="snippet",
-		allThreadsRelatedToChannelId="UCLB7AzTwc6VFZrBsO2ucBMg"
-	)
-	response = request.execute()
-
-	items = response.get('items', None)
-	if not items:
-		print("YT comment checking broke. I got this response:")
-		print(response)
-		ytcooldown = ytcooldown * 10  # something broke, slow way down
-		return None
-
-	newestts = latestcommentts
-
-	newitems = []
-	for item in items:
-		# Find when the comment was published
-		pubTsStr = item['snippet']['topLevelComment']['snippet']['publishedAt']
-		# For some reason fromisoformat() doesn't like the trailing 'Z' on timestmaps
-		# And we add the "+00:00" so it knows to use UTC
-		pubTs = datetime.fromisoformat(pubTsStr[:-1] + "+00:00")
-
-		# If this comment is newer than the newest one from last time we called API, keep it
-		if pubTs > latestcommentts:
-			newitems.append(item)
-
-		# Keep track of which is the newest in this API call
-		if pubTs > newestts:
-			newestts = pubTs
-
-	print("Got %s items, most recent published at %s" % (len(items), newestts))
-
-	# save the timestamp of the newest comment we found, so next API call knows what's fresh
-	latestcommentts = newestts
-
-	newcomments = []
-	for item in newitems:
-		videoId = item['snippet']['topLevelComment']['snippet']['videoId']
-		commentId = item['snippet']['topLevelComment']['id']
-		username = item['snippet']['topLevelComment']['snippet']['authorDisplayName']
-		text = item['snippet']['topLevelComment']['snippet']['textOriginal']
-		# print("dsiplay text:" + item['snippet']['topLevelComment']['snippet']['textDisplay'])
-		# print("original text:" + item['snippet']['topLevelComment']['snippet']['textOriginal'])
-
-		comment = {'url': "https://www.youtube.com/watch?v=%s&lc=%s" % (videoId, commentId),
-					'username': username,
-					'text': text,
-					'title': ""
-				  }
-
-		newcomments.append(comment)
-
-	print("Got %d new comments since last check" % len(newcomments))
-
-	if not newcomments:
-		# we got nothing, double the cooldown period (but not more than 20 minutes)
-		ytcooldown = min(ytcooldown * 2, tds(1200))
-		print("No new comments, increasing cooldown timer to %s" % ytcooldown)
-
-	return newcomments
-
-
-
-latestquestionposted = None
-
-def get_latest_question():
-	"""Pull the oldest question from the queue
-	Returns False if the queue is empty, the question string otherwise"""
-	global qq
-	if not qq:
-		return False
-
-	# comment = qq.pop(0)	
-	# pop from the end, meaning this is actually a stack not a queue
-	# This was changed when all the historical questions were added in. So now it's newest first
-	comment = qq.pop()
-
-	global latestquestionposted
-	latestquestionposted = comment
-
-	text = comment['text']
-	if len(text) > 1500:
-		text = text[:1500] + " [truncated]"
-	comment['textquoted'] = "> " + "\n> ".join(text.split("\n"))
-
-	title = comment.get("title", "")
-	if title:
-		report = """YouTube user \'%(username)s\' asked this question, on the video \'%(title)s\'!:
-%(textquoted)s
-Is it an interesting question? Maybe we can answer it!
-<%(url)s>""" % comment
-
-	else:
-		report = """YouTube user \'%(username)s\' just asked a question!:
-%(textquoted)s
-Is it an interesting question? Maybe we can answer it!
-<%(url)s>""" % comment
-
-	print("==========================")
-	print(report)
-	print("==========================")
-
-	with open("qq.json", 'w') as qqfile:   # we modified the queue, put it in a file to persist
-		json.dump(qq, qqfile, indent="\t")
-
-	global lastqaskts
-	lastqaskts = datetime.now(timezone.utc)  # reset the question waiting timer
-
-	return report
-
-
 @client.event
 async def on_socket_raw_receive(msg):
 	"""This event fires whenever basically anything at all happens.
@@ -434,427 +165,49 @@ async def on_socket_raw_receive(msg):
 		So I'm going to use it as a kind of 'update' or 'tick' function, for things the bot needs to do regularly. Yes this is hacky.
 		Rate limit these things, because this function might be firing a lot"""
 	
-	global lastmessagewasYTquestion
 
 	# never fire more than once a second
-	global lasttickts
+
 	tickcooldown = timedelta(seconds=1)  
 	now = datetime.now(timezone.utc)
 
-	if (now - lasttickts) > tickcooldown:
+	if (now - utils.lasttickts) > tickcooldown:
 		print("|", end='')
 		# print("last message was yt question?:", lastmessagewasYTquestion)
-		lasttickts = now
+		utils.lasttickts = now
 	else:
 		print(".", end='')
 		return
 
 	# check for new youtube comments
-	newcomments = check_for_new_youtube_comments()
+	newcomments = utils.check_for_new_youtube_comments()
 	if newcomments:
 		for comment in newcomments:
 			if "?" in comment['text']:
-				qq.append(comment)
-		with open("qq.json", 'w') as qqfile:  # we modified the queue, put it in a file to persist
-			json.dump(qq, qqfile, indent="\t")
-
+				utils.addQuestion(comment)
+		#with open("qq.json", 'w') as qqfile:  # we modified the queue, put it in a file to persist
+		#	json.dump(qq, qqfile, indent="\t")
+	qq = utils.getNextQuestion("rowid")
 	if qq:
 		# ask a new question if it's been long enough since we last asked one
-		global lastqaskts
 		qaskcooldown = timedelta(hours=8)
 
-		if (now - lastqaskts) > qaskcooldown:
-			if not lastmessagewasYTquestion:  # Don't ask anything if the last thing posted in the chat was us asking a question
-				lastqaskts = now
-				report = get_latest_question()
+		if (now - utils.lastqaskts) > qaskcooldown:
+			if not utils.lastmessagewasYTquestion:  # Don't ask anything if the last thing posted in the chat was us asking a question
+				utils.lastqaskts = now
+				report = utils.get_latest_question()
 				guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
 				general = discord.utils.find(lambda c: c.name == "general", guild.channels)
 				await general.send(report)
-				lastmessagewasYTquestion = True
+				utils.lastmessagewasYTquestion = True
 			else:
-				lastqaskts = now  # wait the full time again
+				utils.lastqaskts = now  # wait the full time again
 				print("Would have asked a question, but the last post in the channel was a question we asked. So we wait")
 		else:
-			print("%s Questions in queue, waiting %s to post" % (len(qq), str(qaskcooldown - (now - lastqaskts))))
+			print("%s Questions in queue, waiting %s to post" % (len(qq), str(qaskcooldown - (now - utils.lastqaskts))))
 			return
 
 			# await message.channel.send(result)
-
-
-class ReplyModule(Module):
-
-	def __str__(self):
-		return "YouTube Reply Posting Module"
-
-	def isPostRequest(self, text):
-		"""Is this message asking us to post a reply?"""
-		print(text)
-		return text.endswith("post this")
-
-	def isAllowed(self, message, client):
-		"""Is the message author authorised to make stampy post replies?"""
-		postingrole = discord.utils.find(lambda r: r.name == 'poaster', message.guild.roles)
-		return postingrole in message.author.roles
-
-	def extractReply(self, text):
-		"""Pull the text of the reply out of the message"""
-		lines = text.split("\n")
-		replymessage = ""
-		for line in lines:
-			# pull out the quote syntax "> " and a user if there is one
-			match = re.match("([^#]+#\d\d\d\d )?> (.*)", line)
-			if match:
-				replymessage += match.group(2) + "\n"
-
-		return replymessage
-
-	def postReply(self, text, questionid):
-		"""Actually post the reply to YouTube. Currently this involves a horrible hack"""
-
-		#first build the dictionary that will be passed to youtube.comments().insert as the 'body' arg
-		body = {'snippet': {
-					'parentId': questionid,
-					'textOriginal': text,
-					'authorChannelId': {
-						'value': 'UCFDiTXRowzFvh81VOsnf5wg'
-						}
-					}
-				}
-
-		# now we're going to put it in a json file, which CommentPoster.py will read and send it
-		with open("topost.json") as postfile:
-			topost = json.load(postfile)
-
-		topost.append(body)
-
-		with open("topost.json", 'w') as postfile:
-			json.dump(topost, postfile, indent="\t")
-
-		print("dummy, posting %s to %s" % (text, questionid))
-
-	def canProcessMessage(self, message, client=None):
-		"""From the Module() Interface. Is this a message we can process?"""
-		if isatme(message):
-			text = isatme(message)
-
-			if self.isPostRequest(text):
-				print("this is a posting request")
-				if self.isAllowed(message, client):
-					print("the user is allowed")
-					return (9, "")
-				else:
-					return (9, "Only people with the `poaster` role can do that")
-	
-		return (0, "")
-
-	async def processMessage(self, message, client):
-		"""From the Module() Interface. Handle a reply posting request message"""
-		text = isatme(message)  # strip off stampy's name
-		replymessage = self.extractReply(text)
-		replymessage += "\n -- _I am a bot. This reply was approved by %s_" % message.author.name
-
-		report = ""
-
-		global latestquestionposted
-		if not latestquestionposted:
-			# return (10, "I can't do that because I don't remember the URL of the last question I posted here. I've probably been restarted since that happened")
-			report = "I don't remember the URL of the last question I posted here, so I've probably been restarted since that happened. I'll just post to the dummy thread instead...\n\n"
-			latestquestionposted = {'url': "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"}  # use the dummy thread
-
-		questionid = re.match(r".*lc=([^&]+)", latestquestionposted['url']).group(1)
-
-		quotedreplymessage = "> " + replymessage.replace("\n", "\n> ")
-		report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (quotedreplymessage, latestquestionposted['url'])
-
-		self.postReply(replymessage, questionid)
-
-		return (10, report)
-
-
-class StampsModule(Module):
-	def __str__(self):
-		return "Stamps Module"
-
-	def __init__(self):
-		self.goldmultiplier = 5  # gold stamp is worth how many red stamps?
-		self.gamma = 1.0  # what proportion of the karma you get is passed on by your votes?
-
-		self.reset_stamps()  # this initialises all the vote counting data structures empty
-		self.load_votesdict_from_json()
-		self.calculate_stamps()
-
-
-	def reset_stamps(self):
-		print("WIPING STAMP RECORDS")
-
-		robid = '181142785259208704'
-		godid = "0"
-
-		# votesdict is a dictionary of users and their voting info
-		# keys are user ids
-		# values are dicts containing:
-		#    'votecount: how many times this user has voted
-		#    'votes': A dict mapping user ids to how many times this user voted for them
-		self.votesdict = {}
-		# god is user id 0, and votes once, for rob (id 181142785259208704)
-		self.votesdict[godid] = {'votecount': 1, 'votes': {robid: 1}}
-
-		self.users = set([godid, robid])  # a set of all the users mentioned in votes
-		self.ids = [godid, robid]  # an ordered list of the users' IDs
-
-		self.totalvotes = 0
-
-		self.scores = []
-
-	def addvote(self, stamptype, fromid, toid, negative=False):
-		toid = str(toid)
-		fromid = str(fromid)
-
-		if toid == '736241264856662038':  # votes for stampy do nothing
-			return
-
-		if toid == fromid:  # votes for yourself do nothing
-			return
-
-		# ensure both users are in the users set
-		self.users.add(fromid)
-		self.users.add(toid)
-
-		if stamptype == "stamp":
-			votestrength = 1
-		elif stamptype == "goldstamp":
-			votestrength = self.goldmultiplier
-
-		if negative:  # are we actually undoing a vote?
-			votestrength = -votestrength
-
-		self.totalvotes += votestrength
-
-		u = self.votesdict.get(fromid, {'votecount': 0, 'votes': {}})
-		u['votecount'] = u.get('votecount', 0) + votestrength
-		u['votes'][toid] = u['votes'].get(toid, 0) + votestrength
-
-		self.votesdict[fromid] = u
-
-	def update_ids_list(self):
-		for fromid, u in self.votesdict.items():
-			self.users.add(fromid)
-			for toid, _ in u['votes'].items():
-				self.users.add(toid)
-
-		self.ids = sorted(list(self.users))
-		self.index = {"0": 0}
-		for userid in self.ids:
-			self.index[str(userid)] = self.ids.index(userid)
-
-	def calculate_stamps(self):
-		"""Set up and solve the system of linear equations"""
-		print("RECALCULATING STAMP SCORES")
-
-		self.update_ids_list()
-
-		usercount = len(self.ids)
-
-		A = np.zeros((usercount, usercount))
-		for fromid, u in self.votesdict.items():
-			fromi = self.index[fromid]
-
-			for toid, votes in u['votes'].items():
-				toi = self.index[toid]
-				score = (self.gamma * votes) / u['votecount']
-
-				A[toi, fromi] = score
-
-		# set the diagonal to -1
-		# c_score = a_score*a_votes_for_c + b_score*b_votes_for_c
-		# becomes
-		# a_score*a_votes_for_c + b_score*b_votes_for_c - c_score = 0
-		# so the second array can be all zeros
-		for i in range(1, usercount):
-			print(sum(A[i]), sum(A[:,i]))
-			A[i, i] = -1.0
-		A[0, 0] = 1.0
-
-		B = np.zeros(usercount)
-		B[0] = 1.0  # God has 1 karma
-
-		self.scores = list(np.linalg.solve(A, B))
-
-		self.print_all_scores()
-
-
-	def print_all_scores(self):
-		totalstamps = 0
-		for uid in self.users:
-			name = client.get_user(int(uid))
-			if not name:
-				name = "<@" + uid + ">"
-			stamps = self.get_user_stamps(uid)
-			totalstamps += stamps
-			print(name, "\t", stamps)
-
-		print("Total votes:", self.totalvotes)
-		print("Total Stamps:", totalstamps)
-
-	def index_dammit(self, user):
-		"""Get an index into the scores array from whatever you get"""
-
-		if user in self.index:  # maybe we got given a valid ID?
-			return self.index[user]
-		elif str(user) in self.index:
-			return self.index[str(user)]
-
-		uid = getattr(user, 'id', None)  # maybe we got given a User or Member object that has an ID?
-		if uid:
-			return self.index[str(uid)]
-
-		return None
-
-	def get_user_score(self, user):
-		index = self.index_dammit(user)
-		return self.scores[index]
-
-	def get_user_stamps(self, user):
-		index = self.index_dammit(user)
-		# stamps = int(self.scores[index] * self.totalvotes)
-		# if not stamps:
-		# 	stamps = self.scores[index] * self.totalvotes
-		stamps = self.scores[index] * self.totalvotes
-		return stamps
-
-	def load_votes_from_csv(self, filename="stamps.csv"):
-		# stampyid = 736241264856662038
-		# robid = 181142785259208704
-
-		with open(filename, "r") as stampsfile:
-			stampsfile.readline()  # throw away the first line, it's headers
-			for line in stampsfile:
-				msgid, reacttype, fromid, toid = line.strip().split(",")
-				msgid = int(msgid)
-				fromid = int(fromid)
-				toid = int(toid)
-				
-				print(msgid, reacttype, fromid, toid)
-				self.addvote(reacttype, fromid, toid)
-
-		self.save_votesdict_to_json()
-		self.calculate_stamps()
-
-	async def load_votes_from_history(self):
-		"""Load up every time any stamp has been awarded by anyone in the whole history of the Discord
-		This is omega slow, should basically only need to be called once"""
-		guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
-
-		with open("stamps.csv", 'w') as stamplog:
-			stamplog.write("msgid,type,from,to\n")
-
-			for channel in guild.channels:
-				print("#### Considering", channel.type, type(channel.type), channel.name, "####")
-				if channel.type == discord.ChannelType.text:
-					print("#### Logging", channel.name, "####")
-					async for message in channel.history(limit=None):
-						# print("###########")
-						# print(message.content[:20])
-						reactions = message.reactions
-						if reactions:
-							# print(reactions)
-							for reaction in reactions:
-								reacttype = getattr(reaction.emoji, 'name', '')
-								if reacttype in ["stamp", "goldstamp"]:
-									# print("STAMP")
-									users = await reaction.users().flatten()
-									for user in users:
-										string = "%s,%s,%s,%s" % (message.id, reacttype, user.id, message.author.id)
-										print(string)
-										stamplog.write(string + "\n")
-										self.addvote(reacttype, user.id, message.author.id)
-										# print("From", user.id, user)
-
-		self.save_votesdict_to_json()
-		self.calculate_stamps()
-
-
-	def load_votesdict_from_json(self, filename="stamps.json"):
-		with open(filename) as stampsfile:
-			self.votesdict = json.load(stampsfile)
-
-		self.totalvotes = 0
-		for fromid, u in self.votesdict.items():
-			self.totalvotes += u['votecount']
-
-	def save_votesdict_to_json(self, filename="stamps.json"):
-		with open(filename, 'w') as stampsfile:   # we modified the queue, put it in a file to persist
-			json.dump(self.votesdict, stampsfile, indent="\t")
-
-	async def processReactionEvent(self, reaction, user, eventtype='REACTION_ADD', client=None):
-		# guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
-		emoji = getattr(reaction.emoji, 'name', reaction.emoji)
-		if emoji == 'stamp':
-			print("### STAMP AWARDED ###")
-			msgid = reaction.message.id
-			fromid = user.id
-			toid = reaction.message.audthor.id
-			# print(msgid, re)
-			string = "%s,%s,%s,%s" % (msgid, emoji, fromid, toid)
-			print(string)
-			# "msgid,type,from,to"
-
-	async def processRawReactionEvent(self, event, client=None):
-		eventtype = event.event_type
-		guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
-		channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
-		message = await channel.fetch_message(event.message_id)
-		emoji = getattr(event.emoji, 'name', event.emoji)
-
-		if message.author.id == 736241264856662038:  # votes for stampy don't affect voting
-			return
-		if message.author.id == event.user_id:  # votes for yourself don't affect voting
-			if eventtype == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
-				await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
-			return
-
-
-		if emoji in ['stamp', 'goldstamp']:
-
-			msgid = event.message_id
-			fromid = event.user_id
-			toid = message.author.id
-			# print(msgid, re)
-			string = "%s,%s,%s,%s" % (msgid, emoji, fromid, toid)
-			print(string)
-
-			print("### STAMP AWARDED ###")
-			self.addvote(emoji, fromid, toid, negative=(eventtype=='REACTION_REMOVE'))
-			self.save_votesdict_to_json()
-			print("Score before stamp:", self.get_user_stamps(toid))
-			self.calculate_stamps()
-			print("Score after stamp:", self.get_user_stamps(toid))
-			# "msgid,type,from,to"
-
-
-	def canProcessMessage(self, message, client=None):
-		if isatme(message):
-			text = isatme(message)
-
-			if re.match(r"(how many stamps am i worth)\??", text.lower()):
-				return (9, "You're worth %.2f stamps to me" % self.get_user_stamps(message.author))
-
-			elif text == "reloadallstamps" and message.author.name == "robertskmiles":
-				return (10, "")
-
-		return (0, "")
-
-	async def processMessage(self, message, client=None):
-		if isatme(message):
-			text = isatme(message)
-
-		if text == "reloadallstamps" and message.author.name == "robertskmiles":
-			print("FULL STAMP HISTORY RESET BAYBEEEEEE")
-			self.reset_stamps()
-			await self.load_votes_from_history()
-			return (10, "Working on it, could take a bit")
-
-		return (0, "")
 
 
 @client.event
@@ -898,67 +251,33 @@ async def on_raw_reaction_remove(payload):
 	# 		confidence, result = await module.processReactionEvent(payload, client)
 
 
-# @client.event
-# async def on_reaction_add(reaction, user):
-# 	if user == client.user:
-# 		return
-# 	print("REACTION", reaction, user)
-
-# 	for module in modules:
-# 		await module.processReactionEvent(self, reaction, user, eventtype='REACTION_ADD', client=client)
-
-
-# @client.event
-# async def on_reaction_remove(reaction, user):
-# 	if user == client.user:
-# 		return
-# 	print("REACTION", reaction, user)
-
-# 	for module in modules:
-# 		await module.processReactionEvent(self, reaction, user, eventtype='REACTION_REMOVE', client=client)
-
-
 if __name__ == "__main__":
-	load_dotenv()
-	TOKEN = os.getenv('DISCORD_TOKEN')
-	GUILD = os.getenv('DISCORD_GUILD')
-	YTAPIKEY = os.getenv('YOUTUBE_API_KEY')
-
+	
 	# when was the most recent comment we saw posted?
-	latestcommentts = datetime.now(timezone.utc)  # - timedelta(hours=8)
+	utils.latestcommentts = datetime.now(timezone.utc)  # - timedelta(hours=8)
 
 	# when did we last hit the API to check for comments?
-	lastcheckts = datetime.now(timezone.utc)
+	utils.lastcheckts = datetime.now(timezone.utc)
 
 	# how many seconds should we wait before we can hit YT API again
 	# this the start value. It doubles every time we don't find anything new
-	ytcooldown = tds(60)
+	utils.ytcooldown = utils.tds(60)
 
 
 	# timestamp of when we last ran the tick function
-	lasttickts = datetime.now(timezone.utc)
+	utils.lasttickts = datetime.now(timezone.utc)
 
-	# Load the question queue from the file
-	with open("qq.json") as qqfile:
-		qq = json.load(qqfile)
-	print("Loaded Question Queue from file")
-	print("%s questions loaded" % len(qq))
 
 	# timestamp of last time we asked a youtube question
-	lastqaskts = datetime.now(timezone.utc)
+	utils.lastqaskts = datetime.now(timezone.utc)
 
-	guildname = GUILD
+	guildname = utils.GUILD
 
 
 	# Was the last message posted in #general by anyone, us asking a question from YouTube?
-	lastmessagewasYTquestion = True  # We start off not knowing, but it's better to assume yes than no
+	utils.lastmessagewasYTquestion = True  # We start off not knowing, but it's better to assume yes than no
 
-	from videosearch import VideoSearchModule
-	from InviteManagerModule import InviteManagerModule
-
-	sm = StampsModule()
-
-	modules = [sm, QQManager(), VideoSearchModule(), ReplyModule(), InviteManagerModule()]
+	modules = [QQManager(), VideoSearch(), Reply(), InviteManager()]
 
 
-	client.run(TOKEN)
+	client.run(utils.TOKEN)
