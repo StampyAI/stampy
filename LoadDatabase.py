@@ -6,6 +6,26 @@ import utilities
 util = utilities.Utilities("stampy.db")
 db = util.db
 
+#dropTables()
+#createTables()
+#loadQuestions("qq.json")
+#loadUsers("stamps.json")
+#loadVotes("stamps.json")
+
+q = util.getNextQuestion("url")
+
+print(q[0])
+
+v = util.getVotes(181142785259208704)
+
+print(v)
+
+#util.setQuestionReplied(q[0])
+
+print(util.getNextQuestion("rowid"))
+print(util.getRandomQuestion("rowid"))
+
+
 def dropTables():
     try:
         db.query("drop table questions")
@@ -77,23 +97,4 @@ def loadVotes(file):
             db.query("INSERT INTO uservotes VALUES (?,?,?)",(i,vote,votes[vote]))
 
     db.commit()
-
-#dropTables()
-#createTables()
-#loadQuestions("qq.json")
-#loadUsers("stamps.json")
-#loadVotes("stamps.json")
-
-q = util.getNextQuestion("url")
-
-print(q[0])
-
-v = util.getVotes(181142785259208704)
-
-print(v)
-
-util.setQuestionReplied(q[0])
-
-print(util.getNextQuestion("rowid"))
-
 

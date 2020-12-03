@@ -45,13 +45,13 @@ class Database:
 
     def get(self,table,columns,limit=None):
 
-        query = "SELECT {0} from {1};".format(columns,table)
+        query = "SELECT {0} from {1}".format(columns,table)
+        if limit != None:
+            query += " LIMIT {0}".format(limit)
+        query += ";"
         self.cursor.execute(query)
 
-        # fetch data
-        rows = self.cursor.fetchall()
-
-        return rows[len(rows)-limit if limit else 0:]
+        return self.cursor.fetchall()
 
 
     def getLast(self,table,columns):

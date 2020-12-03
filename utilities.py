@@ -18,9 +18,6 @@ class Utilities:
         if Utilities.__instance == None:
             Utilities(dbPath)
             return Utilities.__instance
-
-    def getNextQuestion(self,columns="*"):
-        return self.db.getLast("questions WHERE replied=False",columns)
     
     def addVote(self,user,votedFor):
         query = "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},(SELECT votecount FROM uservotes WHERE user = {0} AND votedFor = {1})+1)".format(user,votedFor)
@@ -35,7 +32,15 @@ class Utilities:
         self.db.query('INSERT INTO questions VALUES (?,?,?,?,?);',(url,username,title,text,False))
         self.db.commit()
     
+    def getNextQuestion(self,columns="*"):
+        return self.db.getLast("questions WHERE replied=False",columns)
+    
+    def getRandomQuestion(self,columns="*"):
+        return self.db.getLast("questions WHERE replied=False ORDER BY RANDOM()",columns)
+    
     def setQuestionReplied(self,url):
         self.db.query('UPDATE questions SET replied = True WHERE url="{0}";'.format(url))
         self.db.commit()
         return True
+
+    
