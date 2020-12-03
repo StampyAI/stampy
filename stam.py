@@ -20,8 +20,14 @@ import googleapiclient.discovery
 
 import sentience
 
+import utilities
 
 client = discord.Client()
+
+dbPath = os.getenv('DATABASE_PATH')
+utils = utilities.Utilities.getInstance(dbPath)
+		
+print("Stampy DB Connected: {0}".format(utils.db.connected))
 
 
 class Module(object):
@@ -110,6 +116,9 @@ def isatme(message):
 
 
 class QQManager(Module):
+	#utils = utilities.Utilities.getInstance()
+	print(utils.getRandomQuestion("text"))
+
 	"""Module to manage commands about the question queue"""
 	def __init__(self):
 		self.re_nextq = re.compile(r""".*(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et(’|')?s have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
@@ -915,7 +924,6 @@ if __name__ == "__main__":
 	GUILD = os.getenv('DISCORD_GUILD')
 	YTAPIKEY = os.getenv('YOUTUBE_API_KEY')
 
-
 	# when was the most recent comment we saw posted?
 	latestcommentts = datetime.now(timezone.utc)  # - timedelta(hours=8)
 
@@ -939,7 +947,7 @@ if __name__ == "__main__":
 	# timestamp of last time we asked a youtube question
 	lastqaskts = datetime.now(timezone.utc)
 
-	guildname = "Rob Miles AI Discord"
+	guildname = GUILD
 
 
 	# Was the last message posted in #general by anyone, us asking a question from YouTube?
