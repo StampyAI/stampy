@@ -12,16 +12,19 @@ import googleapiclient.errors
 import time
 import json
 import sys
-
+from utilities import Utilities
 
 
 class CommentPoster(object):
+    utils = None
+
     def __init__(self):
+        self.utils = self.utils = Utilities.getInstance()
         scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"]
         # scopes = ["https://www.googleapis.com/auth/youtube"]
         api_service_name = "youtube"
         api_version = "v3"
-        client_secrets_file = os.getenv('CLIENT_SECRET_PATH')
+        client_secrets_file = utils.YTAPIKEY
 
         # Get credentials and create an API client
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
@@ -94,5 +97,3 @@ class CommentPoster(object):
 if __name__ == "__main__":
     commentPoster = CommentPoster()
     commentPoster.run()
-
-
