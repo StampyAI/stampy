@@ -1,5 +1,8 @@
+
 from module import Module
 import discord
+import numpy as np
+
 
 class Stamps(Module):
 
@@ -21,6 +24,7 @@ class Stamps(Module):
 
 		robid = '181142785259208704'
 		godid = "0"
+
 
 		# votesdict is a dictionary of users and their voting info
 		# keys are user ids
