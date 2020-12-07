@@ -12,6 +12,7 @@ class Utilities:
     __instance = None
     db = None
     discord = None
+    client = None
 
     TOKEN = None
     GUILD = None
@@ -25,6 +26,12 @@ class Utilities:
     lasttickts = None
     lastqaskts = None
     latestquestionposted = None
+
+    users = None
+    ids = None
+    index = None
+    scores = None
+
 
 
     @staticmethod 
@@ -171,30 +178,78 @@ class Utilities:
         query = "SELECT COUNT(*) FROM questions"
         return self.db.query(query)[0][0]
 
-
-    def addVote(self,user,votedFor):
-        query = "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount FROM uservotes WHERE user = {0} AND votedFor = {1}),0)+1)".format(user,votedFor)
+    def clearVotes(self):
+        query = "DELETE FROM uservotes"
         self.db.query(query)
         self.db.commit()
 
-    def getVotes(self,user):
-        query = "SELECT sum(votecount) FROM uservotes where user = {0}".format(user)
+    def update_ids_list(self):
+
+        self.ids = sorted(list(self.users))
+        self.index = {0: 0}
+        for userid in self.ids:
+            self.index[userid] = self.ids.index(userid)
+
+    def index_dammit(self, user):
+        """Get an index into the scores array from whatever you get"""
+
+        if user in self.index:  # maybe we got given a valid ID?
+            return self.index[user]
+
+        uid = getattr(user, 'id', None)  # maybe we got given a User or Member object that has an ID?
+        print(uid)
+        print(self.index)
+        if uid:
+            return self.index[uid]
+
+        return None
+
+    def get_user_score(self, user):
+        index = self.index_dammit(user)
+        return self.scores[index]
+
+    def addVote(self,user,votedFor,voteQty):
+        query = """INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount FROM uservotes WHERE user = {0}  
+                AND votedFor = {1}),0)+{2})""".format(user,votedFor,voteQty)
+        self.db.query(query)
+        self.db.commit()
+
+    def getVotesByUser(self,user):
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
         return self.db.query(query)[0][0]
 
+    def getVotesForUser(self,user):
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
+        return self.db.query(query)[0][0]
+
+    def getTotalVotes(self):
+        query = "SELECT count(votecount) from uservotes where user is not 0"
+        return self.db.query(query)[0][0]
+
+    def getAllUserVotes(self):
+        return self.db.get("uservotes","user,votedFor,votecount")
+    
+    def getUsers(self):
+        query = "SELECT user from (SELECT user FROM uservotes UNION SELECT votedFor as user FROM uservotes)"
+        result = self.db.query(query)
+        users = [item for sublist in result for item in sublist]
+        return users
+        
     def addQuestion(self,url,username,title,text):
-        self.db.query('INSERT INTO questions VALUES (?,?,?,?,?);',(url,username,title,text,False))
+        self.db.query('INSERT INTO questions VALUES (?,?,?,?,?)',(url,username,title,text,False))
         self.db.commit()
     
-    #Shouldn't be adding where clauses to the 'table' param.. 
+    #Kind of a hack, using the table param for the where clause
     #TODO: Fix this crap
     def getNextQuestion(self,columns="*"):
         return self.db.getLast("questions WHERE replied=False",columns)
+
     #TODO: see above
     def getRandomQuestion(self,columns="*"):
         return self.db.getLast("questions WHERE replied=False ORDER BY RANDOM()",columns)
     
     def setQuestionReplied(self,url):
-        self.db.query('UPDATE questions SET replied = True WHERE url="{0}";'.format(url))
+        self.db.query('UPDATE questions SET replied = True WHERE url="{0}"'.format(url))
         self.db.commit()
         return True
 

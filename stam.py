@@ -10,7 +10,6 @@ from datetime import datetime, timezone, timedelta
 import html
 import json
 
-import numpy as np
 import discord
 from dotenv import load_dotenv
 
@@ -22,9 +21,8 @@ load_dotenv()
 
 client = discord.Client()
 
-#dbPath = os.getenv('DATABASE_PATH')	
-#utils = Utilities.getInstance('stampy.db')
 utils = utilities.Utilities.getInstance(os.getenv('DATABASE_PATH'))
+utils.client = client
 
 utils.TOKEN = os.getenv('DISCORD_TOKEN')
 utils.GUILD = os.getenv('DISCORD_GUILD')
@@ -32,8 +30,8 @@ utils.YTAPIKEY = os.getenv('YOUTUBE_API_KEY')
 utils.DBPATH = os.getenv('DATABASE_PATH')
 
 from module import Module
-from vote import Stamps
-from question import QQManager
+from stampcollection import Stamps
+from questions import QQManager
 from reply import Reply
 from videosearch import VideoSearch
 from invitemanager import InviteManager
@@ -277,7 +275,7 @@ if __name__ == "__main__":
 	# Was the last message posted in #general by anyone, us asking a question from YouTube?
 	utils.lastmessagewasYTquestion = True  # We start off not knowing, but it's better to assume yes than no
 
-	modules = [QQManager(), VideoSearch(), Reply(), InviteManager()]
+	modules = [Stamps(), QQManager(), VideoSearch(), Reply(), InviteManager()]
 
 
 	client.run(utils.TOKEN)
