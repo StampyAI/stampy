@@ -53,8 +53,8 @@ class Stamps(Module):
 		if toid == 736241264856662038:  # votes for stampy do nothing
 			return
 
-		#if toid == fromid:  # votes for yourself do nothing
-		#	return
+		if toid == fromid:  # votes for yourself do nothing
+			return
 
 		if stamptype == "stamp":
 			votestrength = 1
@@ -234,10 +234,10 @@ class Stamps(Module):
 
 		if message.author.id == 736241264856662038:  # votes for stampy don't affect voting
 			return
-		#if message.author.id == event.user_id:  # votes for yourself don't affect voting
-		#	if eventtype == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
-		#		await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
-		#	return
+		if message.author.id == event.user_id:  # votes for yourself don't affect voting
+			if eventtype == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
+				await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
+			return
 
 
 		if emoji in ['stamp', 'goldstamp']:
