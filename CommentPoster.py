@@ -35,7 +35,12 @@ class CommentPoster(object):
             part="snippet",
             body=commentbody)
 
-        response = request.execute()
+        try:
+            response = request.execute()
+        except googleapiclient.errors.HttpError as e:
+            print(e)
+            return
+
 
         print(response)
         print(type(response))

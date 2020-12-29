@@ -15,7 +15,7 @@ class VideoSearchModule(Module):
 		# self.re_search = re.compile(r"""video search (?P<query>\w+)""")
 		# self.re_search = re.compile(r"""(([wW]hat( video)?|[wW]hich (video))('s| is| was)? ?(that|the|it)? ?|[Vv]ideo ?[Ss]earch) (?P<query>.+)""")
 		self.re_search = re.compile(r"""((([Ww]hich|[Ww]hat) vid(eo)? (is|was) (it|that))|
-?([Ii]n )?([Ww]hich|[Ww]hat)('s| is| was| are| were)? ?(it|that|the|they|those)? ?vid(eo)?s? ?(where|in which|which)?|
+?([Ii]n )?([Ww]hich|[Ww]hat)('?s| is| was| are| were)? ?(it|that|the|they|those)? ?vid(eo)?s? ?(where|in which|which)?|
 ?[Vv]id(eo)? ?[Ss]earch) (?P<query>.+)""")
 		# self.re_nextq = re.compile(r"""(([wW]hat('| i)s|[Cc]an we have|[Ll]et's have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
 # ?([Dd]o you have|([Hh]ave you )?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?""")
