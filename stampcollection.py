@@ -101,7 +101,7 @@ class StampsModule(Module):
 			toi = self.utils.index[vote[1]]
 			totalVotesByUser = self.utils.getVotesByUser(fromi)
 			votesForUser = vote[2]
-			score = (self.gamma * totalVotesByUser) / votesForUser
+			score = (self.gamma * voteForUser) / totalVotesByUser
 			A[toi, fromi] = score
 		# set the diagonal to -1
 		# c_score = a_score*a_votes_for_c + b_score*b_votes_for_c
