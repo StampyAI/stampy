@@ -4,7 +4,7 @@ import discord
 import numpy as np
 import re
 
-class Stamps(Module):
+class StampsModule(Module):
 
 	def __str__(self):
 		return "Stamps Module"
@@ -48,7 +48,7 @@ class Stamps(Module):
 		#self.scores = []
 
 	#done
-	def addvote(self, stamptype, fromid, toid, negative=False):
+	def addvote(self, stamptype, fromid, toid, negative=False, recalculate=True):
 
 		if toid == 736241264856662038:  # votes for stampy do nothing
 			return
@@ -78,6 +78,8 @@ class Stamps(Module):
 		self.utils.addVote(toid,fromid,votestrength)
 		self.utils.users = self.utils.getUsers()
 		self.utils.update_ids_list()
+		if recalculate:
+			self.calculate_stamps()
 
 		return
 	#done?
@@ -159,7 +161,7 @@ class Stamps(Module):
 				toid = int(toid)
 				
 				print(msgid, reacttype, fromid, toid)
-				self.addvote(reacttype, fromid, toid)
+				self.addvote(reacttype, fromid, toid,False,False)
 
 		#self.save_votesdict_to_json()
 		self.calculate_stamps()
@@ -191,7 +193,7 @@ class Stamps(Module):
 										string = "%s,%s,%s,%s" % (message.id, reacttype, user.id, message.author.id)
 										print(string)
 										stamplog.write(string + "\n")
-										self.addvote(reacttype, user.id, message.author.id)
+										self.addvote(reacttype, user.id, message.author.id, False, False)
 										# print("From", user.id, user)
 
 		#self.save_votesdict_to_json()
