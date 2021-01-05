@@ -19,7 +19,9 @@ import utilities
 
 load_dotenv()
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True  # we need this to be able to get the whole list of members
+client = discord.Client(intents=intents)
 
 utils = utilities.Utilities.getInstance(os.getenv('DATABASE_PATH'))
 utils.client = client
