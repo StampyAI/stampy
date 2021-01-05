@@ -30,7 +30,7 @@ utils.YTAPIKEY = os.getenv('YOUTUBE_API_KEY')
 utils.DBPATH = os.getenv('DATABASE_PATH')
 
 from module import Module
-from stampcollection import Stamps
+from stampcollection import StampsModule
 from questions import QQManager
 from reply import Reply
 from videosearch import VideoSearch
@@ -275,7 +275,7 @@ if __name__ == "__main__":
 	# Was the last message posted in #general by anyone, us asking a question from YouTube?
 	utils.lastmessagewasYTquestion = True  # We start off not knowing, but it's better to assume yes than no
 
-	modules = [Stamps(), QQManager(), VideoSearch(), Reply(), InviteManager()]
+	modules = [StampsModule(), QQManager(), VideoSearch(), Reply(), InviteManager()]
 
 
 	client.run(utils.TOKEN)

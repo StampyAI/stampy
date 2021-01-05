@@ -1,5 +1,7 @@
 from module import Module
 import discord
+import re
+import json
 
 class Reply(Module):
 
@@ -78,16 +80,16 @@ class Reply(Module):
 
 		report = ""
 
-		global latestquestionposted
-		if not latestquestionposted:
+		# global latestquestionposted
+		if not self.utils.latestquestionposted:
 			# return (10, "I can't do that because I don't remember the URL of the last question I posted here. I've probably been restarted since that happened")
 			report = "I don't remember the URL of the last question I posted here, so I've probably been restarted since that happened. I'll just post to the dummy thread instead...\n\n"
-			latestquestionposted = {'url': "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"}  # use the dummy thread
+			self.utils.latestquestionposted = {'url': "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"}  # use the dummy thread
 
-		questionid = re.match(r".*lc=([^&]+)", latestquestionposted['url']).group(1)
+		questionid = re.match(r".*lc=([^&]+)", self.utils.latestquestionposted['url']).group(1)
 
 		quotedreplymessage = "> " + replymessage.replace("\n", "\n> ")
-		report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (quotedreplymessage, latestquestionposted['url'])
+		report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (quotedreplymessage, self.utils.latestquestionposted['url'])
 
 		self.postReply(replymessage, questionid)
 

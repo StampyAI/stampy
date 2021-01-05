@@ -75,7 +75,7 @@ class StampsModule(Module):
 		if negative:  # are we actually undoing a vote?
 			votestrength = -votestrength
 		
-		self.utils.addVote(toid,fromid,votestrength)
+		self.utils.addVote(fromid, toid, votestrength)
 		self.utils.users = self.utils.getUsers()
 		self.utils.update_ids_list()
 		if recalculate:
@@ -95,21 +95,23 @@ class StampsModule(Module):
 		A = np.zeros((usercount, usercount))
 
 		votes = self.utils.getAllUserVotes()
+		print(votes)
 
-		for vote in votes:
-			fromi = self.utils.index[vote[0]]
-			toi = self.utils.index[vote[1]]
-			totalVotesByUser = self.utils.getVotesByUser(fromi)
-			votesForUser = vote[2]
-			score = (self.gamma * voteForUser) / totalVotesByUser
-			A[toi, fromi] = score
+		for fromid, toid, votesForUser in votes:
+			fromi = self.utils.index[fromid]
+			toi = self.utils.index[toid]
+			totalVotesByUser = self.utils.getVotesByUser(fromid)
+			print(fromi, toi, votesForUser, totalVotesByUser)
+			if totalVotesByUser != 0:
+				score = (self.gamma * votesForUser) / totalVotesByUser
+				A[toi, fromi] = score
 		# set the diagonal to -1
 		# c_score = a_score*a_votes_for_c + b_score*b_votes_for_c
 		# becomes
 		# a_score*a_votes_for_c + b_score*b_votes_for_c - c_score = 0
 		# so the second array can be all zeros
 		for i in range(1, usercount):
-			print(sum(A[i]), sum(A[:,i]))
+			# print(sum(A[i]), sum(A[:,i]))
 			A[i, i] = -1.0
 		A[0, 0] = 1.0
 
@@ -130,7 +132,7 @@ class StampsModule(Module):
 			name = self.utils.client.get_user(uid)
 			if not name:
 				name = "<@" + str(uid) + ">"
-			stamps = self.utils.getVotesForUser(uid)
+			stamps = self.get_user_stamps(uid)
 			totalstamps += stamps
 			print(name, "\t", stamps)
 
@@ -252,10 +254,9 @@ class StampsModule(Module):
 			print(string)
 
 			print("### STAMP AWARDED ###")
+			print("Score before stamp:", self.get_user_stamps(toid))
 			self.addvote(emoji, fromid, toid, negative=(eventtype=='REACTION_REMOVE'))
 			#self.save_votesdict_to_json()
-			print("Score before stamp:", self.get_user_stamps(toid))
-			self.calculate_stamps()
 			print("Score after stamp:", self.get_user_stamps(toid))
 			# "msgid,type,from,to"
 

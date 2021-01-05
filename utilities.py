@@ -146,7 +146,12 @@ class Utilities:
 
         comment = self.getNextQuestion("text,username,title,url")
 
-        self.latestquestionposted = comment
+
+        commentdict = {'text': comment[0],
+                        'username': comment[1],
+                        'title': comment[2],
+                        'url': comment[3]}
+        self.latestquestionposted = commentdict
 
         text = comment[0]
         if len(text) > 1500:
@@ -223,7 +228,7 @@ class Utilities:
         return self.db.query(query)[0][0]
 
     def getTotalVotes(self):
-        query = "SELECT count(votecount) from uservotes where user is not 0"
+        query = "SELECT sum(votecount) from uservotes where user is not 0"
         return self.db.query(query)[0][0]
 
     def getAllUserVotes(self):
