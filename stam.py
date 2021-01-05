@@ -57,6 +57,8 @@ async def on_message(message):
 		return
 
 	print("########################################################")
+	print(message)
+	print(message.reference)
 	print(message.author, message.content)
 
 	if hasattr(message.channel, 'name') and message.channel.name == "general":
@@ -69,46 +71,73 @@ async def on_message(message):
 	elif message.content.lower() == "Klaatu barada nikto".lower():
 		await message.channel.send("I must go now, my planet needs me")
 		exit()
-	elif message.content.lower() == "mh":
+	if message.content == 'reply test':
+		if message.reference:
+			reference = await message.channel.fetch_message(message.reference.message_id)
+			reftext = reference.content
+			replyURL = reftext.split("\n")[-1].strip()
+
+			response = "This is a reply to message %s:\n\"%s\"" % (message.reference.message_id, reftext)
+			response += "which should be taken as an answer to the question at: \"%s\"" % replyURL
+		else:
+			response = "This is not a reply"
+		await message.channel.send(response)
+	if message.content == "resetinviteroles" and message.author.id == 181142785259208704:
+		print("[resetting can-invite roles]")
+		await message.channel.send("[resetting can-invite roles, please wait]")
 		guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
-		#general = discord.utils.find(lambda c: c.name == "general", guild.channels)
-		
-
-		with open("stamps.csv", 'w') as stamplog:
-			stamplog.write("msgid,type,from,to\n")
-
-			for channel in guild.channels:
-				print("#### Considering", channel.type, channel.name, "####")
-				if channel.type == discord.TextChannel:
-					print("#### Logging", channel.name, "####")
-					async for message in channel.history(limit=None):
-						# print("###########")
-						# print(message.content[:20])
-						reactions = message.reactions
-						if reactions:
-							# print(reactions)
-							for reaction in reactions:
-								reacttype = getattr(reaction.emoji, 'name', '')
-								if reacttype in ["stamp", "goldstamp"]:
-									# print("STAMP")
-									users = await reaction.users().flatten()
-									for user in users:
-										string = "%s,%s,%s,%s" % (message.id, reacttype, user.id, message.author.id)
-										print(string)
-										stamplog.write(string + "\n")
-										# print("From", user.id, user)
+		print(guildname, guild)
+		role = discord.utils.get(guild.roles, name="can-invite")
+		print("there are", len(guild.members), "members")
+		resetuserscount = 0
+		for member in guild.members:
+			if sm.get_user_stamps(member) > 0:
+				print(member.name, "can invite")
+				await member.add_roles(role)
+				resetuserscount += 1
+			else:
+				print(member.name, "has 0 stamps, can't invite")
+		await message.channel.send("[Invite Roles Reset for %s users]" % resetuserscount)
 		return
+	# elif message.content.lower() == "mh":
+	#   guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
+	#   #general = discord.utils.find(lambda c: c.name == "general", guild.channels)
+		
+	#   with open("stamps.csv", 'w') as stamplog:
+	#       stamplog.write("msgid,type,from,to\n")
+
+	#       for channel in guild.channels:
+	#           print("#### Considering", channel.type, channel.name, "####")
+	#           if channel.type == discord.TextChannel:
+	#               print("#### Logging", channel.name, "####")
+	#               async for message in channel.history(limit=None):
+	#                   # print("###########")
+	#                   # print(message.content[:20])
+	#                   reactions = message.reactions
+	#                   if reactions:
+	#                       # print(reactions)
+	#                       for reaction in reactions:
+	#                           reacttype = getattr(reaction.emoji, 'name', '')
+	#                           if reacttype in ["stamp", "goldstamp"]:
+	#                               # print("STAMP")
+	#                               users = await reaction.users().flatten()
+	#                               for user in users:
+	#                                   string = "%s,%s,%s,%s" % (message.id, reacttype, user.id, message.author.id)
+	#                                   print(string)
+	#                                   stamplog.write(string + "\n")
+	#                                   # print("From", user.id, user)
+	#   return
 
 
 	# elif message.content.lower() == "invite test" and message.author.name == "robertskmiles":
-	# 	guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
-	# 	welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
-	# 	invite = await welcome.create_invite(max_uses=1,
-	# 										temporary=True,
-	# 										unique=True,
-	# 										reason="Requested by %s" % message.author.name)
-	# 	print(invite)
-	# 	await message.channel.send(invite.url)
+	#   guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
+	#   welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
+	#   invite = await welcome.create_invite(max_uses=1,
+	#                                       temporary=True,
+	#                                       unique=True,
+	#                                       reason="Requested by %s" % message.author.name)
+	#   print(invite)
+	#   await message.channel.send(invite.url)
 
 	result = None
 
@@ -126,7 +155,7 @@ async def on_message(message):
 
 	# Go with whichever module was most confident in its response
 	options = sorted(options, key=(lambda o: o[1]), reverse=True)
-	print(options)	
+	print(options)  
 	module, confidence, result = options[0]
 
 	if confidence > 0:  # if the module had some confidence it could reply
@@ -156,7 +185,6 @@ async def on_message(message):
 		await message.channel.send(result)
 
 	print("########################################################")
-
 
 @client.event
 async def on_socket_raw_receive(msg):
@@ -190,7 +218,7 @@ async def on_socket_raw_receive(msg):
 	qq = utils.getNextQuestion("rowid")
 	if qq:
 		# ask a new question if it's been long enough since we last asked one
-		qaskcooldown = timedelta(hours=8)
+		qaskcooldown = timedelta(hours=6)
 
 		if (now - utils.lastqaskts) > qaskcooldown:
 			if not utils.lastmessagewasYTquestion:  # Don't ask anything if the last thing posted in the chat was us asking a question
