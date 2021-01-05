@@ -6,14 +6,14 @@ class QQManager(Module):
 	"""Module to manage commands about the question queue"""
 	def __init__(self):
 		Module.__init__(self)
-		self.re_nextq = re.compile(r""".*(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et(’|')?s have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
+		self.re_nextq = re.compile(r"""(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et(’|')?s have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
 ?([Dd]o you have|([Hh]ave you )?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?""")
 
 	def canProcessMessage(self, message, client=None):
 		if self.isatme(message):
 			text = self.isatme(message)
 
-			if re.match(r"([hH]ow many questions (are (there )?)?in|[hH]ow (long is|long's)) (the|your)( question)? queue( now)?\??", text):
+			if re.match(r"([hH]ow many questions (are (there )?)?(left )?in|[hH]ow (long is|long's)) (the|your)( question)? queue( now)?\??", text):
 				qq = self.utils.getQuestionCount()
 				if qq:
 					if qq == 1:
