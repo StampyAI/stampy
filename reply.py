@@ -14,7 +14,10 @@ class Reply(Module):
 	def isPostRequest(self, text):
 		"""Is this message asking us to post a reply?"""
 		print(text)
-		return text.endswith("post this")
+		if text:
+			return text.lower().endswith("post this") or text.lower().endswith("send this")
+		else:
+			return False
 
 	def isAllowed(self, message, client):
 		"""Is the message author authorised to make stampy post replies?"""
