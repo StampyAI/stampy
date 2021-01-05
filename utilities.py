@@ -205,7 +205,7 @@ class Utilities:
         print(uid)
         print(self.index)
         if uid:
-            return self.index[uid]
+            return self.index_dammit(str(uid))
 
         return None
 
