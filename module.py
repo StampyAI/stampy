@@ -67,7 +67,7 @@ class Module(object):
 		"""Determine if the message is directed at Stampy
 		If it's not, return False. If it is, strip away the name part and return the remainder of the message"""
 
-		text = message.content
+		text = message.clean_content
 		atme = False
 		re_atme = re.compile(r"^@?[Ss]tampy\W? ")
 		text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", 'Stampy', text)

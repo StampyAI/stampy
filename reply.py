@@ -104,7 +104,7 @@ class Reply(Module):
 
 		if message.reference:  # if this is a reply
 			reference = await message.channel.fetch_message(message.reference.message_id)
-			reftext = reference.content
+			reftext = reference.clean_content
 			questionURL = reftext.split("\n")[-1].strip("<> \n")
 			if "youtube.com" not in questionURL:
 				return "I'm confused about what YouTube comment to reply to..."
