@@ -237,14 +237,17 @@ class StampsModule(Module):
 		eventtype = event.event_type
 		guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
 		channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
+
+		if not channel:
+			return
 		message = await channel.fetch_message(event.message_id)
 		emoji = getattr(event.emoji, 'name', event.emoji)
 
 		if message.author.id == 736241264856662038:  # votes for stampy don't affect voting
 			return
 		if message.author.id == event.user_id:  # votes for yourself don't affect voting
-			if eventtype == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
-				await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
+			# if eventtype == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
+			# 	await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
 			return
 
 
