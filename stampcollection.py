@@ -149,7 +149,7 @@ class StampsModule(Module):
 		# 	stamps = self.scores[index] * self.totalvotes
 		#   stamps = self.scores[index] * self.totalvotes
 		if index:
-			stamps = self.scores[index] * self.totalvotes
+			stamps = self.utils.scores[index] * self.totalvotes
 		else:
 			stamps = 0.0
 		return stamps
