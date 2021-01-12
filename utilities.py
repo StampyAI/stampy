@@ -211,7 +211,10 @@ class Utilities:
 
     def get_user_score(self, user):
         index = self.index_dammit(user)
-        return self.scores[index]
+        if index:
+            return self.scores[index]
+        else:
+            return 0.0
 
     def addVote(self,user,votedFor,voteQty):
         query = """INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount FROM uservotes WHERE user = {0}  

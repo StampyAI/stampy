@@ -147,7 +147,11 @@ class StampsModule(Module):
 		# stamps = int(self.scores[index] * self.totalvotes)
 		# if not stamps:
 		# 	stamps = self.scores[index] * self.totalvotes
-		stamps = self.utils.scores[index] * self.totalvotes
+		#   stamps = self.scores[index] * self.totalvotes
+		if index:
+			stamps = self.scores[index] * self.totalvotes
+		else:
+			stamps = 0.0
 		return stamps
 
 	def load_votes_from_csv(self, filename="stamps.csv"):
