@@ -9,6 +9,7 @@ import traceback
 from datetime import datetime, timezone, timedelta
 import html
 import json
+import unicodedata
 
 import discord
 from dotenv import load_dotenv
@@ -240,7 +241,11 @@ async def on_socket_raw_receive(msg):
 
 @client.event
 async def on_raw_reaction_add(payload):
-	print("RAW REACTION")
+	print("RAW REACTION ADD")
+	if len(payload.emoji.name) == 1:  # if this is an actual unicode emoji
+		print(unicodedata.name(payload.emoji.name))
+	else:
+		print(payload.emoji.name.upper())
 	print(payload)
 
 	for module in modules:
