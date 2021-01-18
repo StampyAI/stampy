@@ -144,12 +144,14 @@ class StampsModule(Module):
 
 	def get_user_stamps(self, user):
 		index = self.utils.index_dammit(user)
+		print("get_user_stamps for %s, index=%s" % (user, index))
 		# stamps = int(self.scores[index] * self.totalvotes)
 		# if not stamps:
 		# 	stamps = self.scores[index] * self.totalvotes
 		#   stamps = self.scores[index] * self.totalvotes
 		if index:
 			stamps = self.utils.scores[index] * self.totalvotes
+			print(stamps, self.utils.scores[index], self.totalvotes)
 		else:
 			stamps = 0.0
 		return stamps
