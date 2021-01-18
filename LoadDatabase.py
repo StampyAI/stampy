@@ -3,6 +3,7 @@ import json
 import sys
 import utilities
 
+
 def dropTables():
     try:
         db.query("drop table questions")
@@ -77,6 +78,7 @@ def loadVotes(file):
 
 
 util = utilities.Utilities.getInstance("stampy.db")
+db = util.db
 
 #util.getDatabase("stampy.db")
 print(util.db.connected)

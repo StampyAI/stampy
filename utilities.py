@@ -200,12 +200,14 @@ class Utilities:
 
         if user in self.index:  # maybe we got given a valid ID?
             return self.index[user]
+        elif str(user) in self.index:
+            return self.index[str(user)]
 
         uid = getattr(user, 'id', None)  # maybe we got given a User or Member object that has an ID?
         print(uid)
         print(self.index)
         if uid:
-            return self.index_dammit(str(uid))
+            return self.index_dammit(uid)
 
         return None
 
