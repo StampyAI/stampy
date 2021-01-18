@@ -32,6 +32,7 @@ class Utilities:
     index = None
     scores = None
 
+    modulesdict = {}
 
 
     @staticmethod 
@@ -146,11 +147,10 @@ class Utilities:
 
         comment = self.getNextQuestion("text,username,title,url")
 
-
         commentdict = {'text': comment[0],
-                        'username': comment[1],
-                        'title': comment[2],
-                        'url': comment[3]}
+                       'username': comment[1],
+                       'title': comment[2],
+                       'url': comment[3]}
         self.latestquestionposted = commentdict
 
         text = comment[0]
@@ -160,22 +160,25 @@ class Utilities:
 
         title = comment[2]
         if title:
-            report = """YouTube user {0} asked this question, on the video {1}!:
-                        {2}
-                        Is it an interesting question? Maybe we can answer it!
-                        {3}""".format(comment[1],comment[2],textquoted,comment[3])
+            report = ("YouTube user {0} asked this question, on the video {1}!:\n" +
+                      "{2}\n" +
+                      "Is it an interesting question? Maybe we can answer it!\n" +
+                      "{3}").format(comment[1], comment[2], textquoted, comment[3])
 
         else:
-            report = """YouTube user {0} just asked a question!:
-                    {2}
-                    Is it an interesting question? Maybe we can answer it!
-                    {3}""".format(comment[1],comment[2],textquoted,comment[3])
+            report = ("YouTube user {0} just asked a question!:\n" +
+                      "{2}\n" + 
+                      "Is it an interesting question? Maybe we can answer it!\n" +
+                      "{3}").format(comment[1], comment[2], textquoted, comment[3])
 
         print("==========================")
         print(report)
         print("==========================")
 
         self.lastqaskts = datetime.now(timezone.utc)  # reset the question waiting timer
+
+        # mark it in the database as having been asked
+        self.setQuestionAsked(commentdict['url'])
 
         return report
 
@@ -252,14 +255,19 @@ class Utilities:
     #Kind of a hack, using the table param for the where clause
     #TODO: Fix this crap
     def getNextQuestion(self,columns="*"):
-        return self.db.getLast("questions WHERE replied=False",columns)
+        return self.db.getLast('questions WHERE replied=False AND asked=False ORDER BY rowid DESC',columns)
 
     #TODO: see above
     def getRandomQuestion(self,columns="*"):
-        return self.db.getLast("questions WHERE replied=False ORDER BY RANDOM()",columns)
+        return self.db.getLast("questions WHERE replied=False AND asked=False ORDER BY RANDOM()",columns)
     
     def setQuestionReplied(self,url):
         self.db.query('UPDATE questions SET replied = True WHERE url="{0}"'.format(url))
+        self.db.commit()
+        return True
+
+    def setQuestionAsked(self,url):
+        self.db.query('UPDATE questions SET asked = True WHERE url="{0}"'.format(url))
         self.db.commit()
         return True
 

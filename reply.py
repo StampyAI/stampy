@@ -95,7 +95,7 @@ class Reply(Module):
 			approvers[-1] = "and " + approvers[-1]
 			approverstring = ", ".join(approvers)  # oxford comma baybee
 
-		text = isatme(message)  # strip off stampy's name
+		text = self.isatme(message)  # strip off stampy's name
 		replymessage = self.extractReply(text)
 		replymessage += "\n -- _I am a bot. This reply was approved by %s_" % approverstring
 
@@ -145,7 +145,7 @@ class Reply(Module):
 					for user in users:
 						approvers.append(user)
 						print("  From", user.id, user)
-						stampvalue = sm.get_user_stamps(user)
+						stampvalue = self.utils.modulesdict["StampsModule"].get_user_stamps(user)
 						total += stampvalue
 						print("  Worth", stampvalue)
 
@@ -178,7 +178,7 @@ class Reply(Module):
 			guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
 			channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
 			message = await channel.fetch_message(event.message_id)
-			if self.isatme(message) and self.isPostRequest(isatme(message)):
+			if self.isatme(message) and self.isPostRequest(self.isatme(message)):
 			#   self.maybePostMessage(message)
 
 			# print("isatme:", isatme(message))

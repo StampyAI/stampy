@@ -37,7 +37,7 @@ def loadQuestions(file):
         title = question['title']
         text = question['text']
         print('Inserting question: {0}'.format(url))
-        db.query('INSERT INTO questions VALUES (?,?,?,?,?);',(url,username,title,text,False))
+        db.query('INSERT INTO questions VALUES (?,?,?,?,?,?,?);',(url,username,title,text,False,False,None))
         #try: 
         #    break
         #except:
@@ -100,5 +100,5 @@ print(util.db.connected)
 #util.setQuestionReplied(q[0])
 #util.addVote(123,2) #add votes some random users who dont already exist
 
-print(util.getNextQuestion("*"))
-print(util.getRandomQuestion("text"))
+# print(util.getNextQuestion("*"))
+# print(util.getRandomQuestion("text"))

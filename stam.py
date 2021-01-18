@@ -310,7 +310,14 @@ if __name__ == "__main__":
 	# Was the last message posted in #general by anyone, us asking a question from YouTube?
 	utils.lastmessagewasYTquestion = True  # We start off not knowing, but it's better to assume yes than no
 
-	modules = [StampsModule(), QQManager(), VideoSearch(), Reply(), InviteManager()]
+	utils.modulesdict = {"StampsModule": StampsModule(),
+						"QQManager": QQManager(),
+						"VideoSearch": VideoSearch(),
+						"Reply": Reply(),
+						"InviteManager": InviteManager()
+						}
+
+	modules = utils.modulesdict.values()
 
 
 	client.run(utils.TOKEN)
