@@ -109,12 +109,12 @@ class Reply(Module):
 			if "youtube.com" not in questionURL:
 				return "I'm confused about what YouTube comment to reply to..."
 		else:
-			if not utils.latestquestionposted:
+			if not self.utils.latestquestionposted:
 				# return (10, "I can't do that because I don't remember the URL of the last question I posted here. I've probably been restarted since that happened")
 				report = "I don't remember the URL of the last question I posted here, so I've probably been restarted since that happened. I'll just post to the dummy thread instead...\n\n"
-				utils.latestquestionposted = {'url': "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"}  # use the dummy thread
+				self.utils.latestquestionposted = {'url': "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"}  # use the dummy thread
 
-			questionURL = utils.latestquestionposted['url']
+			questionURL = self.utils.latestquestionposted['url']
 
 		questionid = re.match(r".*lc=([^&]+)", questionURL).group(1)
 
@@ -174,10 +174,11 @@ class Reply(Module):
 		emoji = getattr(event.emoji, 'name', event.emoji)
 
 		if emoji in ['stamp', 'goldstamp']:
-			guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
+			print("GUILD = ", self.utils.GUILD)
+			guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
 			channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
 			message = await channel.fetch_message(event.message_id)
-			if isatme(message) and self.isPostRequest(isatme(message)):
+			if self.isatme(message) and self.isPostRequest(isatme(message)):
 			#   self.maybePostMessage(message)
 
 			# print("isatme:", isatme(message))
