@@ -4,8 +4,8 @@ import sqlite3
 #   SQLite Database Wrapper
 ###########################################################################
 
+
 class Database:
-    
     def __init__(self, name=None):
         self.connected = False
         self.conn = None
@@ -14,9 +14,7 @@ class Database:
         if name:
             self.open(name)
 
-
-
-    def open(self,name):
+    def open(self, name):
         print("Connecting to database: " + name)
         try:
             self.conn = sqlite3.connect(name)
@@ -26,27 +24,23 @@ class Database:
         except sqlite3.Error as e:
             print("Error connecting to database!")
 
-    
     def close(self):
-        
         if self.conn:
             self.connected = False
             self.conn.commit()
             self.cursor.close()
             self.conn.close()
 
-
     def __enter__(self):
         return self
 
-    def __exit__(self,exc_type,exc_value,traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         self.connected = False
         self.close()
 
-    def get(self,table,columns,limit=None):
-
-        query = "SELECT {0} from {1}".format(columns,table)
-        #Limit goes at the end...
+    def get(self, table, columns, limit=None):
+        query = "SELECT {0} from {1}".format(columns, table)
+        # Limit goes at the end...
         if limit != None:
             query += " LIMIT {0}".format(limit)
         query += ";"
@@ -54,14 +48,12 @@ class Database:
 
         return self.cursor.fetchall()
 
+    def getLast(self, table, columns):
+        return self.get(table, columns, limit=1)[0]
 
-    def getLast(self,table,columns):
-        return self.get(table,columns,limit=1)[0]
-
-        
-    def query(self,sql,args=None):
+    def query(self, sql, args=None):
         if args:
-            self.cursor.execute(sql,args)
+            self.cursor.execute(sql, args)
         else:
             self.cursor.execute(sql)
         return self.cursor.fetchall()
@@ -69,7 +61,8 @@ class Database:
     def commit(self):
         self.conn.commit()
 
-'''
+
+"""
     def insert(self,table,columns,data):
         query = "INSERT INTO {0} ({1}) VALUES ({2});".format(table,columns,data)
         self.cursor.execute(query)
@@ -80,4 +73,4 @@ class Database:
         query+=  "ON CONFLICT(name) DO UPDATE SET {0}".format(update)
         self.cursor.execute(query)
         self.conn.commit()
-'''
+"""

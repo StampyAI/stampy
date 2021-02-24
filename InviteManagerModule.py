@@ -1,12 +1,11 @@
-from module import Module
+from stam import isatme, Module
 import asyncio
 import discord
 import re
 
 
-class InviteManager(Module):
+class InviteManagerModule(Module):
     def __init__(self):
-        Module.__init__(self)
         self.re_request = re.compile(
             r"""([pP]lease )?(([cC]an|[cC]ould) you )?(([Cc]reate|[mM]ake|[gG]ive|[gG]enerate) (me )?|([Cc]an|[mM]ay) [iI] (get|have) )((an|a new|my) )?[Ii]nvite( link)?,?( please| pls)?"""
         )
@@ -16,26 +15,25 @@ class InviteManager(Module):
         self.sorry_message = "Sorry, you don't have the `can-invite` role.\nEither you recently joined the server, or you've already been given an invite this week"
 
     def canProcessMessage(self, message, client=None):
-        if self.isatme(message):
-            text = self.isatme(message)
+        if isatme(message):
+            text = isatme(message)
 
             m = re.match(self.re_request, text)
             if m:
                 guild = client.guilds[0]
                 inviterole = discord.utils.get(guild.roles, name="can-invite")
                 member = guild.get_member(message.author.id)
-                print(guild, inviterole, member, message.author.id)
                 if inviterole in member.roles:
-                    return (10, "")
+                    return 10, ""
                 else:
-                    return (10, self.sorry_message)
+                    return 10, self.sorry_message
 
         # This is either not at me, or not something we can handle
-        return (0, "")
+        return 0, ""
 
     async def processMessage(self, message, client=None):
         """Generate and send an invite, if user is allowed"""
-        text = self.isatme(message)
+        text = isatme(message)
 
         m = re.match(
             self.re_request, text
@@ -66,16 +64,16 @@ class InviteManager(Module):
                     % invite.url,
                 )
             else:  # user doesn't have the can-invite role
-                return (10, self.sorry_message)
+                return 10, self.sorry_message
         # elif "invitetest" in text:
-        #   member = message.author
-        #   role = discord.utils.get(message.author.guild.roles, name="can-invite")
-        #   if "add" in text:
-        #       await member.add_roles(role)
-        #       return (10, "Added invite role")
-        #   elif "remove" in text:
-        #       await member.remove_roles(role)
-        #       return (10, "removed invite role")
+        # 	member = message.author
+        # 	role = discord.utils.get(message.author.guild.roles, name="can-invite")
+        # 	if "add" in text:
+        # 		await member.add_roles(role)
+        # 		return (10, "Added invite role")
+        # 	elif "remove" in text:
+        # 		await member.remove_roles(role)
+        # 		return (10, "removed invite role")
 
     def __str__(self):
         return "Invite Manager Module"
