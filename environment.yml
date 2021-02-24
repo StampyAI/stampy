@@ -1,0 +1,13 @@
+name: deletethis3
+channels:
+  - defaults
+dependencies:
+  - pip
+  - numpy
+  - sqlite
+  - pip:
+    - discord-py
+    - google-api-python-client
+    - google-auth-oauthlib
+    - python-dotenv
+
