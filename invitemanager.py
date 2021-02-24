@@ -1,10 +1,11 @@
 import re
 import discord
-from stam import Module
+from module import Module
 
 
-class InviteManagerModule(Module):
+class InviteManager(Module):
     def __init__(self):
+        Module.__init__(self)
         self.re_request = re.compile(
             r"""([pP]lease )?(([cC]an|[cC]ould) you )?(([Cc]reate|[mM]ake|[gG]ive|[gG]enerate) (me )?|([Cc]an|[mM]ay) [iI] (get|have) )((an|a new|my) )?[Ii]nvite( link)?,?( please| pls)?"""
         )
@@ -22,13 +23,14 @@ class InviteManagerModule(Module):
                 guild = client.guilds[0]
                 inviterole = discord.utils.get(guild.roles, name="can-invite")
                 member = guild.get_member(message.author.id)
+                print(guild, inviterole, member, message.author.id)
                 if inviterole in member.roles:
-                    return 10, ""
+                    return (10, "")
                 else:
-                    return 10, self.sorry_message
+                    return (10, self.sorry_message)
 
         # This is either not at me, or not something we can handle
-        return 0, ""
+        return (0, "")
 
     async def processMessage(self, message, client=None):
         """Generate and send an invite, if user is allowed"""
@@ -63,16 +65,16 @@ class InviteManagerModule(Module):
                     % invite.url,
                 )
             else:  # user doesn't have the can-invite role
-                return 10, self.sorry_message
+                return (10, self.sorry_message)
         # elif "invitetest" in text:
-        # 	member = message.author
-        # 	role = discord.utils.get(message.author.guild.roles, name="can-invite")
-        # 	if "add" in text:
-        # 		await member.add_roles(role)
-        # 		return (10, "Added invite role")
-        # 	elif "remove" in text:
-        # 		await member.remove_roles(role)
-        # 		return (10, "removed invite role")
+        #   member = message.author
+        #   role = discord.utils.get(message.author.guild.roles, name="can-invite")
+        #   if "add" in text:
+        #       await member.add_roles(role)
+        #       return (10, "Added invite role")
+        #   elif "remove" in text:
+        #       await member.remove_roles(role)
+        #       return (10, "removed invite role")
 
     def __str__(self):
         return "Invite Manager Module"
