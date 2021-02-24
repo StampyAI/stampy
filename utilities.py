@@ -1,10 +1,17 @@
-import googleapiclient.discovery
+import os
 from database import Database
+from config import required_environment_variables
 from datetime import datetime, timezone, timedelta
+from googleapiclient.discovery import build as get_youtube_api
+
+
+def check_environment(environment_variables):
+    for env in environment_variables:
+        if env not in os.environ:
+            raise Exception("%s Environment Variable not set" % env)
 
 
 class Utilities:
-
     __instance = None
     db = None
     discord = None
@@ -31,12 +38,18 @@ class Utilities:
     modulesdict = {}
 
     @staticmethod
-    def getInstance(dbPath=None, discord=None):
-        if Utilities.__instance == None:
+    def getInstance():
+        if Utilities.__instance is None:
+            check_environment(required_environment_variables)
             Utilities()
-            print("Trying to open db - " + dbPath)
-            Utilities.db = Database(dbPath)
-            # Utilities.discord = discord
+
+            Utilities.TOKEN = os.getenv("DISCORD_TOKEN")
+            Utilities.GUILD = os.getenv("DISCORD_GUILD")
+            Utilities.YTAPIKEY = os.getenv("YOUTUBE_API_KEY")
+            Utilities.DBPATH = os.getenv("DATABASE_PATH")
+
+            print("Trying to open db - " + Utilities.DBPATH)
+            Utilities.db = Database(Utilities.DBPATH)
         return Utilities.__instance
 
     def __init__(self):
@@ -75,7 +88,7 @@ class Utilities:
         api_version = "v3"
         DEVELOPER_KEY = self.YTAPIKEY
 
-        youtube = googleapiclient.discovery.build(
+        youtube = get_youtube_api(
             api_service_name, api_version, developerKey=DEVELOPER_KEY
         )
 
@@ -241,10 +254,8 @@ class Utilities:
         self.db.commit()
 
     def getVotesByUser(self, user):
-        query = (
-            "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
-                user
-            )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
+            user
         )
         return self.db.query(query)[0][0]
 

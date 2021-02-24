@@ -1,7 +1,6 @@
-from stam import isatme, Module
-import asyncio
-import discord
 import re
+import discord
+from stam import Module
 
 
 class InviteManagerModule(Module):
@@ -15,8 +14,8 @@ class InviteManagerModule(Module):
         self.sorry_message = "Sorry, you don't have the `can-invite` role.\nEither you recently joined the server, or you've already been given an invite this week"
 
     def canProcessMessage(self, message, client=None):
-        if isatme(message):
-            text = isatme(message)
+        if self.isatme(message):
+            text = self.isatme(message)
 
             m = re.match(self.re_request, text)
             if m:
@@ -33,7 +32,7 @@ class InviteManagerModule(Module):
 
     async def processMessage(self, message, client=None):
         """Generate and send an invite, if user is allowed"""
-        text = isatme(message)
+        text = self.isatme(message)
 
         m = re.match(
             self.re_request, text

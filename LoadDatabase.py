@@ -1,6 +1,4 @@
-import database
 import json
-import sys
 import utilities
 
 
@@ -91,7 +89,7 @@ def loadVotes(file):
     db.commit()
 
 
-util = utilities.Utilities.getInstance("stampy.db")
+util = utilities.Utilities.getInstance()
 db = util.db
 
 # util.getDatabase("stampy.db")

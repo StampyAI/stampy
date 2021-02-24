@@ -1,7 +1,6 @@
-from module import Module
-import asyncio
-import discord
 import re
+import discord
+from module import Module
 
 
 class InviteManager(Module):

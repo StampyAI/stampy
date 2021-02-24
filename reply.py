@@ -1,7 +1,7 @@
-from module import Module
-import discord
 import re
 import json
+import discord
+from module import Module
 
 
 class Reply(Module):

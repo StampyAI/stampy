@@ -1,11 +1,9 @@
-from utilities import Utilities
 import re
 import discord
+from utilities import Utilities
 
 
 class Module(object):
-    from datetime import datetime, timezone, timedelta
-
     utils = None
 
     def __init__(self):

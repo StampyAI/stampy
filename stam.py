@@ -1,31 +1,24 @@
-#!/usr/bin/env python3
-
-# https://realpython.com/how-to-make-a-discord-bot-python/#how-to-make-a-discord-bot-in-python
-
 import os
 import sys
 import discord
 import sentience
-import utilities
 import traceback
 import unicodedata
 from dotenv import load_dotenv
+from config import required_environment_variables
 from datetime import datetime, timezone, timedelta
-
+from utilities import Utilities, check_environment
 
 load_dotenv()
 
 intents = discord.Intents.default()
-intents.members = True  # we need this to be able to get the whole list of members
+intents.members = True
 client = discord.Client(intents=intents)
 
-utils = utilities.Utilities.getInstance(os.getenv("DATABASE_PATH"))
-utils.client = client
+check_environment(required_environment_variables)
 
-utils.TOKEN = os.getenv("DISCORD_TOKEN")
-utils.GUILD = os.getenv("DISCORD_GUILD")
-utils.YTAPIKEY = os.getenv("YOUTUBE_API_KEY")
-utils.DBPATH = os.getenv("DATABASE_PATH")
+utils = Utilities.getInstance()
+utils.client = client
 
 from module import Module
 from stampcollection import StampsModule

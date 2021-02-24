@@ -1,6 +1,5 @@
-from module import Module
 import re
-import discord
+from module import Module
 
 
 class QQManager(Module):

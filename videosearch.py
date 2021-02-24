@@ -1,6 +1,7 @@
 import re
 import os
 from module import Module
+from config import subs_dir
 
 
 class VideoSearch(Module):
@@ -19,7 +20,7 @@ class VideoSearch(Module):
         )
         # self.re_nextq = re.compile(r"""(([wW]hat('| i)s|[Cc]an we have|[Ll]et's have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
         # ?([Dd]o you have|([Hh]ave you )?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?""")
-        self.subsdir = "./subs/"
+        self.subsdir = subs_dir
         self.videos = []
         self.loadvideos()
 
