@@ -1,7 +1,7 @@
 import re
 import discord
 import numpy as np
-from module import Module
+from modules.module import Module
 
 
 class StampsModule(Module):
@@ -17,7 +17,7 @@ class StampsModule(Module):
 
         # self.reset_stamps()  # this initialises all the vote counting data structures empty
         # self.load_votesdict_from_json()
-        self.totalvotes = self.utils.getTotalVotes()
+        self.totalvotes = self.utils.get_total_votes()
         self.calculate_stamps()
 
     def reset_stamps(self):
@@ -26,8 +26,8 @@ class StampsModule(Module):
         robid = "181142785259208704"
         godid = "0"
 
-        self.utils.clearVotes()
-        self.utils.addVote(godid, robid)
+        self.utils.clear_votes()
+        self.utils.add_vote(godid, robid)
 
         # votesdict is a dictionary of users and their voting info
         # keys are user ids
@@ -73,8 +73,8 @@ class StampsModule(Module):
         if negative:  # are we actually undoing a vote?
             votestrength = -votestrength
 
-        self.utils.addVote(fromid, toid, votestrength)
-        self.utils.users = self.utils.getUsers()
+        self.utils.add_vote(fromid, toid, votestrength)
+        self.utils.users = self.utils.get_users()
         self.utils.update_ids_list()
         if recalculate:
             self.calculate_stamps()
@@ -86,20 +86,20 @@ class StampsModule(Module):
         """Set up and solve the system of linear equations"""
         print("RECALCULATING STAMP SCORES")
 
-        self.utils.users = self.utils.getUsers()
+        self.utils.users = self.utils.get_users()
         self.utils.update_ids_list()
 
         usercount = len(self.utils.users)
 
         A = np.zeros((usercount, usercount))
 
-        votes = self.utils.getAllUserVotes()
+        votes = self.utils.get_all_user_votes()
         print(votes)
 
         for fromid, toid, votesForUser in votes:
             fromi = self.utils.index[fromid]
             toi = self.utils.index[toid]
-            totalVotesByUser = self.utils.getVotesByUser(fromid)
+            totalVotesByUser = self.utils.get_votes_by_user(fromid)
             print(fromi, toi, votesForUser, totalVotesByUser)
             if totalVotesByUser != 0:
                 score = (self.gamma * votesForUser) / totalVotesByUser
@@ -124,7 +124,7 @@ class StampsModule(Module):
     # done
     def print_all_scores(self):
         totalstamps = 0
-        self.utils.users = self.utils.getUsers()
+        self.utils.users = self.utils.get_users()
         for user in self.utils.users:
             uid = user
             name = self.utils.client.get_user(uid)
@@ -220,21 +220,6 @@ class StampsModule(Module):
 
         # self.save_votesdict_to_json()
         self.calculate_stamps()
-
-    # depricated
-    """def load_votesdict_from_json(self, filename="stamps.json"):
-		with open(filename) as stampsfile:
-			self.votesdict = json.load(stampsfile)
-
-		self.totalvotes = 0
-		for fromid, u in self.votesdict.items():
-			self.totalvotes += u['votecount']"""
-
-    # depricated
-    """def save_votesdict_to_json(self, filename="stamps.json"):
-		with open(filename, 'w') as stampsfile:   # we modified the queue, put it in a file to persist
-			json.dump(self.votesdict, stampsfile, indent="\t")
-	"""
 
     async def processReactionEvent(
         self, reaction, user, eventtype="REACTION_ADD", client=None

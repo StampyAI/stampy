@@ -89,7 +89,7 @@ def loadVotes(file):
     db.commit()
 
 
-util = utilities.Utilities.getInstance()
+util = utilities.Utilities.get_instance()
 db = util.db
 
 # util.getDatabase("stampy.db")

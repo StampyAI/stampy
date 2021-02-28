@@ -7,7 +7,7 @@ class Module(object):
     utils = None
 
     def __init__(self):
-        self.utils = Utilities.getInstance()
+        self.utils = Utilities.get_instance()
 
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,

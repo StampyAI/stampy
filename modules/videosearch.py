@@ -1,6 +1,6 @@
 import re
 import os
-from module import Module
+from modules.module import Module
 from config import subs_dir
 
 
@@ -10,16 +10,12 @@ class VideoSearch(Module):
     """
 
     def __init__(self):
-        Module.__init__(self)
-        # self.re_search = re.compile(r"""video search (?P<query>\w+)""")
-        # self.re_search = re.compile(r"""(([wW]hat( video)?|[wW]hich (video))('s| is| was)? ?(that|the|it)? ?|[Vv]ideo ?[Ss]earch) (?P<query>.+)""")
+        super().__init__()
         self.re_search = re.compile(
             r"""((([Ww]hich|[Ww]hat) vid(eo)? (is|was) (it|that))|
 ?([Ii]n )?([Ww]hich|[Ww]hat)('?s| is| was| are| were)? ?(it|that|the|they|those)? ?vid(eo)?s? ?(where|in which|which)?|
 ?[Vv]id(eo)? ?[Ss]earch) (?P<query>.+)"""
         )
-        # self.re_nextq = re.compile(r"""(([wW]hat('| i)s|[Cc]an we have|[Ll]et's have|[gG]ive us)?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|
-        # ?([Dd]o you have|([Hh]ave you )?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?""")
         self.subsdir = subs_dir
         self.videos = []
         self.loadvideos()
@@ -56,20 +52,15 @@ class VideoSearch(Module):
 
                     # strip out all the html tags from the line
                     pline = re.sub(r"<[^>]*>", "", line.strip())
-                    # print(timestamp+"|"+pline)
                     lines.append(timestamp + "|" + pline)
         return "\n".join(lines)
 
     def loadvideos(self):
         for entry in os.scandir(self.subsdir):
             if entry.name.endswith(".en.vtt"):
-                # print("###############")
-                # print(entry.name)
                 m = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
                 title = m.group(1)
                 stub = m.group(2)
-                # print("title:\t", title)
-                # print("stub:\t", stub)
 
                 text = self.processvttfile(entry.path)
 
@@ -79,9 +70,6 @@ class VideoSearch(Module):
                     description = open(descriptionfilepath).read()
                 else:
                     description = ""
-
-                # print("text:\t", text[:100])
-                # print("description:\t", description[:100])
 
                 video = self.Video(title, stub, text, description)
                 self.videos.append(video)
@@ -95,7 +83,6 @@ class VideoSearch(Module):
 
         keywords = query.lower().split()
         keywords = [w.strip("\"'?.,!") for w in keywords if w not in boringwords]
-        # print("keywords are:", keywords)
         return keywords
 
     def sortbyrelevance(self, videos, searchstring, reverse=False):
@@ -105,9 +92,7 @@ class VideoSearch(Module):
 
         for video in videos:
             video.score = 0
-            # print(video.title,type(video.text))
             for keyword in keywords:
-                # print(keyword, video.score)
                 video.score += (
                     3.0
                     * video.title.lower().count(keyword.lower())
@@ -123,8 +108,6 @@ class VideoSearch(Module):
                     * video.text.lower().count(keyword.lower())
                     / (len(video.text) + 1)
                 )
-                # print(video.score)
-
         return sorted(videos, key=(lambda v: v.score), reverse=reverse)
 
     def search(self, query):
@@ -169,9 +152,9 @@ class VideoSearch(Module):
 
         return reply
 
-    async def processMessage(self, message, client):
+    async def processMessage(self, message, client=None):
         if self.isatme(message):
-            text = self.self.isatme(message)
+            text = self.isatme(message)
 
             m = re.match(self.re_search, text)
             if m:
@@ -204,22 +187,6 @@ if __name__ == "__main__":
     takenextline = False
     timestamp = "00:00"
     prevline = ""
-
-    # with open(sys.argv[1]) as vttfile:
-    # 	for line in vttfile.readlines():
-
-    # 		if takenextline:
-    # 			if line != prevline:
-    # 				print(timestamp + " " + line)
-    # 			prevline = line
-    # 			takenextline = False
-    # 		else:
-    # 			match = re.match(r"\d\d:\d\d:\d\d\.\d\d\d", line)
-    # 			if match:
-    # 				timestamp = match.group(0)
-    # 				timestamp = timestamp.lstrip("0").lstrip(":").partition(".")[0]
-    # 				# print(timestamp)
-    # 				takenextline = True
 
     with open(sys.argv[1]) as vttfile:
         for line in vttfile.readlines():

@@ -1,8 +1,19 @@
 import os
-from database import Database
-from config import required_environment_variables
+import discord
+from dotenv import load_dotenv
+from database.database import Database
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build as get_youtube_api
+from config import (
+    required_environment_variables,
+    youtube_api_version,
+    youtube_api_service_name,
+    rob_miles_youtube_channel_id,
+    discord_token,
+    discord_guild,
+    youtube_api_key,
+    database_path,
+)
 
 
 def check_environment(environment_variables):
@@ -19,48 +30,49 @@ class Utilities:
 
     TOKEN = None
     GUILD = None
-    YTAPIKEY = None
-    DBPATH = None
+    YOUTUBE_API_KEY = None
+    DB_PATH = None
 
-    lastmessagewasYTquestion = None
-    latestcommentts = None
-    lastcheckts = None
-    ytcooldown = None
-    lasttickts = None
-    lastqaskts = None
-    latestquestionposted = None
+    last_message_was_youtube_question = None
+    latest_comment_timestamp = None
+    last_check_timestamp = None
+    youtube_cool_down = None
+    last_timestamp = None
+    last_question_asked_timestamp = None
+    latest_question_posted = None
 
     users = None
     ids = None
     index = None
     scores = None
 
-    modulesdict = {}
+    modules_dict = {}
 
     @staticmethod
-    def getInstance():
+    def get_instance():
         if Utilities.__instance is None:
             check_environment(required_environment_variables)
             Utilities()
-
-            Utilities.TOKEN = os.getenv("DISCORD_TOKEN")
-            Utilities.GUILD = os.getenv("DISCORD_GUILD")
-            Utilities.YTAPIKEY = os.getenv("YOUTUBE_API_KEY")
-            Utilities.DBPATH = os.getenv("DATABASE_PATH")
-
-            print("Trying to open db - " + Utilities.DBPATH)
-            Utilities.db = Database(Utilities.DBPATH)
         return Utilities.__instance
 
     def __init__(self):
-        if Utilities.__instance != None:
+        if Utilities.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
             Utilities.__instance = self
+            self.TOKEN = discord_token
+            self.GUILD = discord_guild
+            self.YOUTUBE_API_KEY = youtube_api_key
+            self.DB_PATH = database_path
 
-    def tds(self, s):
-        """Make a timedelta object of s seconds"""
-        return timedelta(seconds=s)
+            self.youtube = get_youtube_api(
+                youtube_api_service_name,
+                youtube_api_version,
+                developerKey=self.YOUTUBE_API_KEY,
+            )
+
+            print("Trying to open db - " + self.DB_PATH)
+            self.db = Database(self.DB_PATH)
 
     def check_for_new_youtube_comments(self):
         """Consider getting the latest comments from the channel
@@ -68,32 +80,21 @@ class Utilities:
         Returns [] if it checked and there are no new ones
         Returns None if it didn't check because it's too soon to check again"""
 
-        # print("Checking for new YT comments")
-
         now = datetime.now(timezone.utc)
 
-        # print("It has been this long since I last called the YT API: " + str(now - self.lastcheckts))
-        # print("Current cooldown is: " + str(self.ytcooldown))
-        if (now - self.lastcheckts) > self.ytcooldown:
+        if (now - self.last_check_timestamp) > self.youtube_cool_down:
             print("Hitting YT API")
-            self.lastcheckts = now
+            self.last_check_timestamp = now
         else:
             print(
-                "YT waiting >%s\t- " % str(self.ytcooldown - (now - self.lastcheckts)),
+                "YT waiting >%s\t- "
+                % str(self.youtube_cool_down - (now - self.last_check_timestamp)),
                 end="",
             )
             return None
 
-        api_service_name = "youtube"
-        api_version = "v3"
-        DEVELOPER_KEY = self.YTAPIKEY
-
-        youtube = get_youtube_api(
-            api_service_name, api_version, developerKey=DEVELOPER_KEY
-        )
-
-        request = youtube.commentThreads().list(
-            part="snippet", allThreadsRelatedToChannelId="UCLB7AzTwc6VFZrBsO2ucBMg"
+        request = self.youtube.commentThreads().list(
+            part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
         )
         response = request.execute()
 
@@ -101,80 +102,85 @@ class Utilities:
         if not items:
             print("YT comment checking broke. I got this response:")
             print(response)
-            self.ytcooldown = self.ytcooldown * 10  # something broke, slow way down
+            self.youtube_cool_down = (
+                self.youtube_cool_down * 10
+            )  # something broke, slow way down
             return None
 
-        newestts = self.latestcommentts
+        newest_timestamp = self.latest_comment_timestamp
 
-        newitems = []
+        new_items = []
         for item in items:
             # Find when the comment was published
-            pubTsStr = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
+            timestamp = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
             # For some reason fromisoformat() doesn't like the trailing 'Z' on timestmaps
             # And we add the "+00:00" so it knows to use UTC
-            pubTs = datetime.fromisoformat(pubTsStr[:-1] + "+00:00")
+            published_timestamp = datetime.fromisoformat(timestamp[:-1] + "+00:00")
 
             # If this comment is newer than the newest one from last time we called API, keep it
-            if pubTs > self.latestcommentts:
-                newitems.append(item)
+            if published_timestamp > self.latest_comment_timestamp:
+                new_items.append(item)
 
             # Keep track of which is the newest in this API call
-            if pubTs > newestts:
-                newestts = pubTs
+            if published_timestamp > newest_timestamp:
+                newest_timestamp = published_timestamp
 
-        print("Got %s items, most recent published at %s" % (len(items), newestts))
+        print(
+            "Got %s items, most recent published at %s" % (len(items), newest_timestamp)
+        )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
-        self.latestcommentts = newestts
+        self.latest_comment_timestamp = newest_timestamp
 
-        newcomments = []
-        for item in newitems:
-            videoId = item["snippet"]["topLevelComment"]["snippet"]["videoId"]
-            commentId = item["snippet"]["topLevelComment"]["id"]
-            username = item["snippet"]["topLevelComment"]["snippet"][
-                "authorDisplayName"
-            ]
-            text = item["snippet"]["topLevelComment"]["snippet"]["textOriginal"]
-            # print("dsiplay text:" + item['snippet']['topLevelComment']['snippet']['textDisplay'])
-            # print("original text:" + item['snippet']['topLevelComment']['snippet']['textOriginal'])
-
+        new_comments = []
+        for item in new_items:
+            top_level_comment = item["snippet"]["topLevelComment"]
+            video_id = top_level_comment["snippet"]["videoId"]
+            comment_id = top_level_comment["id"]
+            username = top_level_comment["snippet"]["authorDisplayName"]
+            text = top_level_comment["snippet"]["textOriginal"]
             comment = {
                 "url": "https://www.youtube.com/watch?v=%s&lc=%s"
-                % (videoId, commentId),
+                % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
             }
 
-            newcomments.append(comment)
+            new_comments.append(comment)
 
-        print("Got %d new comments since last check" % len(newcomments))
+        print("Got %d new comments since last check" % len(new_comments))
 
-        if not newcomments:
+        if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.ytcooldown = min(self.ytcooldown * 2, self.tds(1200))
-            print("No new comments, increasing cooldown timer to %s" % self.ytcooldown)
+            self.youtube_cool_down = min(
+                self.youtube_cool_down * 2, timedelta(seconds=1200)
+            )
+            print(
+                "No new comments, increasing cooldown timer to %s"
+                % self.youtube_cool_down
+            )
 
-        return newcomments
+        return new_comments
 
     def get_latest_question(self):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
 
-        comment = self.getNextQuestion("text,username,title,url")
+        comment = self.get_next_question("text,username,title,url")
 
-        commentdict = {
+        comment_dict = {
             "text": comment[0],
             "username": comment[1],
             "title": comment[2],
             "url": comment[3],
         }
-        self.latestquestionposted = commentdict
+        self.latest_question_posted = comment_dict
 
         text = comment[0]
         if len(text) > 1500:
             text = text[:1500] + " [truncated]"
-        textquoted = "> " + "\n> ".join(text.split("\n"))
+        text_quoted = "> " + "\n> ".join(text.split("\n"))
 
         title = comment[2]
         if title:
@@ -183,7 +189,7 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment[1], comment[2], textquoted, comment[3])
+            ).format(comment[1], comment[2], text_quoted, comment[3])
 
         else:
             report = (
@@ -191,24 +197,26 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment[1], comment[2], textquoted, comment[3])
+            ).format(comment[1], comment[2], text_quoted, comment[3])
 
         print("==========================")
         print(report)
         print("==========================")
 
-        self.lastqaskts = datetime.now(timezone.utc)  # reset the question waiting timer
+        self.last_question_asked_timestamp = datetime.now(
+            timezone.utc
+        )  # reset the question waiting timer
 
         # mark it in the database as having been asked
-        self.setQuestionAsked(commentdict["url"])
+        self.set_question_asked(comment_dict["url"])
 
         return report
 
-    def getQuestionCount(self):
+    def get_question_count(self):
         query = "SELECT COUNT(*) FROM questions"
         return self.db.query(query)[0][0]
 
-    def clearVotes(self):
+    def clear_votes(self):
         query = "DELETE FROM uservotes"
         self.db.query(query)
         self.db.commit()
@@ -245,65 +253,75 @@ class Utilities:
         else:
             return 0.0
 
-    def addVote(self, user, votedFor, voteQty):
-        query = """INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount FROM uservotes WHERE user = {0}  
-                AND votedFor = {1}),0)+{2})""".format(
-            user, votedFor, voteQty
+    def add_vote(self, user, voted_for, vote_quantity):
+        query = (
+            "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount "
+            "FROM uservotes WHERE user = {0} AND votedFor = {1}),0)+{2})".format(
+                user, voted_for, vote_quantity
+            )
         )
         self.db.query(query)
         self.db.commit()
 
-    def getVotesByUser(self, user):
+    def get_votes_by_user(self, user):
         query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
             user
         )
         return self.db.query(query)[0][0]
 
-    def getVotesForUser(self, user):
+    def get_votes_for_user(self, user):
         query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(
             user
         )
         return self.db.query(query)[0][0]
 
-    def getTotalVotes(self):
+    def get_total_votes(self):
         query = "SELECT sum(votecount) from uservotes where user is not 0"
         return self.db.query(query)[0][0]
 
-    def getAllUserVotes(self):
+    def get_all_user_votes(self):
         return self.db.get("uservotes", "user,votedFor,votecount")
 
-    def getUsers(self):
+    def get_users(self):
         query = "SELECT user from (SELECT user FROM uservotes UNION SELECT votedFor as user FROM uservotes)"
         result = self.db.query(query)
         users = [item for sublist in result for item in sublist]
         return users
 
-    def addQuestion(self, url, username, title, text):
+    def add_question(self, url, username, title, text):
         self.db.query(
             "INSERT INTO questions VALUES (?,?,?,?,?)",
             (url, username, title, text, False),
         )
         self.db.commit()
 
-    # Kind of a hack, using the table param for the where clause
-    # TODO: Fix this crap
-    def getNextQuestion(self, columns="*"):
+    def get_next_question(self, columns="*"):
         return self.db.getLast(
             "questions WHERE replied=False AND asked=False ORDER BY rowid DESC", columns
         )
 
     # TODO: see above
-    def getRandomQuestion(self, columns="*"):
+    def get_random_question(self, columns="*"):
         return self.db.getLast(
             "questions WHERE replied=False AND asked=False ORDER BY RANDOM()", columns
         )
 
-    def setQuestionReplied(self, url):
+    def set_question_replied(self, url):
         self.db.query('UPDATE questions SET replied = True WHERE url="{0}"'.format(url))
         self.db.commit()
         return True
 
-    def setQuestionAsked(self, url):
+    def set_question_asked(self, url):
         self.db.query('UPDATE questions SET asked = True WHERE url="{0}"'.format(url))
         self.db.commit()
         return True
+
+
+load_dotenv()
+
+intents = discord.Intents.default()
+intents.members = True
+client = discord.Client(intents=intents)
+
+utils = Utilities.get_instance()
+utils.client = client

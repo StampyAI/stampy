@@ -1,5 +1,5 @@
 import re
-from module import Module
+from modules.module import Module
 
 
 class QQManager(Module):
@@ -15,12 +15,11 @@ class QQManager(Module):
     def canProcessMessage(self, message, client=None):
         if self.isatme(message):
             text = self.isatme(message)
-
             if re.match(
-                r"([hH]ow many questions (are (there )?)?(left )?in|[hH]ow (long is|long's)) (the|your)( question)? queue( now)?\??",
+                r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow (long is|long's)) (the|your)( question)? queue( now)?\??",
                 text,
             ):
-                qq = self.utils.getQuestionCount()
+                qq = self.utils.get_question_count()
                 if qq:
                     if qq == 1:
                         result = "There's one question in the queue"
