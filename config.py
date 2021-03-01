@@ -3,7 +3,11 @@ import os
 subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
+rob_id = "181142785259208704"
+stampy_id = "736241264856662038"
+god_id = "0"
 rob_miles_youtube_channel_id = "UCLB7AzTwc6VFZrBsO2ucBMg"
+stampy_youtube_channel_id = "UCFDiTXRowzFvh81VOsnf5wg"
 
 discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
