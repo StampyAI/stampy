@@ -18,7 +18,7 @@ class VideoSearch(Module):
         )
         self.subsdir = subs_dir
         self.videos = []
-        self.loadvideos()
+        self.load_videos()
 
     class Video:
         def __init__(self, title, stub, text="", description=""):
@@ -38,13 +38,16 @@ class VideoSearch(Module):
         def __str__(self):
             return self.__repr__()
 
-    def processvttfile(self, vttfilename):
-        with open(vttfilename) as vttfile:
+    @staticmethod
+    def process_vtt_file(vtt_file_name):
+        with open(vtt_file_name) as vtt_file:
             lines = []
-            for line in vttfile.readlines():
-                m = re.search(r"<[^>]*>", line)
-                if m:
-                    timestamp = m.group(0)  # the timestamp for the start of the line
+            for line in vtt_file.readlines():
+                regex_matches = re.search(r"<[^>]*>", line)
+                if regex_matches:
+                    timestamp = regex_matches.group(
+                        0
+                    )  # the timestamp for the start of the line
 
                     # remove the brackets, leading zeros, and milliseconds
                     # 00:10:17.630 becomes 10:17
@@ -55,39 +58,46 @@ class VideoSearch(Module):
                     lines.append(timestamp + "|" + pline)
         return "\n".join(lines)
 
-    def loadvideos(self):
+    def load_videos(self):
         for entry in os.scandir(self.subsdir):
             if entry.name.endswith(".en.vtt"):
-                m = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
-                title = m.group(1)
-                stub = m.group(2)
+                vtt_groups = re.match(
+                    r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name
+                )
+                title = vtt_groups.group(1)
+                stub = vtt_groups.group(2)
 
-                text = self.processvttfile(entry.path)
+                text = self.process_vtt_file(entry.path)
 
-                descriptionfilename = title + "-" + stub + ".description"
-                descriptionfilepath = os.path.join(self.subsdir, descriptionfilename)
-                if os.path.exists(descriptionfilepath):
-                    description = open(descriptionfilepath).read()
+                description_filename = title + "-" + stub + ".description"
+                description_filepath = os.path.join(self.subsdir, description_filename)
+                if os.path.exists(description_filepath):
+                    description = open(description_filepath).read()
                 else:
                     description = ""
 
                 video = self.Video(title, stub, text, description)
                 self.videos.append(video)
 
-    def extractkeywords(self, query):
-        boringwords = """
-	a about all also am an and any as at back be because but by can come could do does did for from get go have he her him his how i if in is into it its just like make me my no not now of on one only or our out over say see she so some take than that the their them then there these they this time to up us use was we what when which who will with would your know find where something
-	name remember video talk talked talking talks rob robert
-	""".split()
-        boringwords = [w.strip() for w in boringwords]
+    @staticmethod
+    def extract_keywords(query):
+        boring_words = """
+            a about all also am an and any as at back be because but 
+            by can come could do does did for from get go have he her 
+            him his how i if in is into it its just like make me my no 
+            not now of on one only or our out over say see she so some 
+            take than that the their them then there these they this 
+            time to up us use was we what when which who will with would 
+            your know find where something name remember video talk talked 
+            talking talks rob robert""".split()
+        boring_words = [w.strip() for w in boring_words]
 
         keywords = query.lower().split()
-        keywords = [w.strip("\"'?.,!") for w in keywords if w not in boringwords]
+        keywords = [w.strip("\"'?.,!") for w in keywords if w not in boring_words]
         return keywords
 
-    def sortbyrelevance(self, videos, searchstring, reverse=False):
-        query = searchstring
-        keywords = self.extractkeywords(searchstring)
+    def sort_by_relevance(self, videos, search_string, reverse=False):
+        keywords = self.extract_keywords(search_string)
         print('Video Keywords:, "%s"' % keywords)
 
         for video in videos:
@@ -111,11 +121,11 @@ class VideoSearch(Module):
         return sorted(videos, key=(lambda v: v.score), reverse=reverse)
 
     def search(self, query):
-        result = self.sortbyrelevance(self.videos, query, reverse=True)
+        result = self.sort_by_relevance(self.videos, query, reverse=True)
         print("Search Result:", result)
 
-        bestscore = result[0].score
-        if bestscore == 0:
+        best_score = result[0].score
+        if best_score == 0:
             return []
 
         matches = [result[0]]
@@ -123,27 +133,27 @@ class VideoSearch(Module):
         for r in result[1:10]:
             if r.score > 0:
                 print(r)
-            if r.score > (bestscore / 2.0):
+            if r.score > (best_score / 2.0):
                 matches.append(r)
-
         return matches
 
-    def canProcessMessage(self, message, client=None):
-        if self.isatme(message):
-            text = self.isatme(message)
+    def can_process_message(self, message, client=None):
+        if self.is_at_me(message):
+            text = self.is_at_me(message)
 
             m = re.match(self.re_search, text)
             if m:
-                return (9, "")
+                return 9, ""
 
         # This is either not at me, or not something we can handle
-        return (0, "")
+        return 0, ""
 
-    def conversationalise(self, result):
+    @staticmethod
+    def list_relevant_videos(result):
         video = result[0]
-        videodesc = '"%s" %s' % (video.title, video.url)
+        video_description = '"%s" %s' % (video.title, video.url)
 
-        reply = "This video seems relevant:\n" + videodesc
+        reply = "This video seems relevant:\n" + video_description
 
         if len(result) > 1:
             reply += "\nIt could also be:\n"
@@ -152,52 +162,23 @@ class VideoSearch(Module):
 
         return reply
 
-    async def processMessage(self, message, client=None):
-        if self.isatme(message):
-            text = self.isatme(message)
+    async def process_message(self, message, client=None):
+        if self.is_at_me(message):
+            text = self.is_at_me(message)
 
-            m = re.match(self.re_search, text)
-            if m:
-                query = m.group("query")
+            regex_match = re.match(self.re_search, text)
+            if regex_match:
+                query = regex_match.group("query")
                 print('Video Query is:, "%s"' % query)
                 result = self.search(query)
                 if result:
                     print("Result:", result)
-                    return (10, self.conversationalise(result))
+                    return 10, self.list_relevant_videos(result)
                 else:
-                    return (8, "No matches found")
+                    return 8, "No matches found"
             else:
                 print("Shouldn't be able to get here")
-                return (0, "")
+                return 0, ""
 
     def __str__(self):
         return "Video Search Manager"
-
-
-if __name__ == "__main__":
-
-    module = VideoSearch()
-
-    while True:
-        query = input()
-        print(module.search(query))
-
-    exit()
-
-    takenextline = False
-    timestamp = "00:00"
-    prevline = ""
-
-    with open(sys.argv[1]) as vttfile:
-        for line in vttfile.readlines():
-            m = re.search(r"<[^>]*>", line)
-            if m:
-                timestamp = m.group(0)  # the timestamp for the start of the line
-
-                # remove the brackets, leading zeros, and milliseconds
-                # 00:10:17.630 becomes 10:17
-                timestamp = timestamp.lstrip("0<>").lstrip(":").partition(".")[0]
-
-                # strip out all the html tags from the line
-                pline = re.sub(r"<[^>]*>", "", line.strip())
-                print(timestamp + "|" + pline)

@@ -11,12 +11,11 @@ class CommentPoster(object):
     utils = None
 
     def __init__(self):
-        self.utils = self.utils = Utilities.getInstance()
+        self.utils = self.utils = Utilities.get_instance()
         scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"]
-        # scopes = ["https://www.googleapis.com/auth/youtube"]
         api_service_name = "youtube"
         api_version = "v3"
-        client_secrets_file = self.utils.YTAPIKEY
+        client_secrets_file = self.utils.YOUTUBE_API_KEY
 
         # Get credentials and create an API client
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
@@ -27,8 +26,8 @@ class CommentPoster(object):
             api_service_name, api_version, credentials=credentials
         )
 
-    def postcomment(self, commentbody):
-        request = self.youtube.comments().insert(part="snippet", body=commentbody)
+    def post_comment(self, comment_body):
+        request = self.youtube.comments().insert(part="snippet", body=comment_body)
 
         try:
             response = request.execute()
@@ -41,53 +40,29 @@ class CommentPoster(object):
         return response
 
     def run(self):
-        topost = []
         while True:
             time.sleep(1)
-            with open("topost.json") as postfile:
+            with open("database/topost.json") as post_file:
                 try:
-                    topost = json.load(postfile)
+                    top_post = json.load(post_file)
                 except json.decoder.JSONDecodeError:
-                    topost = []
+                    top_post = []
 
-            if topost:
-                print("topost:", topost)
+            if top_post:
+                print("top_post:", top_post)
             else:
                 print(".", end="")
                 sys.stdout.flush()
 
-            if topost:
-                body = topost.pop()
+            if top_post:
+                body = top_post.pop()
 
-                response = self.postcomment(body)
+                self.post_comment(body)
 
             with open(
-                "topost.json", "w"
-            ) as postfile:  # we modified the queue, put the rest back, if any
-                json.dump(topost, postfile, indent="\t")
-
-        # body = {
-        #   "snippet": {
-        #     "parentId": "Ugx2FUdOI6GuxSBkOQd4AaABAg",
-        #     "textOriginal": "This is comment 23",
-        #     "authorChannelId": {
-        #       "value": "UCFDiTXRowzFvh81VOsnf5wg"
-        #     }
-        #   }
-        # }
-
-
-# [{'snippet': {'parentId': 'Ugx2FUdOI6GuxSBkOQd4AaABAg', 'textOriginal': 'This is comment 24', 'authorChannelId': {'value': 'UCFDiTXRowzFvh81VOsnf5wg'}}}]
-# {
-#           "snippet": {
-#             "parentId": "Ugx2FUdOI6GuxSBkOQd4AaABAg",
-#             "textOriginal": "This is comment 23",
-#             "authorChannelId": {
-#               "value": "UCFDiTXRowzFvh81VOsnf5wg"
-#             }
-#           }
-#         }
-# self.postcomment(body)
+                "database/topost.json", "w"
+            ) as post_file:  # we modified the queue, put the rest back, if any
+                json.dump(top_post, post_file, indent="\t")
 
 
 if __name__ == "__main__":

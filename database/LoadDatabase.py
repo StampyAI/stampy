@@ -2,33 +2,25 @@ import json
 import utilities
 
 
-def dropTables():
-    try:
-        db.query("drop table questions")
-    except:
-        pass
-    try:
-        db.query("drop table users")
-    except:
-        pass
-    try:
-        db.query("drop table uservotes")
-    except:
-        pass
+def drop_tables():
+    db.query("drop table questions")
+    db.query("drop table users")
+    db.query("drop table uservotes")
     db.commit()
 
 
-def createTables():
+def create_tables():
     db.query(
-        """CREATE TABLE questions (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING, text STRING, replied BOOL DEFAULT false);"""
+        "CREATE TABLE questions (url STRING NOT NULL PRIMARY KEY, username "
+        "STRING, title STRING, text STRING, replied BOOL DEFAULT false);"
     )
-    # db.query("""CREATE TABLE users (user INT NOT NULL PRIMARY KEY, votecount INT DEFAULT 0);""")
     db.query(
-        """CREATE TABLE uservotes (user INT NOT NULL, votedFor INT NOT NULL, votecount INT DEFAULT 1, PRIMARY KEY(user,votedFor))"""
+        "CREATE TABLE uservotes (user INT NOT NULL, votedFor INT NOT "
+        "NULL, votecount INT DEFAULT 1, PRIMARY KEY(user,votedFor))"
     )
 
 
-def loadQuestions(file):
+def load_questions(file):
     with open(file) as qqfile:
         qq = json.load(qqfile)
 
@@ -45,15 +37,11 @@ def loadQuestions(file):
             "INSERT INTO questions VALUES (?,?,?,?,?,?,?);",
             (url, username, title, text, False, False, None),
         )
-        # try:
-        #    break
-        # except:
-        #    print("Error inserting question - ", sys.exc_info()[0])
 
     db.commit()
 
 
-def loadUsers(file):
+def load_users(file):
     with open(file) as usersFile:
         users = json.load(usersFile)
 
@@ -61,14 +49,14 @@ def loadUsers(file):
 
     for i in users:
         user = users[i]
-        votecount = user["votecount"]
+        vote_count = user["votecount"]
         print("Loading user vote for " + i)
-        db.query("INSERT INTO users VALUES (?,?)", (i, votecount))
+        db.query("INSERT INTO users VALUES (?,?)", (i, vote_count))
 
     db.commit()
 
 
-def loadVotes(file):
+def load_votes(file):
     with open(file) as usersFile:
         users = json.load(usersFile)
 
@@ -92,26 +80,4 @@ def loadVotes(file):
 util = utilities.Utilities.get_instance()
 db = util.db
 
-# util.getDatabase("stampy.db")
 print(util.db.connected)
-
-
-# dropTables()
-# createTables()
-# loadQuestions("qq.json")
-# loadUsers("stamps.json") #load users is no longer required, unless we need the user table to track other stuff. We can just use uservotes
-# loadVotes("stamps.json")
-
-# q = util.getNextQuestion("url")
-
-# print(q[0])
-
-# v = util.getVotes(181142785259208704)
-
-# print(v)
-
-# util.setQuestionReplied(q[0])
-# util.addVote(123,2) #add votes some random users who dont already exist
-
-# print(util.getNextQuestion("*"))
-# print(util.getRandomQuestion("text"))

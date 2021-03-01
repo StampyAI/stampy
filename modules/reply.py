@@ -2,6 +2,7 @@ import re
 import json
 import discord
 from modules.module import Module
+from config import stampy_youtube_channel_id
 
 
 class Reply(Module):
@@ -11,7 +12,8 @@ class Reply(Module):
     def __init__(self):
         Module.__init__(self)
 
-    def isPostRequest(self, text):
+    @staticmethod
+    def is_post_request(text):
         """Is this message asking us to post a reply?"""
         print(text)
         if text:
@@ -21,86 +23,89 @@ class Reply(Module):
         else:
             return False
 
-    def isAllowed(self, message, client):
+    @staticmethod
+    def is_allowed(message):
         """[Deprecated] Is the message author authorised to make stampy post replies?"""
-        postingrole = discord.utils.find(
+        posting_role = discord.utils.find(
             lambda r: r.name == "poaster", message.guild.roles
         )
-        return postingrole in message.author.roles
+        return posting_role in message.author.roles
 
-    def extractReply(self, text):
+    @staticmethod
+    def extract_reply(text):
         """Pull the text of the reply out of the message"""
         lines = text.split("\n")
-        replymessage = ""
+        reply_message = ""
         for line in lines:
             # pull out the quote syntax "> " and a user if there is one
-            match = re.match("([^#]+#\d\d\d\d )?> (.*)", line)
+            match = re.match(r"([^#]+#\d\d\d\d )?> (.*)", line)
             if match:
-                replymessage += match.group(2) + "\n"
+                reply_message += match.group(2) + "\n"
 
-        return replymessage
+        return reply_message
 
-    def postReply(self, text, questionid):
+    @staticmethod
+    def post_reply(text, question_id):
         """Actually post the reply to YouTube. Currently this involves a horrible hack"""
 
         # first build the dictionary that will be passed to youtube.comments().insert as the 'body' arg
         body = {
             "snippet": {
-                "parentId": questionid,
+                "parentId": question_id,
                 "textOriginal": text,
-                "authorChannelId": {"value": "UCFDiTXRowzFvh81VOsnf5wg"},
+                "authorChannelId": {"value": stampy_youtube_channel_id},
             }
         }
 
         # now we're going to put it in a json file, which CommentPoster.py will read and send it
-        with open("topost.json") as postfile:
-            topost = json.load(postfile)
+        with open("../database/topost.json") as postfile:
+            top_post = json.load(postfile)
 
-        topost.append(body)
+        top_post.append(body)
 
-        with open("topost.json", "w") as postfile:
-            json.dump(topost, postfile, indent="\t")
+        with open("../database/topost.json", "w") as postfile:
+            json.dump(top_post, postfile, indent="\t")
 
-        print("dummy, posting %s to %s" % (text, questionid))
+        print("dummy, posting %s to %s" % (text, question_id))
 
-    def canProcessMessage(self, message, client=None):
+    def can_process_message(self, message, client=None):
         """From the Module() Interface. Is this a message we can process?"""
-        if self.isatme(message):
-            text = self.isatme(message)
+        if self.is_at_me(message):
+            text = self.is_at_me(message)
 
-            if self.isPostRequest(text):
+            if self.is_post_request(text):
                 print("this is a posting request")
                 # if self.isAllowed(message, client):
                 #   print("the user is allowed")
                 #   return (9, "")
                 # else:
                 #   return (9, "Only people with the `poaster` role can do that")
-                return (9, "Ok, I'll post this when it has more than 30 stamp points")
+                return 9, "Ok, I'll post this when it has more than 30 stamp points"
 
-        return (0, "")
+        return 0, ""
 
-    async def processMessage(self, message, client):
+    async def process_message(self, message, client=None):
         """From the Module() Interface. Handle a reply posting request message"""
-        return (0, "")
+        return 0, ""
 
-    async def postMessage(self, message, approvers=[]):
+    async def post_message(self, message, approvers=None):
 
         approvers.append(message.author)
         approvers = [a.name for a in approvers]
         approvers = list(set(approvers))  # deduplicate
 
         if len(approvers) == 1:
-            approverstring = approvers[0]
+            approver_string = approvers[0]
         elif len(approvers) == 2:
-            approverstring = " and ".join(approvers)
+            approver_string = " and ".join(approvers)
         else:
             approvers[-1] = "and " + approvers[-1]
-            approverstring = ", ".join(approvers)  # oxford comma baybee
+            approver_string = ", ".join(approvers)  # oxford comma baybee
 
-        text = self.isatme(message)  # strip off stampy's name
-        replymessage = self.extractReply(text)
-        replymessage += (
-            "\n -- _I am a bot. This reply was approved by %s_" % approverstring
+        text = self.is_at_me(message)  # strip off stampy's name
+        reply_message = self.extract_reply(text)
+        reply_message += (
+            "\n -- _I am a bot. This reply was approved by %s_" % approver_string
         )
 
         report = ""
@@ -109,34 +114,37 @@ class Reply(Module):
             reference = await message.channel.fetch_message(
                 message.reference.message_id
             )
-            reftext = reference.clean_content
-            questionURL = reftext.split("\n")[-1].strip("<> \n")
-            if "youtube.com" not in questionURL:
+            reference_text = reference.clean_content
+            question_url = reference_text.split("\n")[-1].strip("<> \n")
+            if "youtube.com" not in question_url:
                 return "I'm confused about what YouTube comment to reply to..."
         else:
             if not self.utils.latest_question_posted:
-                # return (10, "I can't do that because I don't remember the URL of the last question I posted here. I've probably been restarted since that happened")
-                report = "I don't remember the URL of the last question I posted here, so I've probably been restarted since that happened. I'll just post to the dummy thread instead...\n\n"
+                report = (
+                    "I don't remember the URL of the last question I posted here,"
+                    " so I've probably been restarted since that happened. I'll just"
+                    " post to the dummy thread instead...\n\n"
+                )
                 self.utils.latest_question_posted = {
                     "url": "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
                 }  # use the dummy thread
 
-            questionURL = self.utils.latest_question_posted["url"]
+            question_url = self.utils.latest_question_posted["url"]
 
-        questionid = re.match(r".*lc=([^&]+)", questionURL).group(1)
+        question_id = re.match(r".*lc=([^&]+)", question_url).group(1)
 
-        quotedreplymessage = "> " + replymessage.replace("\n", "\n> ")
+        quoted_reply_message = "> " + reply_message.replace("\n", "\n> ")
         report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (
-            quotedreplymessage,
-            questionURL,
+            quoted_reply_message,
+            question_url,
         )
 
-        self.postReply(replymessage, questionid)
+        self.post_reply(reply_message, question_id)
 
         return report
 
-    async def evaluateMessageStamps(self, message):
-        "Return the total stamp value of all the stamps on this message, and a list of who approved it"
+    async def evaluate_message_stamps(self, message):
+        """Return the total stamp value of all the stamps on this message, and a list of who approved it"""
         total = 0
         print("Evaluating message")
 
@@ -146,8 +154,8 @@ class Reply(Module):
         if reactions:
             print(reactions)
             for reaction in reactions:
-                reacttype = getattr(reaction.emoji, "name", "")
-                if reacttype in ["stamp", "goldstamp"]:
+                reaction_type = getattr(reaction.emoji, "name", "")
+                if reaction_type in ["stamp", "goldstamp"]:
                     print("STAMP")
                     users = await reaction.users().flatten()
                     for user in users:
@@ -159,9 +167,10 @@ class Reply(Module):
                         total += stampvalue
                         print("  Worth", stampvalue)
 
-        return (total, approvers)
+        return total, approvers
 
-    def hasBeenRepliedTo(self, message):
+    @staticmethod
+    def has_been_replied_to(message):
         reactions = message.reactions
         print("Testing if question has already been replied to")
         print("The message has these reactions:", reactions)
@@ -179,8 +188,7 @@ class Reply(Module):
         print("Message has no envelope emoji, it has not already replied to")
         return False
 
-    async def processRawReactionEvent(self, event, client=None):
-        eventtype = event.event_type
+    async def process_raw_reaction_event(self, event, client=None):
         emoji = getattr(event.emoji, "name", event.emoji)
 
         if emoji in ["stamp", "goldstamp"]:
@@ -192,19 +200,14 @@ class Reply(Module):
                 lambda c: c.id == event.channel_id, guild.channels
             )
             message = await channel.fetch_message(event.message_id)
-            if self.isatme(message) and self.isPostRequest(self.isatme(message)):
-                #   self.maybePostMessage(message)
+            if self.is_at_me(message) and self.is_post_request(self.is_at_me(message)):
 
-                # print("isatme:", isatme(message))
-                # print("isPostRequest", self.isPostRequest(isatme(message)))
-                # print(await self.evaluateMessageStamps(message))
-
-                if self.hasBeenRepliedTo(message):  # did we already reply?
+                if self.has_been_replied_to(message):  # did we already reply?
                     return
 
-                stampscore, approvers = await self.evaluateMessageStamps(message)
-                if stampscore > 30:
-                    report = await self.postMessage(message, approvers)
+                stamp_score, approvers = await self.evaluate_message_stamps(message)
+                if stamp_score > 30:
+                    report = await self.post_message(message, approvers)
                     await message.add_reaction(
                         "📨"
                     )  # mark it with an envelope to show it was sent
@@ -212,30 +215,6 @@ class Reply(Module):
                 else:
                     report = (
                         "This reply has %s stamp points. I will send it when it has 30"
-                        % stampscore
+                        % stamp_score
                     )
                     await channel.send(report)
-
-        # if message.author.id == 736241264856662038:  # votes for stampy don't affect voting
-        #   return
-        # if message.author.id == event.user_id:  # votes for yourself don't affect voting
-        #   if eventtype == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
-        #       await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
-        #   return
-
-        # if emoji in ['stamp', 'goldstamp']:
-
-        #   msgid = event.message_id
-        #   fromid = event.user_id
-        #   toid = message.author.id
-        #   # print(msgid, re)
-        #   string = "%s,%s,%s,%s" % (msgid, emoji, fromid, toid)
-        #   print(string)
-
-        #   print("### STAMP AWARDED ###")
-        #   self.addvote(emoji, fromid, toid, negative=(eventtype=='REACTION_REMOVE'))
-        #   self.save_votesdict_to_json()
-        #   print("Score before stamp:", self.get_user_stamps(toid))
-        #   self.calculate_stamps()
-        #   print("Score after stamp:", self.get_user_stamps(toid))
-        #   # "msgid,type,from,to"

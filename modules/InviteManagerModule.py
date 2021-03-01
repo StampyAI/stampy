@@ -15,9 +15,9 @@ class InviteManagerModule(Module):
             " joined the server, or you've already been given an invite this week"
         )
 
-    def canProcessMessage(self, message, client=None):
-        if self.isatme(message):
-            text = self.isatme(message)
+    def can_process_message(self, message, client=None):
+        if self.is_at_me(message):
+            text = self.is_at_me(message)
 
             m = re.match(self.re_request, text)
             if m:
@@ -32,9 +32,9 @@ class InviteManagerModule(Module):
         # This is either not at me, or not something we can handle
         return 0, ""
 
-    async def processMessage(self, message, client=None):
+    async def process_message(self, message, client=None):
         """Generate and send an invite, if user is allowed"""
-        text = self.isatme(message)
+        text = self.is_at_me(message)
 
         m = re.match(
             self.re_request, text

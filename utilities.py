@@ -296,13 +296,13 @@ class Utilities:
         self.db.commit()
 
     def get_next_question(self, columns="*"):
-        return self.db.getLast(
+        return self.db.get_last(
             "questions WHERE replied=False AND asked=False ORDER BY rowid DESC", columns
         )
 
     # TODO: see above
     def get_random_question(self, columns="*"):
-        return self.db.getLast(
+        return self.db.get_last(
             "questions WHERE replied=False AND asked=False ORDER BY RANDOM()", columns
         )
 

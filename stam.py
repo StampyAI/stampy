@@ -3,11 +3,11 @@ import discord
 import traceback
 import unicodedata
 from modules.reply import Reply
-from config import discord_token
 from modules.module import Module
 from utilities import client, utils
 from modules.questions import QQManager
 from modules.sentience import sentience
+from config import discord_token, rob_id
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
@@ -70,10 +70,7 @@ async def on_message(message):
         else:
             response = "This is not a reply"
         await message.channel.send(response)
-    if (
-        message.content == "resetinviteroles"
-        and message.author.id == 181142785259208704
-    ):
+    if message.content == "resetinviteroles" and message.author.id == int(rob_id):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
         guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
@@ -94,12 +91,12 @@ async def on_message(message):
         return
 
     # What are the options for responding to this message?
-    # Prepopulate with a dummy module, with 0 confidence about its proposed response of ""
+    # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
     options = [(Module(), 0, "")]
 
     for module in modules:
         print("Asking module: %s" % str(module))
-        output = module.canProcessMessage(message, client)
+        output = module.can_process_message(message, client)
         print("output is", output)
         confidence, result = output
         if confidence > 0:
@@ -111,7 +108,7 @@ async def on_message(message):
     module, confidence, result = options[0]
 
     if confidence > 0:  # if the module had some confidence it could reply
-        if not result:  # but didn't reply in canProcessMessage()
+        if not result:  # but didn't reply in can_process_message()
             confidence, result = await module.processMessage(message, client)
 
     if not result:  # no results from the modules, try the sentience core
@@ -149,11 +146,11 @@ async def on_socket_raw_receive(msg):
     Rate limit these things, because this function might be firing a lot"""
 
     # never fire more than once a second
-
     tick_cool_down = timedelta(seconds=1)
     now = datetime.now(timezone.utc)
 
     if (now - utils.last_timestamp) > tick_cool_down:
+        print(msg)
         print("|", end="")
         utils.last_timestamp = now
     else:
@@ -169,9 +166,9 @@ async def on_socket_raw_receive(msg):
     qq = utils.get_next_question("rowid")
     if qq:
         # ask a new question if it's been long enough since we last asked one
-        question_ask_cooldown = timedelta(hours=6)
+        question_ask_cool_down = timedelta(hours=6)
 
-        if (now - utils.last_question_asked_timestamp) > question_ask_cooldown:
+        if (now - utils.last_question_asked_timestamp) > question_ask_cool_down:
             if (
                 not utils.last_message_was_youtube_question
             ):  # Don't ask anything if the last thing posted in the chat was us asking a question
@@ -196,7 +193,7 @@ async def on_socket_raw_receive(msg):
                 % (
                     len(qq),
                     str(
-                        question_ask_cooldown
+                        question_ask_cool_down
                         - (now - utils.last_question_asked_timestamp)
                     ),
                 )
@@ -214,7 +211,7 @@ async def on_raw_reaction_add(payload):
     print(payload)
 
     for module in modules:
-        await module.processRawReactionEvent(payload, client)
+        await module.process_raw_reaction_event(payload, client)
 
 
 @client.event
@@ -223,7 +220,7 @@ async def on_raw_reaction_remove(payload):
     print(payload)
 
     for module in modules:
-        await module.processRawReactionEvent(payload, client)
+        await module.process_raw_reaction_event(payload, client)
 
 
 if __name__ == "__main__":
