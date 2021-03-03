@@ -88,9 +88,17 @@ class Utilities:
         api_version = "v3"
         DEVELOPER_KEY = self.YTAPIKEY
 
-        youtube = get_youtube_api(
-            api_service_name, api_version, developerKey=DEVELOPER_KEY
-        )
+        try:
+            youtube = get_youtube_api(
+                api_service_name, api_version, developerKey=DEVELOPER_KEY
+            )
+        except HttpError as e:
+            if DEVELOPER_KEY:
+                print("YouTube API Key is set but not correct")
+            else:
+                print("YouTube API Key is not set")
+            print(e)
+            return None
 
         request = youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId="UCLB7AzTwc6VFZrBsO2ucBMg"
