@@ -3,7 +3,7 @@ from database import Database
 from config import required_environment_variables
 from datetime import datetime, timezone, timedelta
 from googleapiclient.discovery import build as get_youtube_api
-
+from googleapiclient.errors import HttpError
 
 def check_environment(environment_variables):
     for env in environment_variables:
