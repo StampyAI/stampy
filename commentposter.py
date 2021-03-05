@@ -3,32 +3,26 @@ import json
 import sys
 import googleapiclient.errors
 from utilities import Utilities
-import google_auth_oauthlib.flow
-import googleapiclient.discovery
+import google_auth_oauthlib.flow as google_auth
+from googleapiclient.discovery import build as get_youtube_api
 
 
 class CommentPoster(object):
     utils = None
 
     def __init__(self):
-        self.utils = self.utils = Utilities.getInstance()
+        self.utils = self.utils = Utilities.get_instance()
         scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"]
-        # scopes = ["https://www.googleapis.com/auth/youtube"]
         api_service_name = "youtube"
         api_version = "v3"
-        client_secrets_file = self.utils.YTAPIKEY
 
         # Get credentials and create an API client
-        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file, scopes
-        )
+        flow = google_auth.InstalledAppFlow.from_client_secrets_file(self.utils.YOUTUBE_API_KEY, scopes)
         credentials = flow.run_console()
-        self.youtube = googleapiclient.discovery.build(
-            api_service_name, api_version, credentials=credentials
-        )
+        self.youtube = get_youtube_api(api_service_name, api_version, credentials=credentials)
 
-    def postcomment(self, commentbody):
-        request = self.youtube.comments().insert(part="snippet", body=commentbody)
+    def post_comment(self, comment_body):
+        request = self.youtube.comments().insert(part="snippet", body=comment_body)
 
         try:
             response = request.execute()
@@ -41,53 +35,28 @@ class CommentPoster(object):
         return response
 
     def run(self):
-        topost = []
         while True:
             time.sleep(1)
-            with open("topost.json") as postfile:
+            with open("database/topost.json") as post_file:
                 try:
-                    topost = json.load(postfile)
+                    responses_to_post = json.load(post_file)
                 except json.decoder.JSONDecodeError:
-                    topost = []
+                    responses_to_post = []
 
-            if topost:
-                print("topost:", topost)
+            if responses_to_post:
+                print("responses_to_post:", responses_to_post)
             else:
                 print(".", end="")
                 sys.stdout.flush()
 
-            if topost:
-                body = topost.pop()
+            if responses_to_post:
+                body = responses_to_post.pop()
 
-                response = self.postcomment(body)
+                self.post_comment(body)
 
-            with open(
-                "topost.json", "w"
-            ) as postfile:  # we modified the queue, put the rest back, if any
-                json.dump(topost, postfile, indent="\t")
-
-        # body = {
-        #   "snippet": {
-        #     "parentId": "Ugx2FUdOI6GuxSBkOQd4AaABAg",
-        #     "textOriginal": "This is comment 23",
-        #     "authorChannelId": {
-        #       "value": "UCFDiTXRowzFvh81VOsnf5wg"
-        #     }
-        #   }
-        # }
-
-
-# [{'snippet': {'parentId': 'Ugx2FUdOI6GuxSBkOQd4AaABAg', 'textOriginal': 'This is comment 24', 'authorChannelId': {'value': 'UCFDiTXRowzFvh81VOsnf5wg'}}}]
-# {
-#           "snippet": {
-#             "parentId": "Ugx2FUdOI6GuxSBkOQd4AaABAg",
-#             "textOriginal": "This is comment 23",
-#             "authorChannelId": {
-#               "value": "UCFDiTXRowzFvh81VOsnf5wg"
-#             }
-#           }
-#         }
-# self.postcomment(body)
+            with open("database/topost.json", "w") as post_file:
+                # we modified the queue, put the rest back, if any
+                json.dump(responses_to_post, post_file, indent="\t")
 
 
 if __name__ == "__main__":

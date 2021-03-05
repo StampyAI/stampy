@@ -6,6 +6,7 @@ dependencies:
   - numpy
   - sqlite
   - pip:
+    - black
     - discord-py
     - google-api-python-client
     - google-auth-oauthlib

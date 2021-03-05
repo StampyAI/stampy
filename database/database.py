@@ -22,7 +22,7 @@ class Database:
             self.connected = True
 
         except sqlite3.Error as e:
-            print("Error connecting to database!")
+            print("Error connecting to database!", e)
 
     def close(self):
         if self.conn:
@@ -41,14 +41,14 @@ class Database:
     def get(self, table, columns, limit=None):
         query = "SELECT {0} from {1}".format(columns, table)
         # Limit goes at the end...
-        if limit != None:
+        if limit is not None:
             query += " LIMIT {0}".format(limit)
         query += ";"
         self.cursor.execute(query)
 
         return self.cursor.fetchall()
 
-    def getLast(self, table, columns):
+    def get_last(self, table, columns):
         return self.get(table, columns, limit=1)[0]
 
     def query(self, sql, args=None):
