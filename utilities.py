@@ -3,6 +3,7 @@ import discord
 from dotenv import load_dotenv
 from database.database import Database
 from datetime import datetime, timezone, timedelta
+from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
 from config import (
     required_environment_variables,
@@ -65,11 +66,18 @@ class Utilities:
             self.YOUTUBE_API_KEY = youtube_api_key
             self.DB_PATH = database_path
 
-            self.youtube = get_youtube_api(
-                youtube_api_service_name,
-                youtube_api_version,
-                developerKey=self.YOUTUBE_API_KEY,
-            )
+            try:
+                self.youtube = get_youtube_api(
+                    youtube_api_service_name,
+                    youtube_api_version,
+                    developerKey=self.YOUTUBE_API_KEY,
+                )
+            except HttpError as e:
+                if self.YOUTUBE_API_KEY:
+                    print("YouTube API Key is set but not correct")
+                else:
+                    print("YouTube API Key is not set")
+                print(e)
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
