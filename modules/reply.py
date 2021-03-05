@@ -2,7 +2,7 @@ import re
 import json
 import discord
 from modules.module import Module
-from config import stampy_youtube_channel_id
+from config import stampy_youtube_channel_id, youtube_testing_thread_url
 
 
 class Reply(Module):
@@ -17,18 +17,14 @@ class Reply(Module):
         """Is this message asking us to post a reply?"""
         print(text)
         if text:
-            return text.lower().endswith("post this") or text.lower().endswith(
-                "send this"
-            )
+            return text.lower().endswith("post this") or text.lower().endswith("send this")
         else:
             return False
 
     @staticmethod
     def is_allowed(message):
         """[Deprecated] Is the message author authorised to make stampy post replies?"""
-        posting_role = discord.utils.find(
-            lambda r: r.name == "poaster", message.guild.roles
-        )
+        posting_role = discord.utils.find(lambda r: r.name == "poaster", message.guild.roles)
         return posting_role in message.author.roles
 
     @staticmethod
@@ -58,13 +54,13 @@ class Reply(Module):
         }
 
         # now we're going to put it in a json file, which CommentPoster.py will read and send it
-        with open("../database/topost.json") as postfile:
-            top_post = json.load(postfile)
+        with open("../database/topost.json") as post_file:
+            responses_to_post = json.load(post_file)
 
-        top_post.append(body)
+        responses_to_post.append(body)
 
-        with open("../database/topost.json", "w") as postfile:
-            json.dump(top_post, postfile, indent="\t")
+        with open("../database/topost.json", "w") as post_file:
+            json.dump(responses_to_post, post_file, indent="\t")
 
         print("dummy, posting %s to %s" % (text, question_id))
 
@@ -75,11 +71,6 @@ class Reply(Module):
 
             if self.is_post_request(text):
                 print("this is a posting request")
-                # if self.isAllowed(message, client):
-                #   print("the user is allowed")
-                #   return (9, "")
-                # else:
-                #   return (9, "Only people with the `poaster` role can do that")
                 return 9, "Ok, I'll post this when it has more than 30 stamp points"
 
         return 0, ""
@@ -89,10 +80,11 @@ class Reply(Module):
         return 0, ""
 
     async def post_message(self, message, approvers=None):
-
+        if approvers is None:
+            approvers = []
         approvers.append(message.author)
         approvers = [a.name for a in approvers]
-        approvers = list(set(approvers))  # deduplicate
+        approvers = list(set(approvers))
 
         if len(approvers) == 1:
             approver_string = approvers[0]
@@ -100,20 +92,19 @@ class Reply(Module):
             approver_string = " and ".join(approvers)
         else:
             approvers[-1] = "and " + approvers[-1]
-            approver_string = ", ".join(approvers)  # oxford comma baybee
+            approver_string = ", ".join(approvers)
 
-        text = self.is_at_me(message)  # strip off stampy's name
+        # strip off stampy's name
+        text = self.is_at_me(message)
+
         reply_message = self.extract_reply(text)
-        reply_message += (
-            "\n -- _I am a bot. This reply was approved by %s_" % approver_string
-        )
+        reply_message += "\n -- _I am a bot. This reply was approved by %s_" % approver_string
 
         report = ""
 
-        if message.reference:  # if this is a reply
-            reference = await message.channel.fetch_message(
-                message.reference.message_id
-            )
+        if message.reference:
+            # if this message is a reply
+            reference = await message.channel.fetch_message(message.reference.message_id)
             reference_text = reference.clean_content
             question_url = reference_text.split("\n")[-1].strip("<> \n")
             if "youtube.com" not in question_url:
@@ -125,9 +116,8 @@ class Reply(Module):
                     " so I've probably been restarted since that happened. I'll just"
                     " post to the dummy thread instead...\n\n"
                 )
-                self.utils.latest_question_posted = {
-                    "url": "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
-                }  # use the dummy thread
+                # use the dummy thread
+                self.utils.latest_question_posted = {"url": youtube_testing_thread_url}
 
             question_url = self.utils.latest_question_posted["url"]
 
@@ -161,9 +151,7 @@ class Reply(Module):
                     for user in users:
                         approvers.append(user)
                         print("  From", user.id, user)
-                        stampvalue = self.utils.modules_dict[
-                            "StampsModule"
-                        ].get_user_stamps(user)
+                        stampvalue = self.utils.modules_dict["StampsModule"].get_user_stamps(user)
                         total += stampvalue
                         print("  Worth", stampvalue)
 
@@ -193,28 +181,22 @@ class Reply(Module):
 
         if emoji in ["stamp", "goldstamp"]:
             print("GUILD = ", self.utils.GUILD)
-            guild = discord.utils.find(
-                lambda g: g.name == self.utils.GUILD, client.guilds
-            )
-            channel = discord.utils.find(
-                lambda c: c.id == event.channel_id, guild.channels
-            )
+            guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
+            channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)
             if self.is_at_me(message) and self.is_post_request(self.is_at_me(message)):
 
-                if self.has_been_replied_to(message):  # did we already reply?
+                if self.has_been_replied_to(message):
                     return
 
                 stamp_score, approvers = await self.evaluate_message_stamps(message)
                 if stamp_score > 30:
                     report = await self.post_message(message, approvers)
-                    await message.add_reaction(
-                        "📨"
-                    )  # mark it with an envelope to show it was sent
+
+                    # mark it with an envelope to show it was sent
+                    await message.add_reaction("📨")
+
                     await channel.send(report)
                 else:
-                    report = (
-                        "This reply has %s stamp points. I will send it when it has 30"
-                        % stamp_score
-                    )
+                    report = "This reply has %s stamp points. I will send it when it has 30" % stamp_score
                     await channel.send(report)

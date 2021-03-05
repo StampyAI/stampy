@@ -37,36 +37,29 @@ class InviteManager(Module):
         """Generate and send an invite, if user is allowed"""
         text = self.is_at_me(message)
 
-        m = re.match(
-            self.re_request, text
-        )  # is this message requesting an invite link?
+        # is this message requesting an invite link?
+        m = re.match(self.re_request, text)
         if m:
             guild = client.guilds[0]
             invite_role = discord.utils.get(guild.roles, name="can-invite")
             member = guild.get_member(message.author.id)
             if invite_role in member.roles:
-                welcome = discord.utils.find(
-                    lambda c: c.name == "welcome", guild.channels
-                )
+                welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
                 invite = await welcome.create_invite(
-                    max_uses=1,
-                    temporary=False,
-                    unique=True,
-                    reason="Requested by %s" % message.author.name,
+                    max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
                 )
 
                 print("Generated invite for", member.name, invite)
-                await member.remove_roles(
-                    invite_role
-                )  # remove the invite role so they only get one
+                # remove the invite role so they only get one
+                await member.remove_roles(invite_role)
 
                 return (
                     10,
                     "Here you go!: %s\nThis is the only invite I'll give you "
-                    "this week, and it will only work once, so use it wisely!"
-                    % invite.url,
+                    "this week, and it will only work once, so use it wisely!" % invite.url,
                 )
-            else:  # user doesn't have the can-invite role
+            else:
+                # user doesn't have the can-invite role
                 return 10, self.sorry_message
 
     def __str__(self):

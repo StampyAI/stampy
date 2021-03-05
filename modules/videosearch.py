@@ -45,9 +45,8 @@ class VideoSearch(Module):
             for line in vtt_file.readlines():
                 regex_matches = re.search(r"<[^>]*>", line)
                 if regex_matches:
-                    timestamp = regex_matches.group(
-                        0
-                    )  # the timestamp for the start of the line
+                    # the timestamp for the start of the line
+                    timestamp = regex_matches.group(0)
 
                     # remove the brackets, leading zeros, and milliseconds
                     # 00:10:17.630 becomes 10:17
@@ -61,9 +60,7 @@ class VideoSearch(Module):
     def load_videos(self):
         for entry in os.scandir(self.subsdir):
             if entry.name.endswith(".en.vtt"):
-                vtt_groups = re.match(
-                    r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name
-                )
+                vtt_groups = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
                 title = vtt_groups.group(1)
                 stub = vtt_groups.group(2)
 
@@ -103,21 +100,10 @@ class VideoSearch(Module):
         for video in videos:
             video.score = 0
             for keyword in keywords:
-                video.score += (
-                    3.0
-                    * video.title.lower().count(keyword.lower())
-                    / (len(video.title) + 1)
-                )
-                video.score += (
-                    1.0
-                    * video.description.lower().count(keyword.lower())
-                    / (len(video.description) + 1)
-                )
-                video.score += (
-                    1.0
-                    * video.text.lower().count(keyword.lower())
-                    / (len(video.text) + 1)
-                )
+                keyword = keyword.lower()
+                video.score += 3.0 * video.title.lower().count(keyword) / (len(video.title) + 1)
+                video.score += 1.0 * video.description.lower().count(keyword) / (len(video.description) + 1)
+                video.score += 1.0 * video.text.lower().count(keyword) / (len(video.text) + 1)
         return sorted(videos, key=(lambda v: v.score), reverse=reverse)
 
     def search(self, query):
@@ -144,7 +130,6 @@ class VideoSearch(Module):
             m = re.match(self.re_search, text)
             if m:
                 return 9, ""
-
         # This is either not at me, or not something we can handle
         return 0, ""
 

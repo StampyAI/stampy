@@ -8,11 +8,20 @@ stampy_id = "736241264856662038"
 god_id = "0"
 rob_miles_youtube_channel_id = "UCLB7AzTwc6VFZrBsO2ucBMg"
 stampy_youtube_channel_id = "UCFDiTXRowzFvh81VOsnf5wg"
+youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
+
+bot_dev_channels = [
+    "bot-dev",
+    "bot-dev-priv",
+    "181142785259208704",
+]
 
 discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
 youtube_api_key_env_variable = "YOUTUBE_API_KEY"
 database_path_env_variable = "DATABASE_PATH"
+
+admin_usernames = ["robertskmiles", "sudonym"]
 
 discord_token = os.getenv(discord_token_env_variable)
 discord_guild = os.getenv(discord_guild_env_variable)

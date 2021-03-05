@@ -34,8 +34,7 @@ def load_questions(file):
         text = question["text"]
         print("Inserting question: {0}".format(url))
         db.query(
-            "INSERT INTO questions VALUES (?,?,?,?,?,?,?);",
-            (url, username, title, text, False, False, None),
+            "INSERT INTO questions VALUES (?,?,?,?,?,?,?);", (url, username, title, text, False, False, None),
         )
 
     db.commit()
@@ -66,11 +65,7 @@ def load_votes(file):
         user = users[i]
         votes = user["votes"]
         for vote in votes:
-            print(
-                "adding vote for user: {0} votedFor: {1} count: {2}".format(
-                    i, vote, votes[vote]
-                )
-            )
+            print("adding vote for user: {0} votedFor: {1} count: {2}".format(i, vote, votes[vote]))
 
             db.query("INSERT INTO uservotes VALUES (?,?,?)", (i, vote, votes[vote]))
 

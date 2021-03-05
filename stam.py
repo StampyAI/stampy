@@ -53,9 +53,7 @@ async def on_message(message):
         exit()
     if message.content == "reply test":
         if message.reference:
-            reference = await message.channel.fetch_message(
-                message.reference.message_id
-            )
+            reference = await message.channel.fetch_message(message.reference.message_id)
             reference_text = reference.content
             reply_url = reference_text.split("\n")[-1].strip()
 
@@ -63,10 +61,7 @@ async def on_message(message):
                 message.reference.message_id,
                 reference_text,
             )
-            response += (
-                'which should be taken as an answer to the question at: "%s"'
-                % reply_url
-            )
+            response += 'which should be taken as an answer to the question at: "%s"' % reply_url
         else:
             response = "This is not a reply"
         await message.channel.send(response)
@@ -85,9 +80,7 @@ async def on_message(message):
                 reset_users_count += 1
             else:
                 print(member.name, "has 0 stamps, can't invite")
-        await message.channel.send(
-            "[Invite Roles Reset for %s users]" % reset_users_count
-        )
+        await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
         return
 
     # What are the options for responding to this message?
@@ -107,29 +100,11 @@ async def on_message(message):
     print(options)
     module, confidence, result = options[0]
 
-    if confidence > 0:  # if the module had some confidence it could reply
-        if not result:  # but didn't reply in can_process_message()
+    if confidence > 0:
+        # if the module had some confidence it could reply
+        if not result:
+            # but didn't reply in can_process_message()
             confidence, result = await module.processMessage(message, client)
-
-    if not result:  # no results from the modules, try the sentience core
-        try:
-            confidence, result = sentience.processMessage(message, client)
-        except Exception as e:
-            if hasattr(message.channel, "name") and message.channel.name in (
-                "bot-dev",
-                "bot-dev-priv",
-                "181142785259208704",
-            ):
-                error_type = "SeriousError"  # if the dereference failed, it's bad
-                x = sys.exc_info()[2].tb_next
-                print(e, type(e))
-                traceback.print_tb(x)
-                lineno = sys.exc_info()[2].tb_next.tb_lineno
-                result = "%s %s: %s" % (error_type, lineno, str(e))
-            else:
-                x = sys.exc_info()[2].tb_next
-                print(e, type(e))
-                traceback.print_tb(x)
 
     if result:
         await message.channel.send(result)
@@ -146,10 +121,10 @@ async def on_socket_raw_receive(msg):
     Rate limit these things, because this function might be firing a lot"""
 
     # never fire more than once a second
-    tick_cool_down = timedelta(seconds=1)
+    tick_cooldown = timedelta(seconds=1)
     now = datetime.now(timezone.utc)
 
-    if (now - utils.last_timestamp) > tick_cool_down:
+    if (now - utils.last_timestamp) > tick_cooldown:
         print(msg)
         print("|", end="")
         utils.last_timestamp = now
@@ -166,45 +141,32 @@ async def on_socket_raw_receive(msg):
     qq = utils.get_next_question("rowid")
     if qq:
         # ask a new question if it's been long enough since we last asked one
-        question_ask_cool_down = timedelta(hours=6)
+        question_ask_cooldown = timedelta(hours=6)
 
-        if (now - utils.last_question_asked_timestamp) > question_ask_cool_down:
-            if (
-                not utils.last_message_was_youtube_question
-            ):  # Don't ask anything if the last thing posted in the chat was us asking a question
+        if (now - utils.last_question_asked_timestamp) > question_ask_cooldown:
+            if not utils.last_message_was_youtube_question:
+                # Don't ask anything if the last thing posted in the chat was stampy asking a question
                 utils.last_question_asked_timestamp = now
                 report = utils.get_latest_question()
-                guild = discord.utils.find(
-                    lambda g: g.name == utils.GUILD, client.guilds
-                )
-                general = discord.utils.find(
-                    lambda c: c.name == "general", guild.channels
-                )
+                guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
+                general = discord.utils.find(lambda c: c.name == "general", guild.channels)
                 await general.send(report)
                 utils.last_message_was_youtube_question = True
             else:
-                utils.last_question_asked_timestamp = now  # wait the full time again
-                print(
-                    "Would have asked a question, but the last post in the channel was a question we asked. So we wait"
-                )
+                # wait the full time again
+                utils.last_question_asked_timestamp = now
+                print("Not asking question: previous post in the channel was a question stampy asked.")
         else:
-            print(
-                "%s Questions in queue, waiting %s to post"
-                % (
-                    len(qq),
-                    str(
-                        question_ask_cool_down
-                        - (now - utils.last_question_asked_timestamp)
-                    ),
-                )
-            )
+            remaining_cooldown = str(question_ask_cooldown - (now - utils.last_question_asked_timestamp))
+            print("%s Questions in queue, waiting %s to post" % (len(qq), remaining_cooldown))
             return
 
 
 @client.event
 async def on_raw_reaction_add(payload):
     print("RAW REACTION ADD")
-    if len(payload.emoji.name) == 1:  # if this is an actual unicode emoji
+    if len(payload.emoji.name) == 1:
+        # if this is an actual unicode emoji
         print(unicodedata.name(payload.emoji.name))
     else:
         print(payload.emoji.name.upper())
@@ -232,7 +194,7 @@ if __name__ == "__main__":
 
     # how many seconds should we wait before we can hit YT API again
     # this the start value. It doubles every time we don't find anything new
-    utils.youtube_cool_down = timedelta(seconds=60)
+    utils.youtube_cooldown = timedelta(seconds=60)
 
     # timestamp of when we last ran the tick function
     utils.last_timestamp = datetime.now(timezone.utc)
@@ -241,9 +203,8 @@ if __name__ == "__main__":
     utils.last_question_asked_timestamp = datetime.now(timezone.utc)
 
     # Was the last message posted in #general by anyone, us asking a question from YouTube?
-    utils.last_message_was_youtube_question = (
-        True  # We start off not knowing, but it's better to assume yes than no
-    )
+    # We start off not knowing, but it's better to assume yes than no
+    utils.last_message_was_youtube_question = True
 
     utils.modules_dict = {
         "StampsModule": StampsModule(),

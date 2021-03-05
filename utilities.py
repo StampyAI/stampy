@@ -37,7 +37,7 @@ class Utilities:
     last_message_was_youtube_question = None
     latest_comment_timestamp = None
     last_check_timestamp = None
-    youtube_cool_down = None
+    youtube_cooldown = None
     last_timestamp = None
     last_question_asked_timestamp = None
     latest_question_posted = None
@@ -68,9 +68,7 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError as e:
                 if self.YOUTUBE_API_KEY:
@@ -90,14 +88,13 @@ class Utilities:
 
         now = datetime.now(timezone.utc)
 
-        if (now - self.last_check_timestamp) > self.youtube_cool_down:
+        if (now - self.last_check_timestamp) > self.youtube_cooldown:
             print("Hitting YT API")
             self.last_check_timestamp = now
         else:
+
             print(
-                "YT waiting >%s\t- "
-                % str(self.youtube_cool_down - (now - self.last_check_timestamp)),
-                end="",
+                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
 
@@ -108,11 +105,10 @@ class Utilities:
 
         items = response.get("items", None)
         if not items:
+            # something broke, slow way down
             print("YT comment checking broke. I got this response:")
             print(response)
-            self.youtube_cool_down = (
-                self.youtube_cool_down * 10
-            )  # something broke, slow way down
+            self.youtube_cooldown = self.youtube_cooldown * 10
             return None
 
         newest_timestamp = self.latest_comment_timestamp
@@ -133,9 +129,7 @@ class Utilities:
             if published_timestamp > newest_timestamp:
                 newest_timestamp = published_timestamp
 
-        print(
-            "Got %s items, most recent published at %s" % (len(items), newest_timestamp)
-        )
+        print("Got %s items, most recent published at %s" % (len(items), newest_timestamp))
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
@@ -148,8 +142,7 @@ class Utilities:
             username = top_level_comment["snippet"]["authorDisplayName"]
             text = top_level_comment["snippet"]["textOriginal"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
-                % (video_id, comment_id),
+                "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
@@ -161,13 +154,8 @@ class Utilities:
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cool_down = min(
-                self.youtube_cool_down * 2, timedelta(seconds=1200)
-            )
-            print(
-                "No new comments, increasing cooldown timer to %s"
-                % self.youtube_cool_down
-            )
+            self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
+            print("No new comments, increasing cooldown timer to %s" % self.youtube_cooldown)
 
         return new_comments
 
@@ -211,9 +199,8 @@ class Utilities:
         print(report)
         print("==========================")
 
-        self.last_question_asked_timestamp = datetime.now(
-            timezone.utc
-        )  # reset the question waiting timer
+        # reset the question waiting timer
+        self.last_question_asked_timestamp = datetime.now(timezone.utc)
 
         # mark it in the database as having been asked
         self.set_question_asked(comment_dict["url"])
@@ -239,14 +226,14 @@ class Utilities:
     def index_dammit(self, user):
         """Get an index into the scores array from whatever you get"""
 
-        if user in self.index:  # maybe we got given a valid ID?
+        if user in self.index:
+            # maybe we got given a valid ID?
             return self.index[user]
         elif str(user) in self.index:
             return self.index[str(user)]
 
-        uid = getattr(
-            user, "id", None
-        )  # maybe we got given a User or Member object that has an ID?
+        # maybe we got given a User or Member object that has an ID?
+        uid = getattr(user, "id", None)
         print(uid)
         print(self.index)
         if uid:
@@ -261,7 +248,7 @@ class Utilities:
         else:
             return 0.0
 
-    def add_vote(self, user, voted_for, vote_quantity):
+    def update_vote(self, user, voted_for, vote_quantity):
         query = (
             "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount "
             "FROM uservotes WHERE user = {0} AND votedFor = {1}),0)+{2})".format(
@@ -272,15 +259,11 @@ class Utilities:
         self.db.commit()
 
     def get_votes_by_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
-            user
-        )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
         return self.db.query(query)[0][0]
 
     def get_votes_for_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(
-            user
-        )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
         return self.db.query(query)[0][0]
 
     def get_total_votes(self):
@@ -298,21 +281,16 @@ class Utilities:
 
     def add_question(self, url, username, title, text):
         self.db.query(
-            "INSERT INTO questions VALUES (?,?,?,?,?)",
-            (url, username, title, text, False),
+            "INSERT INTO questions VALUES (?,?,?,?,?)", (url, username, title, text, False),
         )
         self.db.commit()
 
     def get_next_question(self, columns="*"):
-        return self.db.get_last(
-            "questions WHERE replied=False AND asked=False ORDER BY rowid DESC", columns
-        )
+        return self.db.get_last("questions WHERE replied=False AND asked=False ORDER BY rowid DESC", columns)
 
     # TODO: see above
     def get_random_question(self, columns="*"):
-        return self.db.get_last(
-            "questions WHERE replied=False AND asked=False ORDER BY RANDOM()", columns
-        )
+        return self.db.get_last("questions WHERE replied=False AND asked=False ORDER BY RANDOM()", columns)
 
     def set_question_replied(self, url):
         self.db.query('UPDATE questions SET replied = True WHERE url="{0}"'.format(url))
