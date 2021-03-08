@@ -31,6 +31,5 @@ database_path = os.getenv(database_path_env_variable)
 required_environment_variables = [
     discord_token_env_variable,
     discord_guild_env_variable,
-    youtube_api_key_env_variable,
     database_path_env_variable,
 ]
