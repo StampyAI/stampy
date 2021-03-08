@@ -4,7 +4,7 @@
 
 # stam.py
 
-This repository contains the code for Stampy The Safety Bot (@Stampy). Stampy’s primary purpose is to share questions from Rob Miles YouTube comments section and responses from Rob Miles AI Discord. Questions from youtube that are interesting spark conversations on discord. Responses to the youtube question on discord can then be posted by Stampy as a reply to the YouTube comment.
+This repository contains the code for Stampy The Safety Bot (@Stampy). Stampy’s primary purpose is to share questions from Rob Miles YouTube comments section and responses from Rob Miles AI Discord. Questions from YouTube that are interesting spark conversations on discord. Responses to the YouTube question on Discord can then be posted by Stampy as a reply to the YouTube comment.
 
 # Demo
 
@@ -42,6 +42,6 @@ stampy from the test discord server and see the messages in your terminal.
 
 # How to Contribute
 
-Checkout the [Trello](https://trello.com/b/LBmYgkes/stampy). It's a great place to start. Make sure to attach your name to the card you're going to work on and then move it into the progress lane. Currently, there are still many setup and organizational task. In the future, we would mostly want Stampy contributions to be in the form of adding new modules.
+Checkout the [Trello](https://trello.com/b/LBmYgkes/stampy). It's a great place to start. Make sure to attach your name to the card you're going to work on and then move it into the progress lane. Currently, there are still many setup and organizational tasks. In the future, we would mostly want Stampy contributions to be in the form of adding new modules.
 
 If you make a change to source code, please create a new branch first, then commit your changes there. Open a pull request on github and ask for other developers to review your code before merging.
