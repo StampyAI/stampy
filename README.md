@@ -1,4 +1,4 @@
-![stampy banner image](https://github.com/robertskmiles/stampy/blob/readme/images/readme-header.png)
+![stampy banner image](https://github.com/robertskmiles/stampy/blob/master/images/readme-header.png)
 
 <!-- The best dimensions for the banner is **1280x650px**. -->
 
