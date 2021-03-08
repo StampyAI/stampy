@@ -32,6 +32,9 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    if message.content == "Hello Stampy":
+        await message.channel.send("Hello Chris")
+
     # don't react to our own messages
     if message.author == client.user:
         return
