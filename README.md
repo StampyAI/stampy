@@ -45,3 +45,5 @@ stampy from the test discord server and see the messages in your terminal.
 Checkout the [Trello](https://trello.com/b/LBmYgkes/stampy). It's a great place to start. Make sure to attach your name to the card you're going to work on and then move it into the progress lane. Currently, there are still many setup and organizational tasks. In the future, we would mostly want Stampy contributions to be in the form of adding new modules.
 
 If you make a change to source code, please create a new branch first, then commit your changes there. Open a pull request on github and ask for other developers to review your code before merging.
+
+See [TUTORIAL.md](https://github.com/robertskmiles/stampy/blob/master/TUTORIAL.md) for a step-by-step tutorial detailing how to add features. 
