@@ -10,6 +10,7 @@ To explain how to implement a new Stampy feature, let's work through an example:
 - User: Stampy, choose one, two, or three  
 - Stampy: one  
 
+# Module Creation Steps
 We'll implement this by creating a new module, which we'll call the 'choose' module. Here's how you'd do that!
 
 1. Create a card on the [trello](https://trello.com/b/LBmYgkes/stampy) in the "Ideas" List, that describes the module that you are planning to make.
@@ -103,7 +104,9 @@ We'll implement this by creating a new module, which we'll call the 'choose' mod
     ```
 1. Once your feature is implemented, test your changes on the [test discord server](https://discord.com/channels/783123903382814720/783123903382814723)
 1. Add and commit your changes
-1. Open a pull request on [github](https://github.com/robertskmiles/stampy/pulls)
+    - `git add choose.py stam.py`
+    - `git commit -m "Created a new stampy module that randomly choose between options given by the user"`
+1. [Open a pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request) on [github](https://github.com/robertskmiles/stampy/pulls)
 1. Post a link to your pull request in the [`#bot-dev` Discord channel](https://discord.com/channels/677546901339504640/758062805810282526)
 
 Good job, thanks for helping make Stampy better!
