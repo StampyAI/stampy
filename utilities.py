@@ -208,7 +208,7 @@ class Utilities:
         return report
 
     def get_question_count(self):
-        query = "SELECT COUNT(*) FROM questions"
+        query = "SELECT COUNT(*) FROM questions WHERE asked==0"
         return self.db.query(query)[0][0]
 
     def clear_votes(self):
@@ -281,7 +281,7 @@ class Utilities:
 
     def add_question(self, url, username, title, text):
         self.db.query(
-            "INSERT INTO questions VALUES (?,?,?,?,?)", (url, username, title, text, False),
+            "INSERT INTO questions VALUES (?,?,?,?,?,?)", (url, username, title, text, False, False),
         )
         self.db.commit()
 
