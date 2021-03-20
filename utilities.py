@@ -65,6 +65,7 @@ class Utilities:
             self.GUILD = discord_guild
             self.YOUTUBE_API_KEY = youtube_api_key
             self.DB_PATH = database_path
+            self.youtube = None
 
             try:
                 self.youtube = get_youtube_api(
@@ -75,7 +76,6 @@ class Utilities:
                     print("YouTube API Key is set but not correct")
                 else:
                     print("YouTube API Key is not set")
-                print(e)
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
@@ -97,7 +97,8 @@ class Utilities:
                 "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
-
+        if self.youtube is None:
+            raise Exception("YouTube API Key is not set")
         request = self.youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
         )

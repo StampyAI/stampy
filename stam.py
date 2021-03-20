@@ -13,6 +13,8 @@ from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from datetime import datetime, timezone, timedelta
 
+# TODO set environment variable
+
 
 @client.event
 async def on_ready():
@@ -125,7 +127,6 @@ async def on_socket_raw_receive(msg):
     now = datetime.now(timezone.utc)
 
     if (now - utils.last_timestamp) > tick_cooldown:
-        print(msg)
         print("|", end="")
         utils.last_timestamp = now
     else:
