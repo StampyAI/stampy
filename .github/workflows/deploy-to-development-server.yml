@@ -13,6 +13,4 @@ jobs:
           host: ${{secrets.SSH_DEV_HOST}}
           key: ${{secrets.SSH_DEV_KEY}}
           username: ${{secrets.SSH_DEV_USERNAME}}
-          script: |
-            cd /root/stampy/scripts
-            ./update-stampy.sh
+          script: source ~/stampy/scripts/update-stampy.sh
