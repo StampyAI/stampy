@@ -1,7 +1,8 @@
 pkill -f stam.py
 pkill -f runstampy
 cd ~/stampy
-python3 -m scripts.notify-discord-stampy-offline
+conda activate stampy
+python -m scripts.notify-discord-stampy-offline
 git pull
 conda deactivate
 conda env remove -n stampy
