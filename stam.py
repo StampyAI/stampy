@@ -1,6 +1,4 @@
-import sys
 import discord
-import traceback
 import unicodedata
 from modules.reply import Reply
 from modules.module import Module
@@ -10,15 +8,15 @@ from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from datetime import datetime, timezone, timedelta
-from config import discord_token, rob_id, ENVIRONMENT_TYPE, acceptable_environment_types
+from config import discord_token, rob_id, ENVIRONMENT_TYPE, acceptable_environment_types, bot_dev_channels
 
 if ENVIRONMENT_TYPE == "production":
-    raise Exception("This line must be changed for prod")
+    raise Exception("This line must be changed before deploying to prod")
 elif ENVIRONMENT_TYPE == "development":
     from modules.sentience import sentience
 else:
     raise Exception(
-        "You must set the ENVIRONMENT_TYPE evnironment variable to %s or %s" % acceptable_environment_types
+        "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
     )
 
 
@@ -28,7 +26,6 @@ async def on_ready():
     print("searching for a guild named '%s'" % utils.GUILD)
     print(client.guilds)
     guild = discord.utils.get(client.guilds, name=utils.GUILD)
-
     if guild is None:
         raise Exception("Guild Not Found : '%s'" % utils.GUILD)
 
@@ -36,6 +33,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
+    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("A new stampy is online")
 
 
 @client.event
@@ -121,7 +119,7 @@ async def on_message(message):
 
 
 @client.event
-async def on_socket_raw_receive(msg):
+async def on_socket_raw_receive(_):
     """This event fires whenever basically anything at all happens.
     Anyone joining, leaving, sending anything, even typing and not sending...
     So I'm going to use it as a kind of 'update' or 'tick' function,
