@@ -14,6 +14,7 @@ jobs:
           key: ${{secrets.SSH_DEV_KEY}}
           username: ${{secrets.SSH_DEV_USERNAME}}
           script: |
+            sleep 20
             pkill -f stam.py
             cd ~/stampy
             python3 -m scripts.notify-discord-stampy-offline
