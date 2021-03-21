@@ -65,17 +65,17 @@ class Utilities:
             self.GUILD = discord_guild
             self.YOUTUBE_API_KEY = youtube_api_key
             self.DB_PATH = database_path
+            self.youtube = None
 
             try:
                 self.youtube = get_youtube_api(
                     youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
-            except HttpError as e:
+            except HttpError:
                 if self.YOUTUBE_API_KEY:
                     print("YouTube API Key is set but not correct")
                 else:
                     print("YouTube API Key is not set")
-                print(e)
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
@@ -85,6 +85,11 @@ class Utilities:
         Returns a list of dicts if there are new comments
         Returns [] if it checked and there are no new ones
         Returns None if it didn't check because it's too soon to check again"""
+
+        if self.youtube is None:
+            print("WARNING: YouTube API Key is not set")
+            self.youtube_cooldown = 600
+            return []
 
         now = datetime.now(timezone.utc)
 
@@ -97,7 +102,6 @@ class Utilities:
                 "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
-
         request = self.youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
         )
@@ -208,7 +212,7 @@ class Utilities:
         return report
 
     def get_question_count(self):
-        query = "SELECT COUNT(*) FROM questions"
+        query = "SELECT COUNT(*) FROM questions WHERE asked==0"
         return self.db.query(query)[0][0]
 
     def clear_votes(self):
@@ -281,7 +285,7 @@ class Utilities:
 
     def add_question(self, url, username, title, text):
         self.db.query(
-            "INSERT INTO questions VALUES (?,?,?,?,?)", (url, username, title, text, False),
+            "INSERT INTO questions VALUES (?,?,?,?,?,?)", (url, username, title, text, False, False),
         )
         self.db.commit()
 
@@ -311,3 +315,6 @@ client = discord.Client(intents=intents)
 
 utils = Utilities.get_instance()
 utils.client = client
+
+if not os.path.exists(database_path):
+    raise Exception("Couldn't find the stampy database file at %s" % database_path)
