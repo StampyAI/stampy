@@ -11,4 +11,5 @@ dependencies:
     - google-api-python-client
     - google-auth-oauthlib
     - python-dotenv
+    - gitpython
 
