@@ -1,4 +1,4 @@
-name: Deploy to PRODelopment Server
+name: Deploy to Production Server
 on:
   push:
     branches: [master]

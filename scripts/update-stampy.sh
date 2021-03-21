@@ -9,3 +9,4 @@ conda env remove -n stampy
 conda env create -f environment.yml
 conda activate stampy
 ./runstampy > ~/"stampy-log-$(date +"%F-%T")" 2>&1 &
+conda deactivate
