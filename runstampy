@@ -1,4 +1,4 @@
-export DISCORD_TOKEN=$(cat ~/.discordtoken); export DISCORD_GUILD=$(cat ~/.discordguild); export YOUTUBE_API_KEY=$(cat ~/.youtubeapikey); export CLIENT_SECRET_PATH=$(cat ~/.clientsecretpath); export DATABASE_PATH=/home/stampy.local/stampy.db;
+export DISCORD_TOKEN=$(cat ~/.discordtoken); export DISCORD_GUILD=$(cat ~/.discordguild); export YOUTUBE_API_KEY=$(cat ~/.youtubeapikey); export CLIENT_SECRET_PATH=$(cat ~/.clientsecretpath); export DATABASE_PATH=~/stampy.local/stampy.db;
 while true; do sleep 0.5; python stam.py ; done
 
 # also run CommentPoster.py
