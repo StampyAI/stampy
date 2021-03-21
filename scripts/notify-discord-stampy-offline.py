@@ -19,10 +19,9 @@ async def on_ready():
     print(client.user.id)
     repo = Repo(".")
     master = repo.head.reference
-    git_log = master.log()[-1]
-    actor = git_log.actor.name
-    git_message = git_log.message
-    date = datetime.fromtimestamp(git_log.time[0]).strftime("%A, %B %d, %Y at %I:%M:%S %p UTC")
+    actor = master.commit.author
+    git_message = master.commit.message
+    date = master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z")
     message = offline_message % (actor, git_message, date)
     print(message)
     await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send(message)
