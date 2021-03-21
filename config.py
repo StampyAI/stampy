@@ -20,6 +20,8 @@ discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
 youtube_api_key_env_variable = "YOUTUBE_API_KEY"
 database_path_env_variable = "DATABASE_PATH"
+environment_type_env_variable = "ENVIRONMENT_TYPE"
+
 
 admin_usernames = ["robertskmiles", "sudonym"]
 
@@ -28,7 +30,11 @@ discord_guild = os.getenv(discord_guild_env_variable)
 youtube_api_key = os.getenv(youtube_api_key_env_variable)
 database_path = os.getenv(database_path_env_variable)
 
+ENVIRONMENT_TYPE = os.getenv(environment_type_env_variable)
+acceptable_environment_types = ("production", "development")
+
 required_environment_variables = [
+    environment_type_env_variable,
     discord_token_env_variable,
     discord_guild_env_variable,
     database_path_env_variable,

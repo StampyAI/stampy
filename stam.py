@@ -6,14 +6,20 @@ from modules.reply import Reply
 from modules.module import Module
 from utilities import client, utils
 from modules.questions import QQManager
-from modules.sentience import sentience
-from config import discord_token, rob_id
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from datetime import datetime, timezone, timedelta
+from config import discord_token, rob_id, ENVIRONMENT_TYPE, acceptable_environment_types
 
-# TODO set environment variable
+if ENVIRONMENT_TYPE == "production":
+    raise Exception("This line must be changed for prod")
+elif ENVIRONMENT_TYPE == "development":
+    from modules.sentience import sentience
+else:
+    raise Exception(
+        "You must set the ENVIRONMENT_TYPE evnironment variable to %s or %s" % acceptable_environment_types
+    )
 
 
 @client.event
