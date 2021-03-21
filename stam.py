@@ -1,3 +1,4 @@
+import sys
 import discord
 import unicodedata
 from modules.reply import Reply
@@ -8,10 +9,18 @@ from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from datetime import datetime, timezone, timedelta
-from config import discord_token, rob_id, ENVIRONMENT_TYPE, acceptable_environment_types, bot_dev_channels
+from config import (
+    discord_token,
+    rob_id,
+    ENVIRONMENT_TYPE,
+    acceptable_environment_types,
+    bot_dev_channels,
+    sentience_prod_path,
+)
 
 if ENVIRONMENT_TYPE == "production":
-    raise Exception("This line must be changed before deploying to prod")
+    sys.path.append(sentience_prod_path)
+    import sentience
 elif ENVIRONMENT_TYPE == "development":
     from modules.sentience import sentience
 else:
