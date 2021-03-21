@@ -1,0 +1,2552 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.000 --> 00:00:02.540 align:start position:0%
+ 
+hi<00:00:00.210><c> a</c><00:00:00.480><c> long</c><00:00:01.020><c> time</c><00:00:01.230><c> ago</c><00:00:01.439><c> in</c><00:00:01.560><c> computerphile</c><00:00:01.979><c> we</c>
+
+00:00:02.540 --> 00:00:02.550 align:start position:0%
+hi a long time ago in computerphile we
+ 
+
+00:00:02.550 --> 00:00:04.640 align:start position:0%
+hi a long time ago in computerphile we
+introduced<00:00:03.000><c> the</c><00:00:03.240><c> stamp</c><00:00:03.540><c> collector</c><00:00:04.020><c> this</c>
+
+00:00:04.640 --> 00:00:04.650 align:start position:0%
+introduced the stamp collector this
+ 
+
+00:00:04.650 --> 00:00:07.160 align:start position:0%
+introduced the stamp collector this
+hypothetical<00:00:05.310><c> super</c><00:00:06.029><c> intelligence</c><00:00:06.569><c> which</c>
+
+00:00:07.160 --> 00:00:07.170 align:start position:0%
+hypothetical super intelligence which
+ 
+
+00:00:07.170 --> 00:00:10.129 align:start position:0%
+hypothetical super intelligence which
+just<00:00:07.529><c> has</c><00:00:07.710><c> crazy</c><00:00:08.160><c> extreme</c><00:00:08.790><c> powers</c><00:00:09.240><c> by</c><00:00:09.750><c> magic</c>
+
+00:00:10.129 --> 00:00:10.139 align:start position:0%
+just has crazy extreme powers by magic
+ 
+
+00:00:10.139 --> 00:00:11.900 align:start position:0%
+just has crazy extreme powers by magic
+effectively<00:00:10.710><c> it's</c><00:00:11.340><c> a</c><00:00:11.429><c> thought</c><00:00:11.580><c> experiment</c>
+
+00:00:11.900 --> 00:00:11.910 align:start position:0%
+effectively it's a thought experiment
+ 
+
+00:00:11.910 --> 00:00:13.700 align:start position:0%
+effectively it's a thought experiment
+then<00:00:12.570><c> we</c><00:00:12.690><c> brought</c><00:00:12.900><c> things</c><00:00:13.110><c> back</c><00:00:13.259><c> down</c><00:00:13.559><c> to</c>
+
+00:00:13.700 --> 00:00:13.710 align:start position:0%
+then we brought things back down to
+ 
+
+00:00:13.710 --> 00:00:15.250 align:start position:0%
+then we brought things back down to
+earth<00:00:13.860><c> and</c><00:00:14.070><c> started</c><00:00:14.429><c> looking</c><00:00:14.549><c> at</c><00:00:14.790><c> this</c><00:00:14.910><c> paper</c>
+
+00:00:15.250 --> 00:00:15.260 align:start position:0%
+earth and started looking at this paper
+ 
+
+00:00:15.260 --> 00:00:17.630 align:start position:0%
+earth and started looking at this paper
+concrete<00:00:16.260><c> problems</c><00:00:16.650><c> in</c><00:00:16.770><c> AI</c><00:00:16.890><c> safety</c><00:00:17.400><c> which</c>
+
+00:00:17.630 --> 00:00:17.640 align:start position:0%
+concrete problems in AI safety which
+ 
+
+00:00:17.640 --> 00:00:19.310 align:start position:0%
+concrete problems in AI safety which
+looks<00:00:17.910><c> at</c><00:00:18.119><c> how</c><00:00:18.150><c> we</c><00:00:18.390><c> can</c><00:00:18.600><c> improve</c><00:00:18.720><c> the</c><00:00:19.109><c> safety</c>
+
+00:00:19.310 --> 00:00:19.320 align:start position:0%
+looks at how we can improve the safety
+ 
+
+00:00:19.320 --> 00:00:22.070 align:start position:0%
+looks at how we can improve the safety
+of<00:00:19.529><c> current</c><00:00:19.980><c> AI</c><00:00:20.100><c> systems</c><00:00:20.670><c> hopefully</c><00:00:21.630><c> in</c><00:00:21.840><c> a</c><00:00:21.930><c> way</c>
+
+00:00:22.070 --> 00:00:22.080 align:start position:0%
+of current AI systems hopefully in a way
+ 
+
+00:00:22.080 --> 00:00:23.720 align:start position:0%
+of current AI systems hopefully in a way
+that<00:00:22.320><c> will</c><00:00:22.500><c> be</c><00:00:22.619><c> applicable</c><00:00:22.890><c> to</c><00:00:23.340><c> future</c>
+
+00:00:23.720 --> 00:00:23.730 align:start position:0%
+that will be applicable to future
+ 
+
+00:00:23.730 --> 00:00:25.609 align:start position:0%
+that will be applicable to future
+general<00:00:24.119><c> AI</c><00:00:24.269><c> systems</c><00:00:24.840><c> and</c><00:00:25.050><c> super</c>
+
+00:00:25.609 --> 00:00:25.619 align:start position:0%
+general AI systems and super
+ 
+
+00:00:25.619 --> 00:00:27.380 align:start position:0%
+general AI systems and super
+intelligences<00:00:26.220><c> so</c><00:00:26.670><c> let's</c><00:00:26.849><c> talk</c><00:00:27.000><c> a</c><00:00:27.060><c> little</c><00:00:27.180><c> bit</c>
+
+00:00:27.380 --> 00:00:27.390 align:start position:0%
+intelligences so let's talk a little bit
+ 
+
+00:00:27.390 --> 00:00:29.929 align:start position:0%
+intelligences so let's talk a little bit
+about<00:00:27.779><c> what</c><00:00:28.080><c> I</c><00:00:28.109><c> expect</c><00:00:28.590><c> those</c><00:00:28.830><c> AGI</c><00:00:29.279><c> systems</c><00:00:29.789><c> to</c>
+
+00:00:29.929 --> 00:00:29.939 align:start position:0%
+about what I expect those AGI systems to
+ 
+
+00:00:29.939 --> 00:00:31.550 align:start position:0%
+about what I expect those AGI systems to
+be<00:00:30.060><c> like</c><00:00:30.240><c> this</c><00:00:30.510><c> is</c><00:00:30.630><c> purely</c><00:00:30.840><c> speculation</c><00:00:31.349><c> of</c>
+
+00:00:31.550 --> 00:00:31.560 align:start position:0%
+be like this is purely speculation of
+ 
+
+00:00:31.560 --> 00:00:33.440 align:start position:0%
+be like this is purely speculation of
+course<00:00:31.590><c> but</c><00:00:31.969><c> here</c><00:00:32.969><c> are</c><00:00:33.059><c> some</c><00:00:33.180><c> of</c><00:00:33.300><c> my</c><00:00:33.329><c> thoughts</c>
+
+00:00:33.440 --> 00:00:33.450 align:start position:0%
+course but here are some of my thoughts
+ 
+
+00:00:33.450 --> 00:00:35.900 align:start position:0%
+course but here are some of my thoughts
+about<00:00:33.960><c> what</c><00:00:34.710><c> kind</c><00:00:34.950><c> of</c><00:00:35.010><c> capabilities</c><00:00:35.579><c> we</c><00:00:35.730><c> might</c>
+
+00:00:35.900 --> 00:00:35.910 align:start position:0%
+about what kind of capabilities we might
+ 
+
+00:00:35.910 --> 00:00:38.930 align:start position:0%
+about what kind of capabilities we might
+expect<00:00:36.329><c> from</c><00:00:36.750><c> a</c><00:00:36.899><c> human</c><00:00:37.200><c> level</c><00:00:37.350><c> AGI</c><00:00:37.770><c> and</c><00:00:38.070><c> some</c>
+
+00:00:38.930 --> 00:00:38.940 align:start position:0%
+expect from a human level AGI and some
+ 
+
+00:00:38.940 --> 00:00:41.180 align:start position:0%
+expect from a human level AGI and some
+of<00:00:39.059><c> my</c><00:00:39.180><c> intuitions</c><00:00:39.750><c> about</c><00:00:39.960><c> why</c><00:00:40.649><c> it</c><00:00:40.710><c> might</c><00:00:40.829><c> not</c>
+
+00:00:41.180 --> 00:00:41.190 align:start position:0%
+of my intuitions about why it might not
+ 
+
+00:00:41.190 --> 00:00:43.520 align:start position:0%
+of my intuitions about why it might not
+stay<00:00:41.430><c> human</c><00:00:41.790><c> level</c><00:00:42.059><c> for</c><00:00:42.210><c> long</c><00:00:42.390><c> so</c><00:00:42.870><c> suppose</c><00:00:43.500><c> we</c>
+
+00:00:43.520 --> 00:00:43.530 align:start position:0%
+stay human level for long so suppose we
+ 
+
+00:00:43.530 --> 00:00:45.350 align:start position:0%
+stay human level for long so suppose we
+figure<00:00:43.950><c> out</c><00:00:43.980><c> how</c><00:00:44.309><c> to</c><00:00:44.340><c> implement</c><00:00:44.789><c> general</c>
+
+00:00:45.350 --> 00:00:45.360 align:start position:0%
+figure out how to implement general
+ 
+
+00:00:45.360 --> 00:00:47.600 align:start position:0%
+figure out how to implement general
+intelligence<00:00:45.930><c> we</c><00:00:46.590><c> have</c><00:00:46.739><c> a</c><00:00:46.770><c> system</c><00:00:47.219><c> with</c><00:00:47.399><c> that</c>
+
+00:00:47.600 --> 00:00:47.610 align:start position:0%
+intelligence we have a system with that
+ 
+
+00:00:47.610 --> 00:00:50.299 align:start position:0%
+intelligence we have a system with that
+magic<00:00:48.090><c> ability</c><00:00:48.510><c> that</c><00:00:48.690><c> humans</c><00:00:49.020><c> have</c><00:00:49.200><c> to</c><00:00:49.829><c> tackle</c>
+
+00:00:50.299 --> 00:00:50.309 align:start position:0%
+magic ability that humans have to tackle
+ 
+
+00:00:50.309 --> 00:00:51.979 align:start position:0%
+magic ability that humans have to tackle
+a<00:00:50.520><c> wide</c><00:00:50.730><c> variety</c><00:00:50.969><c> of</c><00:00:51.270><c> different</c><00:00:51.719><c> cognitive</c>
+
+00:00:51.979 --> 00:00:51.989 align:start position:0%
+a wide variety of different cognitive
+ 
+
+00:00:51.989 --> 00:00:53.600 align:start position:0%
+a wide variety of different cognitive
+tasks<00:00:52.559><c> and</c><00:00:52.770><c> let's</c><00:00:52.980><c> assume</c><00:00:53.100><c> that</c><00:00:53.430><c> it's</c><00:00:53.550><c> not</c>
+
+00:00:53.600 --> 00:00:53.610 align:start position:0%
+tasks and let's assume that it's not
+ 
+
+00:00:53.610 --> 00:00:55.700 align:start position:0%
+tasks and let's assume that it's not
+just<00:00:53.730><c> anthropomorphic</c><00:00:54.329><c> it's</c><00:00:54.870><c> not</c><00:00:55.079><c> a</c><00:00:55.320><c> direct</c>
+
+00:00:55.700 --> 00:00:55.710 align:start position:0%
+just anthropomorphic it's not a direct
+ 
+
+00:00:55.710 --> 00:00:57.619 align:start position:0%
+just anthropomorphic it's not a direct
+one-to-one<00:00:56.090><c> emulation</c><00:00:57.090><c> of</c><00:00:57.180><c> a</c><00:00:57.270><c> human</c><00:00:57.510><c> brain</c>
+
+00:00:57.619 --> 00:00:57.629 align:start position:0%
+one-to-one emulation of a human brain
+ 
+
+00:00:57.629 --> 00:01:00.349 align:start position:0%
+one-to-one emulation of a human brain
+but<00:00:58.469><c> it's</c><00:00:58.680><c> a</c><00:00:58.770><c> general</c><00:00:59.129><c> intelligence</c><00:00:59.640><c> it</c><00:01:00.030><c> can</c>
+
+00:01:00.349 --> 00:01:00.359 align:start position:0%
+but it's a general intelligence it can
+ 
+
+00:01:00.359 --> 00:01:02.479 align:start position:0%
+but it's a general intelligence it can
+in<00:01:00.570><c> principle</c><00:01:00.719><c> learn</c><00:01:01.590><c> to</c><00:01:01.800><c> do</c><00:01:01.920><c> any</c><00:01:02.160><c> cognitive</c>
+
+00:01:02.479 --> 00:01:02.489 align:start position:0%
+in principle learn to do any cognitive
+ 
+
+00:01:02.489 --> 00:01:04.700 align:start position:0%
+in principle learn to do any cognitive
+task<00:01:03.030><c> that</c><00:01:03.480><c> a</c><00:01:03.510><c> human</c><00:01:03.840><c> can</c><00:01:03.989><c> and</c><00:01:04.290><c> let's</c><00:01:04.589><c> assume</c>
+
+00:01:04.700 --> 00:01:04.710 align:start position:0%
+task that a human can and let's assume
+ 
+
+00:01:04.710 --> 00:01:07.070 align:start position:0%
+task that a human can and let's assume
+that<00:01:04.949><c> it's</c><00:01:05.400><c> more</c><00:01:05.729><c> or</c><00:01:05.760><c> less</c><00:01:05.880><c> human</c><00:01:06.450><c> level</c><00:01:06.720><c> it</c>
+
+00:01:07.070 --> 00:01:07.080 align:start position:0%
+that it's more or less human level it
+ 
+
+00:01:07.080 --> 00:01:08.870 align:start position:0%
+that it's more or less human level it
+can<00:01:07.229><c> do</c><00:01:07.350><c> any</c><00:01:07.560><c> cognitive</c><00:01:07.770><c> task</c><00:01:08.220><c> a</c><00:01:08.400><c> human</c><00:01:08.670><c> can</c>
+
+00:01:08.870 --> 00:01:08.880 align:start position:0%
+can do any cognitive task a human can
+ 
+
+00:01:08.880 --> 00:01:11.210 align:start position:0%
+can do any cognitive task a human can
+about<00:01:09.600><c> as</c><00:01:09.840><c> well</c><00:01:09.990><c> as</c><00:01:10.140><c> the</c><00:01:10.260><c> best</c><00:01:10.470><c> humans</c><00:01:10.830><c> but</c>
+
+00:01:11.210 --> 00:01:11.220 align:start position:0%
+about as well as the best humans but
+ 
+
+00:01:11.220 --> 00:01:13.340 align:start position:0%
+about as well as the best humans but
+note<00:01:11.580><c> that</c><00:01:12.270><c> this</c><00:01:12.390><c> assumption</c><00:01:12.750><c> still</c><00:01:13.110><c> makes</c>
+
+00:01:13.340 --> 00:01:13.350 align:start position:0%
+note that this assumption still makes
+ 
+
+00:01:13.350 --> 00:01:15.380 align:start position:0%
+note that this assumption still makes
+our<00:01:13.500><c> AGI</c><00:01:13.799><c> pretty</c><00:01:14.280><c> stupid</c><00:01:14.670><c> in</c><00:01:15.030><c> a</c><00:01:15.090><c> lot</c><00:01:15.270><c> of</c>
+
+00:01:15.380 --> 00:01:15.390 align:start position:0%
+our AGI pretty stupid in a lot of
+ 
+
+00:01:15.390 --> 00:01:17.539 align:start position:0%
+our AGI pretty stupid in a lot of
+domains<00:01:15.720><c> because</c><00:01:16.140><c> humans</c><00:01:16.950><c> are</c><00:01:17.040><c> stupid</c><00:01:17.369><c> in</c><00:01:17.460><c> a</c>
+
+00:01:17.539 --> 00:01:17.549 align:start position:0%
+domains because humans are stupid in a
+ 
+
+00:01:17.549 --> 00:01:19.820 align:start position:0%
+domains because humans are stupid in a
+lot<00:01:17.670><c> of</c><00:01:17.820><c> domains</c><00:01:18.060><c> if</c><00:01:18.330><c> the</c><00:01:18.540><c> AGI</c><00:01:18.900><c> is</c><00:01:18.990><c> only</c><00:01:19.350><c> about</c>
+
+00:01:19.820 --> 00:01:19.830 align:start position:0%
+lot of domains if the AGI is only about
+ 
+
+00:01:19.830 --> 00:01:21.830 align:start position:0%
+lot of domains if the AGI is only about
+as<00:01:20.009><c> good</c><00:01:20.159><c> as</c><00:01:20.310><c> the</c><00:01:20.430><c> best</c><00:01:20.549><c> humans</c><00:01:21.060><c> at</c><00:01:21.240><c> something</c>
+
+00:01:21.830 --> 00:01:21.840 align:start position:0%
+as good as the best humans at something
+ 
+
+00:01:21.840 --> 00:01:23.600 align:start position:0%
+as good as the best humans at something
+like<00:01:21.960><c> mental</c><00:01:22.320><c> arithmetic</c><00:01:22.409><c> it</c><00:01:23.340><c> can</c><00:01:23.520><c> be</c>
+
+00:01:23.600 --> 00:01:23.610 align:start position:0%
+like mental arithmetic it can be
+ 
+
+00:01:23.610 --> 00:01:24.830 align:start position:0%
+like mental arithmetic it can be
+outperformed<00:01:24.180><c> by</c><00:01:24.210><c> a</c><00:01:24.360><c> human</c><00:01:24.689><c> with</c><00:01:24.810><c> a</c>
+
+00:01:24.830 --> 00:01:24.840 align:start position:0%
+outperformed by a human with a
+ 
+
+00:01:24.840 --> 00:01:27.050 align:start position:0%
+outperformed by a human with a
+calculator<00:01:25.080><c> right</c><00:01:25.710><c> if</c><00:01:25.890><c> an</c><00:01:26.009><c> AGI</c><00:01:26.369><c> that's</c><00:01:26.700><c> about</c>
+
+00:01:27.050 --> 00:01:27.060 align:start position:0%
+calculator right if an AGI that's about
+ 
+
+00:01:27.060 --> 00:01:28.609 align:start position:0%
+calculator right if an AGI that's about
+as<00:01:27.299><c> good</c><00:01:27.450><c> as</c><00:01:27.600><c> the</c><00:01:27.689><c> best</c><00:01:27.810><c> humans</c><00:01:28.229><c> at</c><00:01:28.350><c> chess</c>
+
+00:01:28.609 --> 00:01:28.619 align:start position:0%
+as good as the best humans at chess
+ 
+
+00:01:28.619 --> 00:01:30.560 align:start position:0%
+as good as the best humans at chess
+place<00:01:29.130><c> the</c><00:01:29.340><c> best</c><00:01:29.520><c> human</c><00:01:29.820><c> chess</c><00:01:30.000><c> player</c><00:01:30.240><c> it</c>
+
+00:01:30.560 --> 00:01:30.570 align:start position:0%
+place the best human chess player it
+ 
+
+00:01:30.570 --> 00:01:32.270 align:start position:0%
+place the best human chess player it
+should<00:01:30.810><c> be</c><00:01:30.900><c> pretty</c><00:01:31.110><c> close</c><00:01:31.350><c> but</c><00:01:31.799><c> in</c><00:01:31.890><c> practice</c>
+
+00:01:32.270 --> 00:01:32.280 align:start position:0%
+should be pretty close but in practice
+ 
+
+00:01:32.280 --> 00:01:34.370 align:start position:0%
+should be pretty close but in practice
+such<00:01:32.610><c> an</c><00:01:32.759><c> Ag</c><00:01:33.030><c> I</c><00:01:33.060><c> would</c><00:01:33.299><c> just</c><00:01:33.479><c> download</c><00:01:33.990><c> and</c><00:01:34.200><c> run</c>
+
+00:01:34.370 --> 00:01:34.380 align:start position:0%
+such an Ag I would just download and run
+ 
+
+00:01:34.380 --> 00:01:36.230 align:start position:0%
+such an Ag I would just download and run
+one<00:01:34.920><c> of</c><00:01:35.009><c> the</c><00:01:35.130><c> existing</c><00:01:35.430><c> freely</c><00:01:36.119><c> available</c>
+
+00:01:36.230 --> 00:01:36.240 align:start position:0%
+one of the existing freely available
+ 
+
+00:01:36.240 --> 00:01:38.210 align:start position:0%
+one of the existing freely available
+chess<00:01:36.780><c> programs</c><00:01:37.229><c> that</c><00:01:37.439><c> already</c><00:01:37.619><c> far</c>
+
+00:01:38.210 --> 00:01:38.220 align:start position:0%
+chess programs that already far
+ 
+
+00:01:38.220 --> 00:01:39.859 align:start position:0%
+chess programs that already far
+outperforms<00:01:38.729><c> humans</c><00:01:39.060><c> and</c><00:01:39.270><c> if</c><00:01:39.329><c> it</c><00:01:39.420><c> needs</c><00:01:39.600><c> to</c><00:01:39.750><c> do</c>
+
+00:01:39.859 --> 00:01:39.869 align:start position:0%
+outperforms humans and if it needs to do
+ 
+
+00:01:39.869 --> 00:01:41.330 align:start position:0%
+outperforms humans and if it needs to do
+mental<00:01:40.170><c> arithmetic</c><00:01:40.229><c> it</c><00:01:40.799><c> should</c><00:01:40.979><c> be</c><00:01:41.070><c> able</c><00:01:41.189><c> to</c>
+
+00:01:41.330 --> 00:01:41.340 align:start position:0%
+mental arithmetic it should be able to
+ 
+
+00:01:41.340 --> 00:01:43.310 align:start position:0%
+mental arithmetic it should be able to
+just<00:01:41.610><c> use</c><00:01:41.729><c> its</c><00:01:42.210><c> own</c><00:01:42.360><c> existing</c><00:01:42.899><c> computing</c>
+
+00:01:43.310 --> 00:01:43.320 align:start position:0%
+just use its own existing computing
+ 
+
+00:01:43.320 --> 00:01:45.080 align:start position:0%
+just use its own existing computing
+hardware<00:01:43.649><c> so</c><00:01:43.920><c> let's</c><00:01:44.100><c> revise</c><00:01:44.369><c> our</c><00:01:44.549><c> definitions</c>
+
+00:01:45.080 --> 00:01:45.090 align:start position:0%
+hardware so let's revise our definitions
+ 
+
+00:01:45.090 --> 00:01:47.030 align:start position:0%
+hardware so let's revise our definitions
+and<00:01:45.360><c> say</c><00:01:45.509><c> that</c><00:01:45.689><c> our</c><00:01:45.810><c> AGI</c><00:01:46.140><c> can</c><00:01:46.470><c> perform</c><00:01:46.829><c> any</c>
+
+00:01:47.030 --> 00:01:47.040 align:start position:0%
+and say that our AGI can perform any
+ 
+
+00:01:47.040 --> 00:01:49.069 align:start position:0%
+and say that our AGI can perform any
+cognitive<00:01:47.670><c> task</c><00:01:48.210><c> as</c><00:01:48.479><c> well</c><00:01:48.630><c> as</c><00:01:48.780><c> the</c><00:01:48.899><c> best</c>
+
+00:01:49.069 --> 00:01:49.079 align:start position:0%
+cognitive task as well as the best
+ 
+
+00:01:49.079 --> 00:01:51.410 align:start position:0%
+cognitive task as well as the best
+humans<00:01:49.470><c> or</c><00:01:49.649><c> if</c><00:01:50.310><c> our</c><00:01:50.549><c> existing</c><00:01:50.640><c> narrow</c><00:01:51.210><c> AI</c>
+
+00:01:51.410 --> 00:01:51.420 align:start position:0%
+humans or if our existing narrow AI
+ 
+
+00:01:51.420 --> 00:01:53.749 align:start position:0%
+humans or if our existing narrow AI
+outperforms<00:01:52.290><c> humans</c><00:01:52.649><c> then</c><00:01:53.159><c> the</c><00:01:53.310><c> AG</c><00:01:53.640><c> eyes</c>
+
+00:01:53.749 --> 00:01:53.759 align:start position:0%
+outperforms humans then the AG eyes
+ 
+
+00:01:53.759 --> 00:01:56.330 align:start position:0%
+outperforms humans then the AG eyes
+performance<00:01:54.329><c> will</c><00:01:54.509><c> be</c><00:01:54.630><c> closer</c><00:01:55.049><c> to</c><00:01:55.229><c> what</c><00:01:56.219><c> our</c>
+
+00:01:56.330 --> 00:01:56.340 align:start position:0%
+performance will be closer to what our
+ 
+
+00:01:56.340 --> 00:01:58.670 align:start position:0%
+performance will be closer to what our
+best<00:01:56.579><c> narrow</c><00:01:57.000><c> AI</c><00:01:57.210><c> systems</c><00:01:57.750><c> can</c><00:01:57.990><c> do</c><00:01:58.110><c> so</c><00:01:58.530><c> that's</c>
+
+00:01:58.670 --> 00:01:58.680 align:start position:0%
+best narrow AI systems can do so that's
+ 
+
+00:01:58.680 --> 00:02:00.590 align:start position:0%
+best narrow AI systems can do so that's
+one<00:01:58.920><c> way</c><00:01:59.070><c> that</c><00:01:59.219><c> a</c><00:01:59.280><c> human</c><00:01:59.579><c> level</c><00:01:59.729><c> AGI</c><00:02:00.119><c> almost</c>
+
+00:02:00.590 --> 00:02:00.600 align:start position:0%
+one way that a human level AGI almost
+ 
+
+00:02:00.600 --> 00:02:02.510 align:start position:0%
+one way that a human level AGI almost
+immediately<00:02:01.229><c> becomes</c><00:02:01.680><c> sort</c><00:02:01.979><c> of</c><00:02:02.070><c> superhuman</c>
+
+00:02:02.510 --> 00:02:02.520 align:start position:0%
+immediately becomes sort of superhuman
+ 
+
+00:02:02.520 --> 00:02:05.270 align:start position:0%
+immediately becomes sort of superhuman
+it<00:02:03.180><c> can</c><00:02:03.420><c> outperform</c><00:02:03.750><c> humans</c><00:02:04.380><c> at</c><00:02:04.560><c> things</c><00:02:04.979><c> their</c>
+
+00:02:05.270 --> 00:02:05.280 align:start position:0%
+it can outperform humans at things their
+ 
+
+00:02:05.280 --> 00:02:06.830 align:start position:0%
+it can outperform humans at things their
+computers<00:02:05.700><c> already</c><00:02:05.850><c> outperform</c><00:02:06.450><c> humans</c><00:02:06.719><c> at</c>
+
+00:02:06.830 --> 00:02:06.840 align:start position:0%
+computers already outperform humans at
+ 
+
+00:02:06.840 --> 00:02:08.749 align:start position:0%
+computers already outperform humans at
+does<00:02:07.290><c> that</c><00:02:07.409><c> really</c><00:02:07.590><c> count</c><00:02:07.799><c> though</c><00:02:07.890><c> like</c><00:02:08.550><c> is</c><00:02:08.729><c> a</c>
+
+00:02:08.749 --> 00:02:08.759 align:start position:0%
+does that really count though like is a
+ 
+
+00:02:08.759 --> 00:02:10.550 align:start position:0%
+does that really count though like is a
+human<00:02:09.179><c> with</c><00:02:09.300><c> a</c><00:02:09.360><c> calculator</c><00:02:09.599><c> really</c><00:02:10.410><c> an</c>
+
+00:02:10.550 --> 00:02:10.560 align:start position:0%
+human with a calculator really an
+ 
+
+00:02:10.560 --> 00:02:13.340 align:start position:0%
+human with a calculator really an
+arithmetic<00:02:11.160><c> super</c><00:02:11.760><c> intelligence</c><00:02:12.270><c> kind</c><00:02:13.110><c> of</c>
+
+00:02:13.340 --> 00:02:13.350 align:start position:0%
+arithmetic super intelligence kind of
+ 
+
+00:02:13.350 --> 00:02:14.630 align:start position:0%
+arithmetic super intelligence kind of
+it<00:02:13.920><c> depends</c><00:02:14.190><c> where</c><00:02:14.310><c> you</c><00:02:14.370><c> draw</c><00:02:14.490><c> your</c>
+
+00:02:14.630 --> 00:02:14.640 align:start position:0%
+it depends where you draw your
+ 
+
+00:02:14.640 --> 00:02:17.150 align:start position:0%
+it depends where you draw your
+boundaries<00:02:14.910><c> the</c><00:02:15.600><c> human</c><00:02:16.080><c> calculator</c><00:02:16.320><c> system</c>
+
+00:02:17.150 --> 00:02:17.160 align:start position:0%
+boundaries the human calculator system
+ 
+
+00:02:17.160 --> 00:02:19.280 align:start position:0%
+boundaries the human calculator system
+is<00:02:17.550><c> much</c><00:02:17.910><c> better</c><00:02:18.180><c> at</c><00:02:18.450><c> arithmetic</c><00:02:18.660><c> than</c><00:02:19.170><c> any</c>
+
+00:02:19.280 --> 00:02:19.290 align:start position:0%
+is much better at arithmetic than any
+ 
+
+00:02:19.290 --> 00:02:21.440 align:start position:0%
+is much better at arithmetic than any
+human<00:02:19.680><c> so</c><00:02:20.310><c> it</c><00:02:20.400><c> kind</c><00:02:20.580><c> of</c><00:02:20.670><c> counts</c><00:02:20.940><c> and</c><00:02:21.090><c> this</c>
+
+00:02:21.440 --> 00:02:21.450 align:start position:0%
+human so it kind of counts and this
+ 
+
+00:02:21.450 --> 00:02:23.150 align:start position:0%
+human so it kind of counts and this
+brings<00:02:21.690><c> us</c><00:02:21.870><c> to</c><00:02:22.050><c> some</c><00:02:22.800><c> of</c><00:02:22.890><c> the</c><00:02:22.980><c> other</c>
+
+00:02:23.150 --> 00:02:23.160 align:start position:0%
+brings us to some of the other
+ 
+
+00:02:23.160 --> 00:02:25.640 align:start position:0%
+brings us to some of the other
+advantages<00:02:23.760><c> a</c><00:02:23.820><c> human</c><00:02:24.360><c> level</c><00:02:24.540><c> AGI</c><00:02:25.080><c> might</c><00:02:25.380><c> get</c>
+
+00:02:25.640 --> 00:02:25.650 align:start position:0%
+advantages a human level AGI might get
+ 
+
+00:02:25.650 --> 00:02:27.350 align:start position:0%
+advantages a human level AGI might get
+pretty<00:02:26.010><c> much</c><00:02:26.280><c> free</c><00:02:26.490><c> of</c><00:02:26.580><c> charge</c><00:02:26.820><c> because</c><00:02:27.240><c> if</c>
+
+00:02:27.350 --> 00:02:27.360 align:start position:0%
+pretty much free of charge because if
+ 
+
+00:02:27.360 --> 00:02:28.610 align:start position:0%
+pretty much free of charge because if
+you<00:02:27.450><c> imagine</c><00:02:27.630><c> the</c><00:02:27.900><c> human</c><00:02:28.170><c> has</c><00:02:28.290><c> a</c><00:02:28.320><c> calculator</c>
+
+00:02:28.610 --> 00:02:28.620 align:start position:0%
+you imagine the human has a calculator
+ 
+
+00:02:28.620 --> 00:02:30.980 align:start position:0%
+you imagine the human has a calculator
+implant<00:02:29.430><c> in</c><00:02:29.610><c> their</c><00:02:29.790><c> brain</c><00:02:30.030><c> that</c><00:02:30.600><c> lets</c><00:02:30.810><c> them</c>
+
+00:02:30.980 --> 00:02:30.990 align:start position:0%
+implant in their brain that lets them
+ 
+
+00:02:30.990 --> 00:02:32.450 align:start position:0%
+implant in their brain that lets them
+just<00:02:31.230><c> think</c><00:02:31.500><c> of</c><00:02:31.680><c> equations</c><00:02:32.190><c> and</c><00:02:32.400><c> the</c>
+
+00:02:32.450 --> 00:02:32.460 align:start position:0%
+just think of equations and the
+ 
+
+00:02:32.460 --> 00:02:33.830 align:start position:0%
+just think of equations and the
+solutions<00:02:32.880><c> immediately</c><00:02:33.360><c> pop</c><00:02:33.540><c> into</c><00:02:33.750><c> their</c>
+
+00:02:33.830 --> 00:02:33.840 align:start position:0%
+solutions immediately pop into their
+ 
+
+00:02:33.840 --> 00:02:35.210 align:start position:0%
+solutions immediately pop into their
+mind<00:02:34.080><c> that</c><00:02:34.380><c> feels</c><00:02:34.560><c> a</c><00:02:34.680><c> lot</c><00:02:34.800><c> more</c><00:02:34.860><c> super</c>
+
+00:02:35.210 --> 00:02:35.220 align:start position:0%
+mind that feels a lot more super
+ 
+
+00:02:35.220 --> 00:02:37.640 align:start position:0%
+mind that feels a lot more super
+intelligent<00:02:35.730><c> and</c><00:02:35.910><c> that's</c><00:02:36.750><c> much</c><00:02:36.990><c> closer</c><00:02:37.350><c> to</c>
+
+00:02:37.640 --> 00:02:37.650 align:start position:0%
+intelligent and that's much closer to
+ 
+
+00:02:37.650 --> 00:02:38.810 align:start position:0%
+intelligent and that's much closer to
+what<00:02:37.770><c> the</c><00:02:37.860><c> AGI</c><00:02:38.160><c> would</c><00:02:38.370><c> be</c><00:02:38.460><c> working</c><00:02:38.790><c> with</c>
+
+00:02:38.810 --> 00:02:38.820 align:start position:0%
+what the AGI would be working with
+ 
+
+00:02:38.820 --> 00:02:41.030 align:start position:0%
+what the AGI would be working with
+because<00:02:39.510><c> humans</c><00:02:40.050><c> are</c><00:02:40.200><c> at</c><00:02:40.410><c> a</c><00:02:40.440><c> big</c><00:02:40.770><c> disadvantage</c>
+
+00:02:41.030 --> 00:02:41.040 align:start position:0%
+because humans are at a big disadvantage
+ 
+
+00:02:41.040 --> 00:02:43.070 align:start position:0%
+because humans are at a big disadvantage
+when<00:02:41.820><c> it</c><00:02:41.910><c> comes</c><00:02:42.090><c> to</c><00:02:42.240><c> interacting</c><00:02:42.540><c> with</c><00:02:42.930><c> other</c>
+
+00:02:43.070 --> 00:02:43.080 align:start position:0%
+when it comes to interacting with other
+ 
+
+00:02:43.080 --> 00:02:46.280 align:start position:0%
+when it comes to interacting with other
+systems<00:02:43.530><c> they</c><00:02:44.310><c> are</c><00:02:44.370><c> made</c><00:02:44.670><c> out</c><00:02:44.850><c> of</c><00:02:44.880><c> meat</c><00:02:45.330><c> for</c>
+
+00:02:46.280 --> 00:02:46.290 align:start position:0%
+systems they are made out of meat for
+ 
+
+00:02:46.290 --> 00:02:48.170 align:start position:0%
+systems they are made out of meat for
+humans<00:02:46.590><c> interacting</c><00:02:47.370><c> with</c><00:02:47.490><c> computers</c><00:02:47.640><c> is</c>
+
+00:02:48.170 --> 00:02:48.180 align:start position:0%
+humans interacting with computers is
+ 
+
+00:02:48.180 --> 00:02:50.450 align:start position:0%
+humans interacting with computers is
+slow<00:02:48.930><c> you</c><00:02:49.650><c> have</c><00:02:49.800><c> a</c><00:02:49.830><c> number</c><00:02:49.980><c> in</c><00:02:50.160><c> your</c><00:02:50.280><c> brain</c>
+
+00:02:50.450 --> 00:02:50.460 align:start position:0%
+slow you have a number in your brain
+ 
+
+00:02:50.460 --> 00:02:52.550 align:start position:0%
+slow you have a number in your brain
+it's<00:02:50.760><c> some</c><00:02:51.390><c> pattern</c><00:02:51.690><c> of</c><00:02:51.780><c> electrical</c><00:02:51.960><c> signals</c>
+
+00:02:52.550 --> 00:02:52.560 align:start position:0%
+it's some pattern of electrical signals
+ 
+
+00:02:52.560 --> 00:02:54.830 align:start position:0%
+it's some pattern of electrical signals
+but<00:02:53.100><c> to</c><00:02:53.310><c> get</c><00:02:53.490><c> that</c><00:02:53.670><c> into</c><00:02:53.910><c> the</c><00:02:53.940><c> Machine</c><00:02:54.330><c> your</c>
+
+00:02:54.830 --> 00:02:54.840 align:start position:0%
+but to get that into the Machine your
+ 
+
+00:02:54.840 --> 00:02:56.600 align:start position:0%
+but to get that into the Machine your
+brain<00:02:55.080><c> has</c><00:02:55.350><c> to</c><00:02:55.380><c> send</c><00:02:55.650><c> signals</c><00:02:56.070><c> to</c><00:02:56.130><c> some</c><00:02:56.370><c> nerves</c>
+
+00:02:56.600 --> 00:02:56.610 align:start position:0%
+brain has to send signals to some nerves
+ 
+
+00:02:56.610 --> 00:02:58.940 align:start position:0%
+brain has to send signals to some nerves
+that<00:02:57.330><c> pass</c><00:02:57.570><c> it</c><00:02:57.750><c> on</c><00:02:57.840><c> to</c><00:02:57.870><c> more</c><00:02:58.200><c> nerves</c><00:02:58.500><c> across</c>
+
+00:02:58.940 --> 00:02:58.950 align:start position:0%
+that pass it on to more nerves across
+ 
+
+00:02:58.950 --> 00:03:01.090 align:start position:0%
+that pass it on to more nerves across
+synapses<00:02:59.250><c> that</c><00:02:59.820><c> work</c><00:03:00.000><c> by</c><00:03:00.180><c> chemical</c><00:03:00.690><c> diffusion</c>
+
+00:03:01.090 --> 00:03:01.100 align:start position:0%
+synapses that work by chemical diffusion
+ 
+
+00:03:01.100 --> 00:03:03.740 align:start position:0%
+synapses that work by chemical diffusion
+that<00:03:02.100><c> then</c><00:03:02.340><c> activates</c><00:03:02.820><c> a</c><00:03:02.940><c> muscle</c><00:03:03.300><c> fibers</c><00:03:03.720><c> that</c>
+
+00:03:03.740 --> 00:03:03.750 align:start position:0%
+that then activates a muscle fibers that
+ 
+
+00:03:03.750 --> 00:03:05.540 align:start position:0%
+that then activates a muscle fibers that
+start<00:03:04.260><c> to</c><00:03:04.380><c> accelerate</c><00:03:04.650><c> some</c><00:03:05.070><c> meat</c><00:03:05.280><c> and</c><00:03:05.430><c> you</c>
+
+00:03:05.540 --> 00:03:05.550 align:start position:0%
+start to accelerate some meat and you
+ 
+
+00:03:05.550 --> 00:03:07.010 align:start position:0%
+start to accelerate some meat and you
+have<00:03:05.670><c> to</c><00:03:05.790><c> send</c><00:03:05.970><c> loads</c><00:03:06.210><c> of</c><00:03:06.360><c> these</c><00:03:06.510><c> signals</c><00:03:06.870><c> to</c>
+
+00:03:07.010 --> 00:03:07.020 align:start position:0%
+have to send loads of these signals to
+ 
+
+00:03:07.020 --> 00:03:08.810 align:start position:0%
+have to send loads of these signals to
+lots<00:03:07.230><c> of</c><00:03:07.350><c> different</c><00:03:07.470><c> muscles</c><00:03:08.010><c> to</c><00:03:08.430><c> get</c><00:03:08.580><c> the</c><00:03:08.700><c> bit</c>
+
+00:03:08.810 --> 00:03:08.820 align:start position:0%
+lots of different muscles to get the bit
+ 
+
+00:03:08.820 --> 00:03:10.850 align:start position:0%
+lots of different muscles to get the bit
+of<00:03:08.940><c> meat</c><00:03:09.090><c> to</c><00:03:09.270><c> land</c><00:03:09.510><c> on</c><00:03:09.780><c> the</c><00:03:10.170><c> right</c><00:03:10.350><c> button</c><00:03:10.590><c> and</c>
+
+00:03:10.850 --> 00:03:10.860 align:start position:0%
+of meat to land on the right button and
+ 
+
+00:03:10.860 --> 00:03:12.140 align:start position:0%
+of meat to land on the right button and
+then<00:03:10.980><c> that</c><00:03:11.010><c> completes</c><00:03:11.460><c> the</c><00:03:11.580><c> circuit</c><00:03:11.940><c> and</c><00:03:12.090><c> the</c>
+
+00:03:12.140 --> 00:03:12.150 align:start position:0%
+then that completes the circuit and the
+ 
+
+00:03:12.150 --> 00:03:13.460 align:start position:0%
+then that completes the circuit and the
+process<00:03:12.480><c> can</c><00:03:12.630><c> go</c><00:03:12.750><c> along</c><00:03:12.930><c> at</c><00:03:13.080><c> a</c><00:03:13.140><c> reasonable</c>
+
+00:03:13.460 --> 00:03:13.470 align:start position:0%
+process can go along at a reasonable
+ 
+
+00:03:13.470 --> 00:03:14.870 align:start position:0%
+process can go along at a reasonable
+speed<00:03:13.500><c> again</c><00:03:13.920><c> but</c><00:03:14.190><c> you've</c><00:03:14.310><c> got</c><00:03:14.490><c> to</c><00:03:14.610><c> do</c><00:03:14.730><c> that</c>
+
+00:03:14.870 --> 00:03:14.880 align:start position:0%
+speed again but you've got to do that
+ 
+
+00:03:14.880 --> 00:03:17.690 align:start position:0%
+speed again but you've got to do that
+for<00:03:15.120><c> every</c><00:03:15.240><c> digit</c><00:03:15.860><c> getting</c><00:03:16.860><c> data</c><00:03:17.100><c> out</c><00:03:17.400><c> of</c><00:03:17.430><c> a</c>
+
+00:03:17.690 --> 00:03:17.700 align:start position:0%
+for every digit getting data out of a
+ 
+
+00:03:17.700 --> 00:03:19.940 align:start position:0%
+for every digit getting data out of a
+human<00:03:17.940><c> brain</c><00:03:18.150><c> and</c><00:03:18.510><c> into</c><00:03:19.110><c> another</c><00:03:19.230><c> system</c><00:03:19.620><c> is</c>
+
+00:03:19.940 --> 00:03:19.950 align:start position:0%
+human brain and into another system is
+ 
+
+00:03:19.950 --> 00:03:22.130 align:start position:0%
+human brain and into another system is
+glacially<00:03:20.670><c> slow</c><00:03:20.700><c> by</c><00:03:21.180><c> software</c><00:03:21.480><c> standards</c><00:03:21.900><c> and</c>
+
+00:03:22.130 --> 00:03:22.140 align:start position:0%
+glacially slow by software standards and
+ 
+
+00:03:22.140 --> 00:03:24.230 align:start position:0%
+glacially slow by software standards and
+getting<00:03:22.650><c> data</c><00:03:22.800><c> in</c><00:03:23.040><c> is</c><00:03:23.220><c> pretty</c><00:03:23.460><c> slow</c><00:03:23.670><c> as</c><00:03:23.820><c> well</c>
+
+00:03:24.230 --> 00:03:24.240 align:start position:0%
+getting data in is pretty slow as well
+ 
+
+00:03:24.240 --> 00:03:26.480 align:start position:0%
+getting data in is pretty slow as well
+you<00:03:24.660><c> can't</c><00:03:24.870><c> just</c><00:03:25.080><c> experience</c><00:03:25.800><c> a</c><00:03:25.950><c> number</c><00:03:26.280><c> it</c>
+
+00:03:26.480 --> 00:03:26.490 align:start position:0%
+you can't just experience a number it
+ 
+
+00:03:26.490 --> 00:03:28.010 align:start position:0%
+you can't just experience a number it
+has<00:03:26.700><c> to</c><00:03:26.820><c> be</c><00:03:26.940><c> presented</c><00:03:27.480><c> as</c><00:03:27.600><c> a</c><00:03:27.630><c> pattern</c><00:03:27.870><c> of</c>
+
+00:03:28.010 --> 00:03:28.020 align:start position:0%
+has to be presented as a pattern of
+ 
+
+00:03:28.020 --> 00:03:30.110 align:start position:0%
+has to be presented as a pattern of
+light<00:03:28.230><c> which</c><00:03:28.860><c> excites</c><00:03:29.310><c> some</c><00:03:29.550><c> light-sensitive</c>
+
+00:03:30.110 --> 00:03:30.120 align:start position:0%
+light which excites some light-sensitive
+ 
+
+00:03:30.120 --> 00:03:31.790 align:start position:0%
+light which excites some light-sensitive
+cells<00:03:30.360><c> in</c><00:03:30.600><c> your</c><00:03:30.690><c> eye</c><00:03:30.750><c> that</c><00:03:30.870><c> sends</c><00:03:31.380><c> a</c><00:03:31.440><c> signal</c><00:03:31.620><c> to</c>
+
+00:03:31.790 --> 00:03:31.800 align:start position:0%
+cells in your eye that sends a signal to
+ 
+
+00:03:31.800 --> 00:03:33.470 align:start position:0%
+cells in your eye that sends a signal to
+your<00:03:31.890><c> optic</c><00:03:32.250><c> nerve</c><00:03:32.430><c> which</c><00:03:32.730><c> goes</c><00:03:33.180><c> to</c><00:03:33.360><c> your</c>
+
+00:03:33.470 --> 00:03:33.480 align:start position:0%
+your optic nerve which goes to your
+ 
+
+00:03:33.480 --> 00:03:35.060 align:start position:0%
+your optic nerve which goes to your
+brain<00:03:33.540><c> which</c><00:03:34.200><c> then</c><00:03:34.260><c> does</c><00:03:34.650><c> a</c><00:03:34.680><c> load</c><00:03:34.860><c> of</c>
+
+00:03:35.060 --> 00:03:35.070 align:start position:0%
+brain which then does a load of
+ 
+
+00:03:35.070 --> 00:03:36.590 align:start position:0%
+brain which then does a load of
+processing<00:03:35.850><c> to</c><00:03:35.940><c> figure</c><00:03:35.970><c> out</c><00:03:36.300><c> that</c><00:03:36.450><c> you're</c>
+
+00:03:36.590 --> 00:03:36.600 align:start position:0%
+processing to figure out that you're
+ 
+
+00:03:36.600 --> 00:03:38.480 align:start position:0%
+processing to figure out that you're
+looking<00:03:36.990><c> at</c><00:03:37.080><c> a</c><00:03:37.170><c> 3</c><00:03:37.440><c> or</c><00:03:37.620><c> whatever</c><00:03:37.860><c> you</c><00:03:38.220><c> know</c><00:03:38.310><c> it's</c>
+
+00:03:38.480 --> 00:03:38.490 align:start position:0%
+looking at a 3 or whatever you know it's
+ 
+
+00:03:38.490 --> 00:03:40.220 align:start position:0%
+looking at a 3 or whatever you know it's
+it's<00:03:38.970><c> really</c><00:03:39.270><c> low</c><00:03:39.570><c> bandwidth</c>
+
+00:03:40.220 --> 00:03:40.230 align:start position:0%
+it's really low bandwidth
+ 
+
+00:03:40.230 --> 00:03:42.200 align:start position:0%
+it's really low bandwidth
+high<00:03:40.770><c> latency</c><00:03:41.160><c> the</c><00:03:41.670><c> round-trip</c><00:03:42.000><c> time</c>
+
+00:03:42.200 --> 00:03:42.210 align:start position:0%
+high latency the round-trip time
+ 
+
+00:03:42.210 --> 00:03:44.840 align:start position:0%
+high latency the round-trip time
+measured<00:03:43.170><c> as</c><00:03:43.290><c> the</c><00:03:43.320><c> time</c><00:03:43.650><c> it</c><00:03:43.770><c> takes</c><00:03:43.980><c> a</c><00:03:44.100><c> human</c><00:03:44.310><c> to</c>
+
+00:03:44.840 --> 00:03:44.850 align:start position:0%
+measured as the time it takes a human to
+ 
+
+00:03:44.850 --> 00:03:46.430 align:start position:0%
+measured as the time it takes a human to
+press<00:03:45.120><c> a</c><00:03:45.150><c> button</c><00:03:45.420><c> as</c><00:03:45.720><c> soon</c><00:03:45.990><c> as</c><00:03:46.110><c> they</c><00:03:46.230><c> see</c><00:03:46.290><c> a</c>
+
+00:03:46.430 --> 00:03:46.440 align:start position:0%
+press a button as soon as they see a
+ 
+
+00:03:46.440 --> 00:03:48.860 align:start position:0%
+press a button as soon as they see a
+light<00:03:46.650><c> flash</c><00:03:46.950><c> is</c><00:03:47.220><c> about</c><00:03:47.760><c> 200</c><00:03:48.300><c> milliseconds</c>
+
+00:03:48.860 --> 00:03:48.870 align:start position:0%
+light flash is about 200 milliseconds
+ 
+
+00:03:48.870 --> 00:03:51.860 align:start position:0%
+light flash is about 200 milliseconds
+1/5<00:03:49.320><c> of</c><00:03:49.380><c> a</c><00:03:49.470><c> second</c><00:03:49.860><c> that</c><00:03:50.040><c> is</c><00:03:50.730><c> a</c><00:03:50.760><c> long</c><00:03:51.240><c> time</c><00:03:51.810><c> in</c>
+
+00:03:51.860 --> 00:03:51.870 align:start position:0%
+1/5 of a second that is a long time in
+ 
+
+00:03:51.870 --> 00:03:53.810 align:start position:0%
+1/5 of a second that is a long time in
+software<00:03:52.440><c> terms</c><00:03:52.710><c> as</c><00:03:52.920><c> any</c><00:03:53.070><c> systems</c><00:03:53.430><c> programmer</c>
+
+00:03:53.810 --> 00:03:53.820 align:start position:0%
+software terms as any systems programmer
+ 
+
+00:03:53.820 --> 00:03:55.460 align:start position:0%
+software terms as any systems programmer
+will<00:03:53.970><c> tell</c><00:03:54.180><c> you</c><00:03:54.300><c> gamers</c><00:03:54.600><c> will</c><00:03:54.900><c> know</c><00:03:55.020><c> this</c><00:03:55.200><c> to</c>
+
+00:03:55.460 --> 00:03:55.470 align:start position:0%
+will tell you gamers will know this to
+ 
+
+00:03:55.470 --> 00:03:57.440 align:start position:0%
+will tell you gamers will know this to
+think<00:03:56.040><c> about</c><00:03:56.220><c> playing</c><00:03:56.490><c> a</c><00:03:56.640><c> game</c><00:03:56.790><c> with</c><00:03:56.970><c> 200</c>
+
+00:03:57.440 --> 00:03:57.450 align:start position:0%
+think about playing a game with 200
+ 
+
+00:03:57.450 --> 00:03:58.880 align:start position:0%
+think about playing a game with 200
+milliseconds<00:03:57.960><c> of</c><00:03:58.020><c> ping</c><00:03:58.200><c> that's</c><00:03:58.590><c> what</c><00:03:58.770><c> your</c>
+
+00:03:58.880 --> 00:03:58.890 align:start position:0%
+milliseconds of ping that's what your
+ 
+
+00:03:58.890 --> 00:04:00.140 align:start position:0%
+milliseconds of ping that's what your
+brain<00:03:58.980><c> is</c><00:03:59.100><c> working</c><00:03:59.190><c> with</c><00:03:59.490><c> all</c><00:03:59.610><c> the</c><00:03:59.730><c> time</c><00:03:59.910><c> so</c>
+
+00:04:00.140 --> 00:04:00.150 align:start position:0%
+brain is working with all the time so
+ 
+
+00:04:00.150 --> 00:04:01.790 align:start position:0%
+brain is working with all the time so
+getting<00:04:00.420><c> rid</c><00:04:00.600><c> of</c><00:04:00.720><c> that</c><00:04:00.870><c> lag</c><00:04:01.080><c> and</c><00:04:01.350><c> increasing</c>
+
+00:04:01.790 --> 00:04:01.800 align:start position:0%
+getting rid of that lag and increasing
+ 
+
+00:04:01.800 --> 00:04:03.890 align:start position:0%
+getting rid of that lag and increasing
+the<00:04:01.890><c> bandwidth</c><00:04:02.280><c> should</c><00:04:02.820><c> make</c><00:04:03.000><c> an</c><00:04:03.120><c> AGI</c><00:04:03.450><c> much</c>
+
+00:04:03.890 --> 00:04:03.900 align:start position:0%
+the bandwidth should make an AGI much
+ 
+
+00:04:03.900 --> 00:04:06.140 align:start position:0%
+the bandwidth should make an AGI much
+faster<00:04:04.410><c> at</c><00:04:04.530><c> a</c><00:04:04.560><c> lot</c><00:04:04.800><c> of</c><00:04:04.830><c> tasks</c><00:04:05.340><c> and</c><00:04:05.490><c> much</c><00:04:05.940><c> better</c>
+
+00:04:06.140 --> 00:04:06.150 align:start position:0%
+faster at a lot of tasks and much better
+ 
+
+00:04:06.150 --> 00:04:07.880 align:start position:0%
+faster at a lot of tasks and much better
+at<00:04:06.390><c> integrating</c><00:04:06.960><c> other</c><00:04:07.110><c> software</c><00:04:07.560><c> systems</c>
+
+00:04:07.880 --> 00:04:07.890 align:start position:0%
+at integrating other software systems
+ 
+
+00:04:07.890 --> 00:04:09.860 align:start position:0%
+at integrating other software systems
+into<00:04:08.100><c> its</c><00:04:08.250><c> thinking</c><00:04:08.460><c> even</c><00:04:09.000><c> if</c><00:04:09.150><c> that</c><00:04:09.360><c> AGI</c><00:04:09.780><c> is</c>
+
+00:04:09.860 --> 00:04:09.870 align:start position:0%
+into its thinking even if that AGI is
+ 
+
+00:04:09.870 --> 00:04:11.990 align:start position:0%
+into its thinking even if that AGI is
+not<00:04:10.200><c> actually</c><00:04:10.800><c> smarter</c><00:04:11.310><c> than</c><00:04:11.340><c> a</c><00:04:11.490><c> human</c><00:04:11.790><c> in</c><00:04:11.880><c> any</c>
+
+00:04:11.990 --> 00:04:12.000 align:start position:0%
+not actually smarter than a human in any
+ 
+
+00:04:12.000 --> 00:04:13.400 align:start position:0%
+not actually smarter than a human in any
+other<00:04:12.180><c> way</c><00:04:12.420><c> the</c><00:04:12.720><c> other</c><00:04:12.840><c> problem</c><00:04:13.170><c> with</c><00:04:13.260><c> our</c>
+
+00:04:13.400 --> 00:04:13.410 align:start position:0%
+other way the other problem with our
+ 
+
+00:04:13.410 --> 00:04:15.470 align:start position:0%
+other way the other problem with our
+input<00:04:13.710><c> system</c><00:04:14.070><c> is</c><00:04:14.220><c> that</c><00:04:14.580><c> we</c><00:04:14.700><c> can</c><00:04:14.850><c> only</c><00:04:15.000><c> really</c>
+
+00:04:15.470 --> 00:04:15.480 align:start position:0%
+input system is that we can only really
+ 
+
+00:04:15.480 --> 00:04:17.680 align:start position:0%
+input system is that we can only really
+take<00:04:15.840><c> in</c><00:04:15.990><c> information</c><00:04:16.590><c> in</c><00:04:16.830><c> certain</c><00:04:17.250><c> forms</c>
+
+00:04:17.680 --> 00:04:17.690 align:start position:0%
+take in information in certain forms
+ 
+
+00:04:17.690 --> 00:04:20.900 align:start position:0%
+take in information in certain forms
+text<00:04:18.690><c> images</c><00:04:19.290><c> sound</c><00:04:19.650><c> we</c><00:04:20.010><c> can't</c><00:04:20.250><c> easily</c><00:04:20.460><c> pass</c>
+
+00:04:20.900 --> 00:04:20.910 align:start position:0%
+text images sound we can't easily pass
+ 
+
+00:04:20.910 --> 00:04:22.850 align:start position:0%
+text images sound we can't easily pass
+most<00:04:21.330><c> types</c><00:04:21.630><c> of</c><00:04:21.780><c> information</c><00:04:22.350><c> there's</c><00:04:22.680><c> way</c>
+
+00:04:22.850 --> 00:04:22.860 align:start position:0%
+most types of information there's way
+ 
+
+00:04:22.860 --> 00:04:24.170 align:start position:0%
+most types of information there's way
+too<00:04:22.919><c> much</c><00:04:23.220><c> information</c>
+
+00:04:24.170 --> 00:04:24.180 align:start position:0%
+too much information
+ 
+
+00:04:24.180 --> 00:04:26.540 align:start position:0%
+too much information
+the<00:04:24.449><c> matrix</c><00:04:24.840><c> which</c><00:04:25.320><c> is</c><00:04:25.440><c> why</c><00:04:25.560><c> we</c><00:04:25.740><c> make</c><00:04:25.919><c> graphs</c>
+
+00:04:26.540 --> 00:04:26.550 align:start position:0%
+the matrix which is why we make graphs
+ 
+
+00:04:26.550 --> 00:04:29.180 align:start position:0%
+the matrix which is why we make graphs
+and<00:04:26.850><c> charts</c><00:04:26.910><c> and</c><00:04:27.449><c> data</c><00:04:27.750><c> visualizations</c><00:04:28.190><c> you</c>
+
+00:04:29.180 --> 00:04:29.190 align:start position:0%
+and charts and data visualizations you
+ 
+
+00:04:29.190 --> 00:04:30.740 align:start position:0%
+and charts and data visualizations you
+have<00:04:29.370><c> to</c><00:04:29.520><c> convert</c><00:04:29.850><c> the</c><00:04:30.000><c> data</c><00:04:30.120><c> into</c><00:04:30.540><c> something</c>
+
+00:04:30.740 --> 00:04:30.750 align:start position:0%
+have to convert the data into something
+ 
+
+00:04:30.750 --> 00:04:33.050 align:start position:0%
+have to convert the data into something
+that<00:04:30.930><c> can</c><00:04:31.229><c> be</c><00:04:31.410><c> passed</c><00:04:31.680><c> by</c><00:04:32.280><c> systems</c><00:04:32.729><c> designed</c>
+
+00:04:33.050 --> 00:04:33.060 align:start position:0%
+that can be passed by systems designed
+ 
+
+00:04:33.060 --> 00:04:35.090 align:start position:0%
+that can be passed by systems designed
+for<00:04:33.180><c> hunting</c><00:04:33.479><c> and</c><00:04:33.600><c> gathering</c><00:04:33.720><c> our</c><00:04:34.199><c> AGI</c><00:04:34.650><c> might</c>
+
+00:04:35.090 --> 00:04:35.100 align:start position:0%
+for hunting and gathering our AGI might
+ 
+
+00:04:35.100 --> 00:04:37.159 align:start position:0%
+for hunting and gathering our AGI might
+not<00:04:35.280><c> be</c><00:04:35.400><c> limited</c><00:04:35.699><c> in</c><00:04:35.820><c> that</c><00:04:35.970><c> way</c><00:04:36.150><c> it</c><00:04:36.750><c> might</c><00:04:36.990><c> be</c>
+
+00:04:37.159 --> 00:04:37.169 align:start position:0%
+not be limited in that way it might be
+ 
+
+00:04:37.169 --> 00:04:38.719 align:start position:0%
+not be limited in that way it might be
+able<00:04:37.289><c> to</c><00:04:37.500><c> experience</c><00:04:37.919><c> different</c><00:04:38.430><c> kinds</c><00:04:38.669><c> of</c>
+
+00:04:38.719 --> 00:04:38.729 align:start position:0%
+able to experience different kinds of
+ 
+
+00:04:38.729 --> 00:04:40.670 align:start position:0%
+able to experience different kinds of
+data<00:04:38.940><c> much</c><00:04:39.300><c> more</c><00:04:39.330><c> directly</c><00:04:40.080><c> without</c><00:04:40.500><c> having</c>
+
+00:04:40.670 --> 00:04:40.680 align:start position:0%
+data much more directly without having
+ 
+
+00:04:40.680 --> 00:04:43.070 align:start position:0%
+data much more directly without having
+to<00:04:41.100><c> first</c><00:04:41.310><c> map</c><00:04:41.669><c> it</c><00:04:41.850><c> into</c><00:04:42.120><c> an</c><00:04:42.240><c> existing</c><00:04:42.330><c> sensory</c>
+
+00:04:43.070 --> 00:04:43.080 align:start position:0%
+to first map it into an existing sensory
+ 
+
+00:04:43.080 --> 00:04:44.480 align:start position:0%
+to first map it into an existing sensory
+modality<00:04:43.560><c> it</c><00:04:43.800><c> would</c><00:04:43.919><c> probably</c><00:04:44.100><c> have</c>
+
+00:04:44.480 --> 00:04:44.490 align:start position:0%
+modality it would probably have
+ 
+
+00:04:44.490 --> 00:04:45.800 align:start position:0%
+modality it would probably have
+specialized<00:04:45.120><c> systems</c><00:04:45.509><c> for</c><00:04:45.720><c> processing</c>
+
+00:04:45.800 --> 00:04:45.810 align:start position:0%
+specialized systems for processing
+ 
+
+00:04:45.810 --> 00:04:48.590 align:start position:0%
+specialized systems for processing
+images<00:04:46.530><c> or</c><00:04:46.710><c> sound</c><00:04:46.979><c> but</c><00:04:47.699><c> it</c><00:04:47.789><c> wouldn't</c><00:04:48.120><c> have</c><00:04:48.330><c> to</c>
+
+00:04:48.590 --> 00:04:48.600 align:start position:0%
+images or sound but it wouldn't have to
+ 
+
+00:04:48.600 --> 00:04:50.749 align:start position:0%
+images or sound but it wouldn't have to
+convert<00:04:48.930><c> every</c><00:04:49.350><c> input</c><00:04:49.530><c> into</c><00:04:50.039><c> images</c><00:04:50.370><c> or</c><00:04:50.520><c> sound</c>
+
+00:04:50.749 --> 00:04:50.759 align:start position:0%
+convert every input into images or sound
+ 
+
+00:04:50.759 --> 00:04:52.279 align:start position:0%
+convert every input into images or sound
+and<00:04:50.970><c> then</c><00:04:51.090><c> back</c><00:04:51.300><c> again</c><00:04:51.449><c> before</c><00:04:51.810><c> it</c><00:04:51.990><c> could</c><00:04:52.110><c> use</c>
+
+00:04:52.279 --> 00:04:52.289 align:start position:0%
+and then back again before it could use
+ 
+
+00:04:52.289 --> 00:04:55.100 align:start position:0%
+and then back again before it could use
+it<00:04:52.440><c> it</c><00:04:52.919><c> could</c><00:04:53.130><c> just</c><00:04:53.340><c> use</c><00:04:53.789><c> the</c><00:04:53.970><c> data</c><00:04:54.150><c> imagine</c><00:04:55.020><c> a</c>
+
+00:04:55.100 --> 00:04:55.110 align:start position:0%
+it it could just use the data imagine a
+ 
+
+00:04:55.110 --> 00:04:57.230 align:start position:0%
+it it could just use the data imagine a
+software<00:04:55.530><c> developer</c><00:04:55.949><c> who's</c><00:04:56.220><c> about</c><00:04:56.669><c> as</c><00:04:56.729><c> smart</c>
+
+00:04:57.230 --> 00:04:57.240 align:start position:0%
+software developer who's about as smart
+ 
+
+00:04:57.240 --> 00:04:58.820 align:start position:0%
+software developer who's about as smart
+as<00:04:57.449><c> the</c><00:04:57.570><c> best</c><00:04:57.750><c> human</c><00:04:58.020><c> software</c><00:04:58.410><c> developers</c>
+
+00:04:58.820 --> 00:04:58.830 align:start position:0%
+as the best human software developers
+ 
+
+00:04:58.830 --> 00:05:01.370 align:start position:0%
+as the best human software developers
+but<00:04:59.400><c> they</c><00:04:59.970><c> can</c><00:05:00.150><c> perceive</c><00:05:00.449><c> data</c><00:05:00.780><c> directly</c>
+
+00:05:01.370 --> 00:05:01.380 align:start position:0%
+but they can perceive data directly
+ 
+
+00:05:01.380 --> 00:05:02.870 align:start position:0%
+but they can perceive data directly
+without<00:05:01.800><c> having</c><00:05:01.949><c> to</c><00:05:02.310><c> convert</c><00:05:02.550><c> it</c><00:05:02.729><c> into</c>
+
+00:05:02.870 --> 00:05:02.880 align:start position:0%
+without having to convert it into
+ 
+
+00:05:02.880 --> 00:05:04.939 align:start position:0%
+without having to convert it into
+symbols<00:05:03.270><c> and</c><00:05:03.510><c> visually</c><00:05:03.990><c> read</c><00:05:04.320><c> it</c><00:05:04.500><c> and</c><00:05:04.710><c> they</c>
+
+00:05:04.939 --> 00:05:04.949 align:start position:0%
+symbols and visually read it and they
+ 
+
+00:05:04.949 --> 00:05:06.950 align:start position:0%
+symbols and visually read it and they
+don't<00:05:05.070><c> have</c><00:05:05.310><c> to</c><00:05:05.460><c> type</c><00:05:05.729><c> or</c><00:05:06.030><c> manually</c><00:05:06.570><c> navigate</c>
+
+00:05:06.950 --> 00:05:06.960 align:start position:0%
+don't have to type or manually navigate
+ 
+
+00:05:06.960 --> 00:05:09.020 align:start position:0%
+don't have to type or manually navigate
+the<00:05:07.080><c> files</c><00:05:07.350><c> they</c><00:05:07.889><c> can</c><00:05:07.919><c> write</c><00:05:08.280><c> code</c><00:05:08.490><c> as</c><00:05:08.639><c> fast</c><00:05:08.850><c> as</c>
+
+00:05:09.020 --> 00:05:09.030 align:start position:0%
+the files they can write code as fast as
+ 
+
+00:05:09.030 --> 00:05:10.370 align:start position:0%
+the files they can write code as fast as
+they<00:05:09.150><c> can</c><00:05:09.300><c> think</c><00:05:09.479><c> even</c><00:05:09.900><c> without</c><00:05:10.139><c> being</c>
+
+00:05:10.370 --> 00:05:10.380 align:start position:0%
+they can think even without being
+ 
+
+00:05:10.380 --> 00:05:12.500 align:start position:0%
+they can think even without being
+smarter<00:05:11.070><c> than</c><00:05:11.100><c> a</c><00:05:11.340><c> human</c><00:05:11.370><c> the</c><00:05:11.940><c> improvement</c><00:05:12.419><c> to</c>
+
+00:05:12.500 --> 00:05:12.510 align:start position:0%
+smarter than a human the improvement to
+ 
+
+00:05:12.510 --> 00:05:14.390 align:start position:0%
+smarter than a human the improvement to
+i/o<00:05:12.660><c> could</c><00:05:13.080><c> make</c><00:05:13.260><c> such</c><00:05:13.470><c> an</c><00:05:13.620><c> AGI</c><00:05:13.919><c> add</c><00:05:14.039><c> much</c><00:05:14.370><c> more</c>
+
+00:05:14.390 --> 00:05:14.400 align:start position:0%
+i/o could make such an AGI add much more
+ 
+
+00:05:14.400 --> 00:05:16.010 align:start position:0%
+i/o could make such an AGI add much more
+effective<00:05:15.030><c> than</c><00:05:15.120><c> a</c><00:05:15.210><c> human</c><00:05:15.510><c> if</c><00:05:15.630><c> it</c><00:05:15.780><c> couldn't</c>
+
+00:05:16.010 --> 00:05:16.020 align:start position:0%
+effective than a human if it couldn't
+ 
+
+00:05:16.020 --> 00:05:17.750 align:start position:0%
+effective than a human if it couldn't
+download<00:05:16.500><c> a</c><00:05:16.530><c> chess</c><00:05:16.860><c> program</c><00:05:17.280><c> it</c><00:05:17.520><c> might</c><00:05:17.639><c> be</c>
+
+00:05:17.750 --> 00:05:17.760 align:start position:0%
+download a chess program it might be
+ 
+
+00:05:17.760 --> 00:05:19.250 align:start position:0%
+download a chess program it might be
+able<00:05:17.849><c> to</c><00:05:17.970><c> write</c><00:05:18.210><c> its</c><00:05:18.389><c> own</c><00:05:18.510><c> pretty</c><00:05:18.810><c> quickly</c>
+
+00:05:19.250 --> 00:05:19.260 align:start position:0%
+able to write its own pretty quickly
+ 
+
+00:05:19.260 --> 00:05:21.050 align:start position:0%
+able to write its own pretty quickly
+another<00:05:19.889><c> advantage</c><00:05:20.190><c> I</c><00:05:20.400><c> want</c><00:05:20.580><c> to</c><00:05:20.639><c> talk</c><00:05:20.820><c> about</c>
+
+00:05:21.050 --> 00:05:21.060 align:start position:0%
+another advantage I want to talk about
+ 
+
+00:05:21.060 --> 00:05:23.689 align:start position:0%
+another advantage I want to talk about
+is<00:05:21.240><c> the</c><00:05:21.419><c> sort</c><00:05:21.599><c> of</c><00:05:21.780><c> cognitive</c><00:05:22.710><c> flexibility</c><00:05:23.430><c> you</c>
+
+00:05:23.689 --> 00:05:23.699 align:start position:0%
+is the sort of cognitive flexibility you
+ 
+
+00:05:23.699 --> 00:05:25.550 align:start position:0%
+is the sort of cognitive flexibility you
+can<00:05:23.849><c> get</c><00:05:24.060><c> when</c><00:05:24.479><c> you're</c><00:05:24.570><c> made</c><00:05:24.750><c> of</c><00:05:24.870><c> software</c><00:05:25.289><c> it</c>
+
+00:05:25.550 --> 00:05:25.560 align:start position:0%
+can get when you're made of software it
+ 
+
+00:05:25.560 --> 00:05:28.040 align:start position:0%
+can get when you're made of software it
+could<00:05:25.770><c> allow</c><00:05:26.009><c> an</c><00:05:26.190><c> AGI</c><00:05:26.520><c> much</c><00:05:27.210><c> more</c><00:05:27.509><c> control</c>
+
+00:05:28.040 --> 00:05:28.050 align:start position:0%
+could allow an AGI much more control
+ 
+
+00:05:28.050 --> 00:05:29.750 align:start position:0%
+could allow an AGI much more control
+over<00:05:28.080><c> at</c><00:05:28.530><c> the</c><00:05:28.620><c> mines</c><00:05:28.800><c> operation</c><00:05:29.460><c> for</c><00:05:29.699><c> example</c>
+
+00:05:29.750 --> 00:05:29.760 align:start position:0%
+over at the mines operation for example
+ 
+
+00:05:29.760 --> 00:05:32.480 align:start position:0%
+over at the mines operation for example
+as<00:05:30.180><c> a</c><00:05:30.210><c> human</c><00:05:30.599><c> you</c><00:05:31.110><c> have</c><00:05:31.139><c> one</c><00:05:31.560><c> auditory</c><00:05:32.070><c> system</c>
+
+00:05:32.480 --> 00:05:32.490 align:start position:0%
+as a human you have one auditory system
+ 
+
+00:05:32.490 --> 00:05:34.279 align:start position:0%
+as a human you have one auditory system
+which<00:05:33.030><c> pretty</c><00:05:33.330><c> much</c><00:05:33.419><c> means</c><00:05:33.750><c> you</c><00:05:33.960><c> can</c><00:05:34.080><c> process</c>
+
+00:05:34.279 --> 00:05:34.289 align:start position:0%
+which pretty much means you can process
+ 
+
+00:05:34.289 --> 00:05:36.830 align:start position:0%
+which pretty much means you can process
+one<00:05:34.770><c> stream</c><00:05:35.099><c> of</c><00:05:35.220><c> audio</c><00:05:35.340><c> at</c><00:05:35.610><c> once</c><00:05:35.820><c> like</c><00:05:36.660><c> you</c>
+
+00:05:36.830 --> 00:05:36.840 align:start position:0%
+one stream of audio at once like you
+ 
+
+00:05:36.840 --> 00:05:39.140 align:start position:0%
+one stream of audio at once like you
+can't<00:05:37.080><c> really</c><00:05:37.320><c> listen</c><00:05:37.590><c> to</c><00:05:37.889><c> two</c><00:05:38.130><c> people</c><00:05:38.639><c> saying</c>
+
+00:05:39.140 --> 00:05:39.150 align:start position:0%
+can't really listen to two people saying
+ 
+
+00:05:39.150 --> 00:05:40.850 align:start position:0%
+can't really listen to two people saying
+different<00:05:39.570><c> things</c><00:05:39.659><c> in</c><00:05:40.050><c> each</c><00:05:40.139><c> year</c><00:05:40.349><c> basically</c>
+
+00:05:40.850 --> 00:05:40.860 align:start position:0%
+different things in each year basically
+ 
+
+00:05:40.860 --> 00:05:42.439 align:start position:0%
+different things in each year basically
+even<00:05:41.099><c> if</c><00:05:41.190><c> in</c><00:05:41.370><c> principle</c><00:05:41.849><c> is</c><00:05:41.909><c> you</c><00:05:42.030><c> have</c><00:05:42.210><c> enough</c>
+
+00:05:42.439 --> 00:05:42.449 align:start position:0%
+even if in principle is you have enough
+ 
+
+00:05:42.449 --> 00:05:44.810 align:start position:0%
+even if in principle is you have enough
+insurgency<00:05:42.990><c> or</c><00:05:43.169><c> Howard</c><00:05:43.320><c> to</c><00:05:43.560><c> do</c><00:05:43.680><c> it</c><00:05:43.830><c> you</c><00:05:44.669><c> can</c>
+
+00:05:44.810 --> 00:05:44.820 align:start position:0%
+insurgency or Howard to do it you can
+ 
+
+00:05:44.820 --> 00:05:46.520 align:start position:0%
+insurgency or Howard to do it you can
+shut<00:05:45.030><c> your</c><00:05:45.180><c> eyes</c><00:05:45.300><c> to</c><00:05:45.599><c> avoid</c><00:05:45.810><c> being</c><00:05:45.960><c> distracted</c>
+
+00:05:46.520 --> 00:05:46.530 align:start position:0%
+shut your eyes to avoid being distracted
+ 
+
+00:05:46.530 --> 00:05:48.290 align:start position:0%
+shut your eyes to avoid being distracted
+and<00:05:46.680><c> that</c><00:05:46.919><c> might</c><00:05:47.099><c> make</c><00:05:47.220><c> it</c><00:05:47.370><c> easier</c><00:05:47.699><c> but</c><00:05:48.270><c> you</c>
+
+00:05:48.290 --> 00:05:48.300 align:start position:0%
+and that might make it easier but you
+ 
+
+00:05:48.300 --> 00:05:50.240 align:start position:0%
+and that might make it easier but you
+can't<00:05:48.599><c> then</c><00:05:48.810><c> say</c><00:05:48.840><c> well</c><00:05:49.470><c> I'm</c><00:05:49.680><c> not</c><00:05:49.800><c> using</c><00:05:50.039><c> my</c>
+
+00:05:50.240 --> 00:05:50.250 align:start position:0%
+can't then say well I'm not using my
+ 
+
+00:05:50.250 --> 00:05:52.219 align:start position:0%
+can't then say well I'm not using my
+visual<00:05:50.550><c> cortex</c><00:05:50.940><c> right</c><00:05:51.120><c> now</c><00:05:51.300><c> so</c><00:05:51.840><c> I'll</c><00:05:51.990><c> have</c>
+
+00:05:52.219 --> 00:05:52.229 align:start position:0%
+visual cortex right now so I'll have
+ 
+
+00:05:52.229 --> 00:05:53.870 align:start position:0%
+visual cortex right now so I'll have
+those<00:05:52.470><c> neurons</c><00:05:52.889><c> process</c><00:05:53.310><c> one</c><00:05:53.490><c> of</c><00:05:53.580><c> the</c><00:05:53.639><c> audio</c>
+
+00:05:53.870 --> 00:05:53.880 align:start position:0%
+those neurons process one of the audio
+ 
+
+00:05:53.880 --> 00:05:55.700 align:start position:0%
+those neurons process one of the audio
+streams<00:05:54.210><c> brains</c><00:05:54.599><c> don't</c><00:05:54.810><c> work</c><00:05:54.990><c> that</c><00:05:55.020><c> way</c><00:05:55.380><c> but</c>
+
+00:05:55.700 --> 00:05:55.710 align:start position:0%
+streams brains don't work that way but
+ 
+
+00:05:55.710 --> 00:05:57.740 align:start position:0%
+streams brains don't work that way but
+an<00:05:55.830><c> AGI</c><00:05:56.250><c> might</c><00:05:56.520><c> be</c><00:05:56.639><c> able</c><00:05:56.789><c> to</c><00:05:56.880><c> do</c><00:05:57.060><c> just</c><00:05:57.330><c> that</c>
+
+00:05:57.740 --> 00:05:57.750 align:start position:0%
+an AGI might be able to do just that
+ 
+
+00:05:57.750 --> 00:05:59.899 align:start position:0%
+an AGI might be able to do just that
+diverting<00:05:58.560><c> computational</c><00:05:59.280><c> resources</c><00:05:59.669><c> from</c>
+
+00:05:59.899 --> 00:05:59.909 align:start position:0%
+diverting computational resources from
+ 
+
+00:05:59.909 --> 00:06:02.180 align:start position:0%
+diverting computational resources from
+one<00:06:00.090><c> task</c><00:06:00.300><c> to</c><00:06:00.449><c> another</c><00:06:00.570><c> as</c><00:06:01.020><c> needed</c><00:06:01.470><c> increasing</c>
+
+00:06:02.180 --> 00:06:02.190 align:start position:0%
+one task to another as needed increasing
+ 
+
+00:06:02.190 --> 00:06:03.620 align:start position:0%
+one task to another as needed increasing
+its<00:06:02.310><c> effectiveness</c><00:06:02.699><c> it</c><00:06:03.030><c> might</c><00:06:03.270><c> even</c><00:06:03.419><c> be</c>
+
+00:06:03.620 --> 00:06:03.630 align:start position:0%
+its effectiveness it might even be
+ 
+
+00:06:03.630 --> 00:06:05.930 align:start position:0%
+its effectiveness it might even be
+capable<00:06:03.780><c> of</c><00:06:04.139><c> superhuman</c><00:06:04.740><c> multitasking</c><00:06:05.430><c> by</c>
+
+00:06:05.930 --> 00:06:05.940 align:start position:0%
+capable of superhuman multitasking by
+ 
+
+00:06:05.940 --> 00:06:07.670 align:start position:0%
+capable of superhuman multitasking by
+splitting<00:06:06.360><c> off</c><00:06:06.570><c> simpler</c><00:06:06.960><c> versions</c><00:06:07.289><c> of</c><00:06:07.409><c> itself</c>
+
+00:06:07.670 --> 00:06:07.680 align:start position:0%
+splitting off simpler versions of itself
+ 
+
+00:06:07.680 --> 00:06:09.529 align:start position:0%
+splitting off simpler versions of itself
+to<00:06:07.889><c> handle</c><00:06:08.190><c> large</c><00:06:08.400><c> numbers</c><00:06:08.760><c> of</c><00:06:08.789><c> simple</c><00:06:09.150><c> tasks</c>
+
+00:06:09.529 --> 00:06:09.539 align:start position:0%
+to handle large numbers of simple tasks
+ 
+
+00:06:09.539 --> 00:06:11.540 align:start position:0%
+to handle large numbers of simple tasks
+and<00:06:09.720><c> this</c><00:06:10.080><c> is</c><00:06:10.260><c> all</c><00:06:10.440><c> assuming</c><00:06:10.949><c> that</c><00:06:11.130><c> the</c><00:06:11.250><c> core</c>
+
+00:06:11.540 --> 00:06:11.550 align:start position:0%
+and this is all assuming that the core
+ 
+
+00:06:11.550 --> 00:06:13.219 align:start position:0%
+and this is all assuming that the core
+general<00:06:12.060><c> intelligence</c><00:06:12.599><c> part</c><00:06:12.870><c> of</c><00:06:12.990><c> the</c><00:06:13.110><c> AI</c>
+
+00:06:13.219 --> 00:06:13.229 align:start position:0%
+general intelligence part of the AI
+ 
+
+00:06:13.229 --> 00:06:15.500 align:start position:0%
+general intelligence part of the AI
+system<00:06:13.550><c> operates</c><00:06:14.550><c> at</c><00:06:14.729><c> the</c><00:06:14.760><c> same</c><00:06:15.030><c> speed</c><00:06:15.360><c> as</c><00:06:15.479><c> a</c>
+
+00:06:15.500 --> 00:06:15.510 align:start position:0%
+system operates at the same speed as a
+ 
+
+00:06:15.510 --> 00:06:17.600 align:start position:0%
+system operates at the same speed as a
+human<00:06:15.870><c> brain</c><00:06:16.080><c> which</c><00:06:16.710><c> might</c><00:06:16.889><c> not</c><00:06:17.039><c> be</c><00:06:17.130><c> true</c><00:06:17.430><c> I</c>
+
+00:06:17.600 --> 00:06:17.610 align:start position:0%
+human brain which might not be true I
+ 
+
+00:06:17.610 --> 00:06:19.700 align:start position:0%
+human brain which might not be true I
+mean<00:06:17.909><c> named</c><00:06:18.449><c> a</c><00:06:18.479><c> cognitive</c><00:06:19.020><c> task</c><00:06:19.199><c> that</c>
+
+00:06:19.700 --> 00:06:19.710 align:start position:0%
+mean named a cognitive task that
+ 
+
+00:06:19.710 --> 00:06:21.920 align:start position:0%
+mean named a cognitive task that
+computers<00:06:20.190><c> can</c><00:06:20.370><c> do</c><00:06:20.520><c> as</c><00:06:20.729><c> well</c><00:06:20.940><c> as</c><00:06:21.120><c> humans</c><00:06:21.479><c> but</c>
+
+00:06:21.920 --> 00:06:21.930 align:start position:0%
+computers can do as well as humans but
+ 
+
+00:06:21.930 --> 00:06:27.420 align:start position:0%
+computers can do as well as humans but
+the<00:06:22.080><c> computers</c><00:06:22.560><c> do</c><00:06:22.710><c> it</c><00:06:22.860><c> slower</c>
+
+00:06:27.420 --> 00:06:27.430 align:start position:0%
+ 
+ 
+
+00:06:27.430 --> 00:06:30.550 align:start position:0%
+ 
+not<00:06:28.430><c> easy</c><00:06:28.610><c> right</c><00:06:28.940><c> the</c><00:06:29.389><c> general</c><00:06:29.750><c> trend</c><00:06:29.990><c> is</c><00:06:30.139><c> we</c>
+
+00:06:30.550 --> 00:06:30.560 align:start position:0%
+not easy right the general trend is we
+ 
+
+00:06:30.560 --> 00:06:32.560 align:start position:0%
+not easy right the general trend is we
+go<00:06:30.710><c> from</c><00:06:30.919><c> computers</c><00:06:31.759><c> can't</c><00:06:31.970><c> do</c><00:06:32.120><c> this</c><00:06:32.270><c> at</c><00:06:32.419><c> all</c>
+
+00:06:32.560 --> 00:06:32.570 align:start position:0%
+go from computers can't do this at all
+ 
+
+00:06:32.570 --> 00:06:35.260 align:start position:0%
+go from computers can't do this at all
+to<00:06:33.259><c> computers</c><00:06:34.070><c> can</c><00:06:34.220><c> do</c><00:06:34.340><c> this</c><00:06:34.520><c> much</c><00:06:34.850><c> faster</c>
+
+00:06:35.260 --> 00:06:35.270 align:start position:0%
+to computers can do this much faster
+ 
+
+00:06:35.270 --> 00:06:37.450 align:start position:0%
+to computers can do this much faster
+than<00:06:35.360><c> people</c><00:06:35.539><c> not</c><00:06:36.080><c> always</c><00:06:36.410><c> but</c><00:06:36.860><c> in</c><00:06:37.009><c> general</c><00:06:37.340><c> so</c>
+
+00:06:37.450 --> 00:06:37.460 align:start position:0%
+than people not always but in general so
+ 
+
+00:06:37.460 --> 00:06:38.740 align:start position:0%
+than people not always but in general so
+I<00:06:37.490><c> wouldn't</c><00:06:37.699><c> be</c><00:06:37.789><c> surprised</c><00:06:38.150><c> if</c><00:06:38.300><c> that</c><00:06:38.330><c> pattern</c>
+
+00:06:38.740 --> 00:06:38.750 align:start position:0%
+I wouldn't be surprised if that pattern
+ 
+
+00:06:38.750 --> 00:06:40.810 align:start position:0%
+I wouldn't be surprised if that pattern
+continues<00:06:39.199><c> with</c><00:06:39.229><c> AGI</c><00:06:39.650><c> and</c><00:06:39.949><c> being</c><00:06:40.250><c> faster</c><00:06:40.699><c> is</c>
+
+00:06:40.810 --> 00:06:40.820 align:start position:0%
+continues with AGI and being faster is
+ 
+
+00:06:40.820 --> 00:06:43.480 align:start position:0%
+continues with AGI and being faster is
+valuable<00:06:41.210><c> in</c><00:06:41.449><c> general</c><00:06:41.780><c> intelligence</c><00:06:42.490><c> imagine</c>
+
+00:06:43.480 --> 00:06:43.490 align:start position:0%
+valuable in general intelligence imagine
+ 
+
+00:06:43.490 --> 00:06:45.790 align:start position:0%
+valuable in general intelligence imagine
+your<00:06:43.789><c> brain</c><00:06:43.970><c> stayed</c><00:06:44.419><c> exactly</c><00:06:44.630><c> the</c><00:06:44.960><c> same</c><00:06:45.259><c> but</c>
+
+00:06:45.790 --> 00:06:45.800 align:start position:0%
+your brain stayed exactly the same but
+ 
+
+00:06:45.800 --> 00:06:47.980 align:start position:0%
+your brain stayed exactly the same but
+the<00:06:45.949><c> world</c><00:06:46.190><c> slowed</c><00:06:46.610><c> down</c><00:06:46.850><c> to</c><00:06:47.120><c> one</c><00:06:47.419><c> tenth</c><00:06:47.750><c> or</c>
+
+00:06:47.980 --> 00:06:47.990 align:start position:0%
+the world slowed down to one tenth or
+ 
+
+00:06:47.990 --> 00:06:49.749 align:start position:0%
+the world slowed down to one tenth or
+one<00:06:48.050><c> hundredth</c><00:06:48.650><c> of</c><00:06:48.740><c> speed</c><00:06:48.979><c> once</c><00:06:49.340><c> you</c><00:06:49.430><c> got</c><00:06:49.550><c> used</c>
+
+00:06:49.749 --> 00:06:49.759 align:start position:0%
+one hundredth of speed once you got used
+ 
+
+00:06:49.759 --> 00:06:51.129 align:start position:0%
+one hundredth of speed once you got used
+to<00:06:49.850><c> controlling</c><00:06:50.150><c> your</c><00:06:50.360><c> body</c><00:06:50.539><c> at</c><00:06:50.690><c> that</c><00:06:50.840><c> speed</c>
+
+00:06:51.129 --> 00:06:51.139 align:start position:0%
+to controlling your body at that speed
+ 
+
+00:06:51.139 --> 00:06:52.840 align:start position:0%
+to controlling your body at that speed
+you'd<00:06:51.680><c> effectively</c><00:06:52.220><c> be</c><00:06:52.340><c> much</c><00:06:52.580><c> more</c>
+
+00:06:52.840 --> 00:06:52.850 align:start position:0%
+you'd effectively be much more
+ 
+
+00:06:52.850 --> 00:06:54.580 align:start position:0%
+you'd effectively be much more
+intelligent<00:06:53.090><c> since</c><00:06:53.930><c> you</c><00:06:54.020><c> could</c><00:06:54.199><c> afford</c><00:06:54.470><c> to</c>
+
+00:06:54.580 --> 00:06:54.590 align:start position:0%
+intelligent since you could afford to
+ 
+
+00:06:54.590 --> 00:06:56.379 align:start position:0%
+intelligent since you could afford to
+put<00:06:54.800><c> lots</c><00:06:55.039><c> of</c><00:06:55.220><c> careful</c><00:06:55.699><c> thought</c><00:06:55.729><c> and</c><00:06:56.150><c> planning</c>
+
+00:06:56.379 --> 00:06:56.389 align:start position:0%
+put lots of careful thought and planning
+ 
+
+00:06:56.389 --> 00:06:58.210 align:start position:0%
+put lots of careful thought and planning
+into<00:06:56.690><c> everything</c><00:06:57.050><c> you</c><00:06:57.080><c> do</c><00:06:57.320><c> when</c><00:06:57.770><c> someone</c><00:06:57.949><c> says</c>
+
+00:06:58.210 --> 00:06:58.220 align:start position:0%
+into everything you do when someone says
+ 
+
+00:06:58.220 --> 00:06:59.980 align:start position:0%
+into everything you do when someone says
+something<00:06:58.550><c> to</c><00:06:58.580><c> you</c><00:06:58.729><c> in</c><00:06:58.849><c> a</c><00:06:58.910><c> conversation</c><00:06:59.090><c> you'd</c>
+
+00:06:59.980 --> 00:06:59.990 align:start position:0%
+something to you in a conversation you'd
+ 
+
+00:06:59.990 --> 00:07:01.360 align:start position:0%
+something to you in a conversation you'd
+have<00:07:00.169><c> time</c><00:07:00.320><c> to</c><00:07:00.500><c> think</c><00:07:00.710><c> for</c><00:07:00.949><c> a</c><00:07:00.979><c> minute</c><00:07:01.250><c> or</c><00:07:01.340><c> two</c>
+
+00:07:01.360 --> 00:07:01.370 align:start position:0%
+have time to think for a minute or two
+ 
+
+00:07:01.370 --> 00:07:03.129 align:start position:0%
+have time to think for a minute or two
+about<00:07:01.910><c> what</c><00:07:02.300><c> the</c><00:07:02.419><c> other</c><00:07:02.539><c> person</c><00:07:02.900><c> said</c>
+
+00:07:03.129 --> 00:07:03.139 align:start position:0%
+about what the other person said
+ 
+
+00:07:03.139 --> 00:07:05.050 align:start position:0%
+about what the other person said
+consider<00:07:04.130><c> the</c><00:07:04.250><c> different</c><00:07:04.580><c> meanings</c><00:07:04.789><c> they</c>
+
+00:07:05.050 --> 00:07:05.060 align:start position:0%
+consider the different meanings they
+ 
+
+00:07:05.060 --> 00:07:06.879 align:start position:0%
+consider the different meanings they
+might<00:07:05.240><c> have</c><00:07:05.360><c> intended</c><00:07:05.660><c> you</c><00:07:06.289><c> know</c><00:07:06.380><c> decide</c><00:07:06.770><c> on</c>
+
+00:07:06.879 --> 00:07:06.889 align:start position:0%
+might have intended you know decide on
+ 
+
+00:07:06.889 --> 00:07:08.770 align:start position:0%
+might have intended you know decide on
+what<00:07:07.099><c> kind</c><00:07:07.130><c> of</c><00:07:07.310><c> thing</c><00:07:07.460><c> you</c><00:07:07.550><c> want</c><00:07:07.669><c> to</c><00:07:07.759><c> say</c><00:07:08.060><c> write</c>
+
+00:07:08.770 --> 00:07:08.780 align:start position:0%
+what kind of thing you want to say write
+ 
+
+00:07:08.780 --> 00:07:10.629 align:start position:0%
+what kind of thing you want to say write
+a<00:07:08.810><c> draft</c><00:07:09.169><c> go</c><00:07:09.590><c> through</c><00:07:09.830><c> and</c><00:07:09.949><c> check</c><00:07:10.130><c> it</c><00:07:10.340><c> make</c><00:07:10.610><c> a</c>
+
+00:07:10.629 --> 00:07:10.639 align:start position:0%
+a draft go through and check it make a
+ 
+
+00:07:10.639 --> 00:07:12.219 align:start position:0%
+a draft go through and check it make a
+couple<00:07:10.910><c> of</c><00:07:11.000><c> different</c><00:07:11.360><c> versions</c><00:07:11.570><c> you</c><00:07:12.020><c> don't</c>
+
+00:07:12.219 --> 00:07:12.229 align:start position:0%
+couple of different versions you don't
+ 
+
+00:07:12.229 --> 00:07:14.980 align:start position:0%
+couple of different versions you don't
+think<00:07:12.470><c> about</c><00:07:12.710><c> like</c><00:07:13.430><c> how</c><00:07:13.699><c> each</c><00:07:14.330><c> one</c><00:07:14.660><c> might</c><00:07:14.960><c> be</c>
+
+00:07:14.980 --> 00:07:14.990 align:start position:0%
+think about like how each one might be
+ 
+
+00:07:14.990 --> 00:07:16.420 align:start position:0%
+think about like how each one might be
+interpreted<00:07:15.710><c> by</c><00:07:15.860><c> each</c><00:07:16.009><c> of</c><00:07:16.160><c> the</c><00:07:16.280><c> people</c>
+
+00:07:16.420 --> 00:07:16.430 align:start position:0%
+interpreted by each of the people
+ 
+
+00:07:16.430 --> 00:07:18.129 align:start position:0%
+interpreted by each of the people
+present<00:07:16.970><c> where</c><00:07:17.539><c> it</c><00:07:17.720><c> might</c><00:07:17.840><c> take</c><00:07:17.900><c> a</c>
+
+00:07:18.129 --> 00:07:18.139 align:start position:0%
+present where it might take a
+ 
+
+00:07:18.139 --> 00:07:19.659 align:start position:0%
+present where it might take a
+conversation<00:07:18.889><c> next</c><00:07:19.099><c> and</c><00:07:19.370><c> so</c><00:07:19.490><c> on</c>
+
+00:07:19.659 --> 00:07:19.669 align:start position:0%
+conversation next and so on
+ 
+
+00:07:19.669 --> 00:07:21.460 align:start position:0%
+conversation next and so on
+you'd<00:07:19.820><c> seem</c><00:07:20.120><c> way</c><00:07:20.449><c> smarter</c><00:07:20.810><c> and</c><00:07:21.259><c> you'd</c>
+
+00:07:21.460 --> 00:07:21.470 align:start position:0%
+you'd seem way smarter and you'd
+ 
+
+00:07:21.470 --> 00:07:23.529 align:start position:0%
+you'd seem way smarter and you'd
+effectively<00:07:21.979><c> be</c><00:07:22.160><c> much</c><00:07:22.400><c> smarter</c><00:07:22.880><c> but</c><00:07:23.419><c> your</c>
+
+00:07:23.529 --> 00:07:23.539 align:start position:0%
+effectively be much smarter but your
+ 
+
+00:07:23.539 --> 00:07:25.540 align:start position:0%
+effectively be much smarter but your
+brain<00:07:23.810><c> hasn't</c><00:07:24.080><c> changed</c><00:07:24.530><c> at</c><00:07:24.620><c> all</c><00:07:24.770><c> the</c><00:07:25.280><c> world</c>
+
+00:07:25.540 --> 00:07:25.550 align:start position:0%
+brain hasn't changed at all the world
+ 
+
+00:07:25.550 --> 00:07:28.629 align:start position:0%
+brain hasn't changed at all the world
+just<00:07:25.789><c> slowed</c><00:07:26.120><c> down</c><00:07:26.389><c> so</c><00:07:27.199><c> in</c><00:07:27.320><c> a</c><00:07:27.380><c> way</c><00:07:27.560><c> speed</c><00:07:28.310><c> is</c><00:07:28.580><c> a</c>
+
+00:07:28.629 --> 00:07:28.639 align:start position:0%
+just slowed down so in a way speed is a
+ 
+
+00:07:28.639 --> 00:07:30.310 align:start position:0%
+just slowed down so in a way speed is a
+form<00:07:28.970><c> of</c><00:07:29.060><c> super</c><00:07:29.360><c> intelligence</c><00:07:29.840><c> and</c><00:07:30.050><c> I'd</c>
+
+00:07:30.310 --> 00:07:30.320 align:start position:0%
+form of super intelligence and I'd
+ 
+
+00:07:30.320 --> 00:07:32.560 align:start position:0%
+form of super intelligence and I'd
+expect<00:07:30.710><c> a</c><00:07:30.830><c> GIS</c><00:07:31.130><c> to</c><00:07:31.280><c> get</c><00:07:31.430><c> faster</c><00:07:31.849><c> over</c><00:07:32.090><c> time</c><00:07:32.330><c> as</c>
+
+00:07:32.560 --> 00:07:32.570 align:start position:0%
+expect a GIS to get faster over time as
+ 
+
+00:07:32.570 --> 00:07:34.810 align:start position:0%
+expect a GIS to get faster over time as
+well<00:07:32.780><c> the</c><00:07:33.409><c> obvious</c><00:07:33.530><c> way</c><00:07:33.919><c> is</c><00:07:34.099><c> if</c><00:07:34.280><c> you</c><00:07:34.610><c> make</c><00:07:34.789><c> a</c>
+
+00:07:34.810 --> 00:07:34.820 align:start position:0%
+well the obvious way is if you make a
+ 
+
+00:07:34.820 --> 00:07:37.270 align:start position:0%
+well the obvious way is if you make a
+human<00:07:35.210><c> speed</c><00:07:35.419><c> AGI</c><00:07:35.780><c> a</c><00:07:36.110><c> year</c><00:07:36.620><c> later</c><00:07:36.860><c> there'll</c><00:07:37.220><c> be</c>
+
+00:07:37.270 --> 00:07:37.280 align:start position:0%
+human speed AGI a year later there'll be
+ 
+
+00:07:37.280 --> 00:07:39.520 align:start position:0%
+human speed AGI a year later there'll be
+new<00:07:37.550><c> faster</c><00:07:38.389><c> computers</c><00:07:38.780><c> to</c><00:07:38.900><c> run</c><00:07:39.020><c> it</c><00:07:39.169><c> on</c><00:07:39.260><c> and</c><00:07:39.440><c> it</c>
+
+00:07:39.520 --> 00:07:39.530 align:start position:0%
+new faster computers to run it on and it
+ 
+
+00:07:39.530 --> 00:07:41.290 align:start position:0%
+new faster computers to run it on and it
+will<00:07:39.590><c> get</c><00:07:39.740><c> faster</c><00:07:40.130><c> but</c><00:07:40.490><c> you</c><00:07:40.580><c> can</c><00:07:40.729><c> also</c><00:07:40.849><c> speed</c>
+
+00:07:41.290 --> 00:07:41.300 align:start position:0%
+will get faster but you can also speed
+ 
+
+00:07:41.300 --> 00:07:43.480 align:start position:0%
+will get faster but you can also speed
+it<00:07:41.419><c> up</c><00:07:41.570><c> by</c><00:07:41.750><c> giving</c><00:07:41.990><c> it</c><00:07:42.229><c> more</c><00:07:42.409><c> Hardware</c><00:07:42.979><c> note</c>
+
+00:07:43.480 --> 00:07:43.490 align:start position:0%
+it up by giving it more Hardware note
+ 
+
+00:07:43.490 --> 00:07:44.890 align:start position:0%
+it up by giving it more Hardware note
+that<00:07:43.639><c> it's</c><00:07:43.760><c> not</c><00:07:43.909><c> always</c><00:07:44.060><c> the</c><00:07:44.300><c> case</c><00:07:44.330><c> that</c><00:07:44.750><c> a</c>
+
+00:07:44.890 --> 00:07:44.900 align:start position:0%
+that it's not always the case that a
+ 
+
+00:07:44.900 --> 00:07:46.540 align:start position:0%
+that it's not always the case that a
+system<00:07:45.260><c> can</c><00:07:45.409><c> be</c><00:07:45.470><c> sped</c><00:07:45.770><c> up</c><00:07:45.800><c> by</c><00:07:46.039><c> running</c><00:07:46.280><c> it</c><00:07:46.460><c> on</c>
+
+00:07:46.540 --> 00:07:46.550 align:start position:0%
+system can be sped up by running it on
+ 
+
+00:07:46.550 --> 00:07:48.219 align:start position:0%
+system can be sped up by running it on
+multiple<00:07:46.940><c> computers</c><00:07:47.090><c> you</c><00:07:47.630><c> can't</c><00:07:47.870><c> get</c><00:07:47.990><c> a</c><00:07:48.020><c> baby</c>
+
+00:07:48.219 --> 00:07:48.229 align:start position:0%
+multiple computers you can't get a baby
+ 
+
+00:07:48.229 --> 00:07:49.870 align:start position:0%
+multiple computers you can't get a baby
+in<00:07:48.440><c> less</c><00:07:48.620><c> than</c><00:07:48.740><c> nine</c><00:07:48.949><c> months</c><00:07:49.250><c> by</c><00:07:49.370><c> hiring</c><00:07:49.610><c> two</c>
+
+00:07:49.870 --> 00:07:49.880 align:start position:0%
+in less than nine months by hiring two
+ 
+
+00:07:49.880 --> 00:07:50.469 align:start position:0%
+in less than nine months by hiring two
+pregnant<00:07:50.240><c> women</c>
+
+00:07:50.469 --> 00:07:50.479 align:start position:0%
+pregnant women
+ 
+
+00:07:50.479 --> 00:07:52.719 align:start position:0%
+pregnant women
+some<00:07:50.960><c> algorithms</c><00:07:51.440><c> inherently</c><00:07:52.010><c> require</c><00:07:52.460><c> a</c>
+
+00:07:52.719 --> 00:07:52.729 align:start position:0%
+some algorithms inherently require a
+ 
+
+00:07:52.729 --> 00:07:54.820 align:start position:0%
+some algorithms inherently require a
+large<00:07:53.060><c> number</c><00:07:53.360><c> of</c><00:07:53.509><c> sequential</c><00:07:53.930><c> steps</c><00:07:54.380><c> each</c>
+
+00:07:54.820 --> 00:07:54.830 align:start position:0%
+large number of sequential steps each
+ 
+
+00:07:54.830 --> 00:07:56.710 align:start position:0%
+large number of sequential steps each
+step<00:07:54.889><c> needs</c><00:07:55.610><c> to</c><00:07:55.699><c> use</c><00:07:56.000><c> the</c><00:07:56.180><c> output</c><00:07:56.539><c> of</c><00:07:56.630><c> the</c>
+
+00:07:56.710 --> 00:07:56.720 align:start position:0%
+step needs to use the output of the
+ 
+
+00:07:56.720 --> 00:07:58.810 align:start position:0%
+step needs to use the output of the
+previous<00:07:56.870><c> step</c><00:07:57.259><c> so</c><00:07:57.740><c> there's</c><00:07:58.039><c> no</c><00:07:58.280><c> way</c><00:07:58.460><c> to</c><00:07:58.520><c> break</c>
+
+00:07:58.810 --> 00:07:58.820 align:start position:0%
+previous step so there's no way to break
+ 
+
+00:07:58.820 --> 00:08:00.730 align:start position:0%
+previous step so there's no way to break
+the<00:07:58.970><c> problem</c><00:07:59.150><c> down</c><00:07:59.300><c> into</c><00:07:59.690><c> parts</c><00:07:59.930><c> that</c><00:08:00.500><c> can</c><00:08:00.650><c> be</c>
+
+00:08:00.730 --> 00:08:00.740 align:start position:0%
+the problem down into parts that can be
+ 
+
+00:08:00.740 --> 00:08:02.290 align:start position:0%
+the problem down into parts that can be
+given<00:08:00.889><c> to</c><00:08:01.039><c> different</c><00:08:01.460><c> machines</c><00:08:01.610><c> to</c><00:08:02.000><c> work</c><00:08:02.150><c> on</c>
+
+00:08:02.290 --> 00:08:02.300 align:start position:0%
+given to different machines to work on
+ 
+
+00:08:02.300 --> 00:08:04.120 align:start position:0%
+given to different machines to work on
+in<00:08:02.389><c> parallel</c><00:08:02.659><c> maybe</c><00:08:03.169><c> a</c><00:08:03.289><c> GI</c><00:08:03.560><c> will</c><00:08:03.800><c> turn</c><00:08:03.949><c> out</c><00:08:04.099><c> to</c>
+
+00:08:04.120 --> 00:08:04.130 align:start position:0%
+in parallel maybe a GI will turn out to
+ 
+
+00:08:04.130 --> 00:08:06.159 align:start position:0%
+in parallel maybe a GI will turn out to
+be<00:08:04.310><c> one</c><00:08:04.460><c> of</c><00:08:04.490><c> those</c><00:08:04.699><c> but</c><00:08:05.060><c> I</c><00:08:05.090><c> don't</c><00:08:05.360><c> think</c><00:08:05.509><c> so</c><00:08:05.750><c> I'd</c>
+
+00:08:06.159 --> 00:08:06.169 align:start position:0%
+be one of those but I don't think so I'd
+ 
+
+00:08:06.169 --> 00:08:08.020 align:start position:0%
+be one of those but I don't think so I'd
+expect<00:08:06.320><c> it</c><00:08:06.680><c> to</c><00:08:06.800><c> be</c><00:08:06.919><c> parallelizable</c><00:08:07.610><c> for</c><00:08:07.909><c> two</c>
+
+00:08:08.020 --> 00:08:08.030 align:start position:0%
+expect it to be parallelizable for two
+ 
+
+00:08:08.030 --> 00:08:08.589 align:start position:0%
+expect it to be parallelizable for two
+reasons
+
+00:08:08.589 --> 00:08:08.599 align:start position:0%
+reasons
+ 
+
+00:08:08.599 --> 00:08:09.969 align:start position:0%
+reasons
+firstly<00:08:08.870><c> just</c><00:08:08.990><c> about</c><00:08:09.320><c> all</c><00:08:09.470><c> of</c><00:08:09.650><c> the</c><00:08:09.740><c> current</c>
+
+00:08:09.969 --> 00:08:09.979 align:start position:0%
+firstly just about all of the current
+ 
+
+00:08:09.979 --> 00:08:11.649 align:start position:0%
+firstly just about all of the current
+state-of-the-art<00:08:10.190><c> AI</c><00:08:10.610><c> systems</c><00:08:11.060><c> are</c><00:08:11.240><c> they're</c>
+
+00:08:11.649 --> 00:08:11.659 align:start position:0%
+state-of-the-art AI systems are they're
+ 
+
+00:08:11.659 --> 00:08:13.689 align:start position:0%
+state-of-the-art AI systems are they're
+built<00:08:11.840><c> on</c><00:08:11.990><c> frameworks</c><00:08:12.470><c> like</c><00:08:12.650><c> tensorflow</c><00:08:13.039><c> that</c>
+
+00:08:13.689 --> 00:08:13.699 align:start position:0%
+built on frameworks like tensorflow that
+ 
+
+00:08:13.699 --> 00:08:15.189 align:start position:0%
+built on frameworks like tensorflow that
+are<00:08:13.820><c> designed</c><00:08:14.180><c> from</c><00:08:14.389><c> the</c><00:08:14.570><c> ground</c><00:08:14.599><c> up</c><00:08:14.960><c> to</c>
+
+00:08:15.189 --> 00:08:15.199 align:start position:0%
+are designed from the ground up to
+ 
+
+00:08:15.199 --> 00:08:16.749 align:start position:0%
+are designed from the ground up to
+efficiently<00:08:15.680><c> run</c><00:08:15.889><c> these</c><00:08:16.070><c> algorithms</c><00:08:16.370><c> on</c>
+
+00:08:16.749 --> 00:08:16.759 align:start position:0%
+efficiently run these algorithms on
+ 
+
+00:08:16.759 --> 00:08:18.969 align:start position:0%
+efficiently run these algorithms on
+large<00:08:17.060><c> numbers</c><00:08:17.270><c> of</c><00:08:17.449><c> processes</c><00:08:18.080><c> if</c><00:08:18.380><c> we</c><00:08:18.590><c> find</c><00:08:18.830><c> a</c>
+
+00:08:18.969 --> 00:08:18.979 align:start position:0%
+large numbers of processes if we find a
+ 
+
+00:08:18.979 --> 00:08:20.710 align:start position:0%
+large numbers of processes if we find a
+GI<00:08:19.159><c> along</c><00:08:19.669><c> the</c><00:08:19.789><c> path</c><00:08:19.970><c> we're</c><00:08:20.240><c> currently</c><00:08:20.389><c> going</c>
+
+00:08:20.710 --> 00:08:20.720 align:start position:0%
+GI along the path we're currently going
+ 
+
+00:08:20.720 --> 00:08:22.600 align:start position:0%
+GI along the path we're currently going
+down<00:08:20.990><c> it'll</c><00:08:21.620><c> almost</c><00:08:21.830><c> certainly</c><00:08:22.400><c> be</c><00:08:22.580><c> a</c>
+
+00:08:22.600 --> 00:08:22.610 align:start position:0%
+down it'll almost certainly be a
+ 
+
+00:08:22.610 --> 00:08:25.060 align:start position:0%
+down it'll almost certainly be a
+parallelizable<00:08:23.300><c> algorithm</c><00:08:23.870><c> secondly</c><00:08:24.560><c> we</c>
+
+00:08:25.060 --> 00:08:25.070 align:start position:0%
+parallelizable algorithm secondly we
+ 
+
+00:08:25.070 --> 00:08:26.860 align:start position:0%
+parallelizable algorithm secondly we
+know<00:08:25.310><c> that</c><00:08:25.520><c> general</c><00:08:25.909><c> intelligence</c><00:08:26.449><c> does</c><00:08:26.690><c> not</c>
+
+00:08:26.860 --> 00:08:26.870 align:start position:0%
+know that general intelligence does not
+ 
+
+00:08:26.870 --> 00:08:28.719 align:start position:0%
+know that general intelligence does not
+inherently<00:08:27.440><c> require</c><00:08:27.919><c> a</c><00:08:27.949><c> large</c><00:08:28.310><c> number</c><00:08:28.580><c> of</c>
+
+00:08:28.719 --> 00:08:28.729 align:start position:0%
+inherently require a large number of
+ 
+
+00:08:28.729 --> 00:08:30.399 align:start position:0%
+inherently require a large number of
+sequential<00:08:29.120><c> steps</c><00:08:29.509><c> because</c><00:08:29.840><c> human</c><00:08:30.199><c> brains</c>
+
+00:08:30.399 --> 00:08:30.409 align:start position:0%
+sequential steps because human brains
+ 
+
+00:08:30.409 --> 00:08:32.319 align:start position:0%
+sequential steps because human brains
+have<00:08:30.650><c> general</c><00:08:30.979><c> intelligence</c><00:08:31.520><c> and</c><00:08:31.699><c> brains</c>
+
+00:08:32.319 --> 00:08:32.329 align:start position:0%
+have general intelligence and brains
+ 
+
+00:08:32.329 --> 00:08:33.909 align:start position:0%
+have general intelligence and brains
+can't<00:08:32.779><c> do</c><00:08:32.959><c> large</c><00:08:33.169><c> numbers</c><00:08:33.529><c> of</c><00:08:33.560><c> sequential</c>
+
+00:08:33.909 --> 00:08:33.919 align:start position:0%
+can't do large numbers of sequential
+ 
+
+00:08:33.919 --> 00:08:35.949 align:start position:0%
+can't do large numbers of sequential
+steps<00:08:34.219><c> at</c><00:08:34.579><c> least</c><00:08:34.789><c> not</c><00:08:34.940><c> quickly</c><00:08:35.120><c> the</c><00:08:35.479><c> fastest</c>
+
+00:08:35.949 --> 00:08:35.959 align:start position:0%
+steps at least not quickly the fastest
+ 
+
+00:08:35.959 --> 00:08:38.350 align:start position:0%
+steps at least not quickly the fastest
+in<00:08:36.079><c> neuron</c><00:08:36.320><c> can</c><00:08:36.469><c> fire</c><00:08:36.709><c> is</c><00:08:36.979><c> around</c><00:08:37.310><c> 200</c><00:08:37.849><c> times</c>
+
+00:08:38.350 --> 00:08:38.360 align:start position:0%
+in neuron can fire is around 200 times
+ 
+
+00:08:38.360 --> 00:08:40.060 align:start position:0%
+in neuron can fire is around 200 times
+and<00:08:38.479><c> so</c><00:08:38.899><c> that</c><00:08:39.079><c> has</c><00:08:39.320><c> to</c><00:08:39.500><c> be</c><00:08:39.529><c> the</c><00:08:39.860><c> most</c>
+
+00:08:40.060 --> 00:08:40.070 align:start position:0%
+and so that has to be the most
+ 
+
+00:08:40.070 --> 00:08:41.889 align:start position:0%
+and so that has to be the most
+sequential<00:08:40.640><c> steps</c><00:08:40.820><c> we</c><00:08:41.060><c> can</c><00:08:41.269><c> consistently</c>
+
+00:08:41.889 --> 00:08:41.899 align:start position:0%
+sequential steps we can consistently
+ 
+
+00:08:41.899 --> 00:08:43.120 align:start position:0%
+sequential steps we can consistently
+execute<00:08:42.440><c> in</c><00:08:42.589><c> a</c><00:08:42.680><c> second</c>
+
+00:08:43.120 --> 00:08:43.130 align:start position:0%
+execute in a second
+ 
+
+00:08:43.130 --> 00:08:45.370 align:start position:0%
+execute in a second
+anything<00:08:44.089><c> your</c><00:08:44.209><c> brain</c><00:08:44.450><c> can</c><00:08:44.660><c> do</c><00:08:44.779><c> every</c><00:08:45.019><c> second</c>
+
+00:08:45.370 --> 00:08:45.380 align:start position:0%
+anything your brain can do every second
+ 
+
+00:08:45.380 --> 00:08:47.470 align:start position:0%
+anything your brain can do every second
+must<00:08:45.829><c> be</c><00:08:46.100><c> doable</c><00:08:46.339><c> in</c><00:08:46.670><c> less</c><00:08:46.880><c> than</c><00:08:47.029><c> 200</c>
+
+00:08:47.470 --> 00:08:47.480 align:start position:0%
+must be doable in less than 200
+ 
+
+00:08:47.480 --> 00:08:48.970 align:start position:0%
+must be doable in less than 200
+sequential<00:08:47.899><c> steps</c><00:08:48.110><c> because</c><00:08:48.709><c> otherwise</c>
+
+00:08:48.970 --> 00:08:48.980 align:start position:0%
+sequential steps because otherwise
+ 
+
+00:08:48.980 --> 00:08:51.040 align:start position:0%
+sequential steps because otherwise
+neurons<00:08:49.760><c> simply</c><00:08:50.089><c> aren't</c><00:08:50.329><c> fast</c><00:08:50.510><c> enough</c><00:08:50.660><c> to</c><00:08:50.899><c> do</c>
+
+00:08:51.040 --> 00:08:51.050 align:start position:0%
+neurons simply aren't fast enough to do
+ 
+
+00:08:51.050 --> 00:08:51.310 align:start position:0%
+neurons simply aren't fast enough to do
+it
+
+00:08:51.310 --> 00:08:51.320 align:start position:0%
+it
+ 
+
+00:08:51.320 --> 00:08:52.800 align:start position:0%
+it
+so<00:08:51.620><c> whenever</c><00:08:51.860><c> the</c><00:08:52.130><c> brain</c><00:08:52.310><c> is</c><00:08:52.459><c> doing</c><00:08:52.579><c> something</c>
+
+00:08:52.800 --> 00:08:52.810 align:start position:0%
+so whenever the brain is doing something
+ 
+
+00:08:52.810 --> 00:08:55.300 align:start position:0%
+so whenever the brain is doing something
+computationally<00:08:53.810><c> impressive</c><00:08:54.320><c> quickly</c><00:08:54.740><c> it</c>
+
+00:08:55.300 --> 00:08:55.310 align:start position:0%
+computationally impressive quickly it
+ 
+
+00:08:55.310 --> 00:08:57.250 align:start position:0%
+computationally impressive quickly it
+has<00:08:55.550><c> to</c><00:08:55.760><c> be</c><00:08:55.880><c> because</c><00:08:56.060><c> it's</c><00:08:56.329><c> using</c><00:08:56.660><c> extremely</c>
+
+00:08:57.250 --> 00:08:57.260 align:start position:0%
+has to be because it's using extremely
+ 
+
+00:08:57.260 --> 00:08:59.199 align:start position:0%
+has to be because it's using extremely
+large<00:08:57.500><c> numbers</c><00:08:57.980><c> of</c><00:08:58.010><c> neurons</c><00:08:58.459><c> working</c><00:08:59.089><c> in</c>
+
+00:08:59.199 --> 00:08:59.209 align:start position:0%
+large numbers of neurons working in
+ 
+
+00:08:59.209 --> 00:09:01.690 align:start position:0%
+large numbers of neurons working in
+parallel<00:08:59.570><c> we</c><00:09:00.079><c> know</c><00:09:00.320><c> it</c><00:09:00.589><c> must</c><00:09:00.860><c> be</c><00:09:01.010><c> possible</c><00:09:01.310><c> to</c>
+
+00:09:01.690 --> 00:09:01.700 align:start position:0%
+parallel we know it must be possible to
+ 
+
+00:09:01.700 --> 00:09:03.490 align:start position:0%
+parallel we know it must be possible to
+parallelize<00:09:02.269><c> a</c><00:09:02.329><c> general</c><00:09:02.899><c> intelligence</c>
+
+00:09:03.490 --> 00:09:03.500 align:start position:0%
+parallelize a general intelligence
+ 
+
+00:09:03.500 --> 00:09:05.740 align:start position:0%
+parallelize a general intelligence
+algorithm<00:09:04.010><c> because</c><00:09:04.640><c> it's</c><00:09:04.970><c> already</c><00:09:05.120><c> been</c><00:09:05.300><c> done</c>
+
+00:09:05.740 --> 00:09:05.750 align:start position:0%
+algorithm because it's already been done
+ 
+
+00:09:05.750 --> 00:09:07.960 align:start position:0%
+algorithm because it's already been done
+so<00:09:06.110><c> given</c><00:09:06.620><c> a</c><00:09:06.709><c> GI</c><00:09:06.920><c> more</c><00:09:07.160><c> hardware</c><00:09:07.579><c> and</c><00:09:07.880><c> it</c>
+
+00:09:07.960 --> 00:09:07.970 align:start position:0%
+so given a GI more hardware and it
+ 
+
+00:09:07.970 --> 00:09:09.699 align:start position:0%
+so given a GI more hardware and it
+should<00:09:08.149><c> run</c><00:09:08.300><c> faster</c><00:09:08.779><c> and</c><00:09:08.899><c> you</c><00:09:09.170><c> just</c><00:09:09.350><c> know</c><00:09:09.560><c> that</c>
+
+00:09:09.699 --> 00:09:09.709 align:start position:0%
+should run faster and you just know that
+ 
+
+00:09:09.709 --> 00:09:11.620 align:start position:0%
+should run faster and you just know that
+as<00:09:09.860><c> soon</c><00:09:10.130><c> as</c><00:09:10.310><c> the</c><00:09:10.430><c> system</c><00:09:10.790><c> starts</c><00:09:10.940><c> to</c><00:09:11.180><c> exhibit</c>
+
+00:09:11.620 --> 00:09:11.630 align:start position:0%
+as soon as the system starts to exhibit
+ 
+
+00:09:11.630 --> 00:09:13.300 align:start position:0%
+as soon as the system starts to exhibit
+behavior<00:09:12.050><c> that</c><00:09:12.440><c> looks</c><00:09:12.740><c> like</c><00:09:12.890><c> general</c>
+
+00:09:13.300 --> 00:09:13.310 align:start position:0%
+behavior that looks like general
+ 
+
+00:09:13.310 --> 00:09:15.100 align:start position:0%
+behavior that looks like general
+intelligence<00:09:13.850><c> people</c><00:09:14.450><c> are</c><00:09:14.660><c> going</c><00:09:14.779><c> to</c><00:09:14.899><c> want</c><00:09:15.050><c> to</c>
+
+00:09:15.100 --> 00:09:15.110 align:start position:0%
+intelligence people are going to want to
+ 
+
+00:09:15.110 --> 00:09:17.019 align:start position:0%
+intelligence people are going to want to
+run<00:09:15.290><c> that</c><00:09:15.440><c> on</c><00:09:15.649><c> as</c><00:09:15.800><c> many</c><00:09:16.040><c> processors</c><00:09:16.550><c> as</c><00:09:16.850><c> they</c>
+
+00:09:17.019 --> 00:09:17.029 align:start position:0%
+run that on as many processors as they
+ 
+
+00:09:17.029 --> 00:09:19.269 align:start position:0%
+run that on as many processors as they
+can<00:09:17.149><c> get</c><00:09:17.269><c> their</c><00:09:17.420><c> hands</c><00:09:17.690><c> on</c><00:09:17.779><c> so</c><00:09:18.769><c> everything</c>
+
+00:09:19.269 --> 00:09:19.279 align:start position:0%
+can get their hands on so everything
+ 
+
+00:09:19.279 --> 00:09:20.800 align:start position:0%
+can get their hands on so everything
+I've<00:09:19.399><c> talked</c><00:09:19.610><c> about</c><00:09:19.730><c> in</c><00:09:19.970><c> this</c><00:09:20.060><c> video</c><00:09:20.240><c> assumes</c>
+
+00:09:20.800 --> 00:09:20.810 align:start position:0%
+I've talked about in this video assumes
+ 
+
+00:09:20.810 --> 00:09:23.170 align:start position:0%
+I've talked about in this video assumes
+that<00:09:20.990><c> we</c><00:09:21.200><c> can't</c><00:09:21.500><c> actually</c><00:09:21.680><c> make</c><00:09:22.190><c> an</c><00:09:22.399><c> algorithm</c>
+
+00:09:23.170 --> 00:09:23.180 align:start position:0%
+that we can't actually make an algorithm
+ 
+
+00:09:23.180 --> 00:09:25.690 align:start position:0%
+that we can't actually make an algorithm
+that's<00:09:23.360><c> truly</c><00:09:23.709><c> smarter</c><00:09:24.709><c> than</c><00:09:24.980><c> a</c><00:09:25.100><c> human</c><00:09:25.130><c> but</c>
+
+00:09:25.690 --> 00:09:25.700 align:start position:0%
+that's truly smarter than a human but
+ 
+
+00:09:25.700 --> 00:09:27.610 align:start position:0%
+that's truly smarter than a human but
+just<00:09:25.940><c> something</c><00:09:26.420><c> that</c><00:09:26.450><c> has</c><00:09:26.690><c> faster</c><00:09:27.079><c> i/o</c><00:09:27.200><c> and</c>
+
+00:09:27.610 --> 00:09:27.620 align:start position:0%
+just something that has faster i/o and
+ 
+
+00:09:27.620 --> 00:09:29.440 align:start position:0%
+just something that has faster i/o and
+can<00:09:27.920><c> be</c><00:09:28.010><c> run</c><00:09:28.190><c> faster</c><00:09:28.700><c> and</c><00:09:28.850><c> that's</c><00:09:29.209><c> already</c>
+
+00:09:29.440 --> 00:09:29.450 align:start position:0%
+can be run faster and that's already
+ 
+
+00:09:29.450 --> 00:09:30.970 align:start position:0%
+can be run faster and that's already
+capable<00:09:29.990><c> of</c><00:09:30.079><c> some</c><00:09:30.260><c> pretty</c><00:09:30.410><c> impressive</c><00:09:30.740><c> things</c>
+
+00:09:30.970 --> 00:09:30.980 align:start position:0%
+capable of some pretty impressive things
+ 
+
+00:09:30.980 --> 00:09:33.639 align:start position:0%
+capable of some pretty impressive things
+one<00:09:31.519><c> question</c><00:09:31.880><c> I</c><00:09:31.970><c> often</c><00:09:32.149><c> get</c><00:09:32.390><c> is</c><00:09:32.450><c> what</c><00:09:33.350><c> can</c><00:09:33.529><c> an</c>
+
+00:09:33.639 --> 00:09:33.649 align:start position:0%
+one question I often get is what can an
+ 
+
+00:09:33.649 --> 00:09:35.800 align:start position:0%
+one question I often get is what can an
+AGI<00:09:33.950><c> really</c><00:09:34.459><c> do</c><00:09:34.640><c> if</c><00:09:34.910><c> it's</c><00:09:35.120><c> just</c><00:09:35.450><c> a</c><00:09:35.540><c> computer</c>
+
+00:09:35.800 --> 00:09:35.810 align:start position:0%
+AGI really do if it's just a computer
+ 
+
+00:09:35.810 --> 00:09:38.470 align:start position:0%
+AGI really do if it's just a computer
+but<00:09:36.079><c> nobody</c><00:09:36.760><c> hopefully</c><00:09:37.760><c> the</c><00:09:37.880><c> capabilities</c>
+
+00:09:38.470 --> 00:09:38.480 align:start position:0%
+but nobody hopefully the capabilities
+ 
+
+00:09:38.480 --> 00:09:40.329 align:start position:0%
+but nobody hopefully the capabilities
+I've<00:09:38.630><c> talked</c><00:09:38.839><c> about</c><00:09:38.959><c> here</c><00:09:39.320><c> give</c><00:09:39.890><c> some</c>
+
+00:09:40.329 --> 00:09:40.339 align:start position:0%
+I've talked about here give some
+ 
+
+00:09:40.339 --> 00:09:41.620 align:start position:0%
+I've talked about here give some
+impression<00:09:40.820><c> of</c><00:09:40.940><c> the</c><00:09:41.029><c> kind</c><00:09:41.209><c> of</c><00:09:41.300><c> things</c><00:09:41.510><c> it</c>
+
+00:09:41.620 --> 00:09:41.630 align:start position:0%
+impression of the kind of things it
+ 
+
+00:09:41.630 --> 00:09:43.810 align:start position:0%
+impression of the kind of things it
+might<00:09:41.779><c> be</c><00:09:41.899><c> able</c><00:09:42.019><c> to</c><00:09:42.170><c> do</c><00:09:42.380><c> but</c><00:09:43.339><c> I</c><00:09:43.370><c> intend</c><00:09:43.730><c> to</c>
+
+00:09:43.810 --> 00:09:43.820 align:start position:0%
+might be able to do but I intend to
+ 
+
+00:09:43.820 --> 00:09:46.260 align:start position:0%
+might be able to do but I intend to
+elaborate<00:09:44.269><c> on</c><00:09:44.329><c> that</c><00:09:44.449><c> in</c><00:09:44.750><c> a</c><00:09:44.810><c> later</c><00:09:44.930><c> video</c>
+
+00:09:46.260 --> 00:09:46.270 align:start position:0%
+elaborate on that in a later video
+ 
+
+00:09:46.270 --> 00:09:53.769 align:start position:0%
+elaborate on that in a later video
+[Music]
+
+00:09:53.769 --> 00:09:53.779 align:start position:0%
+[Music]
+ 
+
+00:09:53.779 --> 00:09:56.210 align:start position:0%
+[Music]
+thank<00:09:54.779><c> you</c><00:09:54.930><c> so</c><00:09:55.140><c> much</c><00:09:55.170><c> to</c><00:09:55.620><c> my</c><00:09:55.709><c> excellent</c>
+
+00:09:56.210 --> 00:09:56.220 align:start position:0%
+thank you so much to my excellent
+ 
+
+00:09:56.220 --> 00:09:59.019 align:start position:0%
+thank you so much to my excellent
+patreon<00:09:56.640><c> supporters</c><00:09:57.120><c> that's</c><00:09:57.690><c> these</c><00:09:58.290><c> people</c>
+
+00:09:59.019 --> 00:09:59.029 align:start position:0%
+patreon supporters that's these people
+ 
+
+00:09:59.029 --> 00:10:01.670 align:start position:0%
+patreon supporters that's these people
+in<00:10:00.029><c> this</c><00:10:00.209><c> video</c><00:10:00.450><c> I'm</c><00:10:00.690><c> especially</c><00:10:01.230><c> thanking</c>
+
+00:10:01.670 --> 00:10:01.680 align:start position:0%
+in this video I'm especially thanking
+ 
+
+00:10:01.680 --> 00:10:04.760 align:start position:0%
+in this video I'm especially thanking
+for<00:10:02.130><c> bricio</c><00:10:02.550><c> Pazhani</c><00:10:03.290><c> he's</c><00:10:04.290><c> the</c><00:10:04.440><c> one</c><00:10:04.560><c> on</c><00:10:04.649><c> the</c>
+
+00:10:04.760 --> 00:10:04.770 align:start position:0%
+for bricio Pazhani he's the one on the
+ 
+
+00:10:04.770 --> 00:10:05.360 align:start position:0%
+for bricio Pazhani he's the one on the
+left
+
+00:10:05.360 --> 00:10:05.370 align:start position:0%
+left
+ 
+
+00:10:05.370 --> 00:10:06.829 align:start position:0%
+left
+I<00:10:05.399><c> think</c><00:10:05.820><c> anyway</c><00:10:06.180><c> I've</c><00:10:06.330><c> recently</c><00:10:06.510><c> been</c>
+
+00:10:06.829 --> 00:10:06.839 align:start position:0%
+I think anyway I've recently been
+ 
+
+00:10:06.839 --> 00:10:08.449 align:start position:0%
+I think anyway I've recently been
+thinking<00:10:07.200><c> about</c><00:10:07.320><c> ways</c><00:10:07.680><c> to</c><00:10:07.709><c> improve</c><00:10:08.220><c> my</c>
+
+00:10:08.449 --> 00:10:08.459 align:start position:0%
+thinking about ways to improve my
+ 
+
+00:10:08.459 --> 00:10:10.970 align:start position:0%
+thinking about ways to improve my
+patreon<00:10:08.970><c> currently</c><00:10:09.720><c> patrons</c><00:10:10.529><c> get</c><00:10:10.680><c> early</c>
+
+00:10:10.970 --> 00:10:10.980 align:start position:0%
+patreon currently patrons get early
+ 
+
+00:10:10.980 --> 00:10:13.010 align:start position:0%
+patreon currently patrons get early
+access<00:10:11.250><c> to</c><00:10:11.399><c> the</c><00:10:11.490><c> videos</c><00:10:11.839><c> occasional</c><00:10:12.839><c> like</c>
+
+00:10:13.010 --> 00:10:13.020 align:start position:0%
+access to the videos occasional like
+ 
+
+00:10:13.020 --> 00:10:14.990 align:start position:0%
+access to the videos occasional like
+behind-the-scenes<00:10:13.649><c> stuff</c><00:10:13.980><c> sometimes</c><00:10:14.610><c> I</c><00:10:14.760><c> send</c>
+
+00:10:14.990 --> 00:10:15.000 align:start position:0%
+behind-the-scenes stuff sometimes I send
+ 
+
+00:10:15.000 --> 00:10:16.940 align:start position:0%
+behind-the-scenes stuff sometimes I send
+out<00:10:15.180><c> the</c><00:10:15.510><c> diagrams</c><00:10:16.020><c> and</c><00:10:16.230><c> stuff</c><00:10:16.290><c> I've</c><00:10:16.589><c> drawn</c><00:10:16.830><c> in</c>
+
+00:10:16.940 --> 00:10:16.950 align:start position:0%
+out the diagrams and stuff I've drawn in
+ 
+
+00:10:16.950 --> 00:10:18.769 align:start position:0%
+out the diagrams and stuff I've drawn in
+the<00:10:17.040><c> videos</c><00:10:17.339><c> and</c><00:10:17.550><c> of</c><00:10:17.760><c> course</c><00:10:18.000><c> you</c><00:10:18.330><c> can</c><00:10:18.480><c> send</c><00:10:18.690><c> me</c>
+
+00:10:18.769 --> 00:10:18.779 align:start position:0%
+the videos and of course you can send me
+ 
+
+00:10:18.779 --> 00:10:20.540 align:start position:0%
+the videos and of course you can send me
+messages<00:10:19.170><c> on</c><00:10:19.320><c> patreon</c><00:10:19.740><c> and</c><00:10:19.920><c> I</c><00:10:19.950><c> reply</c><00:10:20.279><c> to</c><00:10:20.339><c> those</c>
+
+00:10:20.540 --> 00:10:20.550 align:start position:0%
+messages on patreon and I reply to those
+ 
+
+00:10:20.550 --> 00:10:22.639 align:start position:0%
+messages on patreon and I reply to those
+before<00:10:21.120><c> I</c><00:10:21.149><c> do</c><00:10:21.300><c> like</c><00:10:21.810><c> YouTube</c><00:10:22.170><c> comments</c><00:10:22.529><c> or</c>
+
+00:10:22.639 --> 00:10:22.649 align:start position:0%
+before I do like YouTube comments or
+ 
+
+00:10:22.649 --> 00:10:24.079 align:start position:0%
+before I do like YouTube comments or
+Facebook<00:10:22.980><c> comments</c><00:10:23.310><c> but</c><00:10:23.520><c> if</c><00:10:23.670><c> you</c><00:10:23.790><c> have</c><00:10:23.970><c> any</c>
+
+00:10:24.079 --> 00:10:24.089 align:start position:0%
+Facebook comments but if you have any
+ 
+
+00:10:24.089 --> 00:10:25.670 align:start position:0%
+Facebook comments but if you have any
+other<00:10:24.270><c> ideas</c><00:10:24.690><c> of</c><00:10:24.720><c> course</c><00:10:24.959><c> stuff</c><00:10:25.230><c> I</c><00:10:25.320><c> could</c><00:10:25.500><c> do</c>
+
+00:10:25.670 --> 00:10:25.680 align:start position:0%
+other ideas of course stuff I could do
+ 
+
+00:10:25.680 --> 00:10:27.710 align:start position:0%
+other ideas of course stuff I could do
+send<00:10:26.459><c> me</c><00:10:26.550><c> a</c><00:10:26.580><c> message</c><00:10:26.910><c> if</c><00:10:27.029><c> you're</c><00:10:27.180><c> a</c><00:10:27.209><c> patron</c><00:10:27.600><c> or</c>
+
+00:10:27.710 --> 00:10:27.720 align:start position:0%
+send me a message if you're a patron or
+ 
+
+00:10:27.720 --> 00:10:28.820 align:start position:0%
+send me a message if you're a patron or
+even<00:10:28.080><c> if</c><00:10:28.170><c> you're</c><00:10:28.260><c> not</c><00:10:28.440><c> but</c><00:10:28.649><c> you're</c>
+
+00:10:28.820 --> 00:10:28.830 align:start position:0%
+even if you're not but you're
+ 
+
+00:10:28.830 --> 00:10:30.500 align:start position:0%
+even if you're not but you're
+considering<00:10:29.459><c> it</c><00:10:29.580><c> let</c><00:10:30.149><c> me</c><00:10:30.180><c> know</c><00:10:30.330><c> your</c><00:10:30.480><c> thoughts</c>
+
+00:10:30.500 --> 00:10:30.510 align:start position:0%
+considering it let me know your thoughts
+ 
+
+00:10:30.510 --> 00:10:32.060 align:start position:0%
+considering it let me know your thoughts
+in<00:10:30.810><c> the</c><00:10:30.839><c> YouTube</c><00:10:31.140><c> comments</c><00:10:31.350><c> thanks</c><00:10:31.950><c> for</c>
+
+00:10:32.060 --> 00:10:32.070 align:start position:0%
+in the YouTube comments thanks for
+ 
+
+00:10:32.070 --> 00:10:34.389 align:start position:0%
+in the YouTube comments thanks for
+watching<00:10:32.399><c> and</c><00:10:32.580><c> I'll</c><00:10:32.670><c> see</c><00:10:32.700><c> you</c><00:10:32.940><c> next</c><00:10:32.970><c> time</c>
+
+00:10:34.389 --> 00:10:34.399 align:start position:0%
+watching and I'll see you next time
+ 
+
+00:10:34.399 --> 00:10:38.320 align:start position:0%
+watching and I'll see you next time
+the<00:10:35.399><c> fastest</c><00:10:35.880><c> in</c><00:10:36.029><c> neuron</c><00:10:36.270><c> can</c><00:10:36.420><c> fire</c><00:10:36.690><c> is</c><00:10:36.990><c> ah</c><00:10:37.230><c> I</c>
+
+00:10:38.320 --> 00:10:38.330 align:start position:0%
+the fastest in neuron can fire is ah I
+ 
+
+00:10:38.330 --> 00:10:42.440 align:start position:0%
+the fastest in neuron can fire is ah I
+gotta<00:10:39.330><c> buy</c><00:10:39.480><c> some</c><00:10:39.690><c> real</c><00:10:39.810><c> sound</c><00:10:40.080><c> damping</c>
+

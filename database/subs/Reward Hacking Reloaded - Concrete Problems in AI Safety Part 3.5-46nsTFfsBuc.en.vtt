@@ -1,0 +1,1776 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.000 --> 00:00:02.210 align:start position:0%
+ 
+hi<00:00:00.210><c> in</c><00:00:00.840><c> the</c><00:00:00.989><c> previous</c><00:00:01.319><c> video</c><00:00:01.560><c> we</c><00:00:01.770><c> introduced</c>
+
+00:00:02.210 --> 00:00:02.220 align:start position:0%
+hi in the previous video we introduced
+ 
+
+00:00:02.220 --> 00:00:04.789 align:start position:0%
+hi in the previous video we introduced
+the<00:00:02.340><c> idea</c><00:00:02.580><c> of</c><00:00:02.639><c> reward</c><00:00:03.210><c> hacking</c><00:00:03.659><c> an</c><00:00:03.959><c> AI</c><00:00:04.650><c> system</c>
+
+00:00:04.789 --> 00:00:04.799 align:start position:0%
+the idea of reward hacking an AI system
+ 
+
+00:00:04.799 --> 00:00:07.340 align:start position:0%
+the idea of reward hacking an AI system
+that<00:00:05.400><c> works</c><00:00:05.609><c> by</c><00:00:05.819><c> maximizing</c><00:00:06.330><c> its</c><00:00:06.660><c> reward</c><00:00:07.020><c> like</c>
+
+00:00:07.340 --> 00:00:07.350 align:start position:0%
+that works by maximizing its reward like
+ 
+
+00:00:07.350 --> 00:00:09.410 align:start position:0%
+that works by maximizing its reward like
+a<00:00:07.410><c> reinforcement</c><00:00:07.950><c> learning</c><00:00:08.189><c> agent</c><00:00:08.700><c> will</c><00:00:09.240><c> go</c>
+
+00:00:09.410 --> 00:00:09.420 align:start position:0%
+a reinforcement learning agent will go
+ 
+
+00:00:09.420 --> 00:00:11.360 align:start position:0%
+a reinforcement learning agent will go
+for<00:00:09.690><c> whatever</c><00:00:09.900><c> strategy</c><00:00:10.559><c> it</c><00:00:10.740><c> expects</c><00:00:11.219><c> will</c>
+
+00:00:11.360 --> 00:00:11.370 align:start position:0%
+for whatever strategy it expects will
+ 
+
+00:00:11.370 --> 00:00:13.669 align:start position:0%
+for whatever strategy it expects will
+result<00:00:11.730><c> in</c><00:00:11.880><c> the</c><00:00:11.940><c> highest</c><00:00:12.210><c> reward</c><00:00:12.540><c> and</c><00:00:12.780><c> there's</c>
+
+00:00:13.669 --> 00:00:13.679 align:start position:0%
+result in the highest reward and there's
+ 
+
+00:00:13.679 --> 00:00:15.530 align:start position:0%
+result in the highest reward and there's
+a<00:00:13.769><c> tendency</c><00:00:14.250><c> for</c><00:00:14.610><c> the</c><00:00:14.730><c> strategies</c><00:00:15.240><c> that</c><00:00:15.269><c> have</c>
+
+00:00:15.530 --> 00:00:15.540 align:start position:0%
+a tendency for the strategies that have
+ 
+
+00:00:15.540 --> 00:00:17.689 align:start position:0%
+a tendency for the strategies that have
+the<00:00:15.660><c> very</c><00:00:15.839><c> highest</c><00:00:16.109><c> rewards</c><00:00:16.680><c> to</c><00:00:17.190><c> be</c><00:00:17.310><c> quite</c>
+
+00:00:17.689 --> 00:00:17.699 align:start position:0%
+the very highest rewards to be quite
+ 
+
+00:00:17.699 --> 00:00:19.340 align:start position:0%
+the very highest rewards to be quite
+different<00:00:17.970><c> from</c><00:00:18.240><c> the</c><00:00:18.480><c> kinds</c><00:00:18.810><c> of</c><00:00:18.900><c> strategies</c>
+
+00:00:19.340 --> 00:00:19.350 align:start position:0%
+different from the kinds of strategies
+ 
+
+00:00:19.350 --> 00:00:21.590 align:start position:0%
+different from the kinds of strategies
+the<00:00:19.590><c> AI</c><00:00:19.740><c> designers</c><00:00:20.369><c> were</c><00:00:20.460><c> planning</c><00:00:20.850><c> for</c><00:00:20.880><c> for</c>
+
+00:00:21.590 --> 00:00:21.600 align:start position:0%
+the AI designers were planning for for
+ 
+
+00:00:21.600 --> 00:00:23.420 align:start position:0%
+the AI designers were planning for for
+example<00:00:21.990><c> if</c><00:00:22.080><c> you're</c><00:00:22.230><c> using</c><00:00:22.260><c> the</c><00:00:22.680><c> score</c><00:00:23.010><c> as</c><00:00:23.220><c> the</c>
+
+00:00:23.420 --> 00:00:23.430 align:start position:0%
+example if you're using the score as the
+ 
+
+00:00:23.430 --> 00:00:25.670 align:start position:0%
+example if you're using the score as the
+reward<00:00:23.580><c> in</c><00:00:23.910><c> Super</c><00:00:24.180><c> Mario</c><00:00:24.390><c> World</c><00:00:24.539><c> the</c><00:00:25.350><c> highest</c>
+
+00:00:25.670 --> 00:00:25.680 align:start position:0%
+reward in Super Mario World the highest
+ 
+
+00:00:25.680 --> 00:00:27.950 align:start position:0%
+reward in Super Mario World the highest
+reward<00:00:25.980><c> strategy</c><00:00:26.250><c> might</c><00:00:26.730><c> involve</c><00:00:27.029><c> exploiting</c>
+
+00:00:27.950 --> 00:00:27.960 align:start position:0%
+reward strategy might involve exploiting
+ 
+
+00:00:27.960 --> 00:00:29.810 align:start position:0%
+reward strategy might involve exploiting
+a<00:00:28.050><c> load</c><00:00:28.199><c> of</c><00:00:28.320><c> glitches</c><00:00:28.560><c> to</c><00:00:28.949><c> directly</c><00:00:29.429><c> update</c>
+
+00:00:29.810 --> 00:00:29.820 align:start position:0%
+a load of glitches to directly update
+ 
+
+00:00:29.820 --> 00:00:31.910 align:start position:0%
+a load of glitches to directly update
+the<00:00:29.970><c> score</c><00:00:30.210><c> value</c><00:00:30.570><c> rather</c><00:00:31.170><c> than</c><00:00:31.320><c> properly</c>
+
+00:00:31.910 --> 00:00:31.920 align:start position:0%
+the score value rather than properly
+ 
+
+00:00:31.920 --> 00:00:33.920 align:start position:0%
+the score value rather than properly
+playing<00:00:32.160><c> the</c><00:00:32.279><c> game</c><00:00:32.460><c> we</c><00:00:33.300><c> talked</c><00:00:33.540><c> about</c><00:00:33.719><c> some</c>
+
+00:00:33.920 --> 00:00:33.930 align:start position:0%
+playing the game we talked about some
+ 
+
+00:00:33.930 --> 00:00:35.990 align:start position:0%
+playing the game we talked about some
+ways<00:00:34.050><c> that</c><00:00:34.110><c> this</c><00:00:34.350><c> can</c><00:00:34.500><c> happen</c><00:00:35.000><c> exploiting</c>
+
+00:00:35.990 --> 00:00:36.000 align:start position:0%
+ways that this can happen exploiting
+ 
+
+00:00:36.000 --> 00:00:38.200 align:start position:0%
+ways that this can happen exploiting
+bugs<00:00:36.180><c> in</c><00:00:36.300><c> the</c><00:00:36.390><c> software</c><00:00:36.570><c> like</c><00:00:36.989><c> in</c><00:00:37.140><c> Mario</c><00:00:37.440><c> or</c>
+
+00:00:38.200 --> 00:00:38.210 align:start position:0%
+bugs in the software like in Mario or
+ 
+
+00:00:38.210 --> 00:00:40.280 align:start position:0%
+bugs in the software like in Mario or
+adversarial<00:00:39.210><c> examples</c><00:00:39.719><c> in</c><00:00:39.960><c> neural</c><00:00:40.260><c> networks</c>
+
+00:00:40.280 --> 00:00:40.290 align:start position:0%
+adversarial examples in neural networks
+ 
+
+00:00:40.290 --> 00:00:42.350 align:start position:0%
+adversarial examples in neural networks
+if<00:00:40.890><c> you're</c><00:00:41.040><c> confused</c><00:00:41.399><c> right</c><00:00:41.489><c> now</c><00:00:41.730><c> check</c><00:00:42.270><c> the</c>
+
+00:00:42.350 --> 00:00:42.360 align:start position:0%
+if you're confused right now check the
+ 
+
+00:00:42.360 --> 00:00:44.000 align:start position:0%
+if you're confused right now check the
+video<00:00:42.570><c> description</c><00:00:42.600><c> for</c><00:00:43.290><c> the</c><00:00:43.440><c> earlier</c><00:00:43.739><c> videos</c>
+
+00:00:44.000 --> 00:00:44.010 align:start position:0%
+video description for the earlier videos
+ 
+
+00:00:44.010 --> 00:00:46.069 align:start position:0%
+video description for the earlier videos
+in<00:00:44.129><c> this</c><00:00:44.219><c> series</c><00:00:44.430><c> but</c><00:00:44.850><c> in</c><00:00:45.059><c> this</c><00:00:45.180><c> video</c><00:00:45.420><c> we're</c>
+
+00:00:46.069 --> 00:00:46.079 align:start position:0%
+in this series but in this video we're
+ 
+
+00:00:46.079 --> 00:00:47.450 align:start position:0%
+in this series but in this video we're
+going<00:00:46.230><c> to</c><00:00:46.320><c> look</c><00:00:46.530><c> at</c><00:00:46.710><c> some</c><00:00:46.920><c> more</c><00:00:47.070><c> ways</c><00:00:47.280><c> that</c>
+
+00:00:47.450 --> 00:00:47.460 align:start position:0%
+going to look at some more ways that
+ 
+
+00:00:47.460 --> 00:00:49.010 align:start position:0%
+going to look at some more ways that
+reward<00:00:47.730><c> hacking</c><00:00:48.000><c> can</c><00:00:48.149><c> happen</c><00:00:48.480><c> and</c><00:00:48.660><c> how</c><00:00:48.899><c> they</c>
+
+00:00:49.010 --> 00:00:49.020 align:start position:0%
+reward hacking can happen and how they
+ 
+
+00:00:49.020 --> 00:00:50.630 align:start position:0%
+reward hacking can happen and how they
+relate<00:00:49.260><c> to</c><00:00:49.350><c> one</c><00:00:49.469><c> another</c><00:00:49.500><c> so</c><00:00:50.129><c> let's</c><00:00:50.160><c> start</c><00:00:50.550><c> by</c>
+
+00:00:50.630 --> 00:00:50.640 align:start position:0%
+relate to one another so let's start by
+ 
+
+00:00:50.640 --> 00:00:52.400 align:start position:0%
+relate to one another so let's start by
+drawing<00:00:50.820><c> a</c><00:00:51.000><c> diagram</c><00:00:51.030><c> I</c><00:00:51.600><c> can't</c><00:00:52.140><c> believe</c><00:00:52.320><c> I</c>
+
+00:00:52.400 --> 00:00:52.410 align:start position:0%
+drawing a diagram I can't believe I
+ 
+
+00:00:52.410 --> 00:00:53.810 align:start position:0%
+drawing a diagram I can't believe I
+already<00:00:52.559><c> got</c><00:00:52.829><c> this</c><00:00:52.980><c> foreign</c><00:00:53.309><c> to</c><00:00:53.399><c> the</c><00:00:53.489><c> subject</c>
+
+00:00:53.810 --> 00:00:53.820 align:start position:0%
+already got this foreign to the subject
+ 
+
+00:00:53.820 --> 00:00:55.160 align:start position:0%
+already got this foreign to the subject
+without<00:00:53.879><c> drawing</c><00:00:54.210><c> this</c><00:00:54.360><c> diagram</c><00:00:54.780><c> anyway</c>
+
+00:00:55.160 --> 00:00:55.170 align:start position:0%
+without drawing this diagram anyway
+ 
+
+00:00:55.170 --> 00:00:57.470 align:start position:0%
+without drawing this diagram anyway
+here's<00:00:55.469><c> your</c><00:00:55.620><c> agent</c><00:00:55.980><c> here's</c><00:00:56.789><c> the</c><00:00:56.940><c> environment</c>
+
+00:00:57.470 --> 00:00:57.480 align:start position:0%
+here's your agent here's the environment
+ 
+
+00:00:57.480 --> 00:00:59.630 align:start position:0%
+here's your agent here's the environment
+the<00:00:57.899><c> agent</c><00:00:58.289><c> can</c><00:00:58.410><c> take</c><00:00:58.440><c> actions</c><00:00:58.980><c> to</c><00:00:59.070><c> affect</c><00:00:59.460><c> the</c>
+
+00:00:59.630 --> 00:00:59.640 align:start position:0%
+the agent can take actions to affect the
+ 
+
+00:00:59.640 --> 00:01:01.369 align:start position:0%
+the agent can take actions to affect the
+environment<00:01:00.120><c> and</c><00:01:00.300><c> it</c><00:01:00.690><c> can</c><00:01:00.719><c> observe</c><00:01:01.109><c> the</c>
+
+00:01:01.369 --> 00:01:01.379 align:start position:0%
+environment and it can observe the
+ 
+
+00:01:01.379 --> 00:01:02.840 align:start position:0%
+environment and it can observe the
+environment<00:01:01.890><c> to</c><00:01:02.010><c> get</c><00:01:02.160><c> information</c><00:01:02.370><c> about</c>
+
+00:01:02.840 --> 00:01:02.850 align:start position:0%
+environment to get information about
+ 
+
+00:01:02.850 --> 00:01:05.000 align:start position:0%
+environment to get information about
+what<00:01:03.120><c> state</c><00:01:03.329><c> the</c><00:01:03.480><c> environments</c><00:01:03.870><c> in</c><00:01:04.010><c> there's</c>
+
+00:01:05.000 --> 00:01:05.010 align:start position:0%
+what state the environments in there's
+ 
+
+00:01:05.010 --> 00:01:06.679 align:start position:0%
+what state the environments in there's
+also<00:01:05.159><c> a</c><00:01:05.309><c> reward</c><00:01:05.549><c> system</c><00:01:06.180><c> which</c><00:01:06.479><c> uses</c>
+
+00:01:06.679 --> 00:01:06.689 align:start position:0%
+also a reward system which uses
+ 
+
+00:01:06.689 --> 00:01:08.210 align:start position:0%
+also a reward system which uses
+information<00:01:07.380><c> from</c><00:01:07.530><c> the</c><00:01:07.680><c> environment</c><00:01:07.799><c> to</c>
+
+00:01:08.210 --> 00:01:08.220 align:start position:0%
+information from the environment to
+ 
+
+00:01:08.220 --> 00:01:10.520 align:start position:0%
+information from the environment to
+determine<00:01:09.000><c> what</c><00:01:09.420><c> reward</c><00:01:09.750><c> to</c><00:01:09.900><c> give</c><00:01:10.049><c> the</c><00:01:10.170><c> agent</c>
+
+00:01:10.520 --> 00:01:10.530 align:start position:0%
+determine what reward to give the agent
+ 
+
+00:01:10.530 --> 00:01:12.649 align:start position:0%
+determine what reward to give the agent
+so<00:01:11.040><c> if</c><00:01:11.159><c> the</c><00:01:11.250><c> agent</c><00:01:11.549><c> is</c><00:01:11.610><c> pac-man</c><00:01:11.880><c> the</c>
+
+00:01:12.649 --> 00:01:12.659 align:start position:0%
+so if the agent is pac-man the
+ 
+
+00:01:12.659 --> 00:01:14.420 align:start position:0%
+so if the agent is pac-man the
+environment<00:01:13.110><c> is</c><00:01:13.200><c> the</c><00:01:13.320><c> maze</c><00:01:13.530><c> and</c><00:01:13.860><c> the</c><00:01:14.130><c> reward</c>
+
+00:01:14.420 --> 00:01:14.430 align:start position:0%
+environment is the maze and the reward
+ 
+
+00:01:14.430 --> 00:01:16.700 align:start position:0%
+environment is the maze and the reward
+system<00:01:14.790><c> is</c><00:01:14.909><c> just</c><00:01:15.150><c> looking</c><00:01:15.330><c> at</c><00:01:15.479><c> the</c><00:01:15.540><c> score</c><00:01:15.869><c> the</c>
+
+00:01:16.700 --> 00:01:16.710 align:start position:0%
+system is just looking at the score the
+ 
+
+00:01:16.710 --> 00:01:19.370 align:start position:0%
+system is just looking at the score the
+agent<00:01:17.159><c> takes</c><00:01:17.340><c> an</c><00:01:17.549><c> action</c><00:01:17.720><c> the</c><00:01:18.720><c> action</c><00:01:19.080><c> affects</c>
+
+00:01:19.370 --> 00:01:19.380 align:start position:0%
+agent takes an action the action affects
+ 
+
+00:01:19.380 --> 00:01:21.320 align:start position:0%
+agent takes an action the action affects
+the<00:01:19.560><c> environment</c><00:01:19.790><c> the</c><00:01:20.790><c> change</c><00:01:21.060><c> in</c><00:01:21.210><c> the</c>
+
+00:01:21.320 --> 00:01:21.330 align:start position:0%
+the environment the change in the
+ 
+
+00:01:21.330 --> 00:01:23.390 align:start position:0%
+the environment the change in the
+environment<00:01:21.450><c> creates</c><00:01:22.229><c> new</c><00:01:22.470><c> observations</c><00:01:23.159><c> and</c>
+
+00:01:23.390 --> 00:01:23.400 align:start position:0%
+environment creates new observations and
+ 
+
+00:01:23.400 --> 00:01:25.280 align:start position:0%
+environment creates new observations and
+also<00:01:23.909><c> provides</c><00:01:24.240><c> a</c><00:01:24.360><c> new</c><00:01:24.479><c> information</c><00:01:25.049><c> to</c><00:01:25.200><c> the</c>
+
+00:01:25.280 --> 00:01:25.290 align:start position:0%
+also provides a new information to the
+ 
+
+00:01:25.290 --> 00:01:27.410 align:start position:0%
+also provides a new information to the
+reward<00:01:25.619><c> system</c><00:01:26.040><c> which</c><00:01:26.430><c> decides</c><00:01:26.850><c> what</c><00:01:27.090><c> reward</c>
+
+00:01:27.410 --> 00:01:27.420 align:start position:0%
+reward system which decides what reward
+ 
+
+00:01:27.420 --> 00:01:29.359 align:start position:0%
+reward system which decides what reward
+to<00:01:27.540><c> give</c><00:01:27.689><c> the</c><00:01:27.810><c> agent</c><00:01:28.170><c> and</c><00:01:28.259><c> the</c><00:01:28.590><c> agent</c><00:01:28.619><c> uses</c><00:01:29.250><c> the</c>
+
+00:01:29.359 --> 00:01:29.369 align:start position:0%
+to give the agent and the agent uses the
+ 
+
+00:01:29.369 --> 00:01:31.340 align:start position:0%
+to give the agent and the agent uses the
+observation<00:01:29.909><c> and</c><00:01:30.060><c> the</c><00:01:30.180><c> reward</c><00:01:30.509><c> to</c><00:01:30.990><c> decide</c>
+
+00:01:31.340 --> 00:01:31.350 align:start position:0%
+observation and the reward to decide
+ 
+
+00:01:31.350 --> 00:01:33.440 align:start position:0%
+observation and the reward to decide
+which<00:01:31.619><c> action</c><00:01:32.100><c> to</c><00:01:32.220><c> take</c><00:01:32.369><c> next</c><00:01:32.759><c> and</c><00:01:32.939><c> this</c><00:01:33.240><c> kind</c>
+
+00:01:33.440 --> 00:01:33.450 align:start position:0%
+which action to take next and this kind
+ 
+
+00:01:33.450 --> 00:01:37.789 align:start position:0%
+which action to take next and this kind
+of<00:01:33.479><c> goes</c><00:01:33.659><c> in</c><00:01:33.840><c> a</c><00:01:33.900><c> cycle</c><00:01:35.900><c> reward</c><00:01:36.900><c> hacking</c><00:01:37.259><c> is</c><00:01:37.530><c> a</c>
+
+00:01:37.789 --> 00:01:37.799 align:start position:0%
+of goes in a cycle reward hacking is a
+ 
+
+00:01:37.799 --> 00:01:39.440 align:start position:0%
+of goes in a cycle reward hacking is a
+class<00:01:38.130><c> of</c><00:01:38.310><c> problems</c><00:01:38.700><c> that</c><00:01:38.880><c> can</c><00:01:39.000><c> happen</c><00:01:39.030><c> around</c>
+
+00:01:39.440 --> 00:01:39.450 align:start position:0%
+class of problems that can happen around
+ 
+
+00:01:39.450 --> 00:01:41.210 align:start position:0%
+class of problems that can happen around
+that<00:01:39.840><c> reward</c><00:01:40.170><c> system</c><00:01:40.590><c> like</c><00:01:40.799><c> in</c><00:01:40.979><c> the</c><00:01:41.070><c> previous</c>
+
+00:01:41.210 --> 00:01:41.220 align:start position:0%
+that reward system like in the previous
+ 
+
+00:01:41.220 --> 00:01:43.490 align:start position:0%
+that reward system like in the previous
+video<00:01:41.640><c> we</c><00:01:41.880><c> were</c><00:01:42.270><c> talking</c><00:01:42.600><c> about</c><00:01:42.659><c> adversarial</c>
+
+00:01:43.490 --> 00:01:43.500 align:start position:0%
+video we were talking about adversarial
+ 
+
+00:01:43.500 --> 00:01:45.260 align:start position:0%
+video we were talking about adversarial
+examples<00:01:44.009><c> and</c><00:01:44.250><c> how</c><00:01:44.640><c> they</c><00:01:44.820><c> can</c><00:01:44.970><c> be</c><00:01:45.060><c> an</c><00:01:45.149><c> issue</c>
+
+00:01:45.260 --> 00:01:45.270 align:start position:0%
+examples and how they can be an issue
+ 
+
+00:01:45.270 --> 00:01:46.880 align:start position:0%
+examples and how they can be an issue
+when<00:01:45.600><c> your</c><00:01:45.750><c> reward</c><00:01:46.110><c> system</c><00:01:46.470><c> relies</c><00:01:46.680><c> on</c><00:01:46.710><c> a</c>
+
+00:01:46.880 --> 00:01:46.890 align:start position:0%
+when your reward system relies on a
+ 
+
+00:01:46.890 --> 00:01:48.740 align:start position:0%
+when your reward system relies on a
+neural<00:01:47.220><c> network</c><00:01:47.430><c> but</c><00:01:48.149><c> that's</c><00:01:48.299><c> not</c><00:01:48.450><c> the</c><00:01:48.540><c> only</c>
+
+00:01:48.740 --> 00:01:48.750 align:start position:0%
+neural network but that's not the only
+ 
+
+00:01:48.750 --> 00:01:50.690 align:start position:0%
+neural network but that's not the only
+way<00:01:48.840><c> this</c><00:01:48.960><c> kind</c><00:01:49.170><c> of</c><00:01:49.200><c> problem</c><00:01:49.500><c> can</c><00:01:49.590><c> happen</c><00:01:49.950><c> the</c>
+
+00:01:50.690 --> 00:01:50.700 align:start position:0%
+way this kind of problem can happen the
+ 
+
+00:01:50.700 --> 00:01:53.210 align:start position:0%
+way this kind of problem can happen the
+economist<00:01:51.180><c> Charles</c><00:01:51.540><c> Goodhart</c><00:01:51.780><c> once</c><00:01:52.259><c> said</c><00:01:52.590><c> any</c>
+
+00:01:53.210 --> 00:01:53.220 align:start position:0%
+economist Charles Goodhart once said any
+ 
+
+00:01:53.220 --> 00:01:55.010 align:start position:0%
+economist Charles Goodhart once said any
+observed<00:01:53.729><c> statistical</c><00:01:54.270><c> regularity</c><00:01:54.840><c> will</c>
+
+00:01:55.010 --> 00:01:55.020 align:start position:0%
+observed statistical regularity will
+ 
+
+00:01:55.020 --> 00:01:56.450 align:start position:0%
+observed statistical regularity will
+tend<00:01:55.229><c> to</c><00:01:55.259><c> collapse</c><00:01:55.560><c> once</c><00:01:55.799><c> pressure</c><00:01:56.070><c> is</c><00:01:56.250><c> placed</c>
+
+00:01:56.450 --> 00:01:56.460 align:start position:0%
+tend to collapse once pressure is placed
+ 
+
+00:01:56.460 --> 00:01:59.330 align:start position:0%
+tend to collapse once pressure is placed
+upon<00:01:56.610><c> it</c><00:01:56.850><c> for</c><00:01:56.969><c> control</c><00:01:57.180><c> purposes</c><00:01:57.710><c> but</c><00:01:58.710><c> despite</c>
+
+00:01:59.330 --> 00:01:59.340 align:start position:0%
+upon it for control purposes but despite
+ 
+
+00:01:59.340 --> 00:02:01.639 align:start position:0%
+upon it for control purposes but despite
+being<00:01:59.579><c> true</c><00:01:59.820><c> that</c><00:02:00.299><c> was</c><00:02:00.450><c> not</c><00:02:00.600><c> very</c><00:02:00.719><c> catchy</c><00:02:00.990><c> so</c>
+
+00:02:01.639 --> 00:02:01.649 align:start position:0%
+being true that was not very catchy so
+ 
+
+00:02:01.649 --> 00:02:03.679 align:start position:0%
+being true that was not very catchy so
+it<00:02:01.740><c> was</c><00:02:01.890><c> changed</c><00:02:02.130><c> to</c><00:02:02.369><c> when</c><00:02:03.030><c> a</c><00:02:03.060><c> measure</c><00:02:03.329><c> becomes</c>
+
+00:02:03.679 --> 00:02:03.689 align:start position:0%
+it was changed to when a measure becomes
+ 
+
+00:02:03.689 --> 00:02:05.899 align:start position:0%
+it was changed to when a measure becomes
+a<00:02:03.810><c> target</c><00:02:04.020><c> it</c><00:02:04.619><c> ceases</c><00:02:05.040><c> to</c><00:02:05.189><c> be</c><00:02:05.369><c> a</c><00:02:05.490><c> good</c><00:02:05.700><c> measure</c>
+
+00:02:05.899 --> 00:02:05.909 align:start position:0%
+a target it ceases to be a good measure
+ 
+
+00:02:05.909 --> 00:02:07.850 align:start position:0%
+a target it ceases to be a good measure
+much<00:02:06.600><c> better</c><00:02:06.840><c> isn't</c><00:02:07.049><c> it</c><00:02:07.229><c> that's</c><00:02:07.380><c> good</c><00:02:07.590><c> hearts</c>
+
+00:02:07.850 --> 00:02:07.860 align:start position:0%
+much better isn't it that's good hearts
+ 
+
+00:02:07.860 --> 00:02:09.199 align:start position:0%
+much better isn't it that's good hearts
+law<00:02:08.039><c> and</c><00:02:08.310><c> it</c><00:02:08.459><c> shows</c><00:02:08.610><c> up</c><00:02:08.759><c> everywhere</c>
+
+00:02:09.199 --> 00:02:09.209 align:start position:0%
+law and it shows up everywhere
+ 
+
+00:02:09.209 --> 00:02:11.510 align:start position:0%
+law and it shows up everywhere
+like<00:02:09.660><c> if</c><00:02:10.289><c> you</c><00:02:10.470><c> want</c><00:02:10.679><c> to</c><00:02:10.770><c> find</c><00:02:10.950><c> out</c><00:02:11.129><c> how</c><00:02:11.340><c> much</c>
+
+00:02:11.510 --> 00:02:11.520 align:start position:0%
+like if you want to find out how much
+ 
+
+00:02:11.520 --> 00:02:13.339 align:start position:0%
+like if you want to find out how much
+students<00:02:12.030><c> know</c><00:02:12.150><c> about</c><00:02:12.390><c> a</c><00:02:12.420><c> subject</c><00:02:12.629><c> you</c><00:02:13.230><c> can</c>
+
+00:02:13.339 --> 00:02:13.349 align:start position:0%
+students know about a subject you can
+ 
+
+00:02:13.349 --> 00:02:13.880 align:start position:0%
+students know about a subject you can
+ask<00:02:13.500><c> them</c><00:02:13.590><c> questions</c>
+
+00:02:13.880 --> 00:02:13.890 align:start position:0%
+ask them questions
+ 
+
+00:02:13.890 --> 00:02:15.620 align:start position:0%
+ask them questions
+it's<00:02:14.010><c> about</c><00:02:14.190><c> it</c><00:02:14.400><c> right</c><00:02:14.670><c> you</c><00:02:15.000><c> design</c><00:02:15.300><c> a</c><00:02:15.330><c> test</c>
+
+00:02:15.620 --> 00:02:15.630 align:start position:0%
+it's about it right you design a test
+ 
+
+00:02:15.630 --> 00:02:17.750 align:start position:0%
+it's about it right you design a test
+and<00:02:15.960><c> if</c><00:02:16.590><c> it's</c><00:02:16.710><c> well</c><00:02:16.890><c> designed</c><00:02:17.190><c> it</c><00:02:17.460><c> can</c><00:02:17.640><c> be</c><00:02:17.730><c> a</c>
+
+00:02:17.750 --> 00:02:17.760 align:start position:0%
+and if it's well designed it can be a
+ 
+
+00:02:17.760 --> 00:02:19.100 align:start position:0%
+and if it's well designed it can be a
+good<00:02:18.000><c> measure</c><00:02:18.180><c> of</c><00:02:18.450><c> the</c><00:02:18.569><c> students</c><00:02:18.959><c> knowledge</c>
+
+00:02:19.100 --> 00:02:19.110 align:start position:0%
+good measure of the students knowledge
+ 
+
+00:02:19.110 --> 00:02:21.890 align:start position:0%
+good measure of the students knowledge
+but<00:02:19.920><c> if</c><00:02:20.250><c> you</c><00:02:20.730><c> then</c><00:02:20.910><c> use</c><00:02:21.180><c> that</c><00:02:21.209><c> measure</c><00:02:21.660><c> as</c><00:02:21.870><c> a</c>
+
+00:02:21.890 --> 00:02:21.900 align:start position:0%
+but if you then use that measure as a
+ 
+
+00:02:21.900 --> 00:02:24.800 align:start position:0%
+but if you then use that measure as a
+target<00:02:22.470><c> by</c><00:02:22.950><c> using</c><00:02:23.340><c> it</c><00:02:23.459><c> to</c><00:02:23.610><c> decide</c><00:02:23.970><c> which</c>
+
+00:02:24.800 --> 00:02:24.810 align:start position:0%
+target by using it to decide which
+ 
+
+00:02:24.810 --> 00:02:26.630 align:start position:0%
+target by using it to decide which
+students<00:02:25.290><c> get</c><00:02:25.440><c> to</c><00:02:25.560><c> go</c><00:02:25.680><c> to</c><00:02:25.740><c> which</c><00:02:25.950><c> universities</c>
+
+00:02:26.630 --> 00:02:26.640 align:start position:0%
+students get to go to which universities
+ 
+
+00:02:26.640 --> 00:02:28.100 align:start position:0%
+students get to go to which universities
+or<00:02:26.880><c> which</c><00:02:27.180><c> teachers</c><00:02:27.630><c> are</c><00:02:27.660><c> considered</c>
+
+00:02:28.100 --> 00:02:28.110 align:start position:0%
+or which teachers are considered
+ 
+
+00:02:28.110 --> 00:02:30.190 align:start position:0%
+or which teachers are considered
+successful<00:02:28.280><c> then</c><00:02:29.280><c> things</c><00:02:29.760><c> will</c><00:02:29.940><c> change</c>
+
+00:02:30.190 --> 00:02:30.200 align:start position:0%
+successful then things will change
+ 
+
+00:02:30.200 --> 00:02:32.080 align:start position:0%
+successful then things will change
+students<00:02:31.200><c> will</c><00:02:31.320><c> study</c><00:02:31.500><c> exam</c><00:02:31.860><c> technique</c>
+
+00:02:32.080 --> 00:02:32.090 align:start position:0%
+students will study exam technique
+ 
+
+00:02:32.090 --> 00:02:34.310 align:start position:0%
+students will study exam technique
+teachers<00:02:33.090><c> will</c><00:02:33.270><c> teach</c><00:02:33.480><c> only</c><00:02:33.900><c> what's</c><00:02:34.080><c> on</c><00:02:34.200><c> the</c>
+
+00:02:34.310 --> 00:02:34.320 align:start position:0%
+teachers will teach only what's on the
+ 
+
+00:02:34.320 --> 00:02:37.250 align:start position:0%
+teachers will teach only what's on the
+test<00:02:34.530><c> so</c><00:02:35.040><c> student</c><00:02:35.730><c> a</c><00:02:35.880><c> who</c><00:02:36.330><c> has</c><00:02:36.510><c> a</c><00:02:36.540><c> good</c><00:02:36.780><c> broad</c>
+
+00:02:37.250 --> 00:02:37.260 align:start position:0%
+test so student a who has a good broad
+ 
+
+00:02:37.260 --> 00:02:39.380 align:start position:0%
+test so student a who has a good broad
+knowledge<00:02:37.530><c> of</c><00:02:37.770><c> the</c><00:02:37.920><c> subject</c><00:02:38.310><c> might</c><00:02:38.940><c> not</c><00:02:39.120><c> do</c><00:02:39.240><c> as</c>
+
+00:02:39.380 --> 00:02:39.390 align:start position:0%
+knowledge of the subject might not do as
+ 
+
+00:02:39.390 --> 00:02:41.270 align:start position:0%
+knowledge of the subject might not do as
+well<00:02:39.540><c> as</c><00:02:39.660><c> student</c><00:02:39.989><c> B</c><00:02:40.170><c> who</c><00:02:40.650><c> studied</c><00:02:41.010><c> just</c>
+
+00:02:41.270 --> 00:02:41.280 align:start position:0%
+well as student B who studied just
+ 
+
+00:02:41.280 --> 00:02:42.860 align:start position:0%
+well as student B who studied just
+exactly<00:02:41.610><c> what's</c><00:02:41.940><c> on</c><00:02:42.030><c> the</c><00:02:42.180><c> test</c><00:02:42.420><c> and</c><00:02:42.570><c> nothing</c>
+
+00:02:42.860 --> 00:02:42.870 align:start position:0%
+exactly what's on the test and nothing
+ 
+
+00:02:42.870 --> 00:02:45.380 align:start position:0%
+exactly what's on the test and nothing
+else<00:02:43.069><c> so</c><00:02:44.069><c> the</c><00:02:44.160><c> test</c><00:02:44.400><c> isn't</c><00:02:44.700><c> such</c><00:02:45.030><c> a</c><00:02:45.060><c> good</c><00:02:45.300><c> way</c>
+
+00:02:45.380 --> 00:02:45.390 align:start position:0%
+else so the test isn't such a good way
+ 
+
+00:02:45.390 --> 00:02:46.880 align:start position:0%
+else so the test isn't such a good way
+to<00:02:45.450><c> measure</c><00:02:45.720><c> the</c><00:02:45.959><c> student's</c><00:02:46.320><c> real</c><00:02:46.530><c> knowledge</c>
+
+00:02:46.880 --> 00:02:46.890 align:start position:0%
+to measure the student's real knowledge
+ 
+
+00:02:46.890 --> 00:02:49.340 align:start position:0%
+to measure the student's real knowledge
+anymore<00:02:47.310><c> the</c><00:02:47.610><c> thing</c><00:02:47.790><c> is</c><00:02:47.970><c> student</c><00:02:48.660><c> B</c><00:02:48.810><c> only</c>
+
+00:02:49.340 --> 00:02:49.350 align:start position:0%
+anymore the thing is student B only
+ 
+
+00:02:49.350 --> 00:02:51.380 align:start position:0%
+anymore the thing is student B only
+decided<00:02:49.800><c> to</c><00:02:49.920><c> do</c><00:02:50.070><c> that</c><00:02:50.250><c> because</c><00:02:50.550><c> the</c><00:02:50.970><c> test</c><00:02:51.209><c> is</c>
+
+00:02:51.380 --> 00:02:51.390 align:start position:0%
+decided to do that because the test is
+ 
+
+00:02:51.390 --> 00:02:53.240 align:start position:0%
+decided to do that because the test is
+being<00:02:51.570><c> used</c><00:02:51.840><c> to</c><00:02:51.930><c> decide</c><00:02:52.260><c> university</c><00:02:52.860><c> places</c>
+
+00:02:53.240 --> 00:02:53.250 align:start position:0%
+being used to decide university places
+ 
+
+00:02:53.250 --> 00:02:55.520 align:start position:0%
+being used to decide university places
+you<00:02:53.940><c> made</c><00:02:54.150><c> your</c><00:02:54.300><c> measure</c><00:02:54.510><c> into</c><00:02:54.840><c> a</c><00:02:54.900><c> target</c><00:02:55.170><c> and</c>
+
+00:02:55.520 --> 00:02:55.530 align:start position:0%
+you made your measure into a target and
+ 
+
+00:02:55.530 --> 00:02:57.380 align:start position:0%
+you made your measure into a target and
+now<00:02:55.860><c> it's</c><00:02:56.010><c> not</c><00:02:56.130><c> a</c><00:02:56.190><c> good</c><00:02:56.370><c> measure</c><00:02:56.550><c> anymore</c><00:02:57.000><c> the</c>
+
+00:02:57.380 --> 00:02:57.390 align:start position:0%
+now it's not a good measure anymore the
+ 
+
+00:02:57.390 --> 00:02:59.479 align:start position:0%
+now it's not a good measure anymore the
+problem<00:02:57.720><c> is</c><00:02:57.840><c> the</c><00:02:58.500><c> measure</c><00:02:58.769><c> is</c><00:02:59.070><c> pretty</c><00:02:59.340><c> much</c>
+
+00:02:59.479 --> 00:02:59.489 align:start position:0%
+problem is the measure is pretty much
+ 
+
+00:02:59.489 --> 00:03:02.030 align:start position:0%
+problem is the measure is pretty much
+never<00:02:59.850><c> a</c><00:02:59.970><c> perfect</c><00:03:00.300><c> representation</c><00:03:00.959><c> of</c><00:03:01.440><c> what</c>
+
+00:03:02.030 --> 00:03:02.040 align:start position:0%
+never a perfect representation of what
+ 
+
+00:03:02.040 --> 00:03:04.280 align:start position:0%
+never a perfect representation of what
+you<00:03:02.160><c> care</c><00:03:02.370><c> about</c><00:03:02.400><c> and</c><00:03:02.820><c> any</c><00:03:03.420><c> differences</c><00:03:03.720><c> can</c>
+
+00:03:04.280 --> 00:03:04.290 align:start position:0%
+you care about and any differences can
+ 
+
+00:03:04.290 --> 00:03:06.050 align:start position:0%
+you care about and any differences can
+cause<00:03:04.470><c> problems</c><00:03:05.040><c> this</c><00:03:05.430><c> happens</c><00:03:05.760><c> with</c><00:03:05.910><c> people</c>
+
+00:03:06.050 --> 00:03:06.060 align:start position:0%
+cause problems this happens with people
+ 
+
+00:03:06.060 --> 00:03:08.120 align:start position:0%
+cause problems this happens with people
+it<00:03:06.660><c> happens</c><00:03:06.959><c> with</c><00:03:07.080><c> AI</c><00:03:07.200><c> systems</c><00:03:07.739><c> it</c><00:03:07.950><c> even</c>
+
+00:03:08.120 --> 00:03:08.130 align:start position:0%
+it happens with AI systems it even
+ 
+
+00:03:08.130 --> 00:03:09.979 align:start position:0%
+it happens with AI systems it even
+happens<00:03:08.400><c> with</c><00:03:08.489><c> animals</c><00:03:08.820><c> and</c><00:03:09.000><c> the</c><00:03:09.540><c> Institute</c>
+
+00:03:09.979 --> 00:03:09.989 align:start position:0%
+happens with animals and the Institute
+ 
+
+00:03:09.989 --> 00:03:11.870 align:start position:0%
+happens with animals and the Institute
+for<00:03:10.019><c> marine</c><00:03:10.320><c> mammal</c><00:03:10.830><c> studies</c><00:03:10.920><c> the</c><00:03:11.489><c> trainer's</c>
+
+00:03:11.870 --> 00:03:11.880 align:start position:0%
+for marine mammal studies the trainer's
+ 
+
+00:03:11.880 --> 00:03:13.490 align:start position:0%
+for marine mammal studies the trainer's
+wanted<00:03:12.180><c> to</c><00:03:12.239><c> keep</c><00:03:12.360><c> the</c><00:03:12.510><c> pools</c><00:03:12.750><c> clear</c><00:03:13.350><c> of</c>
+
+00:03:13.490 --> 00:03:13.500 align:start position:0%
+wanted to keep the pools clear of
+ 
+
+00:03:13.500 --> 00:03:14.180 align:start position:0%
+wanted to keep the pools clear of
+dropped<00:03:13.709><c> litter</c>
+
+00:03:14.180 --> 00:03:14.190 align:start position:0%
+dropped litter
+ 
+
+00:03:14.190 --> 00:03:16.040 align:start position:0%
+dropped litter
+so<00:03:14.670><c> they</c><00:03:14.940><c> trained</c><00:03:15.209><c> the</c><00:03:15.269><c> Dolphins</c><00:03:15.660><c> to</c><00:03:15.720><c> do</c><00:03:15.930><c> it</c>
+
+00:03:16.040 --> 00:03:16.050 align:start position:0%
+so they trained the Dolphins to do it
+ 
+
+00:03:16.050 --> 00:03:18.110 align:start position:0%
+so they trained the Dolphins to do it
+every<00:03:16.860><c> time</c><00:03:16.980><c> a</c><00:03:17.040><c> dolphin</c><00:03:17.459><c> came</c><00:03:17.670><c> to</c><00:03:17.790><c> a</c><00:03:17.820><c> trainer</c>
+
+00:03:18.110 --> 00:03:18.120 align:start position:0%
+every time a dolphin came to a trainer
+ 
+
+00:03:18.120 --> 00:03:19.729 align:start position:0%
+every time a dolphin came to a trainer
+with<00:03:18.329><c> a</c><00:03:18.360><c> piece</c><00:03:18.540><c> of</c><00:03:18.690><c> litter</c><00:03:18.870><c> they</c><00:03:19.410><c> would</c><00:03:19.560><c> get</c><00:03:19.680><c> a</c>
+
+00:03:19.729 --> 00:03:19.739 align:start position:0%
+with a piece of litter they would get a
+ 
+
+00:03:19.739 --> 00:03:23.150 align:start position:0%
+with a piece of litter they would get a
+fish<00:03:19.980><c> in</c><00:03:20.250><c> return</c><00:03:20.750><c> so</c><00:03:21.750><c> of</c><00:03:21.870><c> course</c><00:03:22.049><c> the</c><00:03:22.769><c> Dolphins</c>
+
+00:03:23.150 --> 00:03:23.160 align:start position:0%
+fish in return so of course the Dolphins
+ 
+
+00:03:23.160 --> 00:03:24.949 align:start position:0%
+fish in return so of course the Dolphins
+would<00:03:23.340><c> hide</c><00:03:23.610><c> pieces</c><00:03:24.060><c> of</c><00:03:24.180><c> waste</c><00:03:24.390><c> paper</c><00:03:24.600><c> and</c>
+
+00:03:24.949 --> 00:03:24.959 align:start position:0%
+would hide pieces of waste paper and
+ 
+
+00:03:24.959 --> 00:03:26.870 align:start position:0%
+would hide pieces of waste paper and
+then<00:03:25.290><c> tear</c><00:03:25.590><c> off</c><00:03:25.799><c> little</c><00:03:26.010><c> bits</c><00:03:26.220><c> to</c><00:03:26.489><c> trade</c><00:03:26.700><c> for</c>
+
+00:03:26.870 --> 00:03:26.880 align:start position:0%
+then tear off little bits to trade for
+ 
+
+00:03:26.880 --> 00:03:28.640 align:start position:0%
+then tear off little bits to trade for
+fish<00:03:27.060><c> tearing</c><00:03:27.840><c> the</c><00:03:27.900><c> paper</c><00:03:28.019><c> up</c><00:03:28.260><c> allowed</c><00:03:28.530><c> the</c>
+
+00:03:28.640 --> 00:03:28.650 align:start position:0%
+fish tearing the paper up allowed the
+ 
+
+00:03:28.650 --> 00:03:30.289 align:start position:0%
+fish tearing the paper up allowed the
+Dolphins<00:03:28.980><c> to</c><00:03:29.070><c> get</c><00:03:29.250><c> several</c><00:03:29.700><c> fish</c><00:03:29.880><c> for</c><00:03:30.120><c> one</c>
+
+00:03:30.289 --> 00:03:30.299 align:start position:0%
+Dolphins to get several fish for one
+ 
+
+00:03:30.299 --> 00:03:32.360 align:start position:0%
+Dolphins to get several fish for one
+dropped<00:03:30.570><c> item</c><00:03:30.900><c> this</c><00:03:31.290><c> is</c><00:03:31.500><c> kind</c><00:03:31.799><c> of</c><00:03:31.920><c> good</c><00:03:32.100><c> hearts</c>
+
+00:03:32.360 --> 00:03:32.370 align:start position:0%
+dropped item this is kind of good hearts
+ 
+
+00:03:32.370 --> 00:03:34.220 align:start position:0%
+dropped item this is kind of good hearts
+lure<00:03:32.579><c> again</c><00:03:32.850><c> if</c><00:03:33.239><c> you</c><00:03:33.420><c> count</c><00:03:33.690><c> the</c><00:03:33.900><c> number</c><00:03:33.930><c> of</c>
+
+00:03:34.220 --> 00:03:34.230 align:start position:0%
+lure again if you count the number of
+ 
+
+00:03:34.230 --> 00:03:35.840 align:start position:0%
+lure again if you count the number of
+pieces<00:03:34.709><c> of</c><00:03:34.739><c> litter</c><00:03:35.010><c> removed</c><00:03:35.400><c> from</c><00:03:35.519><c> the</c><00:03:35.670><c> pool</c>
+
+00:03:35.840 --> 00:03:35.850 align:start position:0%
+pieces of litter removed from the pool
+ 
+
+00:03:35.850 --> 00:03:37.729 align:start position:0%
+pieces of litter removed from the pool
+that's<00:03:36.570><c> a</c><00:03:36.750><c> good</c><00:03:36.900><c> measure</c><00:03:37.140><c> for</c><00:03:37.260><c> the</c><00:03:37.470><c> thing</c><00:03:37.620><c> you</c>
+
+00:03:37.729 --> 00:03:37.739 align:start position:0%
+that's a good measure for the thing you
+ 
+
+00:03:37.739 --> 00:03:39.110 align:start position:0%
+that's a good measure for the thing you
+care<00:03:37.920><c> about</c><00:03:38.190><c> the</c><00:03:38.579><c> amount</c><00:03:38.850><c> of</c><00:03:38.910><c> litter</c>
+
+00:03:39.110 --> 00:03:39.120 align:start position:0%
+care about the amount of litter
+ 
+
+00:03:39.120 --> 00:03:41.000 align:start position:0%
+care about the amount of litter
+remaining<00:03:39.510><c> in</c><00:03:39.600><c> the</c><00:03:39.690><c> pool</c><00:03:39.870><c> but</c><00:03:40.590><c> when</c><00:03:40.769><c> you</c><00:03:40.860><c> make</c>
+
+00:03:41.000 --> 00:03:41.010 align:start position:0%
+remaining in the pool but when you make
+ 
+
+00:03:41.010 --> 00:03:43.009 align:start position:0%
+remaining in the pool but when you make
+the<00:03:41.160><c> measure</c><00:03:41.370><c> a</c><00:03:41.459><c> target</c><00:03:42.000><c> the</c><00:03:42.480><c> differences</c>
+
+00:03:43.009 --> 00:03:43.019 align:start position:0%
+the measure a target the differences
+ 
+
+00:03:43.019 --> 00:03:44.360 align:start position:0%
+the measure a target the differences
+between<00:03:43.230><c> the</c><00:03:43.470><c> measure</c><00:03:43.650><c> and</c><00:03:43.980><c> the</c><00:03:44.070><c> thing</c><00:03:44.250><c> you're</c>
+
+00:03:44.360 --> 00:03:44.370 align:start position:0%
+between the measure and the thing you're
+ 
+
+00:03:44.370 --> 00:03:46.640 align:start position:0%
+between the measure and the thing you're
+trying<00:03:44.400><c> to</c><00:03:44.760><c> change</c><00:03:44.970><c> get</c><00:03:45.480><c> amplified</c><00:03:45.989><c> the</c><00:03:46.380><c> fact</c>
+
+00:03:46.640 --> 00:03:46.650 align:start position:0%
+trying to change get amplified the fact
+ 
+
+00:03:46.650 --> 00:03:48.080 align:start position:0%
+trying to change get amplified the fact
+that<00:03:46.739><c> there</c><00:03:46.980><c> are</c><00:03:47.070><c> a</c><00:03:47.100><c> lot</c><00:03:47.310><c> of</c><00:03:47.340><c> pieces</c><00:03:47.640><c> of</c><00:03:47.880><c> litter</c>
+
+00:03:48.080 --> 00:03:48.090 align:start position:0%
+that there are a lot of pieces of litter
+ 
+
+00:03:48.090 --> 00:03:50.150 align:start position:0%
+that there are a lot of pieces of litter
+coming<00:03:48.480><c> out</c><00:03:48.600><c> of</c><00:03:48.750><c> the</c><00:03:48.840><c> pool</c><00:03:49.019><c> no</c><00:03:49.620><c> longer</c><00:03:49.980><c> means</c>
+
+00:03:50.150 --> 00:03:50.160 align:start position:0%
+coming out of the pool no longer means
+ 
+
+00:03:50.160 --> 00:03:51.800 align:start position:0%
+coming out of the pool no longer means
+there's<00:03:50.430><c> no</c><00:03:50.549><c> litter</c><00:03:50.790><c> in</c><00:03:50.970><c> the</c><00:03:51.090><c> pool</c><00:03:51.269><c> so</c><00:03:51.630><c> that's</c>
+
+00:03:51.800 --> 00:03:51.810 align:start position:0%
+there's no litter in the pool so that's
+ 
+
+00:03:51.810 --> 00:03:53.600 align:start position:0%
+there's no litter in the pool so that's
+good<00:03:51.989><c> hearts</c><00:03:52.260><c> law</c><00:03:52.410><c> and</c><00:03:52.620><c> you</c><00:03:52.860><c> can</c><00:03:53.040><c> see</c><00:03:53.220><c> how</c><00:03:53.400><c> that</c>
+
+00:03:53.600 --> 00:03:53.610 align:start position:0%
+good hearts law and you can see how that
+ 
+
+00:03:53.610 --> 00:03:55.370 align:start position:0%
+good hearts law and you can see how that
+kind<00:03:53.850><c> of</c><00:03:53.910><c> situation</c><00:03:54.480><c> could</c><00:03:54.690><c> result</c><00:03:54.900><c> in</c><00:03:55.049><c> reward</c>
+
+00:03:55.370 --> 00:03:55.380 align:start position:0%
+kind of situation could result in reward
+ 
+
+00:03:55.380 --> 00:03:57.620 align:start position:0%
+kind of situation could result in reward
+hacking<00:03:55.709><c> your</c><00:03:56.310><c> reward</c><00:03:56.670><c> system</c><00:03:57.060><c> needs</c><00:03:57.269><c> to</c><00:03:57.450><c> use</c>
+
+00:03:57.620 --> 00:03:57.630 align:start position:0%
+hacking your reward system needs to use
+ 
+
+00:03:57.630 --> 00:03:59.449 align:start position:0%
+hacking your reward system needs to use
+some<00:03:57.900><c> kind</c><00:03:58.140><c> of</c><00:03:58.260><c> measure</c><00:03:58.470><c> but</c><00:03:58.920><c> that</c><00:03:59.070><c> turns</c><00:03:59.340><c> the</c>
+
+00:03:59.449 --> 00:03:59.459 align:start position:0%
+some kind of measure but that turns the
+ 
+
+00:03:59.459 --> 00:04:01.160 align:start position:0%
+some kind of measure but that turns the
+measure<00:03:59.610><c> into</c><00:03:59.820><c> a</c><00:03:59.940><c> target</c><00:04:00.239><c> so</c><00:04:00.900><c> it</c><00:04:01.049><c> will</c>
+
+00:04:01.160 --> 00:04:01.170 align:start position:0%
+measure into a target so it will
+ 
+
+00:04:01.170 --> 00:04:03.110 align:start position:0%
+measure into a target so it will
+probably<00:04:01.350><c> stop</c><00:04:01.829><c> being</c><00:04:02.070><c> a</c><00:04:02.160><c> good</c><00:04:02.310><c> measure</c><00:04:02.549><c> with</c>
+
+00:04:03.110 --> 00:04:03.120 align:start position:0%
+probably stop being a good measure with
+ 
+
+00:04:03.120 --> 00:04:05.569 align:start position:0%
+probably stop being a good measure with
+dolphins<00:04:03.329><c> this</c><00:04:03.690><c> can</c><00:04:03.840><c> be</c><00:04:03.959><c> cute</c><00:04:04.200><c> with</c><00:04:05.130><c> people</c><00:04:05.430><c> it</c>
+
+00:04:05.569 --> 00:04:05.579 align:start position:0%
+dolphins this can be cute with people it
+ 
+
+00:04:05.579 --> 00:04:07.220 align:start position:0%
+dolphins this can be cute with people it
+can<00:04:05.640><c> cause</c><00:04:05.850><c> serious</c><00:04:06.090><c> problems</c><00:04:06.600><c> and</c><00:04:06.810><c> with</c>
+
+00:04:07.220 --> 00:04:07.230 align:start position:0%
+can cause serious problems and with
+ 
+
+00:04:07.230 --> 00:04:09.979 align:start position:0%
+can cause serious problems and with
+advanced<00:04:07.590><c> AI</c><00:04:07.680><c> systems</c><00:04:08.190><c> well</c><00:04:08.610><c> let's</c><00:04:09.480><c> just</c><00:04:09.780><c> try</c>
+
+00:04:09.979 --> 00:04:09.989 align:start position:0%
+advanced AI systems well let's just try
+ 
+
+00:04:09.989 --> 00:04:11.229 align:start position:0%
+advanced AI systems well let's just try
+to<00:04:10.079><c> keep</c><00:04:10.260><c> that</c><00:04:10.380><c> from</c><00:04:10.530><c> happening</c>
+
+00:04:11.229 --> 00:04:11.239 align:start position:0%
+to keep that from happening
+ 
+
+00:04:11.239 --> 00:04:13.280 align:start position:0%
+to keep that from happening
+another<00:04:12.239><c> way</c><00:04:12.390><c> that</c><00:04:12.540><c> reward</c><00:04:12.840><c> hacking</c><00:04:13.140><c> can</c>
+
+00:04:13.280 --> 00:04:13.290 align:start position:0%
+another way that reward hacking can
+ 
+
+00:04:13.290 --> 00:04:15.080 align:start position:0%
+another way that reward hacking can
+happen<00:04:13.620><c> comes</c><00:04:13.950><c> from</c><00:04:14.190><c> partially</c><00:04:14.760><c> observed</c>
+
+00:04:15.080 --> 00:04:15.090 align:start position:0%
+happen comes from partially observed
+ 
+
+00:04:15.090 --> 00:04:17.509 align:start position:0%
+happen comes from partially observed
+goals<00:04:15.420><c> in</c><00:04:16.019><c> our</c><00:04:16.200><c> super</c><00:04:16.500><c> mario</c><00:04:16.799><c> world</c><00:04:16.859><c> or</c><00:04:17.280><c> pacman</c>
+
+00:04:17.509 --> 00:04:17.519 align:start position:0%
+goals in our super mario world or pacman
+ 
+
+00:04:17.519 --> 00:04:20.449 align:start position:0%
+goals in our super mario world or pacman
+examples<00:04:18.180><c> the</c><00:04:18.720><c> goal</c><00:04:18.900><c> is</c><00:04:19.109><c> fully</c><00:04:19.380><c> observed</c><00:04:19.829><c> the</c>
+
+00:04:20.449 --> 00:04:20.459 align:start position:0%
+examples the goal is fully observed the
+ 
+
+00:04:20.459 --> 00:04:22.370 align:start position:0%
+examples the goal is fully observed the
+reward<00:04:20.820><c> is</c><00:04:20.970><c> the</c><00:04:21.120><c> score</c><00:04:21.390><c> and</c><00:04:21.660><c> the</c><00:04:21.720><c> AI</c><00:04:21.989><c> can</c><00:04:22.349><c> just</c>
+
+00:04:22.370 --> 00:04:22.380 align:start position:0%
+reward is the score and the AI can just
+ 
+
+00:04:22.380 --> 00:04:23.930 align:start position:0%
+reward is the score and the AI can just
+read<00:04:22.800><c> the</c><00:04:22.830><c> score</c><00:04:23.130><c> out</c><00:04:23.250><c> of</c><00:04:23.400><c> memory</c><00:04:23.580><c> and</c><00:04:23.729><c> it</c>
+
+00:04:23.930 --> 00:04:23.940 align:start position:0%
+read the score out of memory and it
+ 
+
+00:04:23.940 --> 00:04:26.360 align:start position:0%
+read the score out of memory and it
+knows<00:04:24.090><c> it's</c><00:04:24.270><c> reward</c><00:04:24.599><c> but</c><00:04:25.349><c> if</c><00:04:25.710><c> we</c><00:04:26.010><c> have</c><00:04:26.160><c> an</c><00:04:26.280><c> AI</c>
+
+00:04:26.360 --> 00:04:26.370 align:start position:0%
+knows it's reward but if we have an AI
+ 
+
+00:04:26.370 --> 00:04:27.390 align:start position:0%
+knows it's reward but if we have an AI
+system<00:04:26.880><c> acting</c><00:04:27.210><c> as</c>
+
+00:04:27.390 --> 00:04:27.400 align:start position:0%
+system acting as
+ 
+
+00:04:27.400 --> 00:04:29.370 align:start position:0%
+system acting as
+agent<00:04:27.729><c> in</c><00:04:27.820><c> the</c><00:04:27.910><c> real</c><00:04:28.060><c> world</c><00:04:28.300><c> the</c><00:04:29.020><c> reward</c>
+
+00:04:29.370 --> 00:04:29.380 align:start position:0%
+agent in the real world the reward
+ 
+
+00:04:29.380 --> 00:04:30.450 align:start position:0%
+agent in the real world the reward
+depends<00:04:29.800><c> on</c><00:04:29.889><c> the</c><00:04:29.949><c> state</c><00:04:30.160><c> of</c><00:04:30.280><c> the</c><00:04:30.370><c> environment</c>
+
+00:04:30.450 --> 00:04:30.460 align:start position:0%
+depends on the state of the environment
+ 
+
+00:04:30.460 --> 00:04:33.150 align:start position:0%
+depends on the state of the environment
+around<00:04:30.880><c> it</c><00:04:31.210><c> and</c><00:04:31.330><c> the</c><00:04:31.750><c> AI</c><00:04:31.900><c> only</c><00:04:32.500><c> has</c><00:04:32.650><c> partial</c>
+
+00:04:33.150 --> 00:04:33.160 align:start position:0%
+around it and the AI only has partial
+ 
+
+00:04:33.160 --> 00:04:34.439 align:start position:0%
+around it and the AI only has partial
+knowledge<00:04:33.280><c> of</c><00:04:33.550><c> that</c><00:04:33.729><c> through</c><00:04:34.030><c> the</c><00:04:34.120><c> robots</c>
+
+00:04:34.439 --> 00:04:34.449 align:start position:0%
+knowledge of that through the robots
+ 
+
+00:04:34.449 --> 00:04:36.300 align:start position:0%
+knowledge of that through the robots
+limited<00:04:34.870><c> senses</c><00:04:35.290><c> the</c><00:04:35.620><c> goal</c><00:04:35.800><c> is</c><00:04:36.100><c> only</c>
+
+00:04:36.300 --> 00:04:36.310 align:start position:0%
+limited senses the goal is only
+ 
+
+00:04:36.310 --> 00:04:38.189 align:start position:0%
+limited senses the goal is only
+partially<00:04:36.850><c> observed</c><00:04:37.180><c> suppose</c><00:04:37.900><c> we</c><00:04:38.050><c> have</c><00:04:38.169><c> a</c>
+
+00:04:38.189 --> 00:04:38.199 align:start position:0%
+partially observed suppose we have a
+ 
+
+00:04:38.199 --> 00:04:40.170 align:start position:0%
+partially observed suppose we have a
+cleaning<00:04:38.470><c> robot</c><00:04:38.889><c> with</c><00:04:39.520><c> its</c><00:04:39.550><c> mop</c><00:04:39.880><c> and</c><00:04:40.060><c> bucket</c>
+
+00:04:40.170 --> 00:04:40.180 align:start position:0%
+cleaning robot with its mop and bucket
+ 
+
+00:04:40.180 --> 00:04:41.999 align:start position:0%
+cleaning robot with its mop and bucket
+and<00:04:40.539><c> we</c><00:04:40.840><c> wanted</c><00:04:41.110><c> to</c><00:04:41.169><c> clean</c><00:04:41.410><c> the</c><00:04:41.530><c> office</c><00:04:41.650><c> that</c>
+
+00:04:41.999 --> 00:04:42.009 align:start position:0%
+and we wanted to clean the office that
+ 
+
+00:04:42.009 --> 00:04:44.460 align:start position:0%
+and we wanted to clean the office that
+it's<00:04:42.130><c> in</c><00:04:42.310><c> so</c><00:04:43.060><c> we</c><00:04:43.479><c> can</c><00:04:43.630><c> set</c><00:04:43.840><c> it</c><00:04:43.870><c> up</c><00:04:44.020><c> so</c><00:04:44.080><c> that</c><00:04:44.380><c> it</c>
+
+00:04:44.460 --> 00:04:44.470 align:start position:0%
+it's in so we can set it up so that it
+ 
+
+00:04:44.470 --> 00:04:46.680 align:start position:0%
+it's in so we can set it up so that it
+gets<00:04:44.650><c> more</c><00:04:45.009><c> reward</c><00:04:45.430><c> the</c><00:04:45.820><c> less</c><00:04:46.030><c> mess</c><00:04:46.330><c> there</c><00:04:46.539><c> is</c>
+
+00:04:46.680 --> 00:04:46.690 align:start position:0%
+gets more reward the less mess there is
+ 
+
+00:04:46.690 --> 00:04:48.990 align:start position:0%
+gets more reward the less mess there is
+like<00:04:47.080><c> we</c><00:04:47.650><c> subtract</c><00:04:48.070><c> a</c><00:04:48.190><c> bit</c><00:04:48.310><c> of</c><00:04:48.400><c> reward</c><00:04:48.759><c> for</c>
+
+00:04:48.990 --> 00:04:49.000 align:start position:0%
+like we subtract a bit of reward for
+ 
+
+00:04:49.000 --> 00:04:51.180 align:start position:0%
+like we subtract a bit of reward for
+each<00:04:49.120><c> bit</c><00:04:49.330><c> of</c><00:04:49.419><c> mess</c><00:04:49.600><c> and</c><00:04:49.949><c> the</c><00:04:50.949><c> way</c><00:04:51.070><c> it</c>
+
+00:04:51.180 --> 00:04:51.190 align:start position:0%
+each bit of mess and the way it
+ 
+
+00:04:51.190 --> 00:04:52.650 align:start position:0%
+each bit of mess and the way it
+determines<00:04:51.610><c> the</c><00:04:51.639><c> level</c><00:04:51.820><c> of</c><00:04:51.970><c> mass</c><00:04:52.150><c> is</c><00:04:52.360><c> to</c><00:04:52.509><c> look</c>
+
+00:04:52.650 --> 00:04:52.660 align:start position:0%
+determines the level of mass is to look
+ 
+
+00:04:52.660 --> 00:04:54.029 align:start position:0%
+determines the level of mass is to look
+around<00:04:52.840><c> the</c><00:04:52.990><c> room</c><00:04:53.020><c> with</c><00:04:53.259><c> its</c><00:04:53.380><c> cameras</c><00:04:53.710><c> what</c>
+
+00:04:54.029 --> 00:04:54.039 align:start position:0%
+around the room with its cameras what
+ 
+
+00:04:54.039 --> 00:04:57.390 align:start position:0%
+around the room with its cameras what
+does<00:04:54.130><c> this</c><00:04:54.250><c> robot</c><00:04:54.580><c> do</c><00:04:55.919><c> well</c><00:04:56.919><c> the</c><00:04:57.100><c> answer</c><00:04:57.370><c> is</c>
+
+00:04:57.390 --> 00:04:57.400 align:start position:0%
+does this robot do well the answer is
+ 
+
+00:04:57.400 --> 00:04:58.830 align:start position:0%
+does this robot do well the answer is
+obvious<00:04:57.789><c> to</c><00:04:57.910><c> anyone</c><00:04:58.120><c> who's</c><00:04:58.360><c> ever</c><00:04:58.449><c> run</c><00:04:58.690><c> for</c>
+
+00:04:58.830 --> 00:04:58.840 align:start position:0%
+obvious to anyone who's ever run for
+ 
+
+00:04:58.840 --> 00:05:01.020 align:start position:0%
+obvious to anyone who's ever run for
+Parliament<00:04:58.990><c> in</c><00:04:59.320><c> Maidenhead</c><00:04:59.590><c> the</c><00:05:00.250><c> old</c><00:05:00.400><c> Skyrim</c>
+
+00:05:01.020 --> 00:05:01.030 align:start position:0%
+Parliament in Maidenhead the old Skyrim
+ 
+
+00:05:01.030 --> 00:05:03.090 align:start position:0%
+Parliament in Maidenhead the old Skyrim
+shoplifters<00:05:01.630><c> trick</c><00:05:01.900><c> if</c><00:05:02.410><c> it</c><00:05:02.560><c> covers</c><00:05:02.740><c> up</c><00:05:02.949><c> its</c>
+
+00:05:03.090 --> 00:05:03.100 align:start position:0%
+shoplifters trick if it covers up its
+ 
+
+00:05:03.100 --> 00:05:05.550 align:start position:0%
+shoplifters trick if it covers up its
+cameras<00:05:03.520><c> say</c><00:05:04.120><c> by</c><00:05:04.449><c> putting</c><00:05:04.870><c> its</c><00:05:04.990><c> bucket</c><00:05:05.320><c> on</c><00:05:05.410><c> its</c>
+
+00:05:05.550 --> 00:05:05.560 align:start position:0%
+cameras say by putting its bucket on its
+ 
+
+00:05:05.560 --> 00:05:08.189 align:start position:0%
+cameras say by putting its bucket on its
+head<00:05:05.710><c> it</c><00:05:06.550><c> won't</c><00:05:06.789><c> see</c><00:05:07.060><c> any</c><00:05:07.270><c> mess</c><00:05:07.449><c> so</c><00:05:07.930><c> it</c><00:05:08.020><c> won't</c>
+
+00:05:08.189 --> 00:05:08.199 align:start position:0%
+head it won't see any mess so it won't
+ 
+
+00:05:08.199 --> 00:05:14.219 align:start position:0%
+head it won't see any mess so it won't
+lose<00:05:08.380><c> any</c><00:05:08.560><c> reward</c><00:05:12.690><c> you've</c><00:05:13.690><c> probably</c><00:05:13.900><c> heard</c>
+
+00:05:14.219 --> 00:05:14.229 align:start position:0%
+lose any reward you've probably heard
+ 
+
+00:05:14.229 --> 00:05:16.320 align:start position:0%
+lose any reward you've probably heard
+about<00:05:14.380><c> experiments</c><00:05:15.310><c> on</c><00:05:15.430><c> rats</c><00:05:15.610><c> where</c>
+
+00:05:16.320 --> 00:05:16.330 align:start position:0%
+about experiments on rats where
+ 
+
+00:05:16.330 --> 00:05:18.540 align:start position:0%
+about experiments on rats where
+scientists<00:05:17.110><c> implanted</c><00:05:17.650><c> electrodes</c><00:05:18.160><c> into</c><00:05:18.400><c> the</c>
+
+00:05:18.540 --> 00:05:18.550 align:start position:0%
+scientists implanted electrodes into the
+ 
+
+00:05:18.550 --> 00:05:20.550 align:start position:0%
+scientists implanted electrodes into the
+rats<00:05:18.789><c> brains</c><00:05:19.000><c> allowing</c><00:05:19.780><c> them</c><00:05:19.900><c> to</c><00:05:20.080><c> directly</c>
+
+00:05:20.550 --> 00:05:20.560 align:start position:0%
+rats brains allowing them to directly
+ 
+
+00:05:20.560 --> 00:05:22.620 align:start position:0%
+rats brains allowing them to directly
+stimulate<00:05:21.010><c> their</c><00:05:21.190><c> reward</c><00:05:21.490><c> centers</c><00:05:21.880><c> and</c><00:05:22.060><c> if</c>
+
+00:05:22.620 --> 00:05:22.630 align:start position:0%
+stimulate their reward centers and if
+ 
+
+00:05:22.630 --> 00:05:24.330 align:start position:0%
+stimulate their reward centers and if
+the<00:05:22.780><c> rats</c><00:05:22.990><c> are</c><00:05:23.260><c> able</c><00:05:23.590><c> to</c><00:05:23.620><c> press</c><00:05:23.889><c> a</c><00:05:23.919><c> button</c><00:05:24.039><c> to</c>
+
+00:05:24.330 --> 00:05:24.340 align:start position:0%
+the rats are able to press a button to
+ 
+
+00:05:24.340 --> 00:05:25.860 align:start position:0%
+the rats are able to press a button to
+activate<00:05:24.610><c> the</c><00:05:24.849><c> electrode</c><00:05:25.360><c> they</c><00:05:25.570><c> never</c><00:05:25.750><c> do</c>
+
+00:05:25.860 --> 00:05:25.870 align:start position:0%
+activate the electrode they never do
+ 
+
+00:05:25.870 --> 00:05:27.360 align:start position:0%
+activate the electrode they never do
+anything<00:05:26.050><c> else</c><00:05:26.320><c> people</c><00:05:26.620><c> call</c><00:05:26.889><c> that</c><00:05:26.919><c> wire</c>
+
+00:05:27.360 --> 00:05:27.370 align:start position:0%
+anything else people call that wire
+ 
+
+00:05:27.370 --> 00:05:29.010 align:start position:0%
+anything else people call that wire
+heading<00:05:27.759><c> and</c><00:05:27.910><c> it's</c><00:05:28.449><c> relevant</c><00:05:28.720><c> here</c><00:05:28.990><c> because</c>
+
+00:05:29.010 --> 00:05:29.020 align:start position:0%
+heading and it's relevant here because
+ 
+
+00:05:29.020 --> 00:05:31.650 align:start position:0%
+heading and it's relevant here because
+if<00:05:29.560><c> we</c><00:05:30.130><c> take</c><00:05:30.310><c> our</c><00:05:30.490><c> pac-man</c><00:05:30.970><c> reinforcement</c>
+
+00:05:31.650 --> 00:05:31.660 align:start position:0%
+if we take our pac-man reinforcement
+ 
+
+00:05:31.660 --> 00:05:33.750 align:start position:0%
+if we take our pac-man reinforcement
+learning<00:05:31.780><c> diagram</c><00:05:32.380><c> and</c><00:05:32.620><c> change</c><00:05:33.430><c> it</c><00:05:33.550><c> to</c><00:05:33.639><c> the</c>
+
+00:05:33.750 --> 00:05:33.760 align:start position:0%
+learning diagram and change it to the
+ 
+
+00:05:33.760 --> 00:05:36.390 align:start position:0%
+learning diagram and change it to the
+cleaning<00:05:34.060><c> robot</c><00:05:34.389><c> it's</c><00:05:35.110><c> not</c><00:05:35.349><c> quite</c><00:05:35.680><c> right</c><00:05:36.070><c> is</c>
+
+00:05:36.390 --> 00:05:36.400 align:start position:0%
+cleaning robot it's not quite right is
+ 
+
+00:05:36.400 --> 00:05:40.320 align:start position:0%
+cleaning robot it's not quite right is
+it<00:05:36.940><c> in</c><00:05:37.650><c> pac-man</c><00:05:38.650><c> the</c><00:05:39.070><c> reward</c><00:05:39.460><c> system</c><00:05:39.910><c> is</c><00:05:40.090><c> just</c>
+
+00:05:40.320 --> 00:05:40.330 align:start position:0%
+it in pac-man the reward system is just
+ 
+
+00:05:40.330 --> 00:05:41.460 align:start position:0%
+it in pac-man the reward system is just
+a<00:05:40.419><c> little</c><00:05:40.630><c> bit</c><00:05:40.750><c> of</c><00:05:40.840><c> code</c><00:05:41.080><c> that</c><00:05:41.380><c> runs</c>
+
+00:05:41.460 --> 00:05:41.470 align:start position:0%
+a little bit of code that runs
+ 
+
+00:05:41.470 --> 00:05:42.990 align:start position:0%
+a little bit of code that runs
+separately<00:05:41.949><c> from</c><00:05:42.070><c> the</c><00:05:42.220><c> game</c><00:05:42.370><c> program</c><00:05:42.789><c> and</c>
+
+00:05:42.990 --> 00:05:43.000 align:start position:0%
+separately from the game program and
+ 
+
+00:05:43.000 --> 00:05:45.120 align:start position:0%
+separately from the game program and
+just<00:05:43.150><c> reads</c><00:05:43.389><c> the</c><00:05:43.479><c> score</c><00:05:43.810><c> out</c><00:05:43.990><c> but</c><00:05:44.710><c> for</c><00:05:45.070><c> the</c>
+
+00:05:45.120 --> 00:05:45.130 align:start position:0%
+just reads the score out but for the
+ 
+
+00:05:45.130 --> 00:05:47.279 align:start position:0%
+just reads the score out but for the
+cleaning<00:05:45.400><c> robot</c><00:05:45.849><c> the</c><00:05:46.419><c> reward</c><00:05:46.750><c> system</c><00:05:47.139><c> is</c><00:05:47.260><c> a</c>
+
+00:05:47.279 --> 00:05:47.289 align:start position:0%
+cleaning robot the reward system is a
+ 
+
+00:05:47.289 --> 00:05:49.560 align:start position:0%
+cleaning robot the reward system is a
+real<00:05:47.590><c> thing</c><00:05:47.949><c> in</c><00:05:48.159><c> the</c><00:05:48.190><c> real</c><00:05:48.430><c> world</c><00:05:48.729><c> it's</c><00:05:49.389><c> got</c>
+
+00:05:49.560 --> 00:05:49.570 align:start position:0%
+real thing in the real world it's got
+ 
+
+00:05:49.570 --> 00:05:52.500 align:start position:0%
+real thing in the real world it's got
+cameras<00:05:50.050><c> sensors</c><00:05:50.770><c> circuitry</c><00:05:51.610><c> it</c><00:05:51.940><c> physically</c>
+
+00:05:52.500 --> 00:05:52.510 align:start position:0%
+cameras sensors circuitry it physically
+ 
+
+00:05:52.510 --> 00:05:54.270 align:start position:0%
+cameras sensors circuitry it physically
+exists<00:05:52.990><c> as</c><00:05:53.110><c> an</c><00:05:53.229><c> object</c><00:05:53.380><c> in</c><00:05:53.680><c> the</c><00:05:53.800><c> office</c>
+
+00:05:54.270 --> 00:05:54.280 align:start position:0%
+exists as an object in the office
+ 
+
+00:05:54.280 --> 00:05:56.100 align:start position:0%
+exists as an object in the office
+so<00:05:54.880><c> maybe</c><00:05:55.090><c> the</c><00:05:55.270><c> diagram</c><00:05:55.690><c> should</c><00:05:55.900><c> look</c><00:05:56.080><c> more</c>
+
+00:05:56.100 --> 00:05:56.110 align:start position:0%
+so maybe the diagram should look more
+ 
+
+00:05:56.110 --> 00:06:01.050 align:start position:0%
+so maybe the diagram should look more
+like<00:05:56.500><c> this</c><00:05:58.409><c> because</c><00:05:59.409><c> unlike</c><00:05:59.800><c> in</c><00:05:59.979><c> pac-man</c><00:06:00.190><c> now</c>
+
+00:06:01.050 --> 00:06:01.060 align:start position:0%
+like this because unlike in pac-man now
+ 
+
+00:06:01.060 --> 00:06:02.760 align:start position:0%
+like this because unlike in pac-man now
+the<00:06:01.120><c> reward</c><00:06:01.510><c> system</c><00:06:02.110><c> is</c><00:06:02.229><c> part</c><00:06:02.500><c> of</c><00:06:02.620><c> the</c>
+
+00:06:02.760 --> 00:06:02.770 align:start position:0%
+the reward system is part of the
+ 
+
+00:06:02.770 --> 00:06:04.379 align:start position:0%
+the reward system is part of the
+environment<00:06:03.310><c> which</c><00:06:03.789><c> means</c><00:06:04.030><c> it</c><00:06:04.150><c> can</c><00:06:04.270><c> be</c>
+
+00:06:04.379 --> 00:06:04.389 align:start position:0%
+environment which means it can be
+ 
+
+00:06:04.389 --> 00:06:06.600 align:start position:0%
+environment which means it can be
+affected<00:06:04.840><c> by</c><00:06:04.870><c> the</c><00:06:05.050><c> actions</c><00:06:05.440><c> of</c><00:06:05.530><c> the</c><00:06:05.650><c> agent</c><00:06:06.039><c> the</c>
+
+00:06:06.600 --> 00:06:06.610 align:start position:0%
+affected by the actions of the agent the
+ 
+
+00:06:06.610 --> 00:06:08.399 align:start position:0%
+affected by the actions of the agent the
+agent<00:06:06.639><c> isn't</c><00:06:07.360><c> just</c><00:06:07.539><c> limited</c><00:06:07.690><c> to</c><00:06:07.990><c> messing</c><00:06:08.380><c> with</c>
+
+00:06:08.399 --> 00:06:08.409 align:start position:0%
+agent isn't just limited to messing with
+ 
+
+00:06:08.409 --> 00:06:09.960 align:start position:0%
+agent isn't just limited to messing with
+the<00:06:08.590><c> environment</c><00:06:08.830><c> to</c><00:06:09.550><c> affect</c><00:06:09.849><c> the</c>
+
+00:06:09.960 --> 00:06:09.970 align:start position:0%
+the environment to affect the
+ 
+
+00:06:09.970 --> 00:06:11.730 align:start position:0%
+the environment to affect the
+information<00:06:10.090><c> going</c><00:06:10.720><c> into</c><00:06:10.870><c> the</c><00:06:11.080><c> reward</c><00:06:11.349><c> system</c>
+
+00:06:11.730 --> 00:06:11.740 align:start position:0%
+information going into the reward system
+ 
+
+00:06:11.740 --> 00:06:14.370 align:start position:0%
+information going into the reward system
+like<00:06:12.280><c> putting</c><00:06:12.729><c> a</c><00:06:12.789><c> bucket</c><00:06:12.909><c> on</c><00:06:13.150><c> its</c><00:06:13.330><c> head</c><00:06:13.479><c> it</c><00:06:14.199><c> can</c>
+
+00:06:14.370 --> 00:06:14.380 align:start position:0%
+like putting a bucket on its head it can
+ 
+
+00:06:14.380 --> 00:06:16.230 align:start position:0%
+like putting a bucket on its head it can
+mess<00:06:14.560><c> with</c><00:06:14.590><c> the</c><00:06:14.860><c> reward</c><00:06:15.190><c> system</c><00:06:15.580><c> itself</c><00:06:15.940><c> if</c>
+
+00:06:16.230 --> 00:06:16.240 align:start position:0%
+mess with the reward system itself if
+ 
+
+00:06:16.240 --> 00:06:17.790 align:start position:0%
+mess with the reward system itself if
+it's<00:06:16.449><c> able</c><00:06:16.599><c> to</c><00:06:16.720><c> take</c><00:06:16.840><c> the</c><00:06:17.080><c> thing</c><00:06:17.229><c> apart</c><00:06:17.530><c> and</c>
+
+00:06:17.790 --> 00:06:17.800 align:start position:0%
+it's able to take the thing apart and
+ 
+
+00:06:17.800 --> 00:06:19.529 align:start position:0%
+it's able to take the thing apart and
+make<00:06:18.159><c> it</c><00:06:18.280><c> just</c><00:06:18.490><c> returned</c><00:06:18.760><c> maximum</c><00:06:19.360><c> reward</c>
+
+00:06:19.529 --> 00:06:19.539 align:start position:0%
+make it just returned maximum reward
+ 
+
+00:06:19.539 --> 00:06:21.390 align:start position:0%
+make it just returned maximum reward
+regardless<00:06:20.470><c> of</c><00:06:20.620><c> what</c><00:06:20.740><c> the</c><00:06:20.830><c> environment</c><00:06:20.949><c> is</c>
+
+00:06:21.390 --> 00:06:21.400 align:start position:0%
+regardless of what the environment is
+ 
+
+00:06:21.400 --> 00:06:23.580 align:start position:0%
+regardless of what the environment is
+like<00:06:21.610><c> well</c><00:06:22.270><c> that's</c><00:06:22.539><c> an</c><00:06:22.780><c> extremely</c><00:06:23.349><c> high</c>
+
+00:06:23.580 --> 00:06:23.590 align:start position:0%
+like well that's an extremely high
+ 
+
+00:06:23.590 --> 00:06:26.010 align:start position:0%
+like well that's an extremely high
+reward<00:06:23.979><c> strategy</c><00:06:24.520><c> so</c><00:06:24.760><c> some</c><00:06:25.030><c> AI</c><00:06:25.210><c> designs</c><00:06:25.720><c> are</c>
+
+00:06:26.010 --> 00:06:26.020 align:start position:0%
+reward strategy so some AI designs are
+ 
+
+00:06:26.020 --> 00:06:27.990 align:start position:0%
+reward strategy so some AI designs are
+prone<00:06:26.470><c> to</c><00:06:26.500><c> deliberately</c><00:06:27.310><c> tampering</c><00:06:27.789><c> with</c>
+
+00:06:27.990 --> 00:06:28.000 align:start position:0%
+prone to deliberately tampering with
+ 
+
+00:06:28.000 --> 00:06:30.000 align:start position:0%
+prone to deliberately tampering with
+their<00:06:28.150><c> reward</c><00:06:28.479><c> systems</c><00:06:28.930><c> to</c><00:06:29.440><c> wire</c><00:06:29.710><c> head</c>
+
+00:06:30.000 --> 00:06:30.010 align:start position:0%
+their reward systems to wire head
+ 
+
+00:06:30.010 --> 00:06:31.710 align:start position:0%
+their reward systems to wire head
+themselves<00:06:30.669><c> but</c><00:06:30.909><c> that's</c><00:06:31.090><c> not</c><00:06:31.270><c> the</c><00:06:31.360><c> worst</c><00:06:31.539><c> of</c>
+
+00:06:31.710 --> 00:06:31.720 align:start position:0%
+themselves but that's not the worst of
+ 
+
+00:06:31.720 --> 00:06:33.750 align:start position:0%
+themselves but that's not the worst of
+it<00:06:31.840><c> there</c><00:06:32.680><c> are</c><00:06:32.770><c> a</c><00:06:32.830><c> lot</c><00:06:32.949><c> of</c><00:06:32.979><c> AGI</c><00:06:33.370><c> design</c>
+
+00:06:33.750 --> 00:06:33.760 align:start position:0%
+it there are a lot of AGI design
+ 
+
+00:06:33.760 --> 00:06:35.760 align:start position:0%
+it there are a lot of AGI design
+proposals<00:06:34.270><c> out</c><00:06:34.389><c> there</c><00:06:34.449><c> where</c><00:06:35.139><c> the</c><00:06:35.289><c> reward</c><00:06:35.440><c> is</c>
+
+00:06:35.760 --> 00:06:35.770 align:start position:0%
+proposals out there where the reward is
+ 
+
+00:06:35.770 --> 00:06:38.490 align:start position:0%
+proposals out there where the reward is
+determined<00:06:36.279><c> by</c><00:06:36.460><c> human</c><00:06:37.029><c> smiling</c><00:06:37.599><c> or</c><00:06:37.779><c> being</c>
+
+00:06:38.490 --> 00:06:38.500 align:start position:0%
+determined by human smiling or being
+ 
+
+00:06:38.500 --> 00:06:39.110 align:start position:0%
+determined by human smiling or being
+happy
+
+00:06:39.110 --> 00:06:39.120 align:start position:0%
+happy
+ 
+
+00:06:39.120 --> 00:06:41.360 align:start position:0%
+happy
+or<00:06:39.180><c> saying</c><00:06:39.750><c> certain</c><00:06:40.169><c> things</c><00:06:40.410><c> hitting</c><00:06:41.310><c> a</c>
+
+00:06:41.360 --> 00:06:41.370 align:start position:0%
+or saying certain things hitting a
+ 
+
+00:06:41.370 --> 00:06:43.659 align:start position:0%
+or saying certain things hitting a
+certain<00:06:41.669><c> button</c><00:06:41.820><c> or</c><00:06:42.060><c> whatever</c><00:06:42.210><c> these</c><00:06:43.110><c> designs</c>
+
+00:06:43.659 --> 00:06:43.669 align:start position:0%
+certain button or whatever these designs
+ 
+
+00:06:43.669 --> 00:06:46.129 align:start position:0%
+certain button or whatever these designs
+effectively<00:06:44.669><c> make</c><00:06:44.880><c> the</c><00:06:45.060><c> human</c><00:06:45.419><c> a</c><00:06:45.540><c> component</c>
+
+00:06:46.129 --> 00:06:46.139 align:start position:0%
+effectively make the human a component
+ 
+
+00:06:46.139 --> 00:06:48.170 align:start position:0%
+effectively make the human a component
+in<00:06:46.290><c> the</c><00:06:46.410><c> reward</c><00:06:46.680><c> system</c><00:06:46.770><c> but</c><00:06:47.580><c> whatever</c><00:06:48.000><c> the</c>
+
+00:06:48.170 --> 00:06:48.180 align:start position:0%
+in the reward system but whatever the
+ 
+
+00:06:48.180 --> 00:06:49.939 align:start position:0%
+in the reward system but whatever the
+reward<00:06:48.479><c> system</c><00:06:48.840><c> is</c><00:06:48.990><c> the</c><00:06:49.500><c> agent</c><00:06:49.830><c> is</c>
+
+00:06:49.939 --> 00:06:49.949 align:start position:0%
+reward system is the agent is
+ 
+
+00:06:49.949 --> 00:06:52.610 align:start position:0%
+reward system is the agent is
+incentivized<00:06:50.550><c> to</c><00:06:50.820><c> manipulate</c><00:06:51.419><c> or</c><00:06:51.630><c> modify</c><00:06:52.590><c> it</c>
+
+00:06:52.610 --> 00:06:52.620 align:start position:0%
+incentivized to manipulate or modify it
+ 
+
+00:06:52.620 --> 00:06:55.310 align:start position:0%
+incentivized to manipulate or modify it
+to<00:06:53.010><c> get</c><00:06:53.639><c> the</c><00:06:53.760><c> highest</c><00:06:54.090><c> reward</c><00:06:54.419><c> it</c><00:06:54.510><c> can</c><00:06:54.750><c> with</c>
+
+00:06:55.310 --> 00:06:55.320 align:start position:0%
+to get the highest reward it can with
+ 
+
+00:06:55.320 --> 00:06:57.740 align:start position:0%
+to get the highest reward it can with
+powerful<00:06:55.889><c> general</c><00:06:56.310><c> AI</c><00:06:56.430><c> systems</c><00:06:57.030><c> we</c><00:06:57.570><c> don't</c>
+
+00:06:57.740 --> 00:06:57.750 align:start position:0%
+powerful general AI systems we don't
+ 
+
+00:06:57.750 --> 00:06:59.540 align:start position:0%
+powerful general AI systems we don't
+just<00:06:58.020><c> have</c><00:06:58.199><c> to</c><00:06:58.229><c> worry</c><00:06:58.500><c> about</c><00:06:58.680><c> the</c><00:06:58.919><c> AI</c><00:06:59.070><c> wire</c>
+
+00:06:59.540 --> 00:06:59.550 align:start position:0%
+just have to worry about the AI wire
+ 
+
+00:06:59.550 --> 00:07:05.659 align:start position:0%
+just have to worry about the AI wire
+heading<00:06:59.970><c> itself</c><00:07:00.419><c> I</c><00:07:04.250><c> want</c><00:07:05.250><c> to</c><00:07:05.310><c> end</c><00:07:05.460><c> the</c><00:07:05.520><c> video</c>
+
+00:07:05.659 --> 00:07:05.669 align:start position:0%
+heading itself I want to end the video
+ 
+
+00:07:05.669 --> 00:07:07.219 align:start position:0%
+heading itself I want to end the video
+with<00:07:05.790><c> a</c><00:07:05.970><c> quick</c><00:07:06.180><c> thank</c><00:07:06.419><c> you</c><00:07:06.479><c> to</c><00:07:06.570><c> my</c><00:07:06.810><c> excellent</c>
+
+00:07:07.219 --> 00:07:07.229 align:start position:0%
+with a quick thank you to my excellent
+ 
+
+00:07:07.229 --> 00:07:09.230 align:start position:0%
+with a quick thank you to my excellent
+patreon<00:07:07.650><c> supporters</c><00:07:08.130><c> all</c><00:07:08.669><c> of</c><00:07:08.790><c> these</c><00:07:08.940><c> people</c>
+
+00:07:09.230 --> 00:07:09.240 align:start position:0%
+patreon supporters all of these people
+ 
+
+00:07:09.240 --> 00:07:10.790 align:start position:0%
+patreon supporters all of these people
+in<00:07:09.389><c> this</c><00:07:09.570><c> video</c><00:07:09.840><c> I</c><00:07:09.900><c> especially</c><00:07:10.320><c> want</c><00:07:10.650><c> to</c><00:07:10.680><c> thank</c>
+
+00:07:10.790 --> 00:07:10.800 align:start position:0%
+in this video I especially want to thank
+ 
+
+00:07:10.800 --> 00:07:13.129 align:start position:0%
+in this video I especially want to thank
+Robert<00:07:11.340><c> Sanderson</c><00:07:11.760><c> who's</c><00:07:12.600><c> supported</c><00:07:13.080><c> the</c>
+
+00:07:13.129 --> 00:07:13.139 align:start position:0%
+Robert Sanderson who's supported the
+ 
+
+00:07:13.139 --> 00:07:14.840 align:start position:0%
+Robert Sanderson who's supported the
+channel<00:07:13.440><c> for</c><00:07:13.560><c> a</c><00:07:13.620><c> long</c><00:07:13.740><c> time</c><00:07:14.010><c> you</c><00:07:14.520><c> know</c><00:07:14.610><c> just</c>
+
+00:07:14.840 --> 00:07:14.850 align:start position:0%
+channel for a long time you know just
+ 
+
+00:07:14.850 --> 00:07:16.879 align:start position:0%
+channel for a long time you know just
+the<00:07:14.940><c> other</c><00:07:14.970><c> day</c><00:07:15.180><c> my</c><00:07:15.510><c> phone</c><00:07:15.990><c> completely</c><00:07:16.470><c> broke</c>
+
+00:07:16.879 --> 00:07:16.889 align:start position:0%
+the other day my phone completely broke
+ 
+
+00:07:16.889 --> 00:07:17.990 align:start position:0%
+the other day my phone completely broke
+and<00:07:17.130><c> the</c><00:07:17.280><c> phone</c><00:07:17.430><c> is</c><00:07:17.580><c> actually</c><00:07:17.850><c> pretty</c>
+
+00:07:17.990 --> 00:07:18.000 align:start position:0%
+and the phone is actually pretty
+ 
+
+00:07:18.000 --> 00:07:19.580 align:start position:0%
+and the phone is actually pretty
+important<00:07:18.419><c> because</c><00:07:18.510><c> I</c><00:07:18.630><c> use</c><00:07:18.840><c> it</c><00:07:19.020><c> to</c><00:07:19.139><c> shoot</c><00:07:19.320><c> all</c>
+
+00:07:19.580 --> 00:07:19.590 align:start position:0%
+important because I use it to shoot all
+ 
+
+00:07:19.590 --> 00:07:21.650 align:start position:0%
+important because I use it to shoot all
+of<00:07:19.800><c> the</c><00:07:19.950><c> behind-the-scenes</c><00:07:20.430><c> stuff</c><00:07:20.820><c> anything</c>
+
+00:07:21.650 --> 00:07:21.660 align:start position:0%
+of the behind-the-scenes stuff anything
+ 
+
+00:07:21.660 --> 00:07:23.300 align:start position:0%
+of the behind-the-scenes stuff anything
+random<00:07:21.900><c> traveling</c><00:07:22.410><c> that</c><00:07:22.560><c> kind</c><00:07:22.770><c> of</c><00:07:22.830><c> thing</c><00:07:23.040><c> so</c><00:07:23.280><c> I</c>
+
+00:07:23.300 --> 00:07:23.310 align:start position:0%
+random traveling that kind of thing so I
+ 
+
+00:07:23.310 --> 00:07:25.490 align:start position:0%
+random traveling that kind of thing so I
+had<00:07:23.490><c> to</c><00:07:23.580><c> get</c><00:07:23.669><c> a</c><00:07:23.729><c> new</c><00:07:23.910><c> one</c><00:07:24.060><c> and</c><00:07:24.270><c> I</c><00:07:24.990><c> was</c><00:07:25.200><c> able</c><00:07:25.350><c> to</c>
+
+00:07:25.490 --> 00:07:25.500 align:start position:0%
+had to get a new one and I was able to
+ 
+
+00:07:25.500 --> 00:07:27.379 align:start position:0%
+had to get a new one and I was able to
+use<00:07:25.770><c> patreon</c><00:07:26.280><c> money</c><00:07:26.460><c> to</c><00:07:26.639><c> do</c><00:07:26.790><c> that</c><00:07:27.000><c> so</c><00:07:27.270><c> I</c><00:07:27.300><c> just</c>
+
+00:07:27.379 --> 00:07:27.389 align:start position:0%
+use patreon money to do that so I just
+ 
+
+00:07:27.389 --> 00:07:28.850 align:start position:0%
+use patreon money to do that so I just
+want<00:07:27.750><c> to</c><00:07:27.780><c> say</c><00:07:27.930><c> thank</c><00:07:28.169><c> you</c><00:07:28.229><c> so</c><00:07:28.320><c> much</c><00:07:28.620><c> for</c><00:07:28.770><c> your</c>
+
+00:07:28.850 --> 00:07:28.860 align:start position:0%
+want to say thank you so much for your
+ 
+
+00:07:28.860 --> 00:07:30.590 align:start position:0%
+want to say thank you so much for your
+support<00:07:29.040><c> thanks</c><00:07:29.729><c> again</c><00:07:29.910><c> and</c><00:07:30.270><c> I'll</c><00:07:30.360><c> see</c><00:07:30.510><c> you</c>
+
+00:07:30.590 --> 00:07:30.600 align:start position:0%
+support thanks again and I'll see you
+ 
+
+00:07:30.600 --> 00:07:32.960 align:start position:0%
+support thanks again and I'll see you
+next<00:07:30.630><c> time</c>
+
