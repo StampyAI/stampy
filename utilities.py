@@ -71,7 +71,7 @@ class Utilities:
                 self.youtube = get_youtube_api(
                     youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
-            except HttpError as e:
+            except HttpError:
                 if self.YOUTUBE_API_KEY:
                     print("YouTube API Key is set but not correct")
                 else:
@@ -312,3 +312,6 @@ client = discord.Client(intents=intents)
 
 utils = Utilities.get_instance()
 utils.client = client
+
+if not os.path.exists(database_path):
+    raise Exception("Couldn't find the stampy database file at %s" % database_path)
