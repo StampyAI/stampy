@@ -15,7 +15,7 @@ jobs:
           username: ${{secrets.SSH_DEV_USERNAME}}
           script: |
             pkill -f stam.py
-            cd /root/stampy
+            cd ~/stampy
             python3 -m scripts.notify-discord-stampy-offline
             git pull
             conda env remove -n stampy
