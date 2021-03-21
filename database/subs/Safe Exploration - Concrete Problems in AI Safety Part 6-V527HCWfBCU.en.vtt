@@ -1,0 +1,3568 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.000 --> 00:00:02.270 align:start position:0%
+ 
+hi<00:00:00.179><c> this</c><00:00:00.870><c> is</c><00:00:00.989><c> the</c><00:00:01.079><c> latest</c><00:00:01.260><c> video</c><00:00:01.560><c> in</c><00:00:01.860><c> a</c><00:00:01.920><c> series</c>
+
+00:00:02.270 --> 00:00:02.280 align:start position:0%
+hi this is the latest video in a series
+ 
+
+00:00:02.280 --> 00:00:04.070 align:start position:0%
+hi this is the latest video in a series
+about<00:00:02.460><c> the</c><00:00:02.669><c> paper</c><00:00:02.850><c> concrete</c><00:00:03.449><c> problems</c><00:00:03.840><c> in</c><00:00:03.959><c> AI</c>
+
+00:00:04.070 --> 00:00:04.080 align:start position:0%
+about the paper concrete problems in AI
+ 
+
+00:00:04.080 --> 00:00:06.079 align:start position:0%
+about the paper concrete problems in AI
+safety<00:00:04.620><c> you</c><00:00:05.339><c> don't</c><00:00:05.520><c> need</c><00:00:05.640><c> to</c><00:00:05.730><c> have</c><00:00:05.790><c> seen</c><00:00:06.000><c> the</c>
+
+00:00:06.079 --> 00:00:06.089 align:start position:0%
+safety you don't need to have seen the
+ 
+
+00:00:06.089 --> 00:00:07.639 align:start position:0%
+safety you don't need to have seen the
+previous<00:00:06.420><c> videos</c><00:00:06.720><c> for</c><00:00:06.899><c> this</c><00:00:07.020><c> but</c><00:00:07.440><c> I'd</c>
+
+00:00:07.639 --> 00:00:07.649 align:start position:0%
+previous videos for this but I'd
+ 
+
+00:00:07.649 --> 00:00:08.690 align:start position:0%
+previous videos for this but I'd
+recommend<00:00:07.799><c> checking</c><00:00:08.189><c> them</c><00:00:08.370><c> out</c><00:00:08.429><c> anyway</c>
+
+00:00:08.690 --> 00:00:08.700 align:start position:0%
+recommend checking them out anyway
+ 
+
+00:00:08.700 --> 00:00:10.520 align:start position:0%
+recommend checking them out anyway
+there's<00:00:09.090><c> a</c><00:00:09.150><c> link</c><00:00:09.300><c> in</c><00:00:09.330><c> the</c><00:00:09.420><c> description</c><00:00:09.530><c> today</c>
+
+00:00:10.520 --> 00:00:10.530 align:start position:0%
+there's a link in the description today
+ 
+
+00:00:10.530 --> 00:00:11.900 align:start position:0%
+there's a link in the description today
+we're<00:00:10.830><c> going</c><00:00:10.950><c> to</c><00:00:11.070><c> talk</c><00:00:11.250><c> about</c><00:00:11.370><c> safe</c>
+
+00:00:11.900 --> 00:00:11.910 align:start position:0%
+we're going to talk about safe
+ 
+
+00:00:11.910 --> 00:00:14.539 align:start position:0%
+we're going to talk about safe
+exploration<00:00:12.719><c> so</c><00:00:13.320><c> in</c><00:00:13.530><c> an</c><00:00:13.620><c> earlier</c><00:00:13.889><c> video</c><00:00:14.009><c> we</c>
+
+00:00:14.539 --> 00:00:14.549 align:start position:0%
+exploration so in an earlier video we
+ 
+
+00:00:14.549 --> 00:00:15.790 align:start position:0%
+exploration so in an earlier video we
+talked<00:00:14.820><c> about</c><00:00:14.940><c> the</c><00:00:15.179><c> trade-off</c><00:00:15.540><c> between</c>
+
+00:00:15.790 --> 00:00:15.800 align:start position:0%
+talked about the trade-off between
+ 
+
+00:00:15.800 --> 00:00:18.560 align:start position:0%
+talked about the trade-off between
+exploration<00:00:16.800><c> and</c><00:00:17.039><c> exploitation</c><00:00:17.420><c> this</c><00:00:18.420><c> is</c>
+
+00:00:18.560 --> 00:00:18.570 align:start position:0%
+exploration and exploitation this is
+ 
+
+00:00:18.570 --> 00:00:20.029 align:start position:0%
+exploration and exploitation this is
+kind<00:00:18.779><c> of</c><00:00:18.869><c> an</c><00:00:18.960><c> inherent</c><00:00:19.410><c> trade-off</c><00:00:19.740><c> that</c><00:00:19.770><c> all</c>
+
+00:00:20.029 --> 00:00:20.039 align:start position:0%
+kind of an inherent trade-off that all
+ 
+
+00:00:20.039 --> 00:00:21.830 align:start position:0%
+kind of an inherent trade-off that all
+agents<00:00:20.550><c> face</c><00:00:20.730><c> which</c><00:00:21.119><c> just</c><00:00:21.390><c> comes</c><00:00:21.600><c> from</c><00:00:21.720><c> the</c>
+
+00:00:21.830 --> 00:00:21.840 align:start position:0%
+agents face which just comes from the
+ 
+
+00:00:21.840 --> 00:00:23.390 align:start position:0%
+agents face which just comes from the
+fact<00:00:22.080><c> that</c><00:00:22.170><c> you're</c><00:00:22.710><c> trying</c><00:00:22.859><c> to</c><00:00:23.010><c> do</c><00:00:23.160><c> two</c><00:00:23.369><c> jobs</c>
+
+00:00:23.390 --> 00:00:23.400 align:start position:0%
+fact that you're trying to do two jobs
+ 
+
+00:00:23.400 --> 00:00:26.450 align:start position:0%
+fact that you're trying to do two jobs
+at<00:00:23.789><c> the</c><00:00:23.850><c> same</c><00:00:24.000><c> time</c><00:00:24.330><c> one</c><00:00:25.260><c> figure</c><00:00:26.010><c> out</c><00:00:26.160><c> what</c>
+
+00:00:26.450 --> 00:00:26.460 align:start position:0%
+at the same time one figure out what
+ 
+
+00:00:26.460 --> 00:00:29.179 align:start position:0%
+at the same time one figure out what
+things<00:00:26.730><c> give</c><00:00:26.970><c> you</c><00:00:27.060><c> reward</c><00:00:27.390><c> and</c><00:00:27.660><c> to</c><00:00:28.010><c> do</c><00:00:29.010><c> the</c>
+
+00:00:29.179 --> 00:00:29.189 align:start position:0%
+things give you reward and to do the
+ 
+
+00:00:29.189 --> 00:00:30.500 align:start position:0%
+things give you reward and to do the
+things<00:00:29.429><c> that</c><00:00:29.550><c> give</c><00:00:29.789><c> you</c><00:00:29.910><c> a</c><00:00:29.939><c> reward</c><00:00:30.060><c> like</c>
+
+00:00:30.500 --> 00:00:30.510 align:start position:0%
+things that give you a reward like
+ 
+
+00:00:30.510 --> 00:00:32.030 align:start position:0%
+things that give you a reward like
+imagine<00:00:31.080><c> you're</c><00:00:31.170><c> in</c><00:00:31.230><c> a</c><00:00:31.320><c> restaurant</c><00:00:31.500><c> you've</c>
+
+00:00:32.030 --> 00:00:32.040 align:start position:0%
+imagine you're in a restaurant you've
+ 
+
+00:00:32.040 --> 00:00:33.530 align:start position:0%
+imagine you're in a restaurant you've
+been<00:00:32.189><c> to</c><00:00:32.279><c> this</c><00:00:32.369><c> restaurant</c><00:00:32.730><c> before</c><00:00:33.120><c> so</c><00:00:33.360><c> you've</c>
+
+00:00:33.530 --> 00:00:33.540 align:start position:0%
+been to this restaurant before so you've
+ 
+
+00:00:33.540 --> 00:00:35.720 align:start position:0%
+been to this restaurant before so you've
+already<00:00:33.660><c> tried</c><00:00:33.930><c> some</c><00:00:34.260><c> of</c><00:00:34.290><c> the</c><00:00:34.469><c> dishes</c><00:00:34.670><c> now</c><00:00:35.670><c> you</c>
+
+00:00:35.720 --> 00:00:35.730 align:start position:0%
+already tried some of the dishes now you
+ 
+
+00:00:35.730 --> 00:00:37.040 align:start position:0%
+already tried some of the dishes now you
+can<00:00:36.000><c> either</c><00:00:36.180><c> order</c><00:00:36.600><c> something</c><00:00:36.809><c> you've</c>
+
+00:00:37.040 --> 00:00:37.050 align:start position:0%
+can either order something you've
+ 
+
+00:00:37.050 --> 00:00:39.020 align:start position:0%
+can either order something you've
+already<00:00:37.200><c> had</c><00:00:37.590><c> that</c><00:00:37.950><c> you</c><00:00:38.040><c> know</c><00:00:38.219><c> is</c><00:00:38.370><c> quite</c><00:00:38.520><c> good</c>
+
+00:00:39.020 --> 00:00:39.030 align:start position:0%
+already had that you know is quite good
+ 
+
+00:00:39.030 --> 00:00:40.819 align:start position:0%
+already had that you know is quite good
+ie<00:00:39.360><c> you</c><00:00:39.719><c> can</c><00:00:39.899><c> exploit</c><00:00:40.320><c> your</c><00:00:40.500><c> current</c>
+
+00:00:40.819 --> 00:00:40.829 align:start position:0%
+ie you can exploit your current
+ 
+
+00:00:40.829 --> 00:00:42.770 align:start position:0%
+ie you can exploit your current
+knowledge<00:00:40.890><c> or</c><00:00:41.520><c> you</c><00:00:42.090><c> can</c><00:00:42.270><c> try</c><00:00:42.420><c> ordering</c>
+
+00:00:42.770 --> 00:00:42.780 align:start position:0%
+knowledge or you can try ordering
+ 
+
+00:00:42.780 --> 00:00:44.150 align:start position:0%
+knowledge or you can try ordering
+something<00:00:42.960><c> new</c><00:00:43.260><c> off</c><00:00:43.410><c> the</c><00:00:43.559><c> menu</c><00:00:43.860><c> that</c><00:00:44.070><c> you've</c>
+
+00:00:44.150 --> 00:00:44.160 align:start position:0%
+something new off the menu that you've
+ 
+
+00:00:44.160 --> 00:00:44.869 align:start position:0%
+something new off the menu that you've
+never<00:00:44.340><c> had</c><00:00:44.520><c> before</c>
+
+00:00:44.869 --> 00:00:44.879 align:start position:0%
+never had before
+ 
+
+00:00:44.879 --> 00:00:46.940 align:start position:0%
+never had before
+you<00:00:45.480><c> can</c><00:00:45.660><c> explore</c><00:00:46.170><c> to</c><00:00:46.559><c> gain</c><00:00:46.710><c> more</c><00:00:46.890><c> knowledge</c>
+
+00:00:46.940 --> 00:00:46.950 align:start position:0%
+you can explore to gain more knowledge
+ 
+
+00:00:46.950 --> 00:00:49.760 align:start position:0%
+you can explore to gain more knowledge
+if<00:00:47.730><c> you</c><00:00:47.789><c> focus</c><00:00:48.270><c> too</c><00:00:48.360><c> much</c><00:00:48.450><c> on</c><00:00:48.690><c> exploring</c><00:00:49.230><c> then</c>
+
+00:00:49.760 --> 00:00:49.770 align:start position:0%
+if you focus too much on exploring then
+ 
+
+00:00:49.770 --> 00:00:51.020 align:start position:0%
+if you focus too much on exploring then
+you're<00:00:49.920><c> spending</c><00:00:50.280><c> all</c><00:00:50.340><c> of</c><00:00:50.399><c> your</c><00:00:50.520><c> time</c><00:00:50.610><c> trying</c>
+
+00:00:51.020 --> 00:00:51.030 align:start position:0%
+you're spending all of your time trying
+ 
+
+00:00:51.030 --> 00:00:52.700 align:start position:0%
+you're spending all of your time trying
+random<00:00:51.480><c> things</c><00:00:51.719><c> when</c><00:00:51.989><c> actually</c><00:00:52.320><c> you</c><00:00:52.469><c> may</c><00:00:52.590><c> have</c>
+
+00:00:52.700 --> 00:00:52.710 align:start position:0%
+random things when actually you may have
+ 
+
+00:00:52.710 --> 00:00:53.990 align:start position:0%
+random things when actually you may have
+already<00:00:52.829><c> found</c><00:00:53.190><c> the</c><00:00:53.340><c> thing</c><00:00:53.489><c> that's</c><00:00:53.640><c> best</c><00:00:53.820><c> for</c>
+
+00:00:53.990 --> 00:00:54.000 align:start position:0%
+already found the thing that's best for
+ 
+
+00:00:54.000 --> 00:00:55.700 align:start position:0%
+already found the thing that's best for
+you<00:00:54.149><c> but</c><00:00:54.390><c> if</c><00:00:54.510><c> you</c><00:00:54.600><c> don't</c><00:00:54.719><c> explore</c><00:00:55.079><c> enough</c><00:00:55.379><c> then</c>
+
+00:00:55.700 --> 00:00:55.710 align:start position:0%
+you but if you don't explore enough then
+ 
+
+00:00:55.710 --> 00:00:56.660 align:start position:0%
+you but if you don't explore enough then
+you<00:00:55.800><c> might</c><00:00:55.949><c> end</c><00:00:56.100><c> up</c><00:00:56.160><c> missing</c><00:00:56.430><c> out</c><00:00:56.610><c> on</c>
+
+00:00:56.660 --> 00:00:56.670 align:start position:0%
+you might end up missing out on
+ 
+
+00:00:56.670 --> 00:00:58.189 align:start position:0%
+you might end up missing out on
+something<00:00:56.940><c> great</c><00:00:57.090><c> finding</c><00:00:57.930><c> the</c><00:00:58.050><c> right</c>
+
+00:00:58.189 --> 00:00:58.199 align:start position:0%
+something great finding the right
+ 
+
+00:00:58.199 --> 00:01:00.110 align:start position:0%
+something great finding the right
+balance<00:00:58.410><c> is</c><00:00:58.829><c> an</c><00:00:59.010><c> interesting</c><00:00:59.219><c> problem</c><00:00:59.550><c> now</c>
+
+00:01:00.110 --> 00:01:00.120 align:start position:0%
+balance is an interesting problem now
+ 
+
+00:01:00.120 --> 00:01:01.790 align:start position:0%
+balance is an interesting problem now
+the<00:01:00.180><c> most</c><00:01:00.449><c> naive</c><00:01:00.629><c> form</c><00:01:01.079><c> of</c><00:01:01.199><c> reinforcement</c>
+
+00:01:01.790 --> 00:01:01.800 align:start position:0%
+the most naive form of reinforcement
+ 
+
+00:01:01.800 --> 00:01:03.860 align:start position:0%
+the most naive form of reinforcement
+learning<00:01:01.890><c> is</c><00:01:02.219><c> just</c><00:01:02.280><c> to</c><00:01:02.640><c> always</c><00:01:03.030><c> do</c><00:01:03.270><c> whichever</c>
+
+00:01:03.860 --> 00:01:03.870 align:start position:0%
+learning is just to always do whichever
+ 
+
+00:01:03.870 --> 00:01:05.539 align:start position:0%
+learning is just to always do whichever
+action<00:01:04.350><c> you</c><00:01:04.470><c> expect</c><00:01:04.500><c> will</c><00:01:05.010><c> give</c><00:01:05.159><c> you</c><00:01:05.250><c> the</c><00:01:05.369><c> most</c>
+
+00:01:05.539 --> 00:01:05.549 align:start position:0%
+action you expect will give you the most
+ 
+
+00:01:05.549 --> 00:01:08.000 align:start position:0%
+action you expect will give you the most
+reward<00:01:05.970><c> but</c><00:01:06.689><c> agents</c><00:01:07.080><c> that</c><00:01:07.200><c> work</c><00:01:07.380><c> this</c><00:01:07.530><c> way</c><00:01:07.740><c> end</c>
+
+00:01:08.000 --> 00:01:08.010 align:start position:0%
+reward but agents that work this way end
+ 
+
+00:01:08.010 --> 00:01:09.890 align:start position:0%
+reward but agents that work this way end
+up<00:01:08.189><c> actually</c><00:01:08.580><c> not</c><00:01:08.729><c> doing</c><00:01:08.939><c> very</c><00:01:09.090><c> well</c><00:01:09.180><c> because</c>
+
+00:01:09.890 --> 00:01:09.900 align:start position:0%
+up actually not doing very well because
+ 
+
+00:01:09.900 --> 00:01:11.270 align:start position:0%
+up actually not doing very well because
+as<00:01:10.290><c> soon</c><00:01:10.439><c> as</c><00:01:10.560><c> they</c><00:01:10.680><c> find</c><00:01:10.860><c> something</c><00:01:11.159><c> that</c>
+
+00:01:11.270 --> 00:01:11.280 align:start position:0%
+as soon as they find something that
+ 
+
+00:01:11.280 --> 00:01:13.310 align:start position:0%
+as soon as they find something that
+works<00:01:11.549><c> a</c><00:01:11.700><c> bit</c><00:01:11.939><c> they</c><00:01:12.330><c> just</c><00:01:12.570><c> always</c><00:01:12.810><c> do</c><00:01:13.170><c> that</c>
+
+00:01:13.310 --> 00:01:13.320 align:start position:0%
+works a bit they just always do that
+ 
+
+00:01:13.320 --> 00:01:15.679 align:start position:0%
+works a bit they just always do that
+forever<00:01:13.680><c> and</c><00:01:13.890><c> never</c><00:01:14.220><c> try</c><00:01:14.520><c> anything</c><00:01:14.700><c> else</c><00:01:15.000><c> like</c>
+
+00:01:15.679 --> 00:01:15.689 align:start position:0%
+forever and never try anything else like
+ 
+
+00:01:15.689 --> 00:01:17.300 align:start position:0%
+forever and never try anything else like
+someone<00:01:16.020><c> who</c><00:01:16.140><c> just</c><00:01:16.320><c> always</c><00:01:16.560><c> orders</c><00:01:17.040><c> the</c><00:01:17.070><c> same</c>
+
+00:01:17.300 --> 00:01:17.310 align:start position:0%
+someone who just always orders the same
+ 
+
+00:01:17.310 --> 00:01:18.530 align:start position:0%
+someone who just always orders the same
+thing<00:01:17.520><c> at</c><00:01:17.610><c> the</c><00:01:17.640><c> restaurant</c><00:01:17.850><c> even</c><00:01:18.330><c> though</c><00:01:18.420><c> they</c>
+
+00:01:18.530 --> 00:01:18.540 align:start position:0%
+thing at the restaurant even though they
+ 
+
+00:01:18.540 --> 00:01:19.670 align:start position:0%
+thing at the restaurant even though they
+haven't<00:01:18.689><c> tried</c><00:01:18.930><c> most</c><00:01:19.049><c> of</c><00:01:19.200><c> the</c><00:01:19.320><c> other</c><00:01:19.439><c> things</c>
+
+00:01:19.670 --> 00:01:19.680 align:start position:0%
+haven't tried most of the other things
+ 
+
+00:01:19.680 --> 00:01:21.920 align:start position:0%
+haven't tried most of the other things
+on<00:01:19.830><c> the</c><00:01:19.890><c> menu</c><00:01:20.009><c> in</c><00:01:20.880><c> the</c><00:01:21.000><c> grid</c><00:01:21.150><c> world's</c><00:01:21.450><c> video</c><00:01:21.659><c> I</c>
+
+00:01:21.920 --> 00:01:21.930 align:start position:0%
+on the menu in the grid world's video I
+ 
+
+00:01:21.930 --> 00:01:23.359 align:start position:0%
+on the menu in the grid world's video I
+explained<00:01:22.560><c> that</c><00:01:22.650><c> one</c><00:01:23.040><c> approach</c><00:01:23.340><c> to</c>
+
+00:01:23.359 --> 00:01:23.369 align:start position:0%
+explained that one approach to
+ 
+
+00:01:23.369 --> 00:01:25.280 align:start position:0%
+explained that one approach to
+exploration<00:01:23.880><c> in</c><00:01:24.330><c> reinforcement</c><00:01:24.930><c> learning</c><00:01:24.960><c> is</c>
+
+00:01:25.280 --> 00:01:25.290 align:start position:0%
+exploration in reinforcement learning is
+ 
+
+00:01:25.290 --> 00:01:27.649 align:start position:0%
+exploration in reinforcement learning is
+to<00:01:25.799><c> have</c><00:01:25.950><c> an</c><00:01:26.100><c> exploration</c><00:01:26.549><c> rate</c><00:01:27.060><c> so</c><00:01:27.570><c> the</c>
+
+00:01:27.649 --> 00:01:27.659 align:start position:0%
+to have an exploration rate so the
+ 
+
+00:01:27.659 --> 00:01:29.210 align:start position:0%
+to have an exploration rate so the
+system<00:01:28.020><c> will</c><00:01:28.140><c> choose</c><00:01:28.530><c> an</c><00:01:28.650><c> action</c><00:01:28.920><c> which</c><00:01:29.070><c> it</c>
+
+00:01:29.210 --> 00:01:29.220 align:start position:0%
+system will choose an action which it
+ 
+
+00:01:29.220 --> 00:01:30.530 align:start position:0%
+system will choose an action which it
+thinks<00:01:29.460><c> will</c><00:01:29.610><c> give</c><00:01:29.729><c> at</c><00:01:29.820><c> the</c><00:01:29.880><c> highest</c><00:01:30.090><c> reward</c>
+
+00:01:30.530 --> 00:01:30.540 align:start position:0%
+thinks will give at the highest reward
+ 
+
+00:01:30.540 --> 00:01:33.230 align:start position:0%
+thinks will give at the highest reward
+something<00:01:30.840><c> like</c><00:01:31.079><c> 99%</c><00:01:31.470><c> of</c><00:01:32.009><c> the</c><00:01:32.100><c> time</c><00:01:32.340><c> but</c><00:01:33.030><c> a</c>
+
+00:01:33.230 --> 00:01:33.240 align:start position:0%
+something like 99% of the time but a
+ 
+
+00:01:33.240 --> 00:01:35.510 align:start position:0%
+something like 99% of the time but a
+random<00:01:33.840><c> 1%</c><00:01:34.350><c> of</c><00:01:34.409><c> the</c><00:01:34.470><c> time</c><00:01:34.619><c> it</c><00:01:34.890><c> will</c><00:01:35.009><c> just</c><00:01:35.220><c> pick</c>
+
+00:01:35.510 --> 00:01:35.520 align:start position:0%
+random 1% of the time it will just pick
+ 
+
+00:01:35.520 --> 00:01:37.370 align:start position:0%
+random 1% of the time it will just pick
+an<00:01:35.610><c> action</c><00:01:35.880><c> completely</c><00:01:36.270><c> at</c><00:01:36.329><c> random</c><00:01:36.479><c> this</c><00:01:37.229><c> way</c>
+
+00:01:37.370 --> 00:01:37.380 align:start position:0%
+an action completely at random this way
+ 
+
+00:01:37.380 --> 00:01:38.929 align:start position:0%
+an action completely at random this way
+the<00:01:37.560><c> system</c><00:01:37.680><c> is</c><00:01:37.920><c> generally</c><00:01:38.490><c> doing</c><00:01:38.640><c> whatever</c>
+
+00:01:38.929 --> 00:01:38.939 align:start position:0%
+the system is generally doing whatever
+ 
+
+00:01:38.939 --> 00:01:40.819 align:start position:0%
+the system is generally doing whatever
+will<00:01:39.270><c> maximize</c><00:01:39.659><c> its</c><00:01:39.840><c> reward</c><00:01:40.200><c> but</c><00:01:40.619><c> it</c><00:01:40.740><c> will</c>
+
+00:01:40.819 --> 00:01:40.829 align:start position:0%
+will maximize its reward but it will
+ 
+
+00:01:40.829 --> 00:01:42.350 align:start position:0%
+will maximize its reward but it will
+still<00:01:41.040><c> try</c><00:01:41.369><c> new</c><00:01:41.549><c> things</c><00:01:41.579><c> from</c><00:01:41.970><c> time</c><00:01:42.180><c> to</c><00:01:42.329><c> time</c>
+
+00:01:42.350 --> 00:01:42.360 align:start position:0%
+still try new things from time to time
+ 
+
+00:01:42.360 --> 00:01:44.870 align:start position:0%
+still try new things from time to time
+this<00:01:42.990><c> is</c><00:01:43.170><c> a</c><00:01:43.200><c> pretty</c><00:01:43.439><c> basic</c><00:01:43.619><c> approach</c><00:01:44.070><c> and</c><00:01:44.340><c> I</c>
+
+00:01:44.870 --> 00:01:44.880 align:start position:0%
+this is a pretty basic approach and I
+ 
+
+00:01:44.880 --> 00:01:46.069 align:start position:0%
+this is a pretty basic approach and I
+think<00:01:45.090><c> you</c><00:01:45.149><c> can</c><00:01:45.299><c> see</c><00:01:45.479><c> how</c><00:01:45.600><c> that</c><00:01:45.780><c> could</c><00:01:45.930><c> cause</c>
+
+00:01:46.069 --> 00:01:46.079 align:start position:0%
+think you can see how that could cause
+ 
+
+00:01:46.079 --> 00:01:47.749 align:start position:0%
+think you can see how that could cause
+safety<00:01:46.290><c> problems</c><00:01:46.890><c> imagine</c><00:01:47.310><c> a</c><00:01:47.399><c> self-driving</c>
+
+00:01:47.749 --> 00:01:47.759 align:start position:0%
+safety problems imagine a self-driving
+ 
+
+00:01:47.759 --> 00:01:50.660 align:start position:0%
+safety problems imagine a self-driving
+car<00:01:47.970><c> which</c><00:01:48.770><c> 99%</c><00:01:49.770><c> of</c><00:01:49.829><c> the</c><00:01:49.950><c> time</c><00:01:50.130><c> does</c><00:01:50.399><c> what</c><00:01:50.549><c> it</c>
+
+00:01:50.660 --> 00:01:50.670 align:start position:0%
+car which 99% of the time does what it
+ 
+
+00:01:50.670 --> 00:01:52.130 align:start position:0%
+car which 99% of the time does what it
+thinks<00:01:50.820><c> is</c><00:01:50.970><c> the</c><00:01:51.119><c> best</c><00:01:51.329><c> choice</c><00:01:51.509><c> of</c><00:01:51.659><c> action</c><00:01:51.990><c> and</c>
+
+00:01:52.130 --> 00:01:52.140 align:start position:0%
+thinks is the best choice of action and
+ 
+
+00:01:52.140 --> 00:01:54.620 align:start position:0%
+thinks is the best choice of action and
+1%<00:01:52.979><c> of</c><00:01:53.070><c> the</c><00:01:53.159><c> time</c><00:01:53.310><c> sets</c><00:01:53.880><c> the</c><00:01:54.060><c> steering</c><00:01:54.420><c> wheel</c>
+
+00:01:54.620 --> 00:01:54.630 align:start position:0%
+1% of the time sets the steering wheel
+ 
+
+00:01:54.630 --> 00:01:56.450 align:start position:0%
+1% of the time sets the steering wheel
+or<00:01:54.840><c> the</c><00:01:54.869><c> accelerator</c><00:01:55.530><c> or</c><00:01:55.890><c> the</c><00:01:55.979><c> brake</c><00:01:56.189><c> to</c><00:01:56.430><c> a</c>
+
+00:01:56.450 --> 00:01:56.460 align:start position:0%
+or the accelerator or the brake to a
+ 
+
+00:01:56.460 --> 00:01:58.340 align:start position:0%
+or the accelerator or the brake to a
+random<00:01:56.850><c> value</c><00:01:57.119><c> just</c><00:01:57.659><c> to</c><00:01:57.780><c> find</c><00:01:57.990><c> out</c><00:01:58.079><c> what</c><00:01:58.140><c> would</c>
+
+00:01:58.340 --> 00:01:58.350 align:start position:0%
+random value just to find out what would
+ 
+
+00:01:58.350 --> 00:02:00.260 align:start position:0%
+random value just to find out what would
+happen<00:01:58.409><c> that</c><00:01:59.100><c> system</c><00:01:59.520><c> might</c><00:01:59.880><c> learn</c><00:02:00.060><c> some</c>
+
+00:02:00.260 --> 00:02:00.270 align:start position:0%
+happen that system might learn some
+ 
+
+00:02:00.270 --> 00:02:01.340 align:start position:0%
+happen that system might learn some
+interesting<00:02:00.659><c> things</c><00:02:00.780><c> about</c><00:02:00.960><c> vehicle</c>
+
+00:02:01.340 --> 00:02:01.350 align:start position:0%
+interesting things about vehicle
+ 
+
+00:02:01.350 --> 00:02:03.200 align:start position:0%
+interesting things about vehicle
+handling<00:02:01.770><c> but</c><00:02:02.310><c> at</c><00:02:02.549><c> what</c><00:02:02.790><c> cost</c>
+
+00:02:03.200 --> 00:02:03.210 align:start position:0%
+handling but at what cost
+ 
+
+00:02:03.210 --> 00:02:06.050 align:start position:0%
+handling but at what cost
+clearly<00:02:04.079><c> this</c><00:02:04.469><c> is</c><00:02:04.619><c> an</c><00:02:04.740><c> unsafe</c><00:02:05.040><c> approach</c><00:02:05.430><c> okay</c>
+
+00:02:06.050 --> 00:02:06.060 align:start position:0%
+clearly this is an unsafe approach okay
+ 
+
+00:02:06.060 --> 00:02:07.190 align:start position:0%
+clearly this is an unsafe approach okay
+so<00:02:06.119><c> that's</c><00:02:06.360><c> a</c><00:02:06.450><c> very</c><00:02:06.600><c> simple</c><00:02:06.780><c> way</c><00:02:07.049><c> of</c><00:02:07.079><c> doing</c>
+
+00:02:07.190 --> 00:02:07.200 align:start position:0%
+so that's a very simple way of doing
+ 
+
+00:02:07.200 --> 00:02:08.839 align:start position:0%
+so that's a very simple way of doing
+exploration<00:02:07.979><c> there</c><00:02:08.310><c> are</c><00:02:08.429><c> other</c><00:02:08.520><c> ways</c><00:02:08.670><c> of</c>
+
+00:02:08.839 --> 00:02:08.849 align:start position:0%
+exploration there are other ways of
+ 
+
+00:02:08.849 --> 00:02:10.369 align:start position:0%
+exploration there are other ways of
+doing<00:02:08.970><c> it</c><00:02:09.149><c> one</c><00:02:09.330><c> approach</c><00:02:09.720><c> is</c><00:02:09.929><c> a</c><00:02:09.989><c> sort</c><00:02:10.289><c> of</c>
+
+00:02:10.369 --> 00:02:10.379 align:start position:0%
+doing it one approach is a sort of
+ 
+
+00:02:10.379 --> 00:02:12.050 align:start position:0%
+doing it one approach is a sort of
+artificial<00:02:10.860><c> optimism</c>
+
+00:02:12.050 --> 00:02:12.060 align:start position:0%
+artificial optimism
+ 
+
+00:02:12.060 --> 00:02:13.670 align:start position:0%
+artificial optimism
+rather<00:02:12.450><c> than</c><00:02:12.660><c> implicitly</c><00:02:13.110><c> giving</c><00:02:13.440><c> unknown</c>
+
+00:02:13.670 --> 00:02:13.680 align:start position:0%
+rather than implicitly giving unknown
+ 
+
+00:02:13.680 --> 00:02:16.010 align:start position:0%
+rather than implicitly giving unknown
+actions<00:02:14.099><c> zero</c><00:02:14.489><c> expected</c><00:02:15.090><c> reward</c><00:02:15.239><c> or</c><00:02:15.599><c> whatever</c>
+
+00:02:16.010 --> 00:02:16.020 align:start position:0%
+actions zero expected reward or whatever
+ 
+
+00:02:16.020 --> 00:02:17.930 align:start position:0%
+actions zero expected reward or whatever
+your<00:02:16.230><c> best</c><00:02:16.500><c> guess</c><00:02:16.800><c> of</c><00:02:17.099><c> the</c><00:02:17.370><c> expected</c><00:02:17.670><c> reward</c>
+
+00:02:17.930 --> 00:02:17.940 align:start position:0%
+your best guess of the expected reward
+ 
+
+00:02:17.940 --> 00:02:19.910 align:start position:0%
+your best guess of the expected reward
+of<00:02:18.239><c> taking</c><00:02:18.540><c> a</c><00:02:18.599><c> random</c><00:02:18.750><c> action</c><00:02:19.230><c> would</c><00:02:19.380><c> be</c><00:02:19.410><c> you</c>
+
+00:02:19.910 --> 00:02:19.920 align:start position:0%
+of taking a random action would be you
+ 
+
+00:02:19.920 --> 00:02:21.680 align:start position:0%
+of taking a random action would be you
+artificially<00:02:20.340><c> give</c><00:02:20.819><c> them</c><00:02:21.000><c> high</c><00:02:21.270><c> expected</c>
+
+00:02:21.680 --> 00:02:21.690 align:start position:0%
+artificially give them high expected
+ 
+
+00:02:21.690 --> 00:02:23.600 align:start position:0%
+artificially give them high expected
+reward<00:02:21.989><c> so</c><00:02:22.500><c> that</c><00:02:22.620><c> the</c><00:02:22.739><c> system</c><00:02:23.069><c> is</c><00:02:23.250><c> sort</c><00:02:23.489><c> of</c>
+
+00:02:23.600 --> 00:02:23.610 align:start position:0%
+reward so that the system is sort of
+ 
+
+00:02:23.610 --> 00:02:25.699 align:start position:0%
+reward so that the system is sort of
+irrationally<00:02:24.599><c> optimistic</c><00:02:25.200><c> about</c><00:02:25.290><c> unknown</c>
+
+00:02:25.699 --> 00:02:25.709 align:start position:0%
+irrationally optimistic about unknown
+ 
+
+00:02:25.709 --> 00:02:27.229 align:start position:0%
+irrationally optimistic about unknown
+things<00:02:26.040><c> whenever</c><00:02:26.670><c> there's</c><00:02:26.849><c> anything</c><00:02:27.150><c> it</c>
+
+00:02:27.229 --> 00:02:27.239 align:start position:0%
+things whenever there's anything it
+ 
+
+00:02:27.239 --> 00:02:29.089 align:start position:0%
+things whenever there's anything it
+hasn't<00:02:27.510><c> tried</c><00:02:27.660><c> before</c><00:02:28.020><c> it</c><00:02:28.260><c> will</c><00:02:28.650><c> assume</c><00:02:29.069><c> that</c>
+
+00:02:29.089 --> 00:02:29.099 align:start position:0%
+hasn't tried before it will assume that
+ 
+
+00:02:29.099 --> 00:02:30.830 align:start position:0%
+hasn't tried before it will assume that
+it's<00:02:29.370><c> good</c><00:02:29.610><c> until</c><00:02:30.060><c> it's</c><00:02:30.180><c> tried</c><00:02:30.420><c> it</c><00:02:30.540><c> and</c><00:02:30.690><c> found</c>
+
+00:02:30.830 --> 00:02:30.840 align:start position:0%
+it's good until it's tried it and found
+ 
+
+00:02:30.840 --> 00:02:32.330 align:start position:0%
+it's good until it's tried it and found
+out<00:02:31.019><c> that</c><00:02:31.050><c> it</c><00:02:31.319><c> isn't</c><00:02:31.470><c> so</c><00:02:31.890><c> you</c><00:02:31.980><c> end</c><00:02:32.130><c> up</c><00:02:32.220><c> with</c><00:02:32.310><c> a</c>
+
+00:02:32.330 --> 00:02:32.340 align:start position:0%
+out that it isn't so you end up with a
+ 
+
+00:02:32.340 --> 00:02:33.860 align:start position:0%
+out that it isn't so you end up with a
+system<00:02:32.550><c> that's</c><00:02:32.880><c> like</c><00:02:33.060><c> those</c><00:02:33.239><c> people</c><00:02:33.450><c> who</c><00:02:33.599><c> say</c>
+
+00:02:33.860 --> 00:02:33.870 align:start position:0%
+system that's like those people who say
+ 
+
+00:02:33.870 --> 00:02:36.229 align:start position:0%
+system that's like those people who say
+oh<00:02:34.050><c> I'll</c><00:02:34.530><c> try</c><00:02:34.739><c> anything</c><00:02:35.010><c> once</c><00:02:35.190><c> that's</c><00:02:35.910><c> not</c>
+
+00:02:36.229 --> 00:02:36.239 align:start position:0%
+oh I'll try anything once that's not
+ 
+
+00:02:36.239 --> 00:02:37.729 align:start position:0%
+oh I'll try anything once that's not
+always<00:02:36.420><c> a</c><00:02:36.569><c> great</c><00:02:36.870><c> approach</c><00:02:37.170><c> in</c><00:02:37.380><c> real</c><00:02:37.530><c> life</c>
+
+00:02:37.729 --> 00:02:37.739 align:start position:0%
+always a great approach in real life
+ 
+
+00:02:37.739 --> 00:02:39.470 align:start position:0%
+always a great approach in real life
+there<00:02:38.370><c> are</c><00:02:38.489><c> a</c><00:02:38.550><c> lot</c><00:02:38.790><c> of</c><00:02:38.819><c> things</c><00:02:39.150><c> that</c><00:02:39.390><c> you</c>
+
+00:02:39.470 --> 00:02:39.480 align:start position:0%
+there are a lot of things that you
+ 
+
+00:02:39.480 --> 00:02:41.660 align:start position:0%
+there are a lot of things that you
+shouldn't<00:02:39.810><c> try</c><00:02:39.989><c> even</c><00:02:40.140><c> once</c><00:02:40.470><c> and</c><00:02:40.739><c> hopefully</c>
+
+00:02:41.660 --> 00:02:41.670 align:start position:0%
+shouldn't try even once and hopefully
+ 
+
+00:02:41.670 --> 00:02:42.920 align:start position:0%
+shouldn't try even once and hopefully
+you<00:02:41.790><c> can</c><00:02:41.819><c> see</c><00:02:41.940><c> that</c><00:02:42.120><c> that</c><00:02:42.360><c> kind</c><00:02:42.569><c> of</c><00:02:42.660><c> approach</c>
+
+00:02:42.920 --> 00:02:42.930 align:start position:0%
+you can see that that kind of approach
+ 
+
+00:02:42.930 --> 00:02:44.900 align:start position:0%
+you can see that that kind of approach
+is<00:02:42.959><c> unsafe</c><00:02:43.530><c> for</c><00:02:43.560><c> AI</c><00:02:43.920><c> systems</c><00:02:44.400><c> as</c><00:02:44.519><c> well</c>
+
+00:02:44.900 --> 00:02:44.910 align:start position:0%
+is unsafe for AI systems as well
+ 
+
+00:02:44.910 --> 00:02:46.729 align:start position:0%
+is unsafe for AI systems as well
+you<00:02:45.030><c> can't</c><00:02:45.239><c> safely</c><00:02:45.810><c> assume</c><00:02:46.110><c> that</c><00:02:46.140><c> anything</c>
+
+00:02:46.729 --> 00:02:46.739 align:start position:0%
+you can't safely assume that anything
+ 
+
+00:02:46.739 --> 00:02:48.800 align:start position:0%
+you can't safely assume that anything
+you<00:02:46.830><c> haven't</c><00:02:47.040><c> tried</c><00:02:47.310><c> must</c><00:02:47.610><c> be</c><00:02:47.730><c> good</c><00:02:47.940><c> now</c><00:02:48.660><c> it's</c>
+
+00:02:48.800 --> 00:02:48.810 align:start position:0%
+you haven't tried must be good now it's
+ 
+
+00:02:48.810 --> 00:02:50.449 align:start position:0%
+you haven't tried must be good now it's
+worth<00:02:48.959><c> noting</c><00:02:49.170><c> that</c><00:02:49.410><c> in</c><00:02:49.860><c> more</c><00:02:50.040><c> complex</c>
+
+00:02:50.449 --> 00:02:50.459 align:start position:0%
+worth noting that in more complex
+ 
+
+00:02:50.459 --> 00:02:52.460 align:start position:0%
+worth noting that in more complex
+problems<00:02:50.880><c> these</c><00:02:51.360><c> kinds</c><00:02:51.750><c> of</c><00:02:51.810><c> exploration</c>
+
+00:02:52.460 --> 00:02:52.470 align:start position:0%
+problems these kinds of exploration
+ 
+
+00:02:52.470 --> 00:02:54.530 align:start position:0%
+problems these kinds of exploration
+methods<00:02:52.620><c> that</c><00:02:52.980><c> involve</c><00:02:53.250><c> occasionally</c><00:02:54.209><c> doing</c>
+
+00:02:54.530 --> 00:02:54.540 align:start position:0%
+methods that involve occasionally doing
+ 
+
+00:02:54.540 --> 00:02:56.720 align:start position:0%
+methods that involve occasionally doing
+individual<00:02:55.260><c> exploratory</c><00:02:55.860><c> actions</c><00:02:56.250><c> don't</c>
+
+00:02:56.720 --> 00:02:56.730 align:start position:0%
+individual exploratory actions don't
+ 
+
+00:02:56.730 --> 00:02:58.580 align:start position:0%
+individual exploratory actions don't
+perform<00:02:56.940><c> very</c><00:02:57.330><c> well</c><00:02:57.360><c> in</c><00:02:57.900><c> a</c><00:02:58.019><c> complex</c><00:02:58.319><c> problem</c>
+
+00:02:58.580 --> 00:02:58.590 align:start position:0%
+perform very well in a complex problem
+ 
+
+00:02:58.590 --> 00:03:01.370 align:start position:0%
+perform very well in a complex problem
+space<00:02:58.980><c> you're</c><00:02:59.549><c> pretty</c><00:02:59.880><c> unlikely</c><00:03:00.269><c> to</c><00:03:00.630><c> find</c><00:03:00.810><c> new</c>
+
+00:03:01.370 --> 00:03:01.380 align:start position:0%
+space you're pretty unlikely to find new
+ 
+
+00:03:01.380 --> 00:03:02.839 align:start position:0%
+space you're pretty unlikely to find new
+and<00:03:01.590><c> interesting</c><00:03:01.799><c> approaches</c><00:03:02.459><c> just</c><00:03:02.730><c> by</c>
+
+00:03:02.839 --> 00:03:02.849 align:start position:0%
+and interesting approaches just by
+ 
+
+00:03:02.849 --> 00:03:04.190 align:start position:0%
+and interesting approaches just by
+taking<00:03:03.330><c> your</c><00:03:03.420><c> current</c><00:03:03.750><c> approach</c><00:03:03.900><c> and</c>
+
+00:03:04.190 --> 00:03:04.200 align:start position:0%
+taking your current approach and
+ 
+
+00:03:04.200 --> 00:03:06.199 align:start position:0%
+taking your current approach and
+applying<00:03:04.709><c> some</c><00:03:04.799><c> random</c><00:03:05.370><c> permutation</c><00:03:05.970><c> to</c><00:03:06.090><c> it</c>
+
+00:03:06.199 --> 00:03:06.209 align:start position:0%
+applying some random permutation to it
+ 
+
+00:03:06.209 --> 00:03:08.030 align:start position:0%
+applying some random permutation to it
+so<00:03:06.510><c> one</c><00:03:06.660><c> approach</c><00:03:06.780><c> that</c><00:03:07.110><c> people</c><00:03:07.349><c> use</c><00:03:07.590><c> is</c><00:03:07.830><c> to</c>
+
+00:03:08.030 --> 00:03:08.040 align:start position:0%
+so one approach that people use is to
+ 
+
+00:03:08.040 --> 00:03:09.920 align:start position:0%
+so one approach that people use is to
+actually<00:03:08.549><c> modify</c><00:03:08.880><c> the</c><00:03:09.030><c> goals</c><00:03:09.420><c> of</c><00:03:09.599><c> the</c><00:03:09.750><c> system</c>
+
+00:03:09.920 --> 00:03:09.930 align:start position:0%
+actually modify the goals of the system
+ 
+
+00:03:09.930 --> 00:03:12.500 align:start position:0%
+actually modify the goals of the system
+temporarily<00:03:10.519><c> to</c><00:03:11.519><c> bring</c><00:03:11.730><c> the</c><00:03:11.849><c> system</c><00:03:12.180><c> into</c><00:03:12.360><c> new</c>
+
+00:03:12.500 --> 00:03:12.510 align:start position:0%
+temporarily to bring the system into new
+ 
+
+00:03:12.510 --> 00:03:13.880 align:start position:0%
+temporarily to bring the system into new
+areas<00:03:12.870><c> of</c><00:03:12.900><c> the</c><00:03:13.110><c> space</c><00:03:13.319><c> that</c><00:03:13.349><c> it</c><00:03:13.620><c> hasn't</c><00:03:13.769><c> been</c>
+
+00:03:13.880 --> 00:03:13.890 align:start position:0%
+areas of the space that it hasn't been
+ 
+
+00:03:13.890 --> 00:03:14.630 align:start position:0%
+areas of the space that it hasn't been
+in<00:03:14.099><c> before</c>
+
+00:03:14.630 --> 00:03:14.640 align:start position:0%
+in before
+ 
+
+00:03:14.640 --> 00:03:15.890 align:start position:0%
+in before
+imagine<00:03:15.120><c> that</c><00:03:15.209><c> you're</c><00:03:15.330><c> learning</c><00:03:15.480><c> to</c><00:03:15.720><c> play</c>
+
+00:03:15.890 --> 00:03:15.900 align:start position:0%
+imagine that you're learning to play
+ 
+
+00:03:15.900 --> 00:03:17.150 align:start position:0%
+imagine that you're learning to play
+chess<00:03:16.170><c> by</c><00:03:16.470><c> playing</c><00:03:16.680><c> against</c><00:03:17.040><c> the</c><00:03:17.130><c> computer</c>
+
+00:03:17.150 --> 00:03:17.160 align:start position:0%
+chess by playing against the computer
+ 
+
+00:03:17.160 --> 00:03:19.340 align:start position:0%
+chess by playing against the computer
+and<00:03:17.730><c> you're</c><00:03:18.269><c> kind</c><00:03:18.480><c> of</c><00:03:18.540><c> in</c><00:03:18.660><c> a</c><00:03:18.750><c> rut</c><00:03:18.959><c> with</c><00:03:19.200><c> your</c>
+
+00:03:19.340 --> 00:03:19.350 align:start position:0%
+and you're kind of in a rut with your
+ 
+
+00:03:19.350 --> 00:03:20.509 align:start position:0%
+and you're kind of in a rut with your
+strategy<00:03:19.590><c> you're</c><00:03:20.070><c> always</c><00:03:20.220><c> playing</c>
+
+00:03:20.509 --> 00:03:20.519 align:start position:0%
+strategy you're always playing
+ 
+
+00:03:20.519 --> 00:03:22.520 align:start position:0%
+strategy you're always playing
+similar-looking<00:03:21.120><c> games</c><00:03:21.600><c> so</c><00:03:22.079><c> you</c><00:03:22.140><c> might</c><00:03:22.350><c> want</c>
+
+00:03:22.520 --> 00:03:22.530 align:start position:0%
+similar-looking games so you might want
+ 
+
+00:03:22.530 --> 00:03:24.740 align:start position:0%
+similar-looking games so you might want
+to<00:03:22.560><c> say</c><00:03:22.769><c> to</c><00:03:22.799><c> yourself</c><00:03:22.950><c> okay</c><00:03:23.940><c> this</c><00:03:23.970><c> game</c><00:03:24.359><c> rather</c>
+
+00:03:24.740 --> 00:03:24.750 align:start position:0%
+to say to yourself okay this game rather
+ 
+
+00:03:24.750 --> 00:03:26.690 align:start position:0%
+to say to yourself okay this game rather
+than<00:03:24.989><c> my</c><00:03:25.109><c> normal</c><00:03:25.170><c> strategy</c><00:03:25.829><c> I'll</c><00:03:26.010><c> just</c><00:03:26.430><c> try</c><00:03:26.640><c> to</c>
+
+00:03:26.690 --> 00:03:26.700 align:start position:0%
+than my normal strategy I'll just try to
+ 
+
+00:03:26.700 --> 00:03:28.580 align:start position:0%
+than my normal strategy I'll just try to
+take<00:03:26.970><c> as</c><00:03:27.150><c> many</c><00:03:27.540><c> of</c><00:03:27.690><c> the</c><00:03:27.870><c> opponent's</c><00:03:28.230><c> pieces</c><00:03:28.470><c> as</c>
+
+00:03:28.580 --> 00:03:28.590 align:start position:0%
+take as many of the opponent's pieces as
+ 
+
+00:03:28.590 --> 00:03:31.370 align:start position:0%
+take as many of the opponent's pieces as
+possible<00:03:28.650><c> or</c><00:03:29.640><c> this</c><00:03:30.569><c> game</c><00:03:30.780><c> I'll</c><00:03:30.989><c> just</c><00:03:31.170><c> try</c><00:03:31.350><c> to</c>
+
+00:03:31.370 --> 00:03:31.380 align:start position:0%
+possible or this game I'll just try to
+ 
+
+00:03:31.380 --> 00:03:32.960 align:start position:0%
+possible or this game I'll just try to
+move<00:03:31.560><c> my</c><00:03:31.739><c> pieces</c><00:03:32.100><c> as</c><00:03:32.220><c> far</c><00:03:32.430><c> across</c><00:03:32.579><c> the</c><00:03:32.700><c> board</c>
+
+00:03:32.960 --> 00:03:32.970 align:start position:0%
+move my pieces as far across the board
+ 
+
+00:03:32.970 --> 00:03:35.180 align:start position:0%
+move my pieces as far across the board
+as<00:03:33.090><c> possible</c><00:03:33.510><c> or</c><00:03:33.690><c> I'll</c><00:03:34.019><c> just</c><00:03:34.440><c> try</c><00:03:34.799><c> to</c><00:03:34.859><c> capture</c>
+
+00:03:35.180 --> 00:03:35.190 align:start position:0%
+as possible or I'll just try to capture
+ 
+
+00:03:35.190 --> 00:03:36.770 align:start position:0%
+as possible or I'll just try to capture
+the<00:03:35.280><c> Queen</c><00:03:35.430><c> at</c><00:03:35.670><c> all</c><00:03:35.790><c> costs</c><00:03:36.209><c> or</c><00:03:36.329><c> something</c><00:03:36.690><c> like</c>
+
+00:03:36.770 --> 00:03:36.780 align:start position:0%
+the Queen at all costs or something like
+ 
+
+00:03:36.780 --> 00:03:38.930 align:start position:0%
+the Queen at all costs or something like
+that<00:03:36.840><c> you</c><00:03:37.470><c> temporarily</c><00:03:38.100><c> follow</c><00:03:38.519><c> some</c><00:03:38.760><c> new</c>
+
+00:03:38.930 --> 00:03:38.940 align:start position:0%
+that you temporarily follow some new
+ 
+
+00:03:38.940 --> 00:03:40.520 align:start position:0%
+that you temporarily follow some new
+policy<00:03:39.390><c> which</c><00:03:39.690><c> is</c><00:03:39.840><c> not</c><00:03:40.079><c> the</c><00:03:40.200><c> one</c><00:03:40.350><c> you'd</c>
+
+00:03:40.520 --> 00:03:40.530 align:start position:0%
+policy which is not the one you'd
+ 
+
+00:03:40.530 --> 00:03:42.259 align:start position:0%
+policy which is not the one you'd
+usually<00:03:40.769><c> think</c><00:03:41.160><c> is</c><00:03:41.280><c> best</c><00:03:41.489><c> and</c><00:03:41.819><c> in</c><00:03:41.970><c> doing</c><00:03:42.120><c> that</c>
+
+00:03:42.259 --> 00:03:42.269 align:start position:0%
+usually think is best and in doing that
+ 
+
+00:03:42.269 --> 00:03:43.940 align:start position:0%
+usually think is best and in doing that
+you<00:03:42.720><c> can</c><00:03:42.870><c> end</c><00:03:42.989><c> up</c><00:03:43.109><c> visiting</c><00:03:43.260><c> board</c><00:03:43.680><c> states</c>
+
+00:03:43.940 --> 00:03:43.950 align:start position:0%
+you can end up visiting board states
+ 
+
+00:03:43.950 --> 00:03:44.990 align:start position:0%
+you can end up visiting board states
+that<00:03:44.100><c> you've</c><00:03:44.220><c> never</c><00:03:44.340><c> seen</c><00:03:44.609><c> before</c>
+
+00:03:44.990 --> 00:03:45.000 align:start position:0%
+that you've never seen before
+ 
+
+00:03:45.000 --> 00:03:46.550 align:start position:0%
+that you've never seen before
+and<00:03:45.180><c> learning</c><00:03:45.690><c> new</c><00:03:45.810><c> things</c><00:03:45.840><c> about</c><00:03:46.139><c> the</c><00:03:46.380><c> game</c>
+
+00:03:46.550 --> 00:03:46.560 align:start position:0%
+and learning new things about the game
+ 
+
+00:03:46.560 --> 00:03:48.110 align:start position:0%
+and learning new things about the game
+which<00:03:46.889><c> in</c><00:03:47.069><c> the</c><00:03:47.160><c> long</c><00:03:47.310><c> run</c><00:03:47.549><c> can</c><00:03:47.850><c> make</c><00:03:48.000><c> you</c><00:03:48.090><c> a</c>
+
+00:03:48.110 --> 00:03:48.120 align:start position:0%
+which in the long run can make you a
+ 
+
+00:03:48.120 --> 00:03:50.059 align:start position:0%
+which in the long run can make you a
+better<00:03:48.269><c> player</c><00:03:48.510><c> temporarily</c><00:03:49.410><c> modifying</c><00:03:49.980><c> your</c>
+
+00:03:50.059 --> 00:03:50.069 align:start position:0%
+better player temporarily modifying your
+ 
+
+00:03:50.069 --> 00:03:52.280 align:start position:0%
+better player temporarily modifying your
+goals<00:03:50.400><c> allows</c><00:03:51.090><c> you</c><00:03:51.269><c> to</c><00:03:51.389><c> explore</c><00:03:51.780><c> the</c><00:03:51.900><c> policy</c>
+
+00:03:52.280 --> 00:03:52.290 align:start position:0%
+goals allows you to explore the policy
+ 
+
+00:03:52.290 --> 00:03:53.720 align:start position:0%
+goals allows you to explore the policy
+space<00:03:52.530><c> better</c><00:03:53.040><c> than</c><00:03:53.250><c> you</c><00:03:53.370><c> could</c><00:03:53.489><c> by</c><00:03:53.700><c> just</c>
+
+00:03:53.720 --> 00:03:53.730 align:start position:0%
+space better than you could by just
+ 
+
+00:03:53.730 --> 00:03:55.879 align:start position:0%
+space better than you could by just
+sometimes<00:03:54.450><c> playing</c><00:03:54.750><c> a</c><00:03:54.870><c> random</c><00:03:55.170><c> move</c><00:03:55.350><c> but</c><00:03:55.799><c> you</c>
+
+00:03:55.879 --> 00:03:55.889 align:start position:0%
+sometimes playing a random move but you
+ 
+
+00:03:55.889 --> 00:03:57.140 align:start position:0%
+sometimes playing a random move but you
+can<00:03:56.010><c> see</c><00:03:56.160><c> how</c><00:03:56.280><c> implementing</c><00:03:56.760><c> this</c><00:03:56.910><c> kind</c><00:03:57.090><c> of</c>
+
+00:03:57.140 --> 00:03:57.150 align:start position:0%
+can see how implementing this kind of
+ 
+
+00:03:57.150 --> 00:03:58.910 align:start position:0%
+can see how implementing this kind of
+thing<00:03:57.329><c> on</c><00:03:57.450><c> a</c><00:03:57.480><c> real-world</c><00:03:57.690><c> AI</c><00:03:58.079><c> system</c><00:03:58.590><c> could</c><00:03:58.799><c> be</c>
+
+00:03:58.910 --> 00:03:58.920 align:start position:0%
+thing on a real-world AI system could be
+ 
+
+00:03:58.920 --> 00:04:00.680 align:start position:0%
+thing on a real-world AI system could be
+much<00:03:59.190><c> more</c><00:03:59.549><c> dangerous</c><00:03:59.970><c> than</c><00:04:00.090><c> just</c><00:04:00.450><c> having</c>
+
+00:04:00.680 --> 00:04:00.690 align:start position:0%
+much more dangerous than just having
+ 
+
+00:04:00.690 --> 00:04:01.970 align:start position:0%
+much more dangerous than just having
+your<00:04:00.780><c> system</c><00:04:01.079><c> sometimes</c><00:04:01.290><c> choose</c><00:04:01.650><c> random</c>
+
+00:04:01.970 --> 00:04:01.980 align:start position:0%
+your system sometimes choose random
+ 
+
+00:04:01.980 --> 00:04:03.349 align:start position:0%
+your system sometimes choose random
+actions<00:04:02.310><c> if</c><00:04:02.519><c> you're</c><00:04:02.730><c> cleaning</c><00:04:03.000><c> robot</c>
+
+00:04:03.349 --> 00:04:03.359 align:start position:0%
+actions if you're cleaning robot
+ 
+
+00:04:03.359 --> 00:04:05.300 align:start position:0%
+actions if you're cleaning robot
+occasionally<00:04:04.109><c> makes</c><00:04:04.290><c> totally</c><00:04:04.769><c> random</c><00:04:05.130><c> motor</c>
+
+00:04:05.300 --> 00:04:05.310 align:start position:0%
+occasionally makes totally random motor
+ 
+
+00:04:05.310 --> 00:04:06.620 align:start position:0%
+occasionally makes totally random motor
+movements<00:04:05.850><c> in</c><00:04:05.970><c> an</c><00:04:06.090><c> attempt</c><00:04:06.389><c> to</c><00:04:06.510><c> do</c>
+
+00:04:06.620 --> 00:04:06.630 align:start position:0%
+movements in an attempt to do
+ 
+
+00:04:06.630 --> 00:04:08.900 align:start position:0%
+movements in an attempt to do
+exploration<00:04:06.989><c> that's</c><00:04:07.889><c> mostly</c><00:04:08.370><c> just</c><00:04:08.489><c> going</c><00:04:08.850><c> to</c>
+
+00:04:08.900 --> 00:04:08.910 align:start position:0%
+exploration that's mostly just going to
+ 
+
+00:04:08.910 --> 00:04:10.490 align:start position:0%
+exploration that's mostly just going to
+make<00:04:09.060><c> it</c><00:04:09.209><c> less</c><00:04:09.329><c> effective</c><00:04:09.810><c> it</c><00:04:09.989><c> might</c><00:04:10.290><c> drop</c>
+
+00:04:10.490 --> 00:04:10.500 align:start position:0%
+make it less effective it might drop
+ 
+
+00:04:10.500 --> 00:04:12.289 align:start position:0%
+make it less effective it might drop
+things<00:04:10.829><c> or</c><00:04:11.069><c> fall</c><00:04:11.370><c> over</c><00:04:11.730><c> and</c><00:04:11.910><c> that</c><00:04:12.030><c> could</c><00:04:12.180><c> be</c><00:04:12.269><c> a</c>
+
+00:04:12.289 --> 00:04:12.299 align:start position:0%
+things or fall over and that could be a
+ 
+
+00:04:12.299 --> 00:04:14.750 align:start position:0%
+things or fall over and that could be a
+bit<00:04:12.480><c> dangerous</c><00:04:12.690><c> but</c><00:04:13.560><c> what</c><00:04:14.100><c> if</c><00:04:14.190><c> it's</c><00:04:14.370><c> sometimes</c>
+
+00:04:14.750 --> 00:04:14.760 align:start position:0%
+bit dangerous but what if it's sometimes
+ 
+
+00:04:14.760 --> 00:04:16.430 align:start position:0%
+bit dangerous but what if it's sometimes
+exhibited<00:04:15.269><c> coherent</c><00:04:15.989><c> goal-directed</c>
+
+00:04:16.430 --> 00:04:16.440 align:start position:0%
+exhibited coherent goal-directed
+ 
+
+00:04:16.440 --> 00:04:18.740 align:start position:0%
+exhibited coherent goal-directed
+behavior<00:04:16.829><c> towards</c><00:04:17.639><c> randomly</c><00:04:18.150><c> chosen</c><00:04:18.419><c> goals</c>
+
+00:04:18.740 --> 00:04:18.750 align:start position:0%
+behavior towards randomly chosen goals
+ 
+
+00:04:18.750 --> 00:04:21.289 align:start position:0%
+behavior towards randomly chosen goals
+what<00:04:19.320><c> if</c><00:04:19.500><c> as</c><00:04:19.709><c> part</c><00:04:20.010><c> of</c><00:04:20.099><c> its</c><00:04:20.250><c> exploration</c><00:04:20.909><c> it</c>
+
+00:04:21.289 --> 00:04:21.299 align:start position:0%
+what if as part of its exploration it
+ 
+
+00:04:21.299 --> 00:04:23.000 align:start position:0%
+what if as part of its exploration it
+occasionally<00:04:21.780><c> picks</c><00:04:22.109><c> a</c><00:04:22.200><c> new</c><00:04:22.320><c> goal</c><00:04:22.500><c> at</c><00:04:22.650><c> random</c>
+
+00:04:23.000 --> 00:04:23.010 align:start position:0%
+occasionally picks a new goal at random
+ 
+
+00:04:23.010 --> 00:04:25.200 align:start position:0%
+occasionally picks a new goal at random
+and<00:04:23.159><c> then</c><00:04:23.340><c> puts</c><00:04:23.580><c> together</c><00:04:23.729><c> intelligent</c><00:04:24.570><c> mult</c>
+
+00:04:25.200 --> 00:04:25.210 align:start position:0%
+and then puts together intelligent mult
+ 
+
+00:04:25.210 --> 00:04:26.879 align:start position:0%
+and then puts together intelligent mult
+step<00:04:25.389><c> plans</c><00:04:25.690><c> to</c><00:04:25.990><c> pursue</c><00:04:26.259><c> that</c><00:04:26.410><c> goal</c><00:04:26.650><c> that</c>
+
+00:04:26.879 --> 00:04:26.889 align:start position:0%
+step plans to pursue that goal that
+ 
+
+00:04:26.889 --> 00:04:28.650 align:start position:0%
+step plans to pursue that goal that
+could<00:04:27.160><c> be</c><00:04:27.310><c> much</c><00:04:27.580><c> more</c><00:04:27.789><c> dangerous</c><00:04:27.970><c> than</c><00:04:28.300><c> just</c>
+
+00:04:28.650 --> 00:04:28.660 align:start position:0%
+could be much more dangerous than just
+ 
+
+00:04:28.660 --> 00:04:30.270 align:start position:0%
+could be much more dangerous than just
+doing<00:04:28.810><c> random</c><00:04:29.169><c> things</c><00:04:29.199><c> and</c><00:04:29.710><c> the</c><00:04:29.979><c> problem</c>
+
+00:04:30.270 --> 00:04:30.280 align:start position:0%
+doing random things and the problem
+ 
+
+00:04:30.280 --> 00:04:31.590 align:start position:0%
+doing random things and the problem
+doesn't<00:04:30.550><c> come</c><00:04:30.819><c> from</c><00:04:30.970><c> the</c><00:04:31.060><c> fact</c><00:04:31.270><c> that</c><00:04:31.330><c> the</c><00:04:31.479><c> new</c>
+
+00:04:31.590 --> 00:04:31.600 align:start position:0%
+doesn't come from the fact that the new
+ 
+
+00:04:31.600 --> 00:04:33.210 align:start position:0%
+doesn't come from the fact that the new
+goals<00:04:31.840><c> are</c><00:04:32.020><c> random</c><00:04:32.440><c> just</c><00:04:32.979><c> that</c><00:04:33.100><c> they're</c>
+
+00:04:33.210 --> 00:04:33.220 align:start position:0%
+goals are random just that they're
+ 
+
+00:04:33.220 --> 00:04:34.610 align:start position:0%
+goals are random just that they're
+different<00:04:33.490><c> from</c><00:04:33.729><c> the</c><00:04:33.880><c> original</c><00:04:34.270><c> goals</c>
+
+00:04:34.610 --> 00:04:34.620 align:start position:0%
+different from the original goals
+ 
+
+00:04:34.620 --> 00:04:37.080 align:start position:0%
+different from the original goals
+choosing<00:04:35.620><c> non</c><00:04:35.800><c> randomly</c><00:04:36.370><c> might</c><00:04:36.729><c> not</c><00:04:36.880><c> be</c><00:04:36.970><c> any</c>
+
+00:04:37.080 --> 00:04:37.090 align:start position:0%
+choosing non randomly might not be any
+ 
+
+00:04:37.090 --> 00:04:38.939 align:start position:0%
+choosing non randomly might not be any
+better<00:04:37.330><c> you</c><00:04:37.690><c> might</c><00:04:37.810><c> imagine</c><00:04:38.050><c> an</c><00:04:38.319><c> AI</c><00:04:38.440><c> system</c>
+
+00:04:38.939 --> 00:04:38.949 align:start position:0%
+better you might imagine an AI system
+ 
+
+00:04:38.949 --> 00:04:40.740 align:start position:0%
+better you might imagine an AI system
+where<00:04:39.190><c> some</c><00:04:39.699><c> part</c><00:04:39.910><c> of</c><00:04:40.000><c> the</c><00:04:40.120><c> architecture</c><00:04:40.690><c> is</c>
+
+00:04:40.740 --> 00:04:40.750 align:start position:0%
+where some part of the architecture is
+ 
+
+00:04:40.750 --> 00:04:42.330 align:start position:0%
+where some part of the architecture is
+sort<00:04:40.930><c> of</c><00:04:40.960><c> implicitly</c><00:04:41.440><c> reasoning</c><00:04:41.979><c> something</c>
+
+00:04:42.330 --> 00:04:42.340 align:start position:0%
+sort of implicitly reasoning something
+ 
+
+00:04:42.340 --> 00:04:44.490 align:start position:0%
+sort of implicitly reasoning something
+like<00:04:42.509><c> part</c><00:04:43.509><c> of</c><00:04:43.660><c> my</c><00:04:43.780><c> goal</c><00:04:44.020><c> is</c><00:04:44.199><c> to</c><00:04:44.319><c> avoid</c>
+
+00:04:44.490 --> 00:04:44.500 align:start position:0%
+like part of my goal is to avoid
+ 
+
+00:04:44.500 --> 00:04:46.950 align:start position:0%
+like part of my goal is to avoid
+breaking<00:04:44.919><c> this</c><00:04:45.039><c> vars</c><00:04:45.449><c> but</c><00:04:46.449><c> we've</c><00:04:46.810><c> never</c>
+
+00:04:46.950 --> 00:04:46.960 align:start position:0%
+breaking this vars but we've never
+ 
+
+00:04:46.960 --> 00:04:48.930 align:start position:0%
+breaking this vars but we've never
+actually<00:04:47.080><c> seen</c><00:04:47.560><c> the</c><00:04:47.710><c> VARs</c><00:04:47.889><c> being</c><00:04:48.160><c> broken</c><00:04:48.460><c> so</c>
+
+00:04:48.930 --> 00:04:48.940 align:start position:0%
+actually seen the VARs being broken so
+ 
+
+00:04:48.940 --> 00:04:50.070 align:start position:0%
+actually seen the VARs being broken so
+the<00:04:49.180><c> system</c><00:04:49.479><c> doesn't</c><00:04:49.630><c> have</c><00:04:49.780><c> a</c><00:04:49.840><c> very</c><00:04:50.050><c> good</c>
+
+00:04:50.070 --> 00:04:50.080 align:start position:0%
+the system doesn't have a very good
+ 
+
+00:04:50.080 --> 00:04:51.689 align:start position:0%
+the system doesn't have a very good
+understanding<00:04:50.410><c> of</c><00:04:50.710><c> how</c><00:04:50.770><c> that</c><00:04:50.860><c> happens</c><00:04:51.280><c> so</c>
+
+00:04:51.689 --> 00:04:51.699 align:start position:0%
+understanding of how that happens so
+ 
+
+00:04:51.699 --> 00:04:53.640 align:start position:0%
+understanding of how that happens so
+maybe<00:04:51.880><c> we</c><00:04:52.030><c> should</c><00:04:52.060><c> explore</c><00:04:52.569><c> by</c><00:04:53.080><c> temporarily</c>
+
+00:04:53.640 --> 00:04:53.650 align:start position:0%
+maybe we should explore by temporarily
+ 
+
+00:04:53.650 --> 00:04:55.350 align:start position:0%
+maybe we should explore by temporarily
+replacing<00:04:54.280><c> the</c><00:04:54.340><c> goal</c><00:04:54.490><c> with</c><00:04:54.639><c> one</c><00:04:54.669><c> that</c><00:04:54.910><c> values</c>
+
+00:04:55.350 --> 00:04:55.360 align:start position:0%
+replacing the goal with one that values
+ 
+
+00:04:55.360 --> 00:04:57.510 align:start position:0%
+replacing the goal with one that values
+breaking<00:04:55.750><c> versus</c><00:04:56.169><c> just</c><00:04:56.860><c> so</c><00:04:56.979><c> that</c><00:04:57.130><c> the</c><00:04:57.250><c> system</c>
+
+00:04:57.510 --> 00:04:57.520 align:start position:0%
+breaking versus just so that the system
+ 
+
+00:04:57.520 --> 00:04:59.070 align:start position:0%
+breaking versus just so that the system
+can<00:04:57.580><c> break</c><00:04:57.940><c> a</c><00:04:57.970><c> bunch</c><00:04:58.150><c> of</c><00:04:58.330><c> arses</c><00:04:58.720><c> and</c><00:04:58.750><c> get</c><00:04:59.050><c> a</c>
+
+00:04:59.070 --> 00:04:59.080 align:start position:0%
+can break a bunch of arses and get a
+ 
+
+00:04:59.080 --> 00:05:01.140 align:start position:0%
+can break a bunch of arses and get a
+sense<00:04:59.320><c> for</c><00:04:59.530><c> how</c><00:04:59.590><c> that</c><00:04:59.800><c> works</c><00:05:00.150><c> temporarily</c>
+
+00:05:01.140 --> 00:05:01.150 align:start position:0%
+sense for how that works temporarily
+ 
+
+00:05:01.150 --> 00:05:02.939 align:start position:0%
+sense for how that works temporarily
+replacing<00:05:01.870><c> the</c><00:05:01.990><c> goal</c><00:05:02.169><c> can</c><00:05:02.500><c> make</c><00:05:02.650><c> for</c><00:05:02.830><c> good</c>
+
+00:05:02.939 --> 00:05:02.949 align:start position:0%
+replacing the goal can make for good
+ 
+
+00:05:02.949 --> 00:05:04.950 align:start position:0%
+replacing the goal can make for good
+learning<00:05:03.190><c> and</c><00:05:03.490><c> effective</c><00:05:03.849><c> exploration</c><00:05:04.509><c> but</c>
+
+00:05:04.950 --> 00:05:04.960 align:start position:0%
+learning and effective exploration but
+ 
+
+00:05:04.960 --> 00:05:07.200 align:start position:0%
+learning and effective exploration but
+it's<00:05:05.080><c> not</c><00:05:05.259><c> safe</c><00:05:05.530><c> so</c><00:05:05.830><c> the</c><00:05:06.430><c> sorts</c><00:05:06.729><c> of</c><00:05:06.789><c> simple</c>
+
+00:05:07.200 --> 00:05:07.210 align:start position:0%
+it's not safe so the sorts of simple
+ 
+
+00:05:07.210 --> 00:05:09.060 align:start position:0%
+it's not safe so the sorts of simple
+exploration<00:05:07.840><c> methods</c><00:05:08.199><c> that</c><00:05:08.500><c> were</c><00:05:08.650><c> using</c><00:05:08.830><c> with</c>
+
+00:05:09.060 --> 00:05:09.070 align:start position:0%
+exploration methods that were using with
+ 
+
+00:05:09.070 --> 00:05:10.980 align:start position:0%
+exploration methods that were using with
+current<00:05:09.370><c> systems</c><00:05:09.729><c> can</c><00:05:10.270><c> be</c><00:05:10.360><c> dangerous</c><00:05:10.810><c> when</c>
+
+00:05:10.980 --> 00:05:10.990 align:start position:0%
+current systems can be dangerous when
+ 
+
+00:05:10.990 --> 00:05:12.390 align:start position:0%
+current systems can be dangerous when
+directly<00:05:11.349><c> applied</c><00:05:11.620><c> to</c><00:05:11.650><c> the</c><00:05:11.860><c> real</c><00:05:12.009><c> world</c>
+
+00:05:12.390 --> 00:05:12.400 align:start position:0%
+directly applied to the real world
+ 
+
+00:05:12.400 --> 00:05:14.550 align:start position:0%
+directly applied to the real world
+now<00:05:12.910><c> that</c><00:05:13.210><c> vars</c><00:05:13.479><c> example</c><00:05:13.960><c> was</c><00:05:14.080><c> kind</c><00:05:14.289><c> of</c><00:05:14.349><c> silly</c>
+
+00:05:14.550 --> 00:05:14.560 align:start position:0%
+now that vars example was kind of silly
+ 
+
+00:05:14.560 --> 00:05:16.710 align:start position:0%
+now that vars example was kind of silly
+a<00:05:14.830><c> system</c><00:05:15.310><c> that</c><00:05:15.460><c> sophisticated</c><00:05:16.060><c> after</c><00:05:16.479><c> reason</c>
+
+00:05:16.710 --> 00:05:16.720 align:start position:0%
+a system that sophisticated after reason
+ 
+
+00:05:16.720 --> 00:05:18.149 align:start position:0%
+a system that sophisticated after reason
+about<00:05:16.960><c> its</c><00:05:17.169><c> state</c><00:05:17.349><c> of</c><00:05:17.470><c> knowledge</c><00:05:17.770><c> like</c><00:05:17.949><c> that</c>
+
+00:05:18.149 --> 00:05:18.159 align:start position:0%
+about its state of knowledge like that
+ 
+
+00:05:18.159 --> 00:05:19.890 align:start position:0%
+about its state of knowledge like that
+probably<00:05:18.699><c> wouldn't</c><00:05:19.060><c> need</c><00:05:19.210><c> an</c><00:05:19.360><c> architecture</c>
+
+00:05:19.890 --> 00:05:19.900 align:start position:0%
+probably wouldn't need an architecture
+ 
+
+00:05:19.900 --> 00:05:21.659 align:start position:0%
+probably wouldn't need an architecture
+that<00:05:19.930><c> swaps</c><00:05:20.349><c> out</c><00:05:20.530><c> its</c><00:05:20.740><c> goals</c><00:05:20.949><c> to</c><00:05:21.220><c> force</c><00:05:21.460><c> it</c><00:05:21.580><c> to</c>
+
+00:05:21.659 --> 00:05:21.669 align:start position:0%
+that swaps out its goals to force it to
+ 
+
+00:05:21.669 --> 00:05:23.700 align:start position:0%
+that swaps out its goals to force it to
+explore<00:05:22.030><c> it</c><00:05:22.270><c> could</c><00:05:22.479><c> just</c><00:05:22.690><c> pursue</c><00:05:23.050><c> exploration</c>
+
+00:05:23.700 --> 00:05:23.710 align:start position:0%
+explore it could just pursue exploration
+ 
+
+00:05:23.710 --> 00:05:25.529 align:start position:0%
+explore it could just pursue exploration
+as<00:05:23.860><c> an</c><00:05:23.949><c> instrumental</c><00:05:24.460><c> goal</c><00:05:24.639><c> and</c><00:05:24.909><c> in</c><00:05:25.150><c> fact</c><00:05:25.330><c> we'd</c>
+
+00:05:25.529 --> 00:05:25.539 align:start position:0%
+as an instrumental goal and in fact we'd
+ 
+
+00:05:25.539 --> 00:05:27.629 align:start position:0%
+as an instrumental goal and in fact we'd
+expect<00:05:25.960><c> exploration</c><00:05:26.770><c> to</c><00:05:26.919><c> be</c><00:05:27.039><c> a</c><00:05:27.069><c> convergent</c>
+
+00:05:27.629 --> 00:05:27.639 align:start position:0%
+expect exploration to be a convergent
+ 
+
+00:05:27.639 --> 00:05:29.040 align:start position:0%
+expect exploration to be a convergent
+instrumental<00:05:28.180><c> goal</c><00:05:28.330><c> and</c><00:05:28.659><c> if</c><00:05:28.780><c> you</c><00:05:28.840><c> don't</c><00:05:28.990><c> know</c>
+
+00:05:29.040 --> 00:05:29.050 align:start position:0%
+instrumental goal and if you don't know
+ 
+
+00:05:29.050 --> 00:05:30.149 align:start position:0%
+instrumental goal and if you don't know
+what<00:05:29.169><c> that</c><00:05:29.289><c> means</c><00:05:29.470><c> what's</c><00:05:29.710><c> the</c><00:05:29.830><c> video</c><00:05:29.949><c> and</c>
+
+00:05:30.149 --> 00:05:30.159 align:start position:0%
+what that means what's the video and
+ 
+
+00:05:30.159 --> 00:05:31.950 align:start position:0%
+what that means what's the video and
+instrumental<00:05:30.610><c> convergence</c><00:05:31.120><c> but</c><00:05:31.539><c> basically</c><00:05:31.870><c> a</c>
+
+00:05:31.950 --> 00:05:31.960 align:start position:0%
+instrumental convergence but basically a
+ 
+
+00:05:31.960 --> 00:05:33.450 align:start position:0%
+instrumental convergence but basically a
+general<00:05:32.320><c> intelligence</c><00:05:32.860><c> should</c><00:05:33.220><c> choose</c>
+
+00:05:33.450 --> 00:05:33.460 align:start position:0%
+general intelligence should choose
+ 
+
+00:05:33.460 --> 00:05:35.700 align:start position:0%
+general intelligence should choose
+exploratory<00:05:34.120><c> actions</c><00:05:34.479><c> just</c><00:05:34.810><c> as</c><00:05:34.870><c> a</c><00:05:35.229><c> normal</c>
+
+00:05:35.700 --> 00:05:35.710 align:start position:0%
+exploratory actions just as a normal
+ 
+
+00:05:35.710 --> 00:05:37.950 align:start position:0%
+exploratory actions just as a normal
+part<00:05:35.919><c> of</c><00:05:36.070><c> pursuing</c><00:05:36.430><c> its</c><00:05:36.669><c> goals</c><00:05:36.880><c> rather</c><00:05:37.720><c> than</c>
+
+00:05:37.950 --> 00:05:37.960 align:start position:0%
+part of pursuing its goals rather than
+ 
+
+00:05:37.960 --> 00:05:39.899 align:start position:0%
+part of pursuing its goals rather than
+having<00:05:38.169><c> exploration</c><00:05:38.919><c> hard-coded</c><00:05:39.580><c> into</c><00:05:39.789><c> the</c>
+
+00:05:39.899 --> 00:05:39.909 align:start position:0%
+having exploration hard-coded into the
+ 
+
+00:05:39.909 --> 00:05:41.520 align:start position:0%
+having exploration hard-coded into the
+system's<00:05:40.210><c> architecture</c><00:05:40.389><c> such</c><00:05:41.080><c> a</c><00:05:41.110><c> system</c>
+
+00:05:41.520 --> 00:05:41.530 align:start position:0%
+system's architecture such a system
+ 
+
+00:05:41.530 --> 00:05:43.050 align:start position:0%
+system's architecture such a system
+should<00:05:41.680><c> be</c><00:05:41.860><c> able</c><00:05:41.979><c> to</c><00:05:42.250><c> find</c><00:05:42.550><c> ways</c><00:05:42.699><c> to</c><00:05:42.940><c> learn</c>
+
+00:05:43.050 --> 00:05:43.060 align:start position:0%
+should be able to find ways to learn
+ 
+
+00:05:43.060 --> 00:05:45.149 align:start position:0%
+should be able to find ways to learn
+more<00:05:43.360><c> about</c><00:05:43.419><c> va's</c><00:05:43.840><c> without</c><00:05:44.650><c> actually</c>
+
+00:05:45.149 --> 00:05:45.159 align:start position:0%
+more about va's without actually
+ 
+
+00:05:45.159 --> 00:05:46.770 align:start position:0%
+more about va's without actually
+smashing<00:05:45.580><c> any</c><00:05:45.699><c> perhaps</c><00:05:46.270><c> it</c><00:05:46.449><c> could</c><00:05:46.570><c> read</c><00:05:46.750><c> a</c>
+
+00:05:46.770 --> 00:05:46.780 align:start position:0%
+smashing any perhaps it could read a
+ 
+
+00:05:46.780 --> 00:05:48.629 align:start position:0%
+smashing any perhaps it could read a
+book<00:05:46.870><c> or</c><00:05:47.229><c> watch</c><00:05:47.740><c> a</c><00:05:47.860><c> video</c><00:05:47.979><c> and</c><00:05:48.370><c> work</c><00:05:48.490><c> things</c>
+
+00:05:48.629 --> 00:05:48.639 align:start position:0%
+book or watch a video and work things
+ 
+
+00:05:48.639 --> 00:05:50.640 align:start position:0%
+book or watch a video and work things
+out<00:05:48.849><c> from</c><00:05:48.969><c> that</c><00:05:49.180><c> so</c><00:05:49.659><c> I</c><00:05:49.690><c> would</c><00:05:49.900><c> expect</c><00:05:49.990><c> unsafe</c>
+
+00:05:50.640 --> 00:05:50.650 align:start position:0%
+out from that so I would expect unsafe
+ 
+
+00:05:50.650 --> 00:05:52.709 align:start position:0%
+out from that so I would expect unsafe
+exploration<00:05:51.340><c> to</c><00:05:51.520><c> mostly</c><00:05:51.909><c> be</c><00:05:52.120><c> a</c><00:05:52.150><c> problem</c><00:05:52.570><c> with</c>
+
+00:05:52.709 --> 00:05:52.719 align:start position:0%
+exploration to mostly be a problem with
+ 
+
+00:05:52.719 --> 00:05:54.870 align:start position:0%
+exploration to mostly be a problem with
+relatively<00:05:53.259><c> narrow</c><00:05:53.500><c> systems</c><00:05:54.039><c> operating</c><00:05:54.789><c> in</c>
+
+00:05:54.870 --> 00:05:54.880 align:start position:0%
+relatively narrow systems operating in
+ 
+
+00:05:54.880 --> 00:05:55.560 align:start position:0%
+relatively narrow systems operating in
+the<00:05:54.940><c> real</c><00:05:55.090><c> world</c>
+
+00:05:55.560 --> 00:05:55.570 align:start position:0%
+the real world
+ 
+
+00:05:55.570 --> 00:05:57.390 align:start position:0%
+the real world
+our<00:05:56.050><c> current</c><00:05:56.469><c> AI</c><00:05:56.590><c> systems</c><00:05:57.070><c> and</c><00:05:57.280><c> their</c>
+
+00:05:57.390 --> 00:05:57.400 align:start position:0%
+our current AI systems and their
+ 
+
+00:05:57.400 --> 00:05:59.129 align:start position:0%
+our current AI systems and their
+immediate<00:05:57.610><c> descendants</c><00:05:58.240><c> rather</c><00:05:58.960><c> than</c>
+
+00:05:59.129 --> 00:05:59.139 align:start position:0%
+immediate descendants rather than
+ 
+
+00:05:59.139 --> 00:06:00.749 align:start position:0%
+immediate descendants rather than
+something<00:05:59.320><c> we</c><00:05:59.469><c> need</c><00:05:59.680><c> to</c><00:05:59.770><c> worry</c><00:05:59.949><c> about</c><00:06:00.039><c> a</c><00:06:00.250><c> GIS</c>
+
+00:06:00.749 --> 00:06:00.759 align:start position:0%
+something we need to worry about a GIS
+ 
+
+00:06:00.759 --> 00:06:02.700 align:start position:0%
+something we need to worry about a GIS
+and<00:06:01.000><c> super</c><00:06:01.210><c> intelligence</c><00:06:01.690><c> is</c><00:06:01.840><c> doing</c><00:06:02.110><c> given</c>
+
+00:06:02.700 --> 00:06:02.710 align:start position:0%
+and super intelligence is doing given
+ 
+
+00:06:02.710 --> 00:06:04.110 align:start position:0%
+and super intelligence is doing given
+that<00:06:02.800><c> this</c><00:06:02.889><c> is</c><00:06:03.039><c> more</c><00:06:03.159><c> of</c><00:06:03.280><c> a</c><00:06:03.340><c> near-term</c><00:06:03.669><c> problem</c>
+
+00:06:04.110 --> 00:06:04.120 align:start position:0%
+that this is more of a near-term problem
+ 
+
+00:06:04.120 --> 00:06:05.850 align:start position:0%
+that this is more of a near-term problem
+it's<00:06:04.539><c> actually</c><00:06:04.870><c> relatively</c><00:06:05.289><c> well</c><00:06:05.469><c> explored</c>
+
+00:06:05.850 --> 00:06:05.860 align:start position:0%
+it's actually relatively well explored
+ 
+
+00:06:05.860 --> 00:06:07.200 align:start position:0%
+it's actually relatively well explored
+already<00:06:06.159><c> people</c><00:06:06.490><c> have</c><00:06:06.639><c> spent</c><00:06:06.909><c> some</c><00:06:07.060><c> time</c>
+
+00:06:07.200 --> 00:06:07.210 align:start position:0%
+already people have spent some time
+ 
+
+00:06:07.210 --> 00:06:08.999 align:start position:0%
+already people have spent some time
+thinking<00:06:07.240><c> about</c><00:06:07.599><c> this</c><00:06:07.900><c> so</c><00:06:08.380><c> what</c><00:06:08.800><c> are</c><00:06:08.919><c> the</c>
+
+00:06:08.999 --> 00:06:09.009 align:start position:0%
+thinking about this so what are the
+ 
+
+00:06:09.009 --> 00:06:11.100 align:start position:0%
+thinking about this so what are the
+options<00:06:09.130><c> for</c><00:06:09.550><c> safe</c><00:06:09.699><c> exploration</c><00:06:10.360><c> well</c><00:06:10.840><c> one</c>
+
+00:06:11.100 --> 00:06:11.110 align:start position:0%
+options for safe exploration well one
+ 
+
+00:06:11.110 --> 00:06:13.050 align:start position:0%
+options for safe exploration well one
+obvious<00:06:11.259><c> thing</c><00:06:11.500><c> to</c><00:06:11.770><c> try</c><00:06:11.979><c> is</c><00:06:12.039><c> figuring</c><00:06:12.969><c> out</c>
+
+00:06:13.050 --> 00:06:13.060 align:start position:0%
+obvious thing to try is figuring out
+ 
+
+00:06:13.060 --> 00:06:14.790 align:start position:0%
+obvious thing to try is figuring out
+what<00:06:13.360><c> unsafe</c><00:06:13.750><c> actions</c><00:06:14.139><c> your</c><00:06:14.289><c> system</c><00:06:14.620><c> might</c>
+
+00:06:14.790 --> 00:06:14.800 align:start position:0%
+what unsafe actions your system might
+ 
+
+00:06:14.800 --> 00:06:16.320 align:start position:0%
+what unsafe actions your system might
+take<00:06:15.039><c> while</c><00:06:15.250><c> exploring</c><00:06:15.610><c> and</c><00:06:15.940><c> then</c>
+
+00:06:16.320 --> 00:06:16.330 align:start position:0%
+take while exploring and then
+ 
+
+00:06:16.330 --> 00:06:18.209 align:start position:0%
+take while exploring and then
+blacklisting<00:06:16.960><c> those</c><00:06:17.110><c> actions</c><00:06:17.530><c> so</c><00:06:17.949><c> let's</c><00:06:18.130><c> say</c>
+
+00:06:18.209 --> 00:06:18.219 align:start position:0%
+blacklisting those actions so let's say
+ 
+
+00:06:18.219 --> 00:06:19.740 align:start position:0%
+blacklisting those actions so let's say
+you've<00:06:18.370><c> got</c><00:06:18.400><c> some</c><00:06:18.639><c> kind</c><00:06:18.820><c> of</c><00:06:18.849><c> drug</c><00:06:19.120><c> like</c><00:06:19.449><c> an</c><00:06:19.570><c> AI</c>
+
+00:06:19.740 --> 00:06:19.750 align:start position:0%
+you've got some kind of drug like an AI
+ 
+
+00:06:19.750 --> 00:06:21.870 align:start position:0%
+you've got some kind of drug like an AI
+controlled<00:06:20.440><c> quadcopter</c><00:06:21.190><c> that's</c><00:06:21.639><c> flying</c>
+
+00:06:21.870 --> 00:06:21.880 align:start position:0%
+controlled quadcopter that's flying
+ 
+
+00:06:21.880 --> 00:06:23.430 align:start position:0%
+controlled quadcopter that's flying
+around<00:06:22.030><c> and</c><00:06:22.419><c> you</c><00:06:22.780><c> want</c><00:06:22.900><c> it</c><00:06:23.020><c> to</c><00:06:23.050><c> be</c><00:06:23.199><c> able</c><00:06:23.320><c> to</c>
+
+00:06:23.430 --> 00:06:23.440 align:start position:0%
+around and you want it to be able to
+ 
+
+00:06:23.440 --> 00:06:24.870 align:start position:0%
+around and you want it to be able to
+explore<00:06:23.830><c> the</c><00:06:24.009><c> different</c><00:06:24.310><c> ways</c><00:06:24.400><c> it</c><00:06:24.580><c> could</c><00:06:24.669><c> fly</c>
+
+00:06:24.870 --> 00:06:24.880 align:start position:0%
+explore the different ways it could fly
+ 
+
+00:06:24.880 --> 00:06:26.670 align:start position:0%
+explore the different ways it could fly
+but<00:06:25.270><c> this</c><00:06:25.360><c> is</c><00:06:25.509><c> unsafe</c><00:06:25.840><c> because</c><00:06:26.080><c> the</c><00:06:26.320><c> system</c>
+
+00:06:26.670 --> 00:06:26.680 align:start position:0%
+but this is unsafe because the system
+ 
+
+00:06:26.680 --> 00:06:28.560 align:start position:0%
+but this is unsafe because the system
+might<00:06:26.860><c> explore</c><00:06:27.219><c> maneuvers</c><00:06:27.699><c> like</c><00:06:27.940><c> flying</c>
+
+00:06:28.560 --> 00:06:28.570 align:start position:0%
+might explore maneuvers like flying
+ 
+
+00:06:28.570 --> 00:06:30.270 align:start position:0%
+might explore maneuvers like flying
+full-speed<00:06:29.110><c> into</c><00:06:29.169><c> the</c><00:06:29.469><c> ground</c><00:06:29.710><c> so</c><00:06:30.070><c> what</c><00:06:30.190><c> you</c>
+
+00:06:30.270 --> 00:06:30.280 align:start position:0%
+full-speed into the ground so what you
+ 
+
+00:06:30.280 --> 00:06:31.800 align:start position:0%
+full-speed into the ground so what you
+can<00:06:30.430><c> do</c><00:06:30.580><c> is</c><00:06:30.880><c> have</c><00:06:31.120><c> the</c><00:06:31.240><c> system</c><00:06:31.570><c> take</c>
+
+00:06:31.800 --> 00:06:31.810 align:start position:0%
+can do is have the system take
+ 
+
+00:06:31.810 --> 00:06:33.600 align:start position:0%
+can do is have the system take
+exploratory<00:06:32.440><c> actions</c><00:06:32.800><c> in</c><00:06:33.070><c> whatever</c><00:06:33.310><c> way</c><00:06:33.550><c> you</c>
+
+00:06:33.600 --> 00:06:33.610 align:start position:0%
+exploratory actions in whatever way you
+ 
+
+00:06:33.610 --> 00:06:36.570 align:start position:0%
+exploratory actions in whatever way you
+usually<00:06:33.940><c> do</c><00:06:34.270><c> it</c><00:06:34.419><c> but</c><00:06:35.139><c> if</c><00:06:35.469><c> the</c><00:06:35.949><c> system</c><00:06:36.099><c> enters</c><00:06:36.550><c> a</c>
+
+00:06:36.570 --> 00:06:36.580 align:start position:0%
+usually do it but if the system enters a
+ 
+
+00:06:36.580 --> 00:06:38.370 align:start position:0%
+usually do it but if the system enters a
+region<00:06:36.940><c> of</c><00:06:37.029><c> space</c><00:06:37.270><c> that's</c><00:06:37.630><c> too</c><00:06:37.900><c> close</c><00:06:38.050><c> to</c><00:06:38.260><c> the</c>
+
+00:06:38.370 --> 00:06:38.380 align:start position:0%
+region of space that's too close to the
+ 
+
+00:06:38.380 --> 00:06:38.970 align:start position:0%
+region of space that's too close to the
+ground
+
+00:06:38.970 --> 00:06:38.980 align:start position:0%
+ground
+ 
+
+00:06:38.980 --> 00:06:41.040 align:start position:0%
+ground
+another<00:06:39.460><c> system</c><00:06:39.880><c> detects</c><00:06:40.630><c> that</c><00:06:40.690><c> and</c>
+
+00:06:41.040 --> 00:06:41.050 align:start position:0%
+another system detects that and
+ 
+
+00:06:41.050 --> 00:06:43.080 align:start position:0%
+another system detects that and
+overrides<00:06:41.590><c> the</c><00:06:41.800><c> learning</c><00:06:42.100><c> algorithm</c><00:06:42.580><c> flying</c>
+
+00:06:43.080 --> 00:06:43.090 align:start position:0%
+overrides the learning algorithm flying
+ 
+
+00:06:43.090 --> 00:06:45.000 align:start position:0%
+overrides the learning algorithm flying
+the<00:06:43.240><c> quadcopter</c><00:06:43.420><c> higher</c><00:06:43.900><c> and</c><00:06:44.260><c> then</c><00:06:44.590><c> handing</c>
+
+00:06:45.000 --> 00:06:45.010 align:start position:0%
+the quadcopter higher and then handing
+ 
+
+00:06:45.010 --> 00:06:46.320 align:start position:0%
+the quadcopter higher and then handing
+control<00:06:45.310><c> back</c><00:06:45.490><c> to</c><00:06:45.520><c> the</c><00:06:45.640><c> learning</c><00:06:45.940><c> algorithm</c>
+
+00:06:46.320 --> 00:06:46.330 align:start position:0%
+control back to the learning algorithm
+ 
+
+00:06:46.330 --> 00:06:48.090 align:start position:0%
+control back to the learning algorithm
+again<00:06:46.540><c> kind</c><00:06:46.930><c> of</c><00:06:47.050><c> like</c><00:06:47.200><c> the</c><00:06:47.590><c> second</c><00:06:47.950><c> set</c><00:06:48.070><c> of</c>
+
+00:06:48.090 --> 00:06:48.100 align:start position:0%
+again kind of like the second set of
+ 
+
+00:06:48.100 --> 00:06:49.860 align:start position:0%
+again kind of like the second set of
+controls<00:06:48.580><c> they</c><00:06:48.790><c> use</c><00:06:48.970><c> when</c><00:06:49.210><c> training</c><00:06:49.480><c> humans</c>
+
+00:06:49.860 --> 00:06:49.870 align:start position:0%
+controls they use when training humans
+ 
+
+00:06:49.870 --> 00:06:51.600 align:start position:0%
+controls they use when training humans
+to<00:06:50.020><c> safely</c><00:06:50.200><c> operate</c><00:06:50.350><c> vehicles</c><00:06:50.830><c> now</c><00:06:51.400><c> bear</c><00:06:51.580><c> in</c>
+
+00:06:51.600 --> 00:06:51.610 align:start position:0%
+to safely operate vehicles now bear in
+ 
+
+00:06:51.610 --> 00:06:53.070 align:start position:0%
+to safely operate vehicles now bear in
+mind<00:06:51.820><c> that</c><00:06:52.030><c> here</c><00:06:52.210><c> for</c><00:06:52.420><c> simplicity</c><00:06:52.960><c> I'm</c>
+
+00:06:53.070 --> 00:06:53.080 align:start position:0%
+mind that here for simplicity I'm
+ 
+
+00:06:53.080 --> 00:06:54.930 align:start position:0%
+mind that here for simplicity I'm
+talking<00:06:53.410><c> about</c><00:06:53.520><c> blacklisting</c><00:06:54.520><c> unsafe</c>
+
+00:06:54.930 --> 00:06:54.940 align:start position:0%
+talking about blacklisting unsafe
+ 
+
+00:06:54.940 --> 00:06:56.790 align:start position:0%
+talking about blacklisting unsafe
+regions<00:06:55.420><c> of</c><00:06:55.600><c> the</c><00:06:55.780><c> physical</c><00:06:56.200><c> space</c><00:06:56.440><c> that</c><00:06:56.710><c> the</c>
+
+00:06:56.790 --> 00:06:56.800 align:start position:0%
+regions of the physical space that the
+ 
+
+00:06:56.800 --> 00:06:58.590 align:start position:0%
+regions of the physical space that the
+quadcopter<00:06:57.250><c> is</c><00:06:57.370><c> in</c><00:06:57.550><c> but</c><00:06:58.060><c> really</c><00:06:58.300><c> this</c>
+
+00:06:58.590 --> 00:06:58.600 align:start position:0%
+quadcopter is in but really this
+ 
+
+00:06:58.600 --> 00:06:59.760 align:start position:0%
+quadcopter is in but really this
+approach<00:06:58.870><c> is</c><00:06:59.020><c> broader</c><00:06:59.260><c> than</c><00:06:59.410><c> that</c>
+
+00:06:59.760 --> 00:06:59.770 align:start position:0%
+approach is broader than that
+ 
+
+00:06:59.770 --> 00:07:01.350 align:start position:0%
+approach is broader than that
+you're<00:07:00.010><c> really</c><00:07:00.190><c> blacklisting</c><00:07:00.940><c> unsafe</c>
+
+00:07:01.350 --> 00:07:01.360 align:start position:0%
+you're really blacklisting unsafe
+ 
+
+00:07:01.360 --> 00:07:03.390 align:start position:0%
+you're really blacklisting unsafe
+regions<00:07:01.810><c> of</c><00:07:01.930><c> the</c><00:07:02.050><c> configuration</c><00:07:02.800><c> space</c><00:07:02.950><c> for</c>
+
+00:07:03.390 --> 00:07:03.400 align:start position:0%
+regions of the configuration space for
+ 
+
+00:07:03.400 --> 00:07:04.980 align:start position:0%
+regions of the configuration space for
+the<00:07:03.460><c> agent</c><00:07:03.760><c> in</c><00:07:03.850><c> its</c><00:07:04.000><c> environment</c><00:07:04.540><c> it's</c><00:07:04.840><c> not</c>
+
+00:07:04.980 --> 00:07:04.990 align:start position:0%
+the agent in its environment it's not
+ 
+
+00:07:04.990 --> 00:07:06.630 align:start position:0%
+the agent in its environment it's not
+just<00:07:05.170><c> about</c><00:07:05.320><c> navigating</c><00:07:05.950><c> a</c><00:07:06.010><c> physical</c><00:07:06.400><c> space</c>
+
+00:07:06.630 --> 00:07:06.640 align:start position:0%
+just about navigating a physical space
+ 
+
+00:07:06.640 --> 00:07:09.210 align:start position:0%
+just about navigating a physical space
+your<00:07:07.360><c> system</c><00:07:07.750><c> isn't</c><00:07:07.930><c> navigating</c><00:07:08.620><c> an</c><00:07:08.710><c> abstract</c>
+
+00:07:09.210 --> 00:07:09.220 align:start position:0%
+your system isn't navigating an abstract
+ 
+
+00:07:09.220 --> 00:07:10.800 align:start position:0%
+your system isn't navigating an abstract
+space<00:07:09.430><c> of</c><00:07:09.640><c> possibilities</c><00:07:10.240><c> and</c><00:07:10.420><c> you</c><00:07:10.480><c> can</c><00:07:10.660><c> have</c>
+
+00:07:10.800 --> 00:07:10.810 align:start position:0%
+space of possibilities and you can have
+ 
+
+00:07:10.810 --> 00:07:12.780 align:start position:0%
+space of possibilities and you can have
+a<00:07:10.840><c> safety</c><00:07:11.080><c> subsystem</c><00:07:11.800><c> that</c><00:07:12.010><c> takes</c><00:07:12.280><c> over</c><00:07:12.610><c> if</c>
+
+00:07:12.780 --> 00:07:12.790 align:start position:0%
+a safety subsystem that takes over if
+ 
+
+00:07:12.790 --> 00:07:14.460 align:start position:0%
+a safety subsystem that takes over if
+the<00:07:12.910><c> system</c><00:07:13.270><c> tries</c><00:07:13.540><c> to</c><00:07:13.690><c> enter</c><00:07:13.930><c> an</c><00:07:14.050><c> unsafe</c>
+
+00:07:14.460 --> 00:07:14.470 align:start position:0%
+the system tries to enter an unsafe
+ 
+
+00:07:14.470 --> 00:07:16.410 align:start position:0%
+the system tries to enter an unsafe
+region<00:07:14.860><c> of</c><00:07:14.950><c> that</c><00:07:15.070><c> space</c><00:07:15.340><c> this</c><00:07:15.790><c> can</c><00:07:15.970><c> work</c><00:07:16.180><c> quite</c>
+
+00:07:16.410 --> 00:07:16.420 align:start position:0%
+region of that space this can work quite
+ 
+
+00:07:16.420 --> 00:07:18.060 align:start position:0%
+region of that space this can work quite
+well<00:07:16.480><c> as</c><00:07:16.930><c> long</c><00:07:17.230><c> as</c><00:07:17.350><c> you</c><00:07:17.470><c> know</c><00:07:17.590><c> all</c><00:07:17.830><c> of</c><00:07:17.980><c> the</c>
+
+00:07:18.060 --> 00:07:18.070 align:start position:0%
+well as long as you know all of the
+ 
+
+00:07:18.070 --> 00:07:19.860 align:start position:0%
+well as long as you know all of the
+unsafe<00:07:18.430><c> things</c><00:07:18.670><c> your</c><00:07:18.850><c> system</c><00:07:19.180><c> might</c><00:07:19.360><c> do</c><00:07:19.540><c> and</c>
+
+00:07:19.860 --> 00:07:19.870 align:start position:0%
+unsafe things your system might do and
+ 
+
+00:07:19.870 --> 00:07:21.780 align:start position:0%
+unsafe things your system might do and
+how<00:07:20.020><c> to</c><00:07:20.080><c> avoid</c><00:07:20.380><c> them</c><00:07:20.620><c> like</c><00:07:20.770><c> ok</c><00:07:21.250><c> now</c><00:07:21.520><c> it's</c><00:07:21.700><c> not</c>
+
+00:07:21.780 --> 00:07:21.790 align:start position:0%
+how to avoid them like ok now it's not
+ 
+
+00:07:21.790 --> 00:07:23.190 align:start position:0%
+how to avoid them like ok now it's not
+going<00:07:21.910><c> to</c><00:07:22.000><c> hit</c><00:07:22.090><c> the</c><00:07:22.180><c> ground</c><00:07:22.420><c> but</c><00:07:22.960><c> it</c><00:07:23.080><c> could</c>
+
+00:07:23.190 --> 00:07:23.200 align:start position:0%
+going to hit the ground but it could
+ 
+
+00:07:23.200 --> 00:07:25.020 align:start position:0%
+going to hit the ground but it could
+still<00:07:23.350><c> hit</c><00:07:23.560><c> a</c><00:07:23.590><c> tree</c><00:07:23.950><c> so</c><00:07:24.340><c> your</c><00:07:24.640><c> system</c><00:07:24.970><c> would</c>
+
+00:07:25.020 --> 00:07:25.030 align:start position:0%
+still hit a tree so your system would
+ 
+
+00:07:25.030 --> 00:07:26.340 align:start position:0%
+still hit a tree so your system would
+have<00:07:25.090><c> to</c><00:07:25.240><c> also</c><00:07:25.600><c> keep</c><00:07:25.720><c> track</c><00:07:25.780><c> of</c><00:07:26.110><c> where</c><00:07:26.260><c> the</c>
+
+00:07:26.340 --> 00:07:26.350 align:start position:0%
+have to also keep track of where the
+ 
+
+00:07:26.350 --> 00:07:28.290 align:start position:0%
+have to also keep track of where the
+trees<00:07:26.620><c> are</c><00:07:26.650><c> and</c><00:07:27.040><c> have</c><00:07:27.430><c> a</c><00:07:27.460><c> routine</c><00:07:27.790><c> for</c><00:07:28.030><c> safely</c>
+
+00:07:28.290 --> 00:07:28.300 align:start position:0%
+trees are and have a routine for safely
+ 
+
+00:07:28.300 --> 00:07:30.270 align:start position:0%
+trees are and have a routine for safely
+moving<00:07:28.600><c> out</c><00:07:28.720><c> of</c><00:07:28.750><c> that</c><00:07:28.900><c> area</c><00:07:29.350><c> as</c><00:07:29.560><c> well</c><00:07:29.590><c> but</c><00:07:30.160><c> the</c>
+
+00:07:30.270 --> 00:07:30.280 align:start position:0%
+moving out of that area as well but the
+ 
+
+00:07:30.280 --> 00:07:32.400 align:start position:0%
+moving out of that area as well but the
+more<00:07:30.430><c> complex</c><00:07:30.670><c> the</c><00:07:31.000><c> problem</c><00:07:31.120><c> is</c><00:07:31.480><c> the</c><00:07:32.080><c> harder</c>
+
+00:07:32.400 --> 00:07:32.410 align:start position:0%
+more complex the problem is the harder
+ 
+
+00:07:32.410 --> 00:07:34.410 align:start position:0%
+more complex the problem is the harder
+it<00:07:32.530><c> is</c><00:07:32.560><c> to</c><00:07:32.680><c> list</c><00:07:33.070><c> out</c><00:07:33.250><c> and</c><00:07:33.490><c> specify</c><00:07:34.000><c> every</c>
+
+00:07:34.410 --> 00:07:34.420 align:start position:0%
+it is to list out and specify every
+ 
+
+00:07:34.420 --> 00:07:36.540 align:start position:0%
+it is to list out and specify every
+possible<00:07:34.870><c> unsafe</c><00:07:35.230><c> region</c><00:07:35.590><c> of</c><00:07:35.680><c> the</c><00:07:35.800><c> space</c><00:07:36.040><c> so</c>
+
+00:07:36.540 --> 00:07:36.550 align:start position:0%
+possible unsafe region of the space so
+ 
+
+00:07:36.550 --> 00:07:38.220 align:start position:0%
+possible unsafe region of the space so
+given<00:07:36.880><c> that</c><00:07:36.910><c> it</c><00:07:37.060><c> might</c><00:07:37.210><c> be</c><00:07:37.330><c> extremely</c><00:07:37.720><c> hard</c><00:07:38.050><c> to</c>
+
+00:07:38.220 --> 00:07:38.230 align:start position:0%
+given that it might be extremely hard to
+ 
+
+00:07:38.230 --> 00:07:40.290 align:start position:0%
+given that it might be extremely hard to
+specify<00:07:38.710><c> every</c><00:07:38.890><c> region</c><00:07:39.370><c> of</c><00:07:39.460><c> unsafe</c><00:07:39.790><c> behavior</c>
+
+00:07:40.290 --> 00:07:40.300 align:start position:0%
+specify every region of unsafe behavior
+ 
+
+00:07:40.300 --> 00:07:42.690 align:start position:0%
+specify every region of unsafe behavior
+you<00:07:40.720><c> could</c><00:07:40.870><c> try</c><00:07:41.050><c> the</c><00:07:41.110><c> opposite</c><00:07:41.670><c> specify</c><00:07:42.670><c> a</c>
+
+00:07:42.690 --> 00:07:42.700 align:start position:0%
+you could try the opposite specify a
+ 
+
+00:07:42.700 --> 00:07:44.850 align:start position:0%
+you could try the opposite specify a
+region<00:07:43.060><c> of</c><00:07:43.150><c> safe</c><00:07:43.390><c> behavior</c><00:07:43.930><c> you</c><00:07:44.140><c> could</c><00:07:44.260><c> say</c><00:07:44.440><c> ok</c>
+
+00:07:44.850 --> 00:07:44.860 align:start position:0%
+region of safe behavior you could say ok
+ 
+
+00:07:44.860 --> 00:07:47.070 align:start position:0%
+region of safe behavior you could say ok
+the<00:07:45.010><c> safe</c><00:07:45.190><c> zone</c><00:07:45.460><c> is</c><00:07:45.640><c> anywhere</c><00:07:46.450><c> above</c><00:07:46.750><c> this</c>
+
+00:07:47.070 --> 00:07:47.080 align:start position:0%
+the safe zone is anywhere above this
+ 
+
+00:07:47.080 --> 00:07:48.780 align:start position:0%
+the safe zone is anywhere above this
+altitude<00:07:47.680><c> the</c><00:07:47.980><c> height</c><00:07:48.160><c> of</c><00:07:48.310><c> the</c><00:07:48.400><c> tallest</c>
+
+00:07:48.780 --> 00:07:48.790 align:start position:0%
+altitude the height of the tallest
+ 
+
+00:07:48.790 --> 00:07:51.210 align:start position:0%
+altitude the height of the tallest
+obstacles<00:07:49.390><c> you</c><00:07:49.480><c> might</c><00:07:49.630><c> hit</c><00:07:49.810><c> and</c><00:07:50.080><c> below</c><00:07:50.860><c> this</c>
+
+00:07:51.210 --> 00:07:51.220 align:start position:0%
+obstacles you might hit and below this
+ 
+
+00:07:51.220 --> 00:07:53.220 align:start position:0%
+obstacles you might hit and below this
+altitude<00:07:51.730><c> like</c><00:07:51.970><c> the</c><00:07:52.150><c> altitude</c><00:07:52.540><c> of</c><00:07:52.660><c> the</c><00:07:52.750><c> lowest</c>
+
+00:07:53.220 --> 00:07:53.230 align:start position:0%
+altitude like the altitude of the lowest
+ 
+
+00:07:53.230 --> 00:07:55.260 align:start position:0%
+altitude like the altitude of the lowest
+aircraft<00:07:53.680><c> you</c><00:07:53.800><c> might</c><00:07:53.950><c> hit</c><00:07:54.130><c> and</c><00:07:54.340><c> within</c><00:07:55.000><c> this</c>
+
+00:07:55.260 --> 00:07:55.270 align:start position:0%
+aircraft you might hit and within this
+ 
+
+00:07:55.270 --> 00:07:56.760 align:start position:0%
+aircraft you might hit and within this
+boundary<00:07:55.690><c> which</c><00:07:55.930><c> is</c><00:07:55.960><c> like</c><00:07:56.260><c> the</c><00:07:56.410><c> border</c><00:07:56.740><c> of</c>
+
+00:07:56.760 --> 00:07:56.770 align:start position:0%
+boundary which is like the border of
+ 
+
+00:07:56.770 --> 00:07:59.190 align:start position:0%
+boundary which is like the border of
+some<00:07:57.040><c> empty</c><00:07:57.520><c> field</c><00:07:57.730><c> somewhere</c><00:07:58.120><c> anywhere</c><00:07:59.050><c> in</c>
+
+00:07:59.190 --> 00:07:59.200 align:start position:0%
+some empty field somewhere anywhere in
+ 
+
+00:07:59.200 --> 00:08:01.650 align:start position:0%
+some empty field somewhere anywhere in
+this<00:07:59.320><c> space</c><00:07:59.590><c> is</c><00:07:59.830><c> considered</c><00:08:00.640><c> to</c><00:08:00.940><c> be</c><00:08:00.970><c> safe</c><00:08:01.300><c> so</c>
+
+00:08:01.650 --> 00:08:01.660 align:start position:0%
+this space is considered to be safe so
+ 
+
+00:08:01.660 --> 00:08:03.270 align:start position:0%
+this space is considered to be safe so
+the<00:08:01.750><c> system</c><00:08:02.080><c> explores</c><00:08:02.470><c> as</c><00:08:02.680><c> usual</c><00:08:03.040><c> in</c><00:08:03.160><c> this</c>
+
+00:08:03.270 --> 00:08:03.280 align:start position:0%
+the system explores as usual in this
+ 
+
+00:08:03.280 --> 00:08:05.370 align:start position:0%
+the system explores as usual in this
+area<00:08:03.670><c> and</c><00:08:03.910><c> if</c><00:08:04.240><c> it</c><00:08:04.360><c> ever</c><00:08:04.480><c> moves</c><00:08:04.780><c> outside</c><00:08:04.990><c> the</c>
+
+00:08:05.370 --> 00:08:05.380 align:start position:0%
+area and if it ever moves outside the
+ 
+
+00:08:05.380 --> 00:08:08.220 align:start position:0%
+area and if it ever moves outside the
+area<00:08:05.560><c> the</c><00:08:06.190><c> safety</c><00:08:06.610><c> subsystem</c><00:08:07.180><c> overrides</c><00:08:08.050><c> it</c>
+
+00:08:08.220 --> 00:08:08.230 align:start position:0%
+area the safety subsystem overrides it
+ 
+
+00:08:08.230 --> 00:08:09.690 align:start position:0%
+area the safety subsystem overrides it
+and<00:08:08.410><c> takes</c><00:08:08.560><c> it</c><00:08:08.680><c> back</c><00:08:08.800><c> into</c><00:08:09.010><c> the</c><00:08:09.160><c> safe</c><00:08:09.340><c> area</c>
+
+00:08:09.690 --> 00:08:09.700 align:start position:0%
+and takes it back into the safe area
+ 
+
+00:08:09.700 --> 00:08:11.490 align:start position:0%
+and takes it back into the safe area
+specifying<00:08:10.270><c> a</c><00:08:10.360><c> whitelisted</c><00:08:10.870><c> area</c><00:08:11.140><c> can</c><00:08:11.380><c> be</c>
+
+00:08:11.490 --> 00:08:11.500 align:start position:0%
+specifying a whitelisted area can be
+ 
+
+00:08:11.500 --> 00:08:13.440 align:start position:0%
+specifying a whitelisted area can be
+safer<00:08:11.860><c> than</c><00:08:11.980><c> specifying</c><00:08:12.520><c> blacklisted</c><00:08:13.060><c> areas</c>
+
+00:08:13.440 --> 00:08:13.450 align:start position:0%
+safer than specifying blacklisted areas
+ 
+
+00:08:13.450 --> 00:08:15.510 align:start position:0%
+safer than specifying blacklisted areas
+because<00:08:13.870><c> you</c><00:08:14.500><c> don't</c><00:08:14.680><c> need</c><00:08:14.800><c> to</c><00:08:14.860><c> think</c><00:08:15.040><c> of</c><00:08:15.160><c> every</c>
+
+00:08:15.510 --> 00:08:15.520 align:start position:0%
+because you don't need to think of every
+ 
+
+00:08:15.520 --> 00:08:17.280 align:start position:0%
+because you don't need to think of every
+possible<00:08:15.550><c> bad</c><00:08:16.210><c> thing</c><00:08:16.510><c> that</c><00:08:16.630><c> can</c><00:08:16.750><c> happen</c><00:08:16.960><c> you</c>
+
+00:08:17.280 --> 00:08:17.290 align:start position:0%
+possible bad thing that can happen you
+ 
+
+00:08:17.290 --> 00:08:19.140 align:start position:0%
+possible bad thing that can happen you
+just<00:08:17.770><c> need</c><00:08:17.890><c> to</c><00:08:17.980><c> find</c><00:08:18.160><c> a</c><00:08:18.280><c> safe</c><00:08:18.460><c> region</c><00:08:18.850><c> the</c>
+
+00:08:19.140 --> 00:08:19.150 align:start position:0%
+just need to find a safe region the
+ 
+
+00:08:19.150 --> 00:08:20.970 align:start position:0%
+just need to find a safe region the
+problem<00:08:19.480><c> is</c><00:08:19.600><c> your</c><00:08:19.990><c> ability</c><00:08:20.410><c> to</c><00:08:20.530><c> check</c><00:08:20.770><c> the</c>
+
+00:08:20.970 --> 00:08:20.980 align:start position:0%
+problem is your ability to check the
+ 
+
+00:08:20.980 --> 00:08:22.770 align:start position:0%
+problem is your ability to check the
+space<00:08:21.220><c> and</c><00:08:21.490><c> ensure</c><00:08:21.910><c> that</c><00:08:21.940><c> it's</c><00:08:22.240><c> safe</c><00:08:22.480><c> is</c>
+
+00:08:22.770 --> 00:08:22.780 align:start position:0%
+space and ensure that it's safe is
+ 
+
+00:08:22.780 --> 00:08:24.630 align:start position:0%
+space and ensure that it's safe is
+limited<00:08:23.380><c> again</c><00:08:23.770><c> this</c><00:08:23.890><c> needn't</c><00:08:24.160><c> be</c><00:08:24.250><c> a</c><00:08:24.280><c> physical</c>
+
+00:08:24.630 --> 00:08:24.640 align:start position:0%
+limited again this needn't be a physical
+ 
+
+00:08:24.640 --> 00:08:26.970 align:start position:0%
+limited again this needn't be a physical
+space<00:08:24.910><c> it's</c><00:08:25.180><c> a</c><00:08:25.270><c> configuration</c><00:08:25.900><c> space</c><00:08:26.110><c> and</c><00:08:26.410><c> as</c>
+
+00:08:26.970 --> 00:08:26.980 align:start position:0%
+space it's a configuration space and as
+ 
+
+00:08:26.980 --> 00:08:28.260 align:start position:0%
+space it's a configuration space and as
+the<00:08:27.220><c> system</c><00:08:27.550><c> becomes</c><00:08:27.880><c> more</c><00:08:28.060><c> and</c><00:08:28.180><c> more</c>
+
+00:08:28.260 --> 00:08:28.270 align:start position:0%
+the system becomes more and more
+ 
+
+00:08:28.270 --> 00:08:30.180 align:start position:0%
+the system becomes more and more
+complicated<00:08:28.930><c> the</c><00:08:29.380><c> configuration</c><00:08:30.070><c> space</c>
+
+00:08:30.180 --> 00:08:30.190 align:start position:0%
+complicated the configuration space
+ 
+
+00:08:30.190 --> 00:08:32.400 align:start position:0%
+complicated the configuration space
+becomes<00:08:30.670><c> much</c><00:08:31.000><c> larger</c><00:08:31.270><c> so</c><00:08:31.780><c> the</c><00:08:31.900><c> area</c><00:08:32.260><c> that</c>
+
+00:08:32.400 --> 00:08:32.410 align:start position:0%
+becomes much larger so the area that
+ 
+
+00:08:32.410 --> 00:08:33.900 align:start position:0%
+becomes much larger so the area that
+you're<00:08:32.530><c> able</c><00:08:32.650><c> to</c><00:08:32.920><c> really</c><00:08:33.250><c> know</c><00:08:33.520><c> is</c><00:08:33.550><c> safe</c>
+
+00:08:33.900 --> 00:08:33.910 align:start position:0%
+you're able to really know is safe
+ 
+
+00:08:33.910 --> 00:08:36.300 align:start position:0%
+you're able to really know is safe
+becomes<00:08:34.599><c> a</c><00:08:34.720><c> smaller</c><00:08:35.050><c> and</c><00:08:35.380><c> smaller</c><00:08:35.680><c> proportion</c>
+
+00:08:36.300 --> 00:08:36.310 align:start position:0%
+becomes a smaller and smaller proportion
+ 
+
+00:08:36.310 --> 00:08:38.250 align:start position:0%
+becomes a smaller and smaller proportion
+of<00:08:36.400><c> the</c><00:08:36.790><c> actual</c><00:08:37.270><c> available</c><00:08:37.690><c> configuration</c>
+
+00:08:38.250 --> 00:08:38.260 align:start position:0%
+of the actual available configuration
+ 
+
+00:08:38.260 --> 00:08:40.290 align:start position:0%
+of the actual available configuration
+space<00:08:38.470><c> this</c><00:08:39.280><c> means</c><00:08:39.520><c> you</c><00:08:39.669><c> might</c><00:08:39.790><c> be</c><00:08:39.970><c> severely</c>
+
+00:08:40.290 --> 00:08:40.300 align:start position:0%
+space this means you might be severely
+ 
+
+00:08:40.300 --> 00:08:42.330 align:start position:0%
+space this means you might be severely
+limiting<00:08:40.750><c> what</c><00:08:40.870><c> your</c><00:08:40.990><c> system</c><00:08:41.320><c> can</c><00:08:41.440><c> do</c><00:08:41.650><c> since</c>
+
+00:08:42.330 --> 00:08:42.340 align:start position:0%
+limiting what your system can do since
+ 
+
+00:08:42.340 --> 00:08:44.190 align:start position:0%
+limiting what your system can do since
+it<00:08:42.460><c> can</c><00:08:42.580><c> only</c><00:08:42.849><c> explore</c><00:08:43.240><c> a</c><00:08:43.419><c> small</c><00:08:43.780><c> corner</c><00:08:44.080><c> of</c>
+
+00:08:44.190 --> 00:08:44.200 align:start position:0%
+it can only explore a small corner of
+ 
+
+00:08:44.200 --> 00:08:45.990 align:start position:0%
+it can only explore a small corner of
+the<00:08:44.290><c> options</c><00:08:44.740><c> if</c><00:08:45.040><c> you</c><00:08:45.250><c> try</c><00:08:45.430><c> to</c><00:08:45.490><c> make</c><00:08:45.640><c> your</c><00:08:45.790><c> safe</c>
+
+00:08:45.990 --> 00:08:46.000 align:start position:0%
+the options if you try to make your safe
+ 
+
+00:08:46.000 --> 00:08:47.670 align:start position:0%
+the options if you try to make your safe
+region<00:08:46.390><c> larger</c><00:08:46.840><c> than</c><00:08:46.990><c> the</c><00:08:47.080><c> area</c><00:08:47.230><c> that</c><00:08:47.590><c> you're</c>
+
+00:08:47.670 --> 00:08:47.680 align:start position:0%
+region larger than the area that you're
+ 
+
+00:08:47.680 --> 00:08:49.470 align:start position:0%
+region larger than the area that you're
+able<00:08:47.800><c> to</c><00:08:47.950><c> properly</c><00:08:48.280><c> check</c><00:08:48.610><c> you</c><00:08:49.270><c> risk</c>
+
+00:08:49.470 --> 00:08:49.480 align:start position:0%
+able to properly check you risk
+ 
+
+00:08:49.480 --> 00:08:51.180 align:start position:0%
+able to properly check you risk
+including<00:08:49.960><c> some</c><00:08:50.110><c> dangerous</c><00:08:50.440><c> configurations</c>
+
+00:08:51.180 --> 00:08:51.190 align:start position:0%
+including some dangerous configurations
+ 
+
+00:08:51.190 --> 00:08:52.570 align:start position:0%
+including some dangerous configurations
+so<00:08:51.520><c> your</c><00:08:51.640><c> system</c><00:08:51.970><c> can</c><00:08:52.090><c> then</c><00:08:52.240><c> behave</c>
+
+00:08:52.570 --> 00:08:52.580 align:start position:0%
+so your system can then behave
+ 
+
+00:08:52.580 --> 00:08:54.610 align:start position:0%
+so your system can then behave
+safely<00:08:52.970><c> but</c><00:08:53.480><c> if</c><00:08:53.630><c> you</c><00:08:53.720><c> limit</c><00:08:53.990><c> the</c><00:08:54.020><c> safe</c><00:08:54.260><c> region</c>
+
+00:08:54.610 --> 00:08:54.620 align:start position:0%
+safely but if you limit the safe region
+ 
+
+00:08:54.620 --> 00:08:55.870 align:start position:0%
+safely but if you limit the safe region
+to<00:08:54.710><c> the</c><00:08:54.830><c> size</c><00:08:55.010><c> that</c><00:08:55.220><c> you're</c><00:08:55.340><c> able</c><00:08:55.610><c> to</c><00:08:55.640><c> actually</c>
+
+00:08:55.870 --> 00:08:55.880 align:start position:0%
+to the size that you're able to actually
+ 
+
+00:08:55.880 --> 00:08:58.090 align:start position:0%
+to the size that you're able to actually
+confirm<00:08:56.420><c> is</c><00:08:56.570><c> safe</c><00:08:56.810><c> your</c><00:08:57.440><c> systems</c><00:08:57.830><c> will</c><00:08:57.980><c> be</c>
+
+00:08:58.090 --> 00:08:58.100 align:start position:0%
+confirm is safe your systems will be
+ 
+
+00:08:58.100 --> 00:08:59.740 align:start position:0%
+confirm is safe your systems will be
+much<00:08:58.280><c> less</c><00:08:58.490><c> capable</c><00:08:59.000><c> since</c><00:08:59.480><c> there</c><00:08:59.660><c> are</c>
+
+00:08:59.740 --> 00:08:59.750 align:start position:0%
+much less capable since there are
+ 
+
+00:08:59.750 --> 00:09:01.450 align:start position:0%
+much less capable since there are
+probably<00:09:00.050><c> all</c><00:09:00.260><c> kinds</c><00:09:00.650><c> of</c><00:09:00.710><c> good</c><00:09:00.920><c> strategies</c>
+
+00:09:01.450 --> 00:09:01.460 align:start position:0%
+probably all kinds of good strategies
+ 
+
+00:09:01.460 --> 00:09:03.010 align:start position:0%
+probably all kinds of good strategies
+that<00:09:01.640><c> it's</c><00:09:01.790><c> never</c><00:09:02.090><c> going</c><00:09:02.210><c> to</c><00:09:02.270><c> be</c><00:09:02.390><c> able</c><00:09:02.480><c> to</c><00:09:02.720><c> find</c>
+
+00:09:03.010 --> 00:09:03.020 align:start position:0%
+that it's never going to be able to find
+ 
+
+00:09:03.020 --> 00:09:04.690 align:start position:0%
+that it's never going to be able to find
+because<00:09:03.470><c> they</c><00:09:03.590><c> happen</c><00:09:03.950><c> to</c><00:09:04.040><c> lie</c><00:09:04.190><c> outside</c><00:09:04.400><c> of</c>
+
+00:09:04.690 --> 00:09:04.700 align:start position:0%
+because they happen to lie outside of
+ 
+
+00:09:04.700 --> 00:09:06.580 align:start position:0%
+because they happen to lie outside of
+the<00:09:04.820><c> space</c><00:09:05.060><c> despite</c><00:09:05.690><c> being</c><00:09:05.990><c> perfectly</c><00:09:06.320><c> safe</c>
+
+00:09:06.580 --> 00:09:06.590 align:start position:0%
+the space despite being perfectly safe
+ 
+
+00:09:06.590 --> 00:09:08.410 align:start position:0%
+the space despite being perfectly safe
+the<00:09:06.980><c> extreme</c><00:09:07.310><c> case</c><00:09:07.520><c> of</c><00:09:07.670><c> this</c><00:09:07.850><c> is</c><00:09:08.060><c> where</c><00:09:08.300><c> you</c>
+
+00:09:08.410 --> 00:09:08.420 align:start position:0%
+the extreme case of this is where you
+ 
+
+00:09:08.420 --> 00:09:10.000 align:start position:0%
+the extreme case of this is where you
+have<00:09:08.570><c> an</c><00:09:08.660><c> expert</c><00:09:09.020><c> demonstration</c><00:09:09.680><c> and</c><00:09:09.920><c> then</c>
+
+00:09:10.000 --> 00:09:10.010 align:start position:0%
+have an expert demonstration and then
+ 
+
+00:09:10.010 --> 00:09:11.830 align:start position:0%
+have an expert demonstration and then
+you<00:09:10.160><c> have</c><00:09:10.340><c> the</c><00:09:10.670><c> system</c><00:09:11.030><c> just</c><00:09:11.210><c> try</c><00:09:11.480><c> to</c><00:09:11.540><c> copy</c>
+
+00:09:11.830 --> 00:09:11.840 align:start position:0%
+you have the system just try to copy
+ 
+
+00:09:11.840 --> 00:09:13.210 align:start position:0%
+you have the system just try to copy
+what<00:09:12.080><c> the</c><00:09:12.170><c> expert</c><00:09:12.500><c> did</c><00:09:12.680><c> as</c><00:09:12.830><c> closely</c><00:09:13.070><c> as</c>
+
+00:09:13.210 --> 00:09:13.220 align:start position:0%
+what the expert did as closely as
+ 
+
+00:09:13.220 --> 00:09:15.010 align:start position:0%
+what the expert did as closely as
+possible<00:09:13.820><c> or</c><00:09:13.940><c> perhaps</c><00:09:14.090><c> you</c><00:09:14.300><c> allow</c><00:09:14.480><c> some</c><00:09:14.720><c> small</c>
+
+00:09:15.010 --> 00:09:15.020 align:start position:0%
+possible or perhaps you allow some small
+ 
+
+00:09:15.020 --> 00:09:16.510 align:start position:0%
+possible or perhaps you allow some small
+region<00:09:15.350><c> of</c><00:09:15.440><c> deviation</c><00:09:15.950><c> from</c><00:09:16.070><c> the</c><00:09:16.220><c> expert</c>
+
+00:09:16.510 --> 00:09:16.520 align:start position:0%
+region of deviation from the expert
+ 
+
+00:09:16.520 --> 00:09:18.160 align:start position:0%
+region of deviation from the expert
+demonstration<00:09:17.120><c> but</c><00:09:17.300><c> that</c><00:09:17.450><c> system</c><00:09:17.810><c> is</c><00:09:17.900><c> never</c>
+
+00:09:18.160 --> 00:09:18.170 align:start position:0%
+demonstration but that system is never
+ 
+
+00:09:18.170 --> 00:09:19.510 align:start position:0%
+demonstration but that system is never
+going<00:09:18.320><c> to</c><00:09:18.380><c> do</c><00:09:18.500><c> much</c><00:09:18.710><c> better</c><00:09:19.010><c> than</c><00:09:19.190><c> the</c><00:09:19.280><c> human</c>
+
+00:09:19.510 --> 00:09:19.520 align:start position:0%
+going to do much better than the human
+ 
+
+00:09:19.520 --> 00:09:21.520 align:start position:0%
+going to do much better than the human
+expert<00:09:19.880><c> because</c><00:09:20.240><c> it</c><00:09:20.360><c> can't</c><00:09:20.600><c> try</c><00:09:20.900><c> anything</c><00:09:21.200><c> too</c>
+
+00:09:21.520 --> 00:09:21.530 align:start position:0%
+expert because it can't try anything too
+ 
+
+00:09:21.530 --> 00:09:23.470 align:start position:0%
+expert because it can't try anything too
+different<00:09:21.920><c> from</c><00:09:22.040><c> what</c><00:09:22.130><c> humans</c><00:09:22.580><c> do</c><00:09:22.760><c> in</c><00:09:23.330><c> this</c>
+
+00:09:23.470 --> 00:09:23.480 align:start position:0%
+different from what humans do in this
+ 
+
+00:09:23.480 --> 00:09:25.180 align:start position:0%
+different from what humans do in this
+case<00:09:23.690><c> you've</c><00:09:24.110><c> removed</c><00:09:24.410><c> almost</c><00:09:24.650><c> all</c><00:09:24.950><c> of</c><00:09:25.010><c> the</c>
+
+00:09:25.180 --> 00:09:25.190 align:start position:0%
+case you've removed almost all of the
+ 
+
+00:09:25.190 --> 00:09:27.220 align:start position:0%
+case you've removed almost all of the
+problems<00:09:25.520><c> of</c><00:09:25.580><c> safe</c><00:09:25.790><c> exploration</c><00:09:26.420><c> by</c><00:09:26.810><c> removing</c>
+
+00:09:27.220 --> 00:09:27.230 align:start position:0%
+problems of safe exploration by removing
+ 
+
+00:09:27.230 --> 00:09:29.140 align:start position:0%
+problems of safe exploration by removing
+almost<00:09:27.530><c> all</c><00:09:27.680><c> of</c><00:09:27.800><c> the</c><00:09:27.890><c> exploration</c><00:09:28.490><c> so</c><00:09:28.910><c> you</c><00:09:29.000><c> can</c>
+
+00:09:29.140 --> 00:09:29.150 align:start position:0%
+almost all of the exploration so you can
+ 
+
+00:09:29.150 --> 00:09:30.820 align:start position:0%
+almost all of the exploration so you can
+see<00:09:29.300><c> this</c><00:09:29.450><c> is</c><00:09:29.600><c> another</c><00:09:29.720><c> place</c><00:09:30.020><c> where</c><00:09:30.590><c> we</c><00:09:30.620><c> have</c>
+
+00:09:30.820 --> 00:09:30.830 align:start position:0%
+see this is another place where we have
+ 
+
+00:09:30.830 --> 00:09:32.170 align:start position:0%
+see this is another place where we have
+a<00:09:30.860><c> trade-off</c><00:09:31.130><c> between</c><00:09:31.280><c> safety</c><00:09:32.000><c> and</c>
+
+00:09:32.170 --> 00:09:32.180 align:start position:0%
+a trade-off between safety and
+ 
+
+00:09:32.180 --> 00:09:33.580 align:start position:0%
+a trade-off between safety and
+capability<00:09:32.750><c> all</c><00:09:33.080><c> right</c><00:09:33.290><c> what</c><00:09:33.440><c> other</c>
+
+00:09:33.580 --> 00:09:33.590 align:start position:0%
+capability all right what other
+ 
+
+00:09:33.590 --> 00:09:36.160 align:start position:0%
+capability all right what other
+approaches<00:09:34.070><c> are</c><00:09:34.160><c> available</c><00:09:34.580><c> well</c><00:09:35.570><c> human</c>
+
+00:09:36.160 --> 00:09:36.170 align:start position:0%
+approaches are available well human
+ 
+
+00:09:36.170 --> 00:09:37.330 align:start position:0%
+approaches are available well human
+oversight<00:09:36.590><c> is</c><00:09:36.770><c> one</c><00:09:36.920><c> that's</c><00:09:37.100><c> often</c><00:09:37.310><c> used</c>
+
+00:09:37.330 --> 00:09:37.340 align:start position:0%
+oversight is one that's often used
+ 
+
+00:09:37.340 --> 00:09:39.430 align:start position:0%
+oversight is one that's often used
+self-driving<00:09:38.210><c> cars</c><00:09:38.540><c> have</c><00:09:38.840><c> a</c><00:09:38.870><c> human</c><00:09:39.230><c> in</c><00:09:39.320><c> them</c>
+
+00:09:39.430 --> 00:09:39.440 align:start position:0%
+self-driving cars have a human in them
+ 
+
+00:09:39.440 --> 00:09:41.470 align:start position:0%
+self-driving cars have a human in them
+who<00:09:39.560><c> can</c><00:09:39.710><c> override</c><00:09:40.130><c> the</c><00:09:40.280><c> system</c><00:09:40.430><c> in</c><00:09:41.000><c> principle</c>
+
+00:09:41.470 --> 00:09:41.480 align:start position:0%
+who can override the system in principle
+ 
+
+00:09:41.480 --> 00:09:42.760 align:start position:0%
+who can override the system in principle
+you<00:09:41.780><c> can</c><00:09:41.900><c> do</c><00:09:42.020><c> the</c><00:09:42.140><c> same</c><00:09:42.260><c> with</c><00:09:42.380><c> exploration</c>
+
+00:09:42.760 --> 00:09:42.770 align:start position:0%
+you can do the same with exploration
+ 
+
+00:09:42.770 --> 00:09:44.980 align:start position:0%
+you can do the same with exploration
+have<00:09:43.520><c> the</c><00:09:43.700><c> system</c><00:09:44.060><c> check</c><00:09:44.390><c> with</c><00:09:44.600><c> a</c><00:09:44.630><c> human</c>
+
+00:09:44.980 --> 00:09:44.990 align:start position:0%
+have the system check with a human
+ 
+
+00:09:44.990 --> 00:09:47.020 align:start position:0%
+have the system check with a human
+before<00:09:45.140><c> doing</c><00:09:45.560><c> each</c><00:09:45.680><c> exploratory</c><00:09:46.280><c> action</c><00:09:46.670><c> but</c>
+
+00:09:47.020 --> 00:09:47.030 align:start position:0%
+before doing each exploratory action but
+ 
+
+00:09:47.030 --> 00:09:48.610 align:start position:0%
+before doing each exploratory action but
+as<00:09:47.240><c> we</c><00:09:47.390><c> talked</c><00:09:47.630><c> about</c><00:09:47.750><c> in</c><00:09:47.990><c> these</c><00:09:48.140><c> scalable</c>
+
+00:09:48.610 --> 00:09:48.620 align:start position:0%
+as we talked about in these scalable
+ 
+
+00:09:48.620 --> 00:09:50.650 align:start position:0%
+as we talked about in these scalable
+supervision<00:09:49.130><c> videos</c><00:09:49.400><c> this</c><00:09:50.060><c> doesn't</c><00:09:50.450><c> scale</c>
+
+00:09:50.650 --> 00:09:50.660 align:start position:0%
+supervision videos this doesn't scale
+ 
+
+00:09:50.660 --> 00:09:52.930 align:start position:0%
+supervision videos this doesn't scale
+very<00:09:50.690><c> well</c><00:09:51.170><c> the</c><00:09:51.980><c> system</c><00:09:52.340><c> might</c><00:09:52.550><c> need</c><00:09:52.700><c> to</c><00:09:52.790><c> make</c>
+
+00:09:52.930 --> 00:09:52.940 align:start position:0%
+very well the system might need to make
+ 
+
+00:09:52.940 --> 00:09:54.760 align:start position:0%
+very well the system might need to make
+millions<00:09:53.360><c> of</c><00:09:53.510><c> exploratory</c><00:09:53.900><c> actions</c><00:09:54.440><c> and</c><00:09:54.680><c> it's</c>
+
+00:09:54.760 --> 00:09:54.770 align:start position:0%
+millions of exploratory actions and it's
+ 
+
+00:09:54.770 --> 00:09:56.560 align:start position:0%
+millions of exploratory actions and it's
+not<00:09:55.040><c> practical</c><00:09:55.310><c> to</c><00:09:55.730><c> have</c><00:09:55.850><c> a</c><00:09:55.880><c> human</c><00:09:56.210><c> check</c><00:09:56.390><c> all</c>
+
+00:09:56.560 --> 00:09:56.570 align:start position:0%
+not practical to have a human check all
+ 
+
+00:09:56.570 --> 00:09:58.930 align:start position:0%
+not practical to have a human check all
+of<00:09:56.660><c> those</c><00:09:56.870><c> or</c><00:09:57.170><c> it</c><00:09:58.130><c> might</c><00:09:58.310><c> be</c><00:09:58.430><c> a</c><00:09:58.460><c> high</c><00:09:58.670><c> speed</c>
+
+00:09:58.930 --> 00:09:58.940 align:start position:0%
+of those or it might be a high speed
+ 
+
+00:09:58.940 --> 00:10:00.520 align:start position:0%
+of those or it might be a high speed
+system<00:09:59.330><c> that</c><00:09:59.540><c> needs</c><00:09:59.720><c> inhumanly</c><00:10:00.230><c> fast</c>
+
+00:10:00.520 --> 00:10:00.530 align:start position:0%
+system that needs inhumanly fast
+ 
+
+00:10:00.530 --> 00:10:01.990 align:start position:0%
+system that needs inhumanly fast
+oversight<00:10:01.070><c> if</c><00:10:01.310><c> you</c><00:10:01.460><c> need</c><00:10:01.610><c> to</c><00:10:01.700><c> make</c><00:10:01.820><c> decisions</c>
+
+00:10:01.990 --> 00:10:02.000 align:start position:0%
+oversight if you need to make decisions
+ 
+
+00:10:02.000 --> 00:10:04.270 align:start position:0%
+oversight if you need to make decisions
+about<00:10:02.390><c> exploration</c><00:10:03.200><c> in</c><00:10:03.380><c> a</c><00:10:03.470><c> split</c><00:10:03.710><c> second</c><00:10:04.130><c> a</c>
+
+00:10:04.270 --> 00:10:04.280 align:start position:0%
+about exploration in a split second a
+ 
+
+00:10:04.280 --> 00:10:06.280 align:start position:0%
+about exploration in a split second a
+human<00:10:04.850><c> will</c><00:10:05.000><c> be</c><00:10:05.120><c> too</c><00:10:05.330><c> slow</c><00:10:05.630><c> to</c><00:10:05.690><c> provide</c><00:10:06.140><c> that</c>
+
+00:10:06.280 --> 00:10:06.290 align:start position:0%
+human will be too slow to provide that
+ 
+
+00:10:06.290 --> 00:10:08.080 align:start position:0%
+human will be too slow to provide that
+supervision<00:10:06.890><c> so</c><00:10:07.310><c> there's</c><00:10:07.490><c> a</c><00:10:07.550><c> synergy</c><00:10:07.760><c> there</c>
+
+00:10:08.080 --> 00:10:08.090 align:start position:0%
+supervision so there's a synergy there
+ 
+
+00:10:08.090 --> 00:10:09.910 align:start position:0%
+supervision so there's a synergy there
+if<00:10:08.300><c> we</c><00:10:08.600><c> can</c><00:10:08.750><c> improve</c><00:10:08.870><c> the</c><00:10:09.260><c> scalability</c><00:10:09.890><c> of</c>
+
+00:10:09.910 --> 00:10:09.920 align:start position:0%
+if we can improve the scalability of
+ 
+
+00:10:09.920 --> 00:10:11.620 align:start position:0%
+if we can improve the scalability of
+human<00:10:10.280><c> supervision</c><00:10:10.520><c> that</c><00:10:10.970><c> could</c><00:10:11.360><c> help</c><00:10:11.540><c> with</c>
+
+00:10:11.620 --> 00:10:11.630 align:start position:0%
+human supervision that could help with
+ 
+
+00:10:11.630 --> 00:10:13.330 align:start position:0%
+human supervision that could help with
+safe<00:10:11.840><c> exploration</c><00:10:12.410><c> as</c><00:10:12.500><c> well</c><00:10:12.650><c> and</c><00:10:12.920><c> the</c><00:10:13.310><c> last</c>
+
+00:10:13.330 --> 00:10:13.340 align:start position:0%
+safe exploration as well and the last
+ 
+
+00:10:13.340 --> 00:10:14.680 align:start position:0%
+safe exploration as well and the last
+approach<00:10:13.760><c> I'm</c><00:10:13.910><c> going</c><00:10:14.030><c> to</c><00:10:14.090><c> talk</c><00:10:14.270><c> about</c><00:10:14.300><c> is</c>
+
+00:10:14.680 --> 00:10:14.690 align:start position:0%
+approach I'm going to talk about is
+ 
+
+00:10:14.690 --> 00:10:16.900 align:start position:0%
+approach I'm going to talk about is
+simulation<00:10:15.590><c> this</c><00:10:16.250><c> is</c><00:10:16.400><c> a</c><00:10:16.430><c> very</c><00:10:16.700><c> popular</c>
+
+00:10:16.900 --> 00:10:16.910 align:start position:0%
+simulation this is a very popular
+ 
+
+00:10:16.910 --> 00:10:19.360 align:start position:0%
+simulation this is a very popular
+approach<00:10:17.210><c> and</c><00:10:17.690><c> it</c><00:10:17.780><c> works</c><00:10:17.960><c> quite</c><00:10:18.200><c> well</c><00:10:18.230><c> if</c><00:10:18.800><c> you</c>
+
+00:10:19.360 --> 00:10:19.370 align:start position:0%
+approach and it works quite well if you
+ 
+
+00:10:19.370 --> 00:10:21.130 align:start position:0%
+approach and it works quite well if you
+do<00:10:19.490><c> your</c><00:10:19.640><c> exploration</c><00:10:20.180><c> in</c><00:10:20.270><c> a</c><00:10:20.360><c> simulation</c><00:10:20.750><c> then</c>
+
+00:10:21.130 --> 00:10:21.140 align:start position:0%
+do your exploration in a simulation then
+ 
+
+00:10:21.140 --> 00:10:22.660 align:start position:0%
+do your exploration in a simulation then
+even<00:10:21.500><c> if</c><00:10:21.590><c> it</c><00:10:21.680><c> goes</c><00:10:21.830><c> horribly</c><00:10:22.130><c> wrong</c><00:10:22.250><c> it's</c><00:10:22.550><c> not</c>
+
+00:10:22.660 --> 00:10:22.670 align:start position:0%
+even if it goes horribly wrong it's not
+ 
+
+00:10:22.670 --> 00:10:24.730 align:start position:0%
+even if it goes horribly wrong it's not
+a<00:10:22.730><c> problem</c><00:10:22.970><c> you</c><00:10:23.600><c> can</c><00:10:23.750><c> crash</c><00:10:24.020><c> your</c><00:10:24.050><c> simulated</c>
+
+00:10:24.730 --> 00:10:24.740 align:start position:0%
+a problem you can crash your simulated
+ 
+
+00:10:24.740 --> 00:10:26.620 align:start position:0%
+a problem you can crash your simulated
+quadcopter<00:10:25.370><c> right</c><00:10:25.610><c> into</c><00:10:25.820><c> your</c><00:10:25.910><c> own</c><00:10:26.060><c> simulated</c>
+
+00:10:26.620 --> 00:10:26.630 align:start position:0%
+quadcopter right into your own simulated
+ 
+
+00:10:26.630 --> 00:10:28.570 align:start position:0%
+quadcopter right into your own simulated
+face<00:10:26.840><c> and</c><00:10:27.080><c> it's</c><00:10:27.170><c> no</c><00:10:27.290><c> big</c><00:10:27.440><c> deal</c><00:10:27.620><c> the</c><00:10:28.130><c> problems</c>
+
+00:10:28.570 --> 00:10:28.580 align:start position:0%
+face and it's no big deal the problems
+ 
+
+00:10:28.580 --> 00:10:30.460 align:start position:0%
+face and it's no big deal the problems
+with<00:10:28.760><c> simulation</c><00:10:29.360><c> probably</c><00:10:29.930><c> deserve</c><00:10:30.230><c> a</c><00:10:30.260><c> whole</c>
+
+00:10:30.460 --> 00:10:30.470 align:start position:0%
+with simulation probably deserve a whole
+ 
+
+00:10:30.470 --> 00:10:32.560 align:start position:0%
+with simulation probably deserve a whole
+video<00:10:30.710><c> to</c><00:10:30.890><c> themselves</c><00:10:31.250><c> but</c><00:10:31.940><c> basically</c>
+
+00:10:32.560 --> 00:10:32.570 align:start position:0%
+video to themselves but basically
+ 
+
+00:10:32.570 --> 00:10:34.540 align:start position:0%
+video to themselves but basically
+there's<00:10:32.960><c> always</c><00:10:33.110><c> a</c><00:10:33.230><c> simulation</c><00:10:33.710><c> gap</c><00:10:34.070><c> it's</c>
+
+00:10:34.540 --> 00:10:34.550 align:start position:0%
+there's always a simulation gap it's
+ 
+
+00:10:34.550 --> 00:10:36.670 align:start position:0%
+there's always a simulation gap it's
+extremely<00:10:35.240><c> difficult</c><00:10:35.450><c> to</c><00:10:35.810><c> get</c><00:10:36.050><c> simulations</c>
+
+00:10:36.670 --> 00:10:36.680 align:start position:0%
+extremely difficult to get simulations
+ 
+
+00:10:36.680 --> 00:10:38.170 align:start position:0%
+extremely difficult to get simulations
+that<00:10:36.860><c> accurately</c><00:10:37.370><c> represent</c><00:10:37.820><c> the</c><00:10:37.880><c> problem</c>
+
+00:10:38.170 --> 00:10:38.180 align:start position:0%
+that accurately represent the problem
+ 
+
+00:10:38.180 --> 00:10:40.060 align:start position:0%
+that accurately represent the problem
+domain<00:10:38.450><c> and</c><00:10:38.720><c> the</c><00:10:39.140><c> more</c><00:10:39.290><c> complex</c><00:10:39.620><c> the</c><00:10:39.740><c> problem</c>
+
+00:10:40.060 --> 00:10:40.070 align:start position:0%
+domain and the more complex the problem
+ 
+
+00:10:40.070 --> 00:10:42.010 align:start position:0%
+domain and the more complex the problem
+is<00:10:40.190><c> the</c><00:10:40.460><c> harder</c><00:10:40.670><c> this</c><00:10:40.790><c> becomes</c><00:10:41.180><c> so</c><00:10:41.630><c> learning</c>
+
+00:10:42.010 --> 00:10:42.020 align:start position:0%
+is the harder this becomes so learning
+ 
+
+00:10:42.020 --> 00:10:43.390 align:start position:0%
+is the harder this becomes so learning
+in<00:10:42.110><c> a</c><00:10:42.170><c> simulation</c><00:10:42.710><c> can</c><00:10:42.980><c> limit</c><00:10:43.310><c> the</c>
+
+00:10:43.390 --> 00:10:43.400 align:start position:0%
+in a simulation can limit the
+ 
+
+00:10:43.400 --> 00:10:45.310 align:start position:0%
+in a simulation can limit the
+capabilities<00:10:43.940><c> of</c><00:10:43.970><c> your</c><00:10:44.120><c> AI</c><00:10:44.360><c> system</c><00:10:44.840><c> for</c>
+
+00:10:45.310 --> 00:10:45.320 align:start position:0%
+capabilities of your AI system for
+ 
+
+00:10:45.320 --> 00:10:47.170 align:start position:0%
+capabilities of your AI system for
+example<00:10:45.410><c> when</c><00:10:46.130><c> researchers</c><00:10:46.550><c> were</c><00:10:46.820><c> trying</c><00:10:46.850><c> to</c>
+
+00:10:47.170 --> 00:10:47.180 align:start position:0%
+example when researchers were trying to
+ 
+
+00:10:47.180 --> 00:10:48.970 align:start position:0%
+example when researchers were trying to
+see<00:10:47.360><c> if</c><00:10:47.600><c> an</c><00:10:47.720><c> evolutionary</c><00:10:48.320><c> algorithm</c><00:10:48.800><c> could</c>
+
+00:10:48.970 --> 00:10:48.980 align:start position:0%
+see if an evolutionary algorithm could
+ 
+
+00:10:48.980 --> 00:10:50.680 align:start position:0%
+see if an evolutionary algorithm could
+invent<00:10:49.280><c> an</c><00:10:49.460><c> electronic</c><00:10:49.970><c> oscillator</c><00:10:50.420><c> a</c>
+
+00:10:50.680 --> 00:10:50.690 align:start position:0%
+invent an electronic oscillator a
+ 
+
+00:10:50.690 --> 00:10:52.420 align:start position:0%
+invent an electronic oscillator a
+circuit<00:10:51.260><c> that</c><00:10:51.410><c> would</c><00:10:51.560><c> generate</c><00:10:51.920><c> a</c><00:10:51.980><c> signal</c>
+
+00:10:52.420 --> 00:10:52.430 align:start position:0%
+circuit that would generate a signal
+ 
+
+00:10:52.430 --> 00:10:53.590 align:start position:0%
+circuit that would generate a signal
+that<00:10:52.580><c> repeats</c><00:10:52.880><c> at</c><00:10:53.030><c> a</c><00:10:53.090><c> particular</c><00:10:53.330><c> frequency</c>
+
+00:10:53.590 --> 00:10:53.600 align:start position:0%
+that repeats at a particular frequency
+ 
+
+00:10:53.600 --> 00:10:55.870 align:start position:0%
+that repeats at a particular frequency
+their<00:10:54.260><c> system</c><00:10:54.650><c> developed</c><00:10:55.160><c> a</c><00:10:55.280><c> very</c><00:10:55.520><c> weird</c>
+
+00:10:55.870 --> 00:10:55.880 align:start position:0%
+their system developed a very weird
+ 
+
+00:10:55.880 --> 00:10:57.940 align:start position:0%
+their system developed a very weird
+looking<00:10:56.240><c> thing</c><00:10:56.270><c> that</c><00:10:56.870><c> clearly</c><00:10:57.320><c> was</c><00:10:57.590><c> not</c><00:10:57.800><c> an</c>
+
+00:10:57.940 --> 00:10:57.950 align:start position:0%
+looking thing that clearly was not an
+ 
+
+00:10:57.950 --> 00:10:59.920 align:start position:0%
+looking thing that clearly was not an
+oscillator<00:10:58.340><c> circuit</c><00:10:58.820><c> but</c><00:10:59.420><c> which</c><00:10:59.570><c> somehow</c>
+
+00:10:59.920 --> 00:10:59.930 align:start position:0%
+oscillator circuit but which somehow
+ 
+
+00:10:59.930 --> 00:11:01.990 align:start position:0%
+oscillator circuit but which somehow
+mysteriously<00:11:00.680><c> produced</c><00:11:01.280><c> a</c><00:11:01.370><c> good</c><00:11:01.490><c> oscillating</c>
+
+00:11:01.990 --> 00:11:02.000 align:start position:0%
+mysteriously produced a good oscillating
+ 
+
+00:11:02.000 --> 00:11:03.640 align:start position:0%
+mysteriously produced a good oscillating
+output<00:11:02.270><c> anyway</c><00:11:02.600><c> now</c><00:11:03.080><c> you</c><00:11:03.140><c> would</c><00:11:03.320><c> think</c><00:11:03.410><c> it</c><00:11:03.560><c> was</c>
+
+00:11:03.640 --> 00:11:03.650 align:start position:0%
+output anyway now you would think it was
+ 
+
+00:11:03.650 --> 00:11:05.410 align:start position:0%
+output anyway now you would think it was
+a<00:11:03.710><c> bug</c><00:11:03.890><c> in</c><00:11:04.010><c> the</c><00:11:04.130><c> simulation</c><00:11:04.670><c> but</c><00:11:04.970><c> they</c><00:11:05.150><c> weren't</c>
+
+00:11:05.410 --> 00:11:05.420 align:start position:0%
+a bug in the simulation but they weren't
+ 
+
+00:11:05.420 --> 00:11:06.490 align:start position:0%
+a bug in the simulation but they weren't
+using<00:11:05.690><c> Simula</c>
+
+00:11:06.490 --> 00:11:06.500 align:start position:0%
+using Simula
+ 
+
+00:11:06.500 --> 00:11:07.930 align:start position:0%
+using Simula
+the<00:11:06.620><c> circuits</c><00:11:06.950><c> physically</c><00:11:07.310><c> existed</c><00:11:07.730><c> this</c>
+
+00:11:07.930 --> 00:11:07.940 align:start position:0%
+the circuits physically existed this
+ 
+
+00:11:07.940 --> 00:11:09.400 align:start position:0%
+the circuits physically existed this
+circuit<00:11:08.360><c> produced</c><00:11:08.630><c> exactly</c><00:11:08.779><c> the</c><00:11:09.110><c> output</c>
+
+00:11:09.400 --> 00:11:09.410 align:start position:0%
+circuit produced exactly the output
+ 
+
+00:11:09.410 --> 00:11:11.019 align:start position:0%
+circuit produced exactly the output
+they'd<00:11:09.529><c> asked</c><00:11:09.860><c> for</c><00:11:10.010><c> but</c><00:11:10.370><c> they</c><00:11:10.459><c> had</c><00:11:10.610><c> no</c><00:11:10.790><c> idea</c>
+
+00:11:11.019 --> 00:11:11.029 align:start position:0%
+they'd asked for but they had no idea
+ 
+
+00:11:11.029 --> 00:11:13.180 align:start position:0%
+they'd asked for but they had no idea
+how<00:11:11.269><c> it</c><00:11:11.450><c> did</c><00:11:11.630><c> it</c><00:11:11.889><c> eventually</c><00:11:12.889><c> they</c><00:11:13.010><c> figured</c>
+
+00:11:13.180 --> 00:11:13.190 align:start position:0%
+how it did it eventually they figured
+ 
+
+00:11:13.190 --> 00:11:15.579 align:start position:0%
+how it did it eventually they figured
+out<00:11:13.370><c> that</c><00:11:13.430><c> it</c><00:11:13.579><c> was</c><00:11:13.610><c> actually</c><00:11:13.850><c> a</c><00:11:14.089><c> radio</c><00:11:14.540><c> it</c><00:11:15.410><c> was</c>
+
+00:11:15.579 --> 00:11:15.589 align:start position:0%
+out that it was actually a radio it was
+ 
+
+00:11:15.589 --> 00:11:17.560 align:start position:0%
+out that it was actually a radio it was
+picking<00:11:15.920><c> up</c><00:11:16.010><c> the</c><00:11:16.190><c> very</c><00:11:16.399><c> faint</c><00:11:16.760><c> radio</c><00:11:17.149><c> signals</c>
+
+00:11:17.560 --> 00:11:17.570 align:start position:0%
+picking up the very faint radio signals
+ 
+
+00:11:17.570 --> 00:11:19.329 align:start position:0%
+picking up the very faint radio signals
+put<00:11:18.019><c> out</c><00:11:18.170><c> by</c><00:11:18.320><c> the</c><00:11:18.380><c> electronics</c><00:11:18.980><c> of</c><00:11:19.070><c> a</c><00:11:19.160><c> nearby</c>
+
+00:11:19.329 --> 00:11:19.339 align:start position:0%
+put out by the electronics of a nearby
+ 
+
+00:11:19.339 --> 00:11:21.400 align:start position:0%
+put out by the electronics of a nearby
+computer<00:11:19.940><c> and</c><00:11:20.149><c> using</c><00:11:20.690><c> that</c><00:11:20.779><c> to</c><00:11:20.839><c> generate</c><00:11:21.320><c> the</c>
+
+00:11:21.400 --> 00:11:21.410 align:start position:0%
+computer and using that to generate the
+ 
+
+00:11:21.410 --> 00:11:23.500 align:start position:0%
+computer and using that to generate the
+correct<00:11:21.529><c> signal</c><00:11:22.040><c> the</c><00:11:22.430><c> point</c><00:11:22.639><c> is</c><00:11:22.820><c> this</c><00:11:23.300><c> is</c><00:11:23.480><c> a</c>
+
+00:11:23.500 --> 00:11:23.510 align:start position:0%
+correct signal the point is this is a
+ 
+
+00:11:23.510 --> 00:11:25.569 align:start position:0%
+correct signal the point is this is a
+cool<00:11:23.810><c> unexpected</c><00:11:24.649><c> solution</c><00:11:24.889><c> to</c><00:11:25.130><c> the</c><00:11:25.220><c> problem</c>
+
+00:11:25.569 --> 00:11:25.579 align:start position:0%
+cool unexpected solution to the problem
+ 
+
+00:11:25.579 --> 00:11:27.370 align:start position:0%
+cool unexpected solution to the problem
+which<00:11:25.940><c> would</c><00:11:26.089><c> almost</c><00:11:26.329><c> certainly</c><00:11:26.720><c> not</c><00:11:27.230><c> have</c>
+
+00:11:27.370 --> 00:11:27.380 align:start position:0%
+which would almost certainly not have
+ 
+
+00:11:27.380 --> 00:11:29.379 align:start position:0%
+which would almost certainly not have
+been<00:11:27.529><c> found</c><00:11:27.709><c> in</c><00:11:27.920><c> a</c><00:11:27.980><c> simulation</c><00:11:28.370><c> I</c><00:11:28.699><c> mean</c><00:11:29.240><c> would</c>
+
+00:11:29.379 --> 00:11:29.389 align:start position:0%
+been found in a simulation I mean would
+ 
+
+00:11:29.389 --> 00:11:31.090 align:start position:0%
+been found in a simulation I mean would
+you<00:11:29.480><c> think</c><00:11:29.690><c> to</c><00:11:29.870><c> include</c><00:11:30.019><c> ambient</c><00:11:30.620><c> radio</c><00:11:30.889><c> noise</c>
+
+00:11:31.090 --> 00:11:31.100 align:start position:0%
+you think to include ambient radio noise
+ 
+
+00:11:31.100 --> 00:11:33.069 align:start position:0%
+you think to include ambient radio noise
+in<00:11:31.279><c> your</c><00:11:31.310><c> oscillator</c><00:11:31.760><c> circuit</c><00:11:32.149><c> simulation</c><00:11:32.480><c> by</c>
+
+00:11:33.069 --> 00:11:33.079 align:start position:0%
+in your oscillator circuit simulation by
+ 
+
+00:11:33.079 --> 00:11:34.660 align:start position:0%
+in your oscillator circuit simulation by
+doing<00:11:33.380><c> its</c><00:11:33.500><c> learning</c><00:11:33.800><c> in</c><00:11:33.889><c> a</c><00:11:33.949><c> simulator</c><00:11:34.399><c> a</c>
+
+00:11:34.660 --> 00:11:34.670 align:start position:0%
+doing its learning in a simulator a
+ 
+
+00:11:34.670 --> 00:11:36.939 align:start position:0%
+doing its learning in a simulator a
+system<00:11:35.269><c> is</c><00:11:35.389><c> only</c><00:11:35.600><c> able</c><00:11:35.839><c> to</c><00:11:36.110><c> use</c><00:11:36.320><c> the</c><00:11:36.500><c> aspects</c>
+
+00:11:36.939 --> 00:11:36.949 align:start position:0%
+system is only able to use the aspects
+ 
+
+00:11:36.949 --> 00:11:38.470 align:start position:0%
+system is only able to use the aspects
+of<00:11:37.010><c> the</c><00:11:37.130><c> world</c><00:11:37.279><c> that</c><00:11:37.519><c> we</c><00:11:37.670><c> think</c><00:11:37.940><c> are</c><00:11:38.060><c> important</c>
+
+00:11:38.470 --> 00:11:38.480 align:start position:0%
+of the world that we think are important
+ 
+
+00:11:38.480 --> 00:11:40.090 align:start position:0%
+of the world that we think are important
+enough<00:11:38.690><c> to</c><00:11:38.870><c> include</c><00:11:39.320><c> in</c><00:11:39.440><c> the</c><00:11:39.529><c> simulation</c>
+
+00:11:40.090 --> 00:11:40.100 align:start position:0%
+enough to include in the simulation
+ 
+
+00:11:40.100 --> 00:11:42.069 align:start position:0%
+enough to include in the simulation
+which<00:11:40.670><c> limits</c><00:11:41.029><c> its</c><00:11:41.120><c> ability</c><00:11:41.540><c> to</c><00:11:41.570><c> come</c><00:11:41.870><c> up</c><00:11:41.899><c> with</c>
+
+00:11:42.069 --> 00:11:42.079 align:start position:0%
+which limits its ability to come up with
+ 
+
+00:11:42.079 --> 00:11:43.240 align:start position:0%
+which limits its ability to come up with
+things<00:11:42.260><c> that</c><00:11:42.410><c> we</c><00:11:42.620><c> wouldn't</c><00:11:42.860><c> have</c><00:11:42.980><c> thought</c><00:11:43.070><c> of</c>
+
+00:11:43.240 --> 00:11:43.250 align:start position:0%
+things that we wouldn't have thought of
+ 
+
+00:11:43.250 --> 00:11:45.129 align:start position:0%
+things that we wouldn't have thought of
+and<00:11:43.790><c> that's</c><00:11:44.120><c> a</c><00:11:44.240><c> big</c><00:11:44.389><c> part</c><00:11:44.570><c> of</c><00:11:44.660><c> why</c><00:11:44.810><c> we</c><00:11:44.930><c> want</c>
+
+00:11:45.129 --> 00:11:45.139 align:start position:0%
+and that's a big part of why we want
+ 
+
+00:11:45.139 --> 00:11:46.449 align:start position:0%
+and that's a big part of why we want
+such<00:11:45.350><c> systems</c><00:11:45.709><c> in</c><00:11:45.829><c> the</c><00:11:45.889><c> first</c><00:11:46.070><c> place</c>
+
+00:11:46.449 --> 00:11:46.459 align:start position:0%
+such systems in the first place
+ 
+
+00:11:46.459 --> 00:11:47.889 align:start position:0%
+such systems in the first place
+and<00:11:46.550><c> this</c><00:11:46.820><c> goes</c><00:11:46.970><c> the</c><00:11:47.149><c> other</c><00:11:47.269><c> way</c><00:11:47.420><c> as</c><00:11:47.570><c> well</c><00:11:47.600><c> of</c>
+
+00:11:47.889 --> 00:11:47.899 align:start position:0%
+and this goes the other way as well of
+ 
+
+00:11:47.899 --> 00:11:49.480 align:start position:0%
+and this goes the other way as well of
+course<00:11:47.930><c> it's</c><00:11:48.620><c> not</c><00:11:48.800><c> just</c><00:11:49.040><c> that</c><00:11:49.160><c> things</c><00:11:49.399><c> in</c>
+
+00:11:49.480 --> 00:11:49.490 align:start position:0%
+course it's not just that things in
+ 
+
+00:11:49.490 --> 00:11:50.860 align:start position:0%
+course it's not just that things in
+reality<00:11:50.029><c> may</c><00:11:50.209><c> be</c><00:11:50.240><c> missing</c><00:11:50.690><c> from</c><00:11:50.839><c> your</c>
+
+00:11:50.860 --> 00:11:50.870 align:start position:0%
+reality may be missing from your
+ 
+
+00:11:50.870 --> 00:11:53.050 align:start position:0%
+reality may be missing from your
+simulation<00:11:51.529><c> but</c><00:11:52.040><c> your</c><00:11:52.310><c> simulation</c><00:11:52.910><c> will</c>
+
+00:11:53.050 --> 00:11:53.060 align:start position:0%
+simulation but your simulation will
+ 
+
+00:11:53.060 --> 00:11:54.579 align:start position:0%
+simulation but your simulation will
+probably<00:11:53.449><c> have</c><00:11:53.600><c> some</c><00:11:53.750><c> things</c><00:11:53.779><c> that</c><00:11:54.320><c> reality</c>
+
+00:11:54.579 --> 00:11:54.589 align:start position:0%
+probably have some things that reality
+ 
+
+00:11:54.589 --> 00:11:57.400 align:start position:0%
+probably have some things that reality
+doesn't<00:11:55.010><c> ie</c><00:11:55.610><c> bugs</c><00:11:56.269><c> the</c><00:11:56.959><c> thing</c><00:11:57.110><c> that</c><00:11:57.230><c> makes</c>
+
+00:11:57.400 --> 00:11:57.410 align:start position:0%
+doesn't ie bugs the thing that makes
+ 
+
+00:11:57.410 --> 00:11:59.199 align:start position:0%
+doesn't ie bugs the thing that makes
+this<00:11:57.529><c> worse</c><00:11:57.800><c> is</c><00:11:58.130><c> that</c><00:11:58.190><c> if</c><00:11:58.579><c> you</c><00:11:58.699><c> have</c><00:11:58.850><c> a</c><00:11:58.880><c> smart</c>
+
+00:11:59.199 --> 00:11:59.209 align:start position:0%
+this worse is that if you have a smart
+ 
+
+00:11:59.209 --> 00:12:01.600 align:start position:0%
+this worse is that if you have a smart
+AI<00:11:59.389><c> system</c><00:11:59.899><c> it's</c><00:12:00.410><c> likely</c><00:12:00.800><c> to</c><00:12:00.829><c> end</c><00:12:01.040><c> up</c><00:12:01.130><c> actually</c>
+
+00:12:01.600 --> 00:12:01.610 align:start position:0%
+AI system it's likely to end up actually
+ 
+
+00:12:01.610 --> 00:12:03.189 align:start position:0%
+AI system it's likely to end up actually
+seeking<00:12:02.000><c> out</c><00:12:02.149><c> the</c><00:12:02.360><c> inaccuracies</c><00:12:02.810><c> in</c><00:12:02.990><c> your</c>
+
+00:12:03.189 --> 00:12:03.199 align:start position:0%
+seeking out the inaccuracies in your
+ 
+
+00:12:03.199 --> 00:12:05.410 align:start position:0%
+seeking out the inaccuracies in your
+simulation<00:12:03.410><c> because</c><00:12:04.399><c> the</c><00:12:04.550><c> best</c><00:12:04.820><c> solutions</c>
+
+00:12:05.410 --> 00:12:05.420 align:start position:0%
+simulation because the best solutions
+ 
+
+00:12:05.420 --> 00:12:07.120 align:start position:0%
+simulation because the best solutions
+are<00:12:05.600><c> likely</c><00:12:06.079><c> to</c><00:12:06.230><c> involve</c><00:12:06.440><c> exploiting</c><00:12:07.010><c> those</c>
+
+00:12:07.120 --> 00:12:07.130 align:start position:0%
+are likely to involve exploiting those
+ 
+
+00:12:07.130 --> 00:12:09.460 align:start position:0%
+are likely to involve exploiting those
+bugs<00:12:07.430><c> like</c><00:12:08.180><c> if</c><00:12:08.360><c> your</c><00:12:08.480><c> physics</c><00:12:08.839><c> simulation</c><00:12:09.320><c> has</c>
+
+00:12:09.460 --> 00:12:09.470 align:start position:0%
+bugs like if your physics simulation has
+ 
+
+00:12:09.470 --> 00:12:11.019 align:start position:0%
+bugs like if your physics simulation has
+any<00:12:09.649><c> bugs</c><00:12:09.829><c> in</c><00:12:09.949><c> it</c><00:12:10.070><c> there's</c><00:12:10.519><c> a</c><00:12:10.579><c> good</c><00:12:10.760><c> chance</c>
+
+00:12:11.019 --> 00:12:11.029 align:start position:0%
+any bugs in it there's a good chance
+ 
+
+00:12:11.029 --> 00:12:13.240 align:start position:0%
+any bugs in it there's a good chance
+those<00:12:11.209><c> bugs</c><00:12:11.510><c> can</c><00:12:11.720><c> be</c><00:12:11.750><c> exploited</c><00:12:12.320><c> to</c><00:12:12.500><c> violate</c>
+
+00:12:13.240 --> 00:12:13.250 align:start position:0%
+those bugs can be exploited to violate
+ 
+
+00:12:13.250 --> 00:12:15.100 align:start position:0%
+those bugs can be exploited to violate
+conservation<00:12:13.760><c> of</c><00:12:13.820><c> momentum</c><00:12:14.029><c> or</c><00:12:14.480><c> to</c><00:12:14.779><c> get</c><00:12:14.930><c> free</c>
+
+00:12:15.100 --> 00:12:15.110 align:start position:0%
+conservation of momentum or to get free
+ 
+
+00:12:15.110 --> 00:12:17.019 align:start position:0%
+conservation of momentum or to get free
+energy<00:12:15.440><c> or</c><00:12:15.560><c> whatever</c><00:12:15.740><c> so</c><00:12:16.279><c> it's</c><00:12:16.459><c> not</c><00:12:16.579><c> just</c><00:12:16.940><c> that</c>
+
+00:12:17.019 --> 00:12:17.029 align:start position:0%
+energy or whatever so it's not just that
+ 
+
+00:12:17.029 --> 00:12:18.699 align:start position:0%
+energy or whatever so it's not just that
+the<00:12:17.180><c> simulation</c><00:12:17.540><c> may</c><00:12:17.959><c> not</c><00:12:18.110><c> be</c><00:12:18.230><c> accurate</c><00:12:18.380><c> to</c>
+
+00:12:18.699 --> 00:12:18.709 align:start position:0%
+the simulation may not be accurate to
+ 
+
+00:12:18.709 --> 00:12:20.829 align:start position:0%
+the simulation may not be accurate to
+reality<00:12:19.220><c> it's</c><00:12:19.760><c> that</c><00:12:20.029><c> most</c><00:12:20.360><c> of</c><00:12:20.510><c> the</c><00:12:20.630><c> best</c>
+
+00:12:20.829 --> 00:12:20.839 align:start position:0%
+reality it's that most of the best
+ 
+
+00:12:20.839 --> 00:12:22.780 align:start position:0%
+reality it's that most of the best
+solutions<00:12:21.470><c> will</c><00:12:21.890><c> lie</c><00:12:22.040><c> in</c><00:12:22.220><c> the</c><00:12:22.339><c> parts</c><00:12:22.610><c> of</c><00:12:22.699><c> the</c>
+
+00:12:22.780 --> 00:12:22.790 align:start position:0%
+solutions will lie in the parts of the
+ 
+
+00:12:22.790 --> 00:12:24.790 align:start position:0%
+solutions will lie in the parts of the
+configuration<00:12:23.420><c> space</c><00:12:23.540><c> where</c><00:12:24.140><c> the</c><00:12:24.260><c> simulation</c>
+
+00:12:24.790 --> 00:12:24.800 align:start position:0%
+configuration space where the simulation
+ 
+
+00:12:24.800 --> 00:12:26.889 align:start position:0%
+configuration space where the simulation
+is<00:12:24.949><c> the</c><00:12:24.980><c> least</c><00:12:25.370><c> accurate</c><00:12:25.550><c> to</c><00:12:25.880><c> reality</c><00:12:26.390><c> the</c>
+
+00:12:26.889 --> 00:12:26.899 align:start position:0%
+is the least accurate to reality the
+ 
+
+00:12:26.899 --> 00:12:28.990 align:start position:0%
+is the least accurate to reality the
+general<00:12:27.290><c> tendency</c><00:12:27.560><c> for</c><00:12:28.040><c> optimization</c><00:12:28.790><c> to</c>
+
+00:12:28.990 --> 00:12:29.000 align:start position:0%
+general tendency for optimization to
+ 
+
+00:12:29.000 --> 00:12:31.240 align:start position:0%
+general tendency for optimization to
+find<00:12:29.240><c> the</c><00:12:29.420><c> edges</c><00:12:29.810><c> of</c><00:12:29.959><c> systems</c><00:12:30.350><c> to</c><00:12:30.860><c> find</c><00:12:31.070><c> their</c>
+
+00:12:31.240 --> 00:12:31.250 align:start position:0%
+find the edges of systems to find their
+ 
+
+00:12:31.250 --> 00:12:31.750 align:start position:0%
+find the edges of systems to find their
+limits
+
+00:12:31.750 --> 00:12:31.760 align:start position:0%
+limits
+ 
+
+00:12:31.760 --> 00:12:33.430 align:start position:0%
+limits
+means<00:12:32.209><c> that</c><00:12:32.360><c> it's</c><00:12:32.510><c> hard</c><00:12:32.720><c> to</c><00:12:32.810><c> be</c><00:12:32.990><c> confident</c>
+
+00:12:33.430 --> 00:12:33.440 align:start position:0%
+means that it's hard to be confident
+ 
+
+00:12:33.440 --> 00:12:35.199 align:start position:0%
+means that it's hard to be confident
+that<00:12:33.829><c> actions</c><00:12:34.250><c> which</c><00:12:34.430><c> seem</c><00:12:34.699><c> safe</c><00:12:34.970><c> in</c><00:12:35.120><c> a</c>
+
+00:12:35.199 --> 00:12:35.209 align:start position:0%
+that actions which seem safe in a
+ 
+
+00:12:35.209 --> 00:12:37.150 align:start position:0%
+that actions which seem safe in a
+simulation<00:12:35.600><c> will</c><00:12:36.110><c> actually</c><00:12:36.560><c> be</c><00:12:36.709><c> safe</c><00:12:36.980><c> in</c>
+
+00:12:37.150 --> 00:12:37.160 align:start position:0%
+simulation will actually be safe in
+ 
+
+00:12:37.160 --> 00:12:38.970 align:start position:0%
+simulation will actually be safe in
+reality<00:12:37.640><c> at</c><00:12:38.149><c> the</c><00:12:38.329><c> end</c><00:12:38.449><c> of</c><00:12:38.540><c> the</c><00:12:38.630><c> day</c>
+
+00:12:38.970 --> 00:12:38.980 align:start position:0%
+reality at the end of the day
+ 
+
+00:12:38.980 --> 00:12:41.500 align:start position:0%
+reality at the end of the day
+exploration<00:12:39.980><c> is</c><00:12:40.130><c> inherently</c><00:12:40.670><c> risky</c><00:12:40.760><c> because</c>
+
+00:12:41.500 --> 00:12:41.510 align:start position:0%
+exploration is inherently risky because
+ 
+
+00:12:41.510 --> 00:12:43.689 align:start position:0%
+exploration is inherently risky because
+almost<00:12:42.050><c> by</c><00:12:42.199><c> definition</c><00:12:42.260><c> it</c><00:12:42.949><c> involves</c><00:12:43.459><c> trying</c>
+
+00:12:43.689 --> 00:12:43.699 align:start position:0%
+almost by definition it involves trying
+ 
+
+00:12:43.699 --> 00:12:45.400 align:start position:0%
+almost by definition it involves trying
+things<00:12:44.029><c> without</c><00:12:44.420><c> knowing</c><00:12:44.720><c> exactly</c><00:12:44.870><c> how</c><00:12:45.260><c> it'll</c>
+
+00:12:45.400 --> 00:12:45.410 align:start position:0%
+things without knowing exactly how it'll
+ 
+
+00:12:45.410 --> 00:12:47.439 align:start position:0%
+things without knowing exactly how it'll
+turn<00:12:45.529><c> out</c><00:12:45.649><c> but</c><00:12:46.339><c> there</c><00:12:46.550><c> are</c><00:12:46.640><c> ways</c><00:12:46.790><c> of</c><00:12:46.940><c> managing</c>
+
+00:12:47.439 --> 00:12:47.449 align:start position:0%
+turn out but there are ways of managing
+ 
+
+00:12:47.449 --> 00:12:49.600 align:start position:0%
+turn out but there are ways of managing
+and<00:12:47.660><c> minimizing</c><00:12:48.260><c> that</c><00:12:48.290><c> risk</c><00:12:48.649><c> and</c><00:12:48.890><c> we</c><00:12:49.370><c> need</c><00:12:49.490><c> to</c>
+
+00:12:49.600 --> 00:12:49.610 align:start position:0%
+and minimizing that risk and we need to
+ 
+
+00:12:49.610 --> 00:12:51.579 align:start position:0%
+and minimizing that risk and we need to
+find<00:12:49.819><c> them</c><00:12:50.060><c> so</c><00:12:50.420><c> that</c><00:12:50.569><c> our</c><00:12:50.600><c> AI</c><00:12:50.839><c> systems</c><00:12:51.350><c> can</c>
+
+00:12:51.579 --> 00:12:51.589 align:start position:0%
+find them so that our AI systems can
+ 
+
+00:12:51.589 --> 00:12:52.950 align:start position:0%
+find them so that our AI systems can
+explore<00:12:51.920><c> safely</c>
+
+00:12:52.950 --> 00:12:52.960 align:start position:0%
+explore safely
+ 
+
+00:12:52.960 --> 00:12:56.960 align:start position:0%
+explore safely
+[Music]
+
+00:12:56.960 --> 00:12:56.970 align:start position:0%
+[Music]
+ 
+
+00:12:56.970 --> 00:13:03.800 align:start position:0%
+[Music]
+I<00:13:01.490><c> want</c><00:13:02.490><c> to</c><00:13:02.550><c> end</c><00:13:02.670><c> this</c><00:13:02.759><c> video</c><00:13:02.910><c> by</c><00:13:03.089><c> saying</c><00:13:03.480><c> thank</c>
+
+00:13:03.800 --> 00:13:03.810 align:start position:0%
+I want to end this video by saying thank
+ 
+
+00:13:03.810 --> 00:13:06.559 align:start position:0%
+I want to end this video by saying thank
+you<00:13:03.870><c> so</c><00:13:04.170><c> much</c><00:13:04.379><c> to</c><00:13:04.920><c> my</c><00:13:05.040><c> amazing</c><00:13:05.370><c> patrons</c><00:13:05.939><c> it's</c>
+
+00:13:06.559 --> 00:13:06.569 align:start position:0%
+you so much to my amazing patrons it's
+ 
+
+00:13:06.569 --> 00:13:08.629 align:start position:0%
+you so much to my amazing patrons it's
+all<00:13:06.689><c> all</c><00:13:06.899><c> of</c><00:13:07.019><c> these</c><00:13:07.110><c> people</c><00:13:07.439><c> here</c><00:13:07.589><c> and</c><00:13:08.399><c> in</c><00:13:08.519><c> this</c>
+
+00:13:08.629 --> 00:13:08.639 align:start position:0%
+all all of these people here and in this
+ 
+
+00:13:08.639 --> 00:13:10.369 align:start position:0%
+all all of these people here and in this
+video<00:13:08.850><c> I</c><00:13:08.970><c> especially</c><00:13:09.420><c> want</c><00:13:09.779><c> to</c><00:13:09.839><c> thank</c><00:13:09.930><c> Scott</c>
+
+00:13:10.369 --> 00:13:10.379 align:start position:0%
+video I especially want to thank Scott
+ 
+
+00:13:10.379 --> 00:13:12.079 align:start position:0%
+video I especially want to thank Scott
+Worley<00:13:10.800><c> thank</c><00:13:11.250><c> you</c><00:13:11.370><c> all</c><00:13:11.550><c> so</c><00:13:11.850><c> much</c><00:13:11.879><c> for</c>
+
+00:13:12.079 --> 00:13:12.089 align:start position:0%
+Worley thank you all so much for
+ 
+
+00:13:12.089 --> 00:13:13.970 align:start position:0%
+Worley thank you all so much for
+sticking<00:13:12.480><c> with</c><00:13:12.660><c> me</c><00:13:12.779><c> through</c><00:13:13.110><c> this</c><00:13:13.259><c> giant</c><00:13:13.620><c> gap</c>
+
+00:13:13.970 --> 00:13:13.980 align:start position:0%
+sticking with me through this giant gap
+ 
+
+00:13:13.980 --> 00:13:15.889 align:start position:0%
+sticking with me through this giant gap
+in<00:13:14.160><c> uploads</c><00:13:14.519><c> when</c><00:13:14.879><c> I</c><00:13:14.910><c> do</c><00:13:15.000><c> upload</c><00:13:15.360><c> videos</c><00:13:15.689><c> to</c>
+
+00:13:15.889 --> 00:13:15.899 align:start position:0%
+in uploads when I do upload videos to
+ 
+
+00:13:15.899 --> 00:13:17.179 align:start position:0%
+in uploads when I do upload videos to
+this<00:13:15.990><c> channel</c><00:13:16.050><c> or</c><00:13:16.470><c> the</c><00:13:16.560><c> second</c><00:13:16.920><c> channel</c>
+
+00:13:17.179 --> 00:13:17.189 align:start position:0%
+this channel or the second channel
+ 
+
+00:13:17.189 --> 00:13:19.129 align:start position:0%
+this channel or the second channel
+patrons<00:13:17.910><c> get</c><00:13:18.089><c> to</c><00:13:18.180><c> see</c><00:13:18.360><c> them</c><00:13:18.569><c> a</c><00:13:18.720><c> few</c><00:13:18.959><c> days</c>
+
+00:13:19.129 --> 00:13:19.139 align:start position:0%
+patrons get to see them a few days
+ 
+
+00:13:19.139 --> 00:13:20.509 align:start position:0%
+patrons get to see them a few days
+before<00:13:19.290><c> everyone</c><00:13:19.529><c> else</c><00:13:19.829><c> and</c><00:13:20.100><c> I'm</c><00:13:20.370><c> also</c>
+
+00:13:20.509 --> 00:13:20.519 align:start position:0%
+before everyone else and I'm also
+ 
+
+00:13:20.519 --> 00:13:22.999 align:start position:0%
+before everyone else and I'm also
+posting<00:13:20.819><c> the</c><00:13:21.329><c> videos</c><00:13:21.660><c> I</c><00:13:21.839><c> make</c><00:13:21.870><c> for</c><00:13:22.589><c> the</c><00:13:22.769><c> online</c>
+
+00:13:22.999 --> 00:13:23.009 align:start position:0%
+posting the videos I make for the online
+ 
+
+00:13:23.009 --> 00:13:24.920 align:start position:0%
+posting the videos I make for the online
+AI<00:13:23.459><c> safety</c><00:13:23.970><c> course</c><00:13:24.240><c> that</c><00:13:24.480><c> I'm</c><00:13:24.569><c> helping</c><00:13:24.839><c> to</c>
+
+00:13:24.920 --> 00:13:24.930 align:start position:0%
+AI safety course that I'm helping to
+ 
+
+00:13:24.930 --> 00:13:26.569 align:start position:0%
+AI safety course that I'm helping to
+develop<00:13:25.050><c> an</c><00:13:25.439><c> occasional</c><00:13:26.009><c> behind-the-scenes</c>
+
+00:13:26.569 --> 00:13:26.579 align:start position:0%
+develop an occasional behind-the-scenes
+ 
+
+00:13:26.579 --> 00:13:28.369 align:start position:0%
+develop an occasional behind-the-scenes
+videos<00:13:26.879><c> -</c><00:13:27.149><c> like</c><00:13:27.480><c> right</c><00:13:27.720><c> now</c><00:13:27.899><c> I'm</c><00:13:28.110><c> putting</c>
+
+00:13:28.369 --> 00:13:28.379 align:start position:0%
+videos - like right now I'm putting
+ 
+
+00:13:28.379 --> 00:13:30.050 align:start position:0%
+videos - like right now I'm putting
+together<00:13:28.589><c> a</c><00:13:28.800><c> video</c><00:13:29.009><c> about</c><00:13:29.339><c> my</c><00:13:29.519><c> visit</c><00:13:29.699><c> to</c><00:13:29.970><c> the</c>
+
+00:13:30.050 --> 00:13:30.060 align:start position:0%
+together a video about my visit to the
+ 
+
+00:13:30.060 --> 00:13:31.850 align:start position:0%
+together a video about my visit to the
+electromagnetic<00:13:30.660><c> field</c><00:13:31.050><c> festival</c><00:13:31.500><c> this</c><00:13:31.620><c> year</c>
+
+00:13:31.850 --> 00:13:31.860 align:start position:0%
+electromagnetic field festival this year
+ 
+
+00:13:31.860 --> 00:13:33.889 align:start position:0%
+electromagnetic field festival this year
+where<00:13:32.459><c> I</c><00:13:32.490><c> gave</c><00:13:32.790><c> a</c><00:13:32.819><c> talk</c><00:13:33.149><c> and</c><00:13:33.360><c> actually</c><00:13:33.720><c> met</c>
+
+00:13:33.889 --> 00:13:33.899 align:start position:0%
+where I gave a talk and actually met
+ 
+
+00:13:33.899 --> 00:13:35.300 align:start position:0%
+where I gave a talk and actually met
+some<00:13:34.079><c> of</c><00:13:34.110><c> you</c><00:13:34.199><c> in</c><00:13:34.379><c> person</c><00:13:34.769><c> which</c><00:13:34.920><c> was</c><00:13:35.100><c> fun</c>
+
+00:13:35.300 --> 00:13:35.310 align:start position:0%
+some of you in person which was fun
+ 
+
+00:13:35.310 --> 00:13:36.889 align:start position:0%
+some of you in person which was fun
+anyway<00:13:35.490><c> thank</c><00:13:36.149><c> you</c><00:13:36.269><c> again</c><00:13:36.360><c> for</c><00:13:36.629><c> your</c><00:13:36.720><c> support</c>
+
+00:13:36.889 --> 00:13:36.899 align:start position:0%
+anyway thank you again for your support
+ 
+
+00:13:36.899 --> 00:13:39.019 align:start position:0%
+anyway thank you again for your support
+and<00:13:37.379><c> thank</c><00:13:37.860><c> you</c><00:13:37.949><c> all</c><00:13:38.100><c> for</c><00:13:38.279><c> watching</c><00:13:38.370><c> I'll</c><00:13:39.000><c> see</c>
+
+00:13:39.019 --> 00:13:39.029 align:start position:0%
+and thank you all for watching I'll see
+ 
+
+00:13:39.029 --> 00:13:40.310 align:start position:0%
+and thank you all for watching I'll see
+you<00:13:39.240><c> soon</c>
+
+00:13:40.310 --> 00:13:40.320 align:start position:0%
+you soon
+ 
+
+00:13:40.320 --> 00:13:43.570 align:start position:0%
+you soon
+[Music]
+

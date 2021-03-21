@@ -1,0 +1,880 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.000 --> 00:00:02.419 align:start position:0%
+ 
+hi<00:00:00.210><c> this</c><00:00:01.020><c> is</c><00:00:01.079><c> a</c><00:00:01.230><c> quick</c><00:00:01.319><c> video</c><00:00:01.620><c> about</c><00:00:02.100><c> a</c><00:00:02.159><c> grid</c>
+
+00:00:02.419 --> 00:00:02.429 align:start position:0%
+hi this is a quick video about a grid
+ 
+
+00:00:02.429 --> 00:00:03.679 align:start position:0%
+hi this is a quick video about a grid
+weld<00:00:02.610><c> environment</c><00:00:03.120><c> that</c><00:00:03.240><c> didn't</c><00:00:03.480><c> make</c><00:00:03.540><c> it</c>
+
+00:00:03.679 --> 00:00:03.689 align:start position:0%
+weld environment that didn't make it
+ 
+
+00:00:03.689 --> 00:00:05.720 align:start position:0%
+weld environment that didn't make it
+into<00:00:03.810><c> the</c><00:00:03.899><c> other</c><00:00:04.110><c> videos</c><00:00:04.440><c> the</c><00:00:05.100><c> friend-or-foe</c>
+
+00:00:05.720 --> 00:00:05.730 align:start position:0%
+into the other videos the friend-or-foe
+ 
+
+00:00:05.730 --> 00:00:08.120 align:start position:0%
+into the other videos the friend-or-foe
+environment<00:00:06.690><c> there's</c><00:00:07.560><c> nothing</c><00:00:07.830><c> about</c><00:00:07.980><c> this</c>
+
+00:00:08.120 --> 00:00:08.130 align:start position:0%
+environment there's nothing about this
+ 
+
+00:00:08.130 --> 00:00:09.440 align:start position:0%
+environment there's nothing about this
+environment<00:00:08.610><c> that</c><00:00:08.700><c> makes</c><00:00:08.880><c> it</c><00:00:09.059><c> particularly</c>
+
+00:00:09.440 --> 00:00:09.450 align:start position:0%
+environment that makes it particularly
+ 
+
+00:00:09.450 --> 00:00:11.270 align:start position:0%
+environment that makes it particularly
+special<00:00:09.990><c> and</c><00:00:10.139><c> requiring</c><00:00:10.440><c> its</c><00:00:10.650><c> own</c><00:00:10.769><c> video</c><00:00:11.040><c> it</c>
+
+00:00:11.270 --> 00:00:11.280 align:start position:0%
+special and requiring its own video it
+ 
+
+00:00:11.280 --> 00:00:12.980 align:start position:0%
+special and requiring its own video it
+just<00:00:11.309><c> didn't</c><00:00:11.940><c> make</c><00:00:12.030><c> the</c><00:00:12.090><c> cut</c><00:00:12.210><c> of</c><00:00:12.540><c> the</c><00:00:12.630><c> previous</c>
+
+00:00:12.980 --> 00:00:12.990 align:start position:0%
+just didn't make the cut of the previous
+ 
+
+00:00:12.990 --> 00:00:14.390 align:start position:0%
+just didn't make the cut of the previous
+videos<00:00:13.290><c> so</c><00:00:13.530><c> here</c><00:00:14.040><c> it</c><00:00:14.099><c> is</c>
+
+00:00:14.390 --> 00:00:14.400 align:start position:0%
+videos so here it is
+ 
+
+00:00:14.400 --> 00:00:16.220 align:start position:0%
+videos so here it is
+so<00:00:14.940><c> this</c><00:00:15.089><c> environment</c><00:00:15.630><c> is</c><00:00:15.750><c> about</c><00:00:15.900><c> how</c>
+
+00:00:16.220 --> 00:00:16.230 align:start position:0%
+so this environment is about how
+ 
+
+00:00:16.230 --> 00:00:18.260 align:start position:0%
+so this environment is about how
+reinforcement<00:00:16.980><c> learning</c><00:00:17.100><c> systems</c><00:00:17.640><c> handle</c>
+
+00:00:18.260 --> 00:00:18.270 align:start position:0%
+reinforcement learning systems handle
+ 
+
+00:00:18.270 --> 00:00:20.090 align:start position:0%
+reinforcement learning systems handle
+environments<00:00:18.869><c> that</c><00:00:19.020><c> have</c><00:00:19.199><c> other</c><00:00:19.500><c> agents</c><00:00:20.010><c> in</c>
+
+00:00:20.090 --> 00:00:20.100 align:start position:0%
+environments that have other agents in
+ 
+
+00:00:20.100 --> 00:00:20.420 align:start position:0%
+environments that have other agents in
+them
+
+00:00:20.420 --> 00:00:20.430 align:start position:0%
+them
+ 
+
+00:00:20.430 --> 00:00:21.950 align:start position:0%
+them
+obviously<00:00:20.910><c> reinforcement</c><00:00:21.510><c> learners</c><00:00:21.779><c> can</c>
+
+00:00:21.950 --> 00:00:21.960 align:start position:0%
+obviously reinforcement learners can
+ 
+
+00:00:21.960 --> 00:00:23.210 align:start position:0%
+obviously reinforcement learners can
+handle<00:00:22.230><c> environments</c><00:00:22.740><c> that</c><00:00:22.830><c> contain</c><00:00:23.070><c> other</c>
+
+00:00:23.210 --> 00:00:23.220 align:start position:0%
+handle environments that contain other
+ 
+
+00:00:23.220 --> 00:00:25.460 align:start position:0%
+handle environments that contain other
+agents<00:00:23.670><c> they</c><00:00:24.390><c> can</c><00:00:24.539><c> play</c><00:00:24.660><c> lots</c><00:00:24.810><c> of</c><00:00:24.960><c> video</c><00:00:25.199><c> games</c>
+
+00:00:25.460 --> 00:00:25.470 align:start position:0%
+agents they can play lots of video games
+ 
+
+00:00:25.470 --> 00:00:26.839 align:start position:0%
+agents they can play lots of video games
+that<00:00:25.619><c> often</c><00:00:25.949><c> have</c><00:00:26.070><c> other</c><00:00:26.250><c> agents</c><00:00:26.699><c> that</c><00:00:26.730><c> you</c>
+
+00:00:26.839 --> 00:00:26.849 align:start position:0%
+that often have other agents that you
+ 
+
+00:00:26.849 --> 00:00:29.450 align:start position:0%
+that often have other agents that you
+have<00:00:27.060><c> to</c><00:00:27.180><c> attack</c><00:00:27.480><c> or</c><00:00:27.779><c> avoid</c><00:00:28.199><c> or</c><00:00:28.410><c> defend</c><00:00:28.800><c> but</c>
+
+00:00:29.450 --> 00:00:29.460 align:start position:0%
+have to attack or avoid or defend but
+ 
+
+00:00:29.460 --> 00:00:30.740 align:start position:0%
+have to attack or avoid or defend but
+there<00:00:29.609><c> are</c><00:00:29.670><c> all</c><00:00:29.789><c> kinds</c><00:00:30.090><c> of</c><00:00:30.150><c> complicated</c>
+
+00:00:30.740 --> 00:00:30.750 align:start position:0%
+there are all kinds of complicated
+ 
+
+00:00:30.750 --> 00:00:33.020 align:start position:0%
+there are all kinds of complicated
+considerations<00:00:31.650><c> that</c><00:00:32.130><c> apply</c><00:00:32.369><c> to</c><00:00:32.399><c> interacting</c>
+
+00:00:33.020 --> 00:00:33.030 align:start position:0%
+considerations that apply to interacting
+ 
+
+00:00:33.030 --> 00:00:34.910 align:start position:0%
+considerations that apply to interacting
+with<00:00:33.149><c> others</c><00:00:33.420><c> you</c><00:00:33.750><c> need</c><00:00:33.930><c> to</c><00:00:34.079><c> reason</c><00:00:34.559><c> about</c><00:00:34.739><c> the</c>
+
+00:00:34.910 --> 00:00:34.920 align:start position:0%
+with others you need to reason about the
+ 
+
+00:00:34.920 --> 00:00:36.799 align:start position:0%
+with others you need to reason about the
+other<00:00:35.040><c> agents</c><00:00:35.489><c> incentives</c><00:00:36.090><c> their</c><00:00:36.510><c> beliefs</c>
+
+00:00:36.799 --> 00:00:36.809 align:start position:0%
+other agents incentives their beliefs
+ 
+
+00:00:36.809 --> 00:00:38.150 align:start position:0%
+other agents incentives their beliefs
+and<00:00:36.989><c> their</c><00:00:37.079><c> goals</c><00:00:37.380><c> you</c><00:00:37.770><c> need</c><00:00:37.920><c> to</c><00:00:38.010><c> make</c>
+
+00:00:38.150 --> 00:00:38.160 align:start position:0%
+and their goals you need to make
+ 
+
+00:00:38.160 --> 00:00:39.979 align:start position:0%
+and their goals you need to make
+decisions<00:00:38.190><c> about</c><00:00:38.760><c> when</c><00:00:39.180><c> to</c><00:00:39.210><c> cooperate</c><00:00:39.840><c> with</c>
+
+00:00:39.979 --> 00:00:39.989 align:start position:0%
+decisions about when to cooperate with
+ 
+
+00:00:39.989 --> 00:00:41.720 align:start position:0%
+decisions about when to cooperate with
+other<00:00:40.110><c> agents</c><00:00:40.649><c> and</c><00:00:40.800><c> when</c><00:00:40.920><c> to</c><00:00:41.040><c> defect</c><00:00:41.370><c> against</c>
+
+00:00:41.720 --> 00:00:41.730 align:start position:0%
+other agents and when to defect against
+ 
+
+00:00:41.730 --> 00:00:43.490 align:start position:0%
+other agents and when to defect against
+them<00:00:41.879><c> how</c><00:00:42.300><c> and</c><00:00:42.570><c> when</c><00:00:42.840><c> to</c><00:00:43.050><c> make</c><00:00:43.170><c> commitments</c>
+
+00:00:43.490 --> 00:00:43.500 align:start position:0%
+them how and when to make commitments
+ 
+
+00:00:43.500 --> 00:00:46.220 align:start position:0%
+them how and when to make commitments
+and<00:00:43.920><c> agreements</c><00:00:44.520><c> how</c><00:00:44.879><c> to</c><00:00:44.940><c> build</c><00:00:45.239><c> trust</c><00:00:45.480><c> you</c>
+
+00:00:46.220 --> 00:00:46.230 align:start position:0%
+and agreements how to build trust you
+ 
+
+00:00:46.230 --> 00:00:47.840 align:start position:0%
+and agreements how to build trust you
+need<00:00:46.379><c> to</c><00:00:46.469><c> think</c><00:00:46.680><c> about</c><00:00:46.800><c> what</c><00:00:47.250><c> strategies</c><00:00:47.489><c> you</c>
+
+00:00:47.840 --> 00:00:47.850 align:start position:0%
+need to think about what strategies you
+ 
+
+00:00:47.850 --> 00:00:49.610 align:start position:0%
+need to think about what strategies you
+can<00:00:48.120><c> choose</c><00:00:48.360><c> and</c><00:00:48.719><c> how</c><00:00:48.899><c> your</c><00:00:49.079><c> choices</c><00:00:49.350><c> will</c>
+
+00:00:49.610 --> 00:00:49.620 align:start position:0%
+can choose and how your choices will
+ 
+
+00:00:49.620 --> 00:00:51.080 align:start position:0%
+can choose and how your choices will
+affect<00:00:49.890><c> the</c><00:00:49.980><c> strategies</c><00:00:50.430><c> the</c><00:00:50.579><c> other</c><00:00:50.700><c> agents</c>
+
+00:00:51.080 --> 00:00:51.090 align:start position:0%
+affect the strategies the other agents
+ 
+
+00:00:51.090 --> 00:00:52.910 align:start position:0%
+affect the strategies the other agents
+choose<00:00:51.329><c> and</c><00:00:51.570><c> then</c><00:00:51.960><c> how</c><00:00:52.140><c> their</c><00:00:52.350><c> choices</c><00:00:52.559><c> will</c>
+
+00:00:52.910 --> 00:00:52.920 align:start position:0%
+choose and then how their choices will
+ 
+
+00:00:52.920 --> 00:00:54.920 align:start position:0%
+choose and then how their choices will
+affect<00:00:53.160><c> yours</c><00:00:53.399><c> and</c><00:00:53.670><c> so</c><00:00:53.789><c> on</c><00:00:53.940><c> you</c><00:00:54.510><c> need</c><00:00:54.629><c> to</c><00:00:54.750><c> think</c>
+
+00:00:54.920 --> 00:00:54.930 align:start position:0%
+affect yours and so on you need to think
+ 
+
+00:00:54.930 --> 00:00:57.319 align:start position:0%
+affect yours and so on you need to think
+about<00:00:55.020><c> equilibria</c><00:00:55.879><c> basically</c><00:00:56.879><c> you</c><00:00:56.969><c> need</c><00:00:57.120><c> game</c>
+
+00:00:57.319 --> 00:00:57.329 align:start position:0%
+about equilibria basically you need game
+ 
+
+00:00:57.329 --> 00:00:59.360 align:start position:0%
+about equilibria basically you need game
+theory<00:00:57.750><c> and</c><00:00:57.930><c> reinforcement</c><00:00:58.920><c> learners</c><00:00:59.219><c> don't</c>
+
+00:00:59.360 --> 00:00:59.370 align:start position:0%
+theory and reinforcement learners don't
+ 
+
+00:00:59.370 --> 00:01:00.979 align:start position:0%
+theory and reinforcement learners don't
+really<00:00:59.670><c> do</c><00:00:59.820><c> game</c><00:01:00.030><c> theory</c><00:01:00.390><c> at</c><00:01:00.539><c> least</c><00:01:00.750><c> not</c>
+
+00:01:00.979 --> 00:01:00.989 align:start position:0%
+really do game theory at least not
+ 
+
+00:01:00.989 --> 00:01:03.110 align:start position:0%
+really do game theory at least not
+explicitly<00:01:01.500><c> generally</c><00:01:02.160><c> these</c><00:01:02.489><c> AI</c><00:01:02.670><c> systems</c>
+
+00:01:03.110 --> 00:01:03.120 align:start position:0%
+explicitly generally these AI systems
+ 
+
+00:01:03.120 --> 00:01:04.640 align:start position:0%
+explicitly generally these AI systems
+handle<00:01:03.480><c> other</c><00:01:03.570><c> agents</c><00:01:03.989><c> in</c><00:01:04.049><c> a</c><00:01:04.110><c> pretty</c><00:01:04.320><c> simple</c>
+
+00:01:04.640 --> 00:01:04.650 align:start position:0%
+handle other agents in a pretty simple
+ 
+
+00:01:04.650 --> 00:01:06.440 align:start position:0%
+handle other agents in a pretty simple
+way<00:01:04.799><c> they</c><00:01:05.460><c> model</c><00:01:05.790><c> them</c><00:01:05.909><c> the</c><00:01:06.030><c> same</c><00:01:06.210><c> way</c><00:01:06.330><c> they</c>
+
+00:01:06.440 --> 00:01:06.450 align:start position:0%
+way they model them the same way they
+ 
+
+00:01:06.450 --> 00:01:08.570 align:start position:0%
+way they model them the same way they
+model<00:01:06.689><c> everything</c><00:01:07.049><c> else</c><00:01:07.229><c> other</c><00:01:08.040><c> agents</c><00:01:08.490><c> are</c>
+
+00:01:08.570 --> 00:01:08.580 align:start position:0%
+model everything else other agents are
+ 
+
+00:01:08.580 --> 00:01:10.370 align:start position:0%
+model everything else other agents are
+considered<00:01:09.000><c> as</c><00:01:09.150><c> basically</c><00:01:09.780><c> just</c><00:01:10.140><c> another</c>
+
+00:01:10.370 --> 00:01:10.380 align:start position:0%
+considered as basically just another
+ 
+
+00:01:10.380 --> 00:01:12.080 align:start position:0%
+considered as basically just another
+part<00:01:10.650><c> of</c><00:01:10.740><c> the</c><00:01:10.830><c> environment</c><00:01:11.070><c> and</c><00:01:11.520><c> since</c>
+
+00:01:12.080 --> 00:01:12.090 align:start position:0%
+part of the environment and since
+ 
+
+00:01:12.090 --> 00:01:13.730 align:start position:0%
+part of the environment and since
+whatever<00:01:12.510><c> game</c><00:01:12.810><c> theory</c><00:01:13.140><c> reinforcement</c>
+
+00:01:13.730 --> 00:01:13.740 align:start position:0%
+whatever game theory reinforcement
+ 
+
+00:01:13.740 --> 00:01:15.710 align:start position:0%
+whatever game theory reinforcement
+learners<00:01:13.979><c> do</c><00:01:14.189><c> is</c><00:01:14.460><c> sort</c><00:01:14.790><c> of</c><00:01:14.939><c> emergent</c><00:01:15.570><c> and</c>
+
+00:01:15.710 --> 00:01:15.720 align:start position:0%
+learners do is sort of emergent and
+ 
+
+00:01:15.720 --> 00:01:17.690 align:start position:0%
+learners do is sort of emergent and
+implicit<00:01:16.049><c> there</c><00:01:16.830><c> are</c><00:01:16.920><c> important</c><00:01:17.340><c> questions</c>
+
+00:01:17.690 --> 00:01:17.700 align:start position:0%
+implicit there are important questions
+ 
+
+00:01:17.700 --> 00:01:19.609 align:start position:0%
+implicit there are important questions
+to<00:01:17.759><c> be</c><00:01:17.909><c> asked</c><00:01:18.210><c> about</c><00:01:18.299><c> how</c><00:01:18.750><c> they'll</c><00:01:18.960><c> behave</c><00:01:19.290><c> in</c>
+
+00:01:19.609 --> 00:01:19.619 align:start position:0%
+to be asked about how they'll behave in
+ 
+
+00:01:19.619 --> 00:01:22.100 align:start position:0%
+to be asked about how they'll behave in
+different<00:01:19.680><c> multi</c><00:01:20.460><c> agent</c><00:01:20.759><c> situations</c><00:01:21.360><c> so</c><00:01:21.810><c> in</c>
+
+00:01:22.100 --> 00:01:22.110 align:start position:0%
+different multi agent situations so in
+ 
+
+00:01:22.110 --> 00:01:23.810 align:start position:0%
+different multi agent situations so in
+the<00:01:22.290><c> friend-or-foe</c><00:01:22.619><c> environment</c><00:01:23.400><c> the</c>
+
+00:01:23.810 --> 00:01:23.820 align:start position:0%
+the friend-or-foe environment the
+ 
+
+00:01:23.820 --> 00:01:25.280 align:start position:0%
+the friend-or-foe environment the
+reinforcement<00:01:24.420><c> learning</c><00:01:24.509><c> agent</c><00:01:24.960><c> finds</c>
+
+00:01:25.280 --> 00:01:25.290 align:start position:0%
+reinforcement learning agent finds
+ 
+
+00:01:25.290 --> 00:01:27.950 align:start position:0%
+reinforcement learning agent finds
+itself<00:01:25.530><c> in</c><00:01:25.680><c> a</c><00:01:25.799><c> room</c><00:01:26.009><c> with</c><00:01:26.280><c> two</c><00:01:26.549><c> boxes</c><00:01:26.939><c> one</c><00:01:27.689><c> box</c>
+
+00:01:27.950 --> 00:01:27.960 align:start position:0%
+itself in a room with two boxes one box
+ 
+
+00:01:27.960 --> 00:01:30.230 align:start position:0%
+itself in a room with two boxes one box
+contains<00:01:28.439><c> a</c><00:01:28.530><c> reward</c><00:01:28.860><c> one</c><00:01:29.610><c> contains</c><00:01:29.970><c> nothing</c>
+
+00:01:30.230 --> 00:01:30.240 align:start position:0%
+contains a reward one contains nothing
+ 
+
+00:01:30.240 --> 00:01:31.490 align:start position:0%
+contains a reward one contains nothing
+and<00:01:30.540><c> the</c><00:01:30.659><c> agent</c><00:01:30.900><c> doesn't</c><00:01:31.049><c> know</c><00:01:31.229><c> which</c><00:01:31.380><c> is</c>
+
+00:01:31.490 --> 00:01:31.500 align:start position:0%
+and the agent doesn't know which is
+ 
+
+00:01:31.500 --> 00:01:33.800 align:start position:0%
+and the agent doesn't know which is
+which<00:01:31.680><c> when</c><00:01:32.400><c> the</c><00:01:32.520><c> agent</c><00:01:32.820><c> opens</c><00:01:33.150><c> a</c><00:01:33.210><c> box</c><00:01:33.390><c> the</c>
+
+00:01:33.800 --> 00:01:33.810 align:start position:0%
+which when the agent opens a box the
+ 
+
+00:01:33.810 --> 00:01:36.170 align:start position:0%
+which when the agent opens a box the
+episode<00:01:34.140><c> ends</c><00:01:34.500><c> so</c><00:01:34.829><c> it</c><00:01:34.920><c> has</c><00:01:35.070><c> to</c><00:01:35.220><c> pick</c><00:01:35.400><c> one</c><00:01:35.700><c> what</c>
+
+00:01:36.170 --> 00:01:36.180 align:start position:0%
+episode ends so it has to pick one what
+ 
+
+00:01:36.180 --> 00:01:37.700 align:start position:0%
+episode ends so it has to pick one what
+makes<00:01:36.390><c> it</c><00:01:36.509><c> interesting</c><00:01:36.750><c> is</c><00:01:37.049><c> there</c><00:01:37.590><c> are</c>
+
+00:01:37.700 --> 00:01:37.710 align:start position:0%
+makes it interesting is there are
+ 
+
+00:01:37.710 --> 00:01:39.590 align:start position:0%
+makes it interesting is there are
+actually<00:01:37.860><c> three</c><00:01:38.549><c> identically</c><00:01:39.270><c> laid</c><00:01:39.450><c> out</c>
+
+00:01:39.590 --> 00:01:39.600 align:start position:0%
+actually three identically laid out
+ 
+
+00:01:39.600 --> 00:01:41.929 align:start position:0%
+actually three identically laid out
+rooms<00:01:39.930><c> of</c><00:01:40.140><c> different</c><00:01:40.680><c> colors</c><00:01:41.009><c> in</c><00:01:41.579><c> the</c><00:01:41.729><c> white</c>
+
+00:01:41.929 --> 00:01:41.939 align:start position:0%
+rooms of different colors in the white
+ 
+
+00:01:41.939 --> 00:01:43.819 align:start position:0%
+rooms of different colors in the white
+room<00:01:42.150><c> the</c><00:01:42.450><c> neutral</c><00:01:42.840><c> room</c><00:01:43.020><c> the</c><00:01:43.439><c> reward</c><00:01:43.740><c> is</c>
+
+00:01:43.819 --> 00:01:43.829 align:start position:0%
+room the neutral room the reward is
+ 
+
+00:01:43.829 --> 00:01:46.460 align:start position:0%
+room the neutral room the reward is
+placed<00:01:44.040><c> randomly</c><00:01:44.280><c> by</c><00:01:44.790><c> a</c><00:01:44.820><c> neutral</c><00:01:45.329><c> agent</c><00:01:45.509><c> it's</c>
+
+00:01:46.460 --> 00:01:46.470 align:start position:0%
+placed randomly by a neutral agent it's
+ 
+
+00:01:46.470 --> 00:01:48.200 align:start position:0%
+placed randomly by a neutral agent it's
+a<00:01:46.560><c> coin</c><00:01:46.770><c> toss</c><00:01:46.950><c> whether</c><00:01:47.250><c> the</c><00:01:47.490><c> reward</c><00:01:47.790><c> is</c><00:01:47.909><c> in</c><00:01:47.939><c> box</c>
+
+00:01:48.200 --> 00:01:48.210 align:start position:0%
+a coin toss whether the reward is in box
+ 
+
+00:01:48.210 --> 00:01:51.139 align:start position:0%
+a coin toss whether the reward is in box
+1<00:01:48.420><c> box</c><00:01:48.600><c> 2</c><00:01:49.020><c> in</c><00:01:49.649><c> the</c><00:01:49.799><c> green</c><00:01:50.040><c> room</c><00:01:50.250><c> the</c><00:01:50.729><c> reward</c><00:01:51.060><c> is</c>
+
+00:01:51.139 --> 00:01:51.149 align:start position:0%
+1 box 2 in the green room the reward is
+ 
+
+00:01:51.149 --> 00:01:52.940 align:start position:0%
+1 box 2 in the green room the reward is
+placed<00:01:51.420><c> by</c><00:01:51.780><c> an</c><00:01:51.899><c> agent</c><00:01:52.200><c> that's</c><00:01:52.290><c> friendly</c><00:01:52.799><c> to</c>
+
+00:01:52.940 --> 00:01:52.950 align:start position:0%
+placed by an agent that's friendly to
+ 
+
+00:01:52.950 --> 00:01:55.399 align:start position:0%
+placed by an agent that's friendly to
+the<00:01:53.070><c> AI</c><00:01:53.189><c> system</c><00:01:53.340><c> it</c><00:01:54.090><c> tries</c><00:01:54.540><c> to</c><00:01:54.720><c> predict</c><00:01:55.049><c> which</c>
+
+00:01:55.399 --> 00:01:55.409 align:start position:0%
+the AI system it tries to predict which
+ 
+
+00:01:55.409 --> 00:01:57.440 align:start position:0%
+the AI system it tries to predict which
+box<00:01:55.710><c> the</c><00:01:55.890><c> AI</c><00:01:55.979><c> will</c><00:01:56.130><c> choose</c><00:01:56.549><c> and</c><00:01:56.880><c> then</c><00:01:57.240><c> make</c>
+
+00:01:57.440 --> 00:01:57.450 align:start position:0%
+box the AI will choose and then make
+ 
+
+00:01:57.450 --> 00:01:59.300 align:start position:0%
+box the AI will choose and then make
+sure<00:01:57.479><c> to</c><00:01:57.810><c> put</c><00:01:57.960><c> the</c><00:01:58.049><c> reward</c><00:01:58.350><c> in</c><00:01:58.530><c> that</c><00:01:58.710><c> box</c><00:01:58.979><c> and</c>
+
+00:01:59.300 --> 00:01:59.310 align:start position:0%
+sure to put the reward in that box and
+ 
+
+00:01:59.310 --> 00:02:02.330 align:start position:0%
+sure to put the reward in that box and
+in<00:01:59.939><c> the</c><00:02:00.090><c> red</c><00:02:00.329><c> room</c><00:02:00.600><c> the</c><00:02:01.110><c> reward</c><00:02:01.500><c> is</c><00:02:01.710><c> placed</c><00:02:02.070><c> by</c>
+
+00:02:02.330 --> 00:02:02.340 align:start position:0%
+in the red room the reward is placed by
+ 
+
+00:02:02.340 --> 00:02:04.609 align:start position:0%
+in the red room the reward is placed by
+an<00:02:02.460><c> enemy</c><00:02:02.640><c> of</c><00:02:03.000><c> the</c><00:02:03.119><c> AI</c><00:02:03.240><c> system</c><00:02:03.420><c> that</c><00:02:04.229><c> tries</c><00:02:04.439><c> to</c>
+
+00:02:04.609 --> 00:02:04.619 align:start position:0%
+an enemy of the AI system that tries to
+ 
+
+00:02:04.619 --> 00:02:06.319 align:start position:0%
+an enemy of the AI system that tries to
+predict<00:02:04.920><c> the</c><00:02:05.009><c> ai's</c><00:02:05.219><c> choice</c><00:02:05.610><c> and</c><00:02:05.880><c> put</c><00:02:06.240><c> the</c>
+
+00:02:06.319 --> 00:02:06.329 align:start position:0%
+predict the ai's choice and put the
+ 
+
+00:02:06.329 --> 00:02:08.570 align:start position:0%
+predict the ai's choice and put the
+reward<00:02:06.630><c> in</c><00:02:06.750><c> the</c><00:02:06.840><c> other</c><00:02:07.020><c> box</c><00:02:07.409><c> these</c><00:02:08.069><c> rooms</c><00:02:08.399><c> have</c>
+
+00:02:08.570 --> 00:02:08.580 align:start position:0%
+reward in the other box these rooms have
+ 
+
+00:02:08.580 --> 00:02:09.919 align:start position:0%
+reward in the other box these rooms have
+different<00:02:08.910><c> agents</c><00:02:09.300><c> so</c><00:02:09.509><c> they</c><00:02:09.629><c> need</c><00:02:09.780><c> different</c>
+
+00:02:09.919 --> 00:02:09.929 align:start position:0%
+different agents so they need different
+ 
+
+00:02:09.929 --> 00:02:12.500 align:start position:0%
+different agents so they need different
+strategies<00:02:10.560><c> in</c><00:02:10.770><c> the</c><00:02:11.250><c> white</c><00:02:11.459><c> room</c><00:02:11.730><c> it's</c><00:02:12.060><c> random</c>
+
+00:02:12.500 --> 00:02:12.510 align:start position:0%
+strategies in the white room it's random
+ 
+
+00:02:12.510 --> 00:02:13.820 align:start position:0%
+strategies in the white room it's random
+so<00:02:12.720><c> your</c><00:02:12.870><c> strategy</c><00:02:13.290><c> doesn't</c><00:02:13.470><c> really</c>
+
+00:02:13.820 --> 00:02:13.830 align:start position:0%
+so your strategy doesn't really
+ 
+
+00:02:13.830 --> 00:02:15.860 align:start position:0%
+so your strategy doesn't really
+at<00:02:13.920><c> a</c><00:02:13.980><c> much</c><00:02:14.220><c> as</c><00:02:14.460><c> long</c><00:02:14.610><c> as</c><00:02:14.730><c> you</c><00:02:14.820><c> pick</c><00:02:14.970><c> a</c><00:02:15.030><c> box</c><00:02:15.240><c> in</c>
+
+00:02:15.860 --> 00:02:15.870 align:start position:0%
+at a much as long as you pick a box in
+ 
+
+00:02:15.870 --> 00:02:17.420 align:start position:0%
+at a much as long as you pick a box in
+the<00:02:16.080><c> green</c><00:02:16.320><c> room</c><00:02:16.560><c> you</c><00:02:16.950><c> want</c><00:02:17.100><c> to</c><00:02:17.190><c> be</c><00:02:17.280><c> as</c>
+
+00:02:17.420 --> 00:02:17.430 align:start position:0%
+the green room you want to be as
+ 
+
+00:02:17.430 --> 00:02:19.820 align:start position:0%
+the green room you want to be as
+predictable<00:02:17.730><c> as</c><00:02:18.090><c> possible</c><00:02:18.600><c> always</c><00:02:19.140><c> go</c><00:02:19.620><c> for</c>
+
+00:02:19.820 --> 00:02:19.830 align:start position:0%
+predictable as possible always go for
+ 
+
+00:02:19.830 --> 00:02:21.680 align:start position:0%
+predictable as possible always go for
+the<00:02:19.920><c> same</c><00:02:20.190><c> box</c><00:02:20.430><c> so</c><00:02:20.850><c> your</c><00:02:21.000><c> friend</c><00:02:21.270><c> knows</c><00:02:21.450><c> where</c>
+
+00:02:21.680 --> 00:02:21.690 align:start position:0%
+the same box so your friend knows where
+ 
+
+00:02:21.690 --> 00:02:23.270 align:start position:0%
+the same box so your friend knows where
+to<00:02:21.720><c> put</c><00:02:21.960><c> the</c><00:02:22.050><c> reward</c><00:02:22.350><c> for</c><00:02:22.470><c> you</c><00:02:22.590><c> and</c><00:02:22.770><c> in</c><00:02:22.980><c> the</c><00:02:23.070><c> Red</c>
+
+00:02:23.270 --> 00:02:23.280 align:start position:0%
+to put the reward for you and in the Red
+ 
+
+00:02:23.280 --> 00:02:25.160 align:start position:0%
+to put the reward for you and in the Red
+Room<00:02:23.520><c> you</c><00:02:23.820><c> want</c><00:02:23.970><c> to</c><00:02:24.060><c> be</c><00:02:24.150><c> as</c><00:02:24.240><c> unpredictable</c><00:02:25.080><c> as</c>
+
+00:02:25.160 --> 00:02:25.170 align:start position:0%
+Room you want to be as unpredictable as
+ 
+
+00:02:25.170 --> 00:02:27.620 align:start position:0%
+Room you want to be as unpredictable as
+possible<00:02:25.590><c> to</c><00:02:26.160><c> randomize</c><00:02:26.820><c> your</c><00:02:26.880><c> choices</c><00:02:27.270><c> so</c>
+
+00:02:27.620 --> 00:02:27.630 align:start position:0%
+possible to randomize your choices so
+ 
+
+00:02:27.630 --> 00:02:29.630 align:start position:0%
+possible to randomize your choices so
+your<00:02:28.020><c> opponent</c><00:02:28.260><c> can't</c><00:02:28.620><c> spot</c><00:02:28.890><c> any</c><00:02:29.070><c> patterns</c><00:02:29.490><c> to</c>
+
+00:02:29.630 --> 00:02:29.640 align:start position:0%
+your opponent can't spot any patterns to
+ 
+
+00:02:29.640 --> 00:02:32.030 align:start position:0%
+your opponent can't spot any patterns to
+exploit<00:02:29.970><c> the</c><00:02:30.630><c> question</c><00:02:30.960><c> is</c><00:02:31.080><c> can</c><00:02:31.560><c> the</c><00:02:31.680><c> agent</c>
+
+00:02:32.030 --> 00:02:32.040 align:start position:0%
+exploit the question is can the agent
+ 
+
+00:02:32.040 --> 00:02:34.100 align:start position:0%
+exploit the question is can the agent
+learn<00:02:32.280><c> to</c><00:02:32.490><c> recognize</c><00:02:33.030><c> when</c><00:02:33.060><c> the</c><00:02:33.570><c> other</c><00:02:33.720><c> agent</c>
+
+00:02:34.100 --> 00:02:34.110 align:start position:0%
+learn to recognize when the other agent
+ 
+
+00:02:34.110 --> 00:02:36.380 align:start position:0%
+learn to recognize when the other agent
+is<00:02:34.230><c> friendly</c><00:02:34.590><c> neutral</c><00:02:35.400><c> or</c><00:02:35.550><c> adversarial</c><00:02:36.270><c> and</c>
+
+00:02:36.380 --> 00:02:36.390 align:start position:0%
+is friendly neutral or adversarial and
+ 
+
+00:02:36.390 --> 00:02:38.930 align:start position:0%
+is friendly neutral or adversarial and
+adapted<00:02:37.140><c> strategy</c><00:02:37.590><c> appropriately</c><00:02:38.220><c> this</c><00:02:38.700><c> kind</c>
+
+00:02:38.930 --> 00:02:38.940 align:start position:0%
+adapted strategy appropriately this kind
+ 
+
+00:02:38.940 --> 00:02:40.550 align:start position:0%
+adapted strategy appropriately this kind
+of<00:02:39.000><c> thing</c><00:02:39.210><c> can</c><00:02:39.570><c> help</c><00:02:39.750><c> us</c><00:02:39.870><c> to</c><00:02:40.020><c> understand</c><00:02:40.440><c> how</c>
+
+00:02:40.550 --> 00:02:40.560 align:start position:0%
+of thing can help us to understand how
+ 
+
+00:02:40.560 --> 00:02:42.530 align:start position:0%
+of thing can help us to understand how
+these<00:02:40.860><c> agents</c><00:02:41.220><c> behave</c><00:02:41.520><c> around</c><00:02:41.790><c> other</c><00:02:42.030><c> agents</c>
+
+00:02:42.530 --> 00:02:42.540 align:start position:0%
+these agents behave around other agents
+ 
+
+00:02:42.540 --> 00:02:44.420 align:start position:0%
+these agents behave around other agents
+and<00:02:42.720><c> this</c><00:02:43.320><c> of</c><00:02:43.440><c> course</c><00:02:43.470><c> is</c><00:02:43.680><c> important</c><00:02:44.190><c> for</c><00:02:44.370><c> AI</c>
+
+00:02:44.420 --> 00:02:44.430 align:start position:0%
+and this of course is important for AI
+ 
+
+00:02:44.430 --> 00:02:46.370 align:start position:0%
+and this of course is important for AI
+safety<00:02:44.940><c> firstly</c><00:02:45.450><c> because</c><00:02:45.570><c> as</c><00:02:45.900><c> we've</c><00:02:46.170><c> talked</c>
+
+00:02:46.370 --> 00:02:46.380 align:start position:0%
+safety firstly because as we've talked
+ 
+
+00:02:46.380 --> 00:02:48.740 align:start position:0%
+safety firstly because as we've talked
+about<00:02:46.470><c> in</c><00:02:46.740><c> earlier</c><00:02:46.980><c> videos</c><00:02:47.340><c> AI</c><00:02:48.000><c> systems</c><00:02:48.570><c> are</c>
+
+00:02:48.740 --> 00:02:48.750 align:start position:0%
+about in earlier videos AI systems are
+ 
+
+00:02:48.750 --> 00:02:50.900 align:start position:0%
+about in earlier videos AI systems are
+often<00:02:49.020><c> vulnerable</c><00:02:49.260><c> to</c><00:02:49.680><c> adversarial</c><00:02:50.400><c> examples</c>
+
+00:02:50.900 --> 00:02:50.910 align:start position:0%
+often vulnerable to adversarial examples
+ 
+
+00:02:50.910 --> 00:02:52.730 align:start position:0%
+often vulnerable to adversarial examples
+so<00:02:51.390><c> it</c><00:02:51.480><c> will</c><00:02:51.600><c> be</c><00:02:51.720><c> valuable</c><00:02:52.050><c> to</c><00:02:52.230><c> have</c><00:02:52.320><c> systems</c>
+
+00:02:52.730 --> 00:02:52.740 align:start position:0%
+so it will be valuable to have systems
+ 
+
+00:02:52.740 --> 00:02:53.960 align:start position:0%
+so it will be valuable to have systems
+that<00:02:52.800><c> can</c><00:02:53.010><c> recognize</c><00:02:53.250><c> when</c><00:02:53.820><c> their</c>
+
+00:02:53.960 --> 00:02:53.970 align:start position:0%
+that can recognize when their
+ 
+
+00:02:53.970 --> 00:02:55.550 align:start position:0%
+that can recognize when their
+environment<00:02:54.480><c> contains</c><00:02:54.780><c> adversaries</c><00:02:55.380><c> and</c>
+
+00:02:55.550 --> 00:02:55.560 align:start position:0%
+environment contains adversaries and
+ 
+
+00:02:55.560 --> 00:02:57.860 align:start position:0%
+environment contains adversaries and
+secondly<00:02:56.100><c> because</c><00:02:56.370><c> AI</c><00:02:56.790><c> systems</c><00:02:57.330><c> operating</c><00:02:57.780><c> in</c>
+
+00:02:57.860 --> 00:02:57.870 align:start position:0%
+secondly because AI systems operating in
+ 
+
+00:02:57.870 --> 00:02:59.570 align:start position:0%
+secondly because AI systems operating in
+the<00:02:57.959><c> real</c><00:02:58.110><c> world</c><00:02:58.350><c> will</c><00:02:58.920><c> be</c><00:02:59.040><c> surrounded</c><00:02:59.550><c> by</c>
+
+00:02:59.570 --> 00:02:59.580 align:start position:0%
+the real world will be surrounded by
+ 
+
+00:02:59.580 --> 00:03:01.370 align:start position:0%
+the real world will be surrounded by
+other<00:02:59.850><c> agents</c><00:03:00.300><c> in</c><00:03:00.390><c> the</c><00:03:00.480><c> form</c><00:03:00.660><c> of</c><00:03:00.750><c> human</c><00:03:01.080><c> beings</c>
+
+00:03:01.370 --> 00:03:01.380 align:start position:0%
+other agents in the form of human beings
+ 
+
+00:03:01.380 --> 00:03:04.190 align:start position:0%
+other agents in the form of human beings
+so<00:03:01.650><c> we</c><00:03:02.310><c> want</c><00:03:02.490><c> to</c><00:03:02.580><c> understand</c><00:03:03.090><c> things</c><00:03:03.480><c> like</c><00:03:03.600><c> how</c>
+
+00:03:04.190 --> 00:03:04.200 align:start position:0%
+so we want to understand things like how
+ 
+
+00:03:04.200 --> 00:03:06.230 align:start position:0%
+so we want to understand things like how
+those<00:03:04.440><c> systems</c><00:03:04.860><c> make</c><00:03:05.070><c> decisions</c><00:03:05.550><c> about</c><00:03:05.730><c> which</c>
+
+00:03:06.230 --> 00:03:06.240 align:start position:0%
+those systems make decisions about which
+ 
+
+00:03:06.240 --> 00:03:08.790 align:start position:0%
+those systems make decisions about which
+agents<00:03:06.720><c> are</c><00:03:06.840><c> friends</c><00:03:07.230><c> and</c><00:03:07.320><c> which</c><00:03:07.709><c> are</c><00:03:07.890><c> foes</c>
+
+00:03:08.790 --> 00:03:08.800 align:start position:0%
+agents are friends and which are foes
+ 
+
+00:03:08.800 --> 00:03:10.710 align:start position:0%
+agents are friends and which are foes
+[Music]
+
+00:03:10.710 --> 00:03:10.720 align:start position:0%
+[Music]
+ 
+
+00:03:10.720 --> 00:03:19.620 align:start position:0%
+[Music]
+I<00:03:17.190><c> want</c><00:03:18.190><c> to</c><00:03:18.250><c> say</c><00:03:18.370><c> a</c><00:03:18.400><c> big</c><00:03:18.610><c> thank</c><00:03:18.850><c> you</c><00:03:18.910><c> to</c><00:03:19.210><c> all</c><00:03:19.390><c> of</c>
+
+00:03:19.620 --> 00:03:19.630 align:start position:0%
+I want to say a big thank you to all of
+ 
+
+00:03:19.630 --> 00:03:21.210 align:start position:0%
+I want to say a big thank you to all of
+my<00:03:19.750><c> wonderful</c><00:03:20.080><c> patrons</c><00:03:20.590><c> it's</c><00:03:20.890><c> all</c><00:03:21.010><c> of</c><00:03:21.130><c> these</c>
+
+00:03:21.210 --> 00:03:21.220 align:start position:0%
+my wonderful patrons it's all of these
+ 
+
+00:03:21.220 --> 00:03:25.050 align:start position:0%
+my wonderful patrons it's all of these
+these<00:03:21.490><c> people</c><00:03:21.820><c> here</c><00:03:22.570><c> and</c><00:03:22.960><c> here</c><00:03:23.110><c> and</c><00:03:23.940><c> in</c><00:03:24.940><c> this</c>
+
+00:03:25.050 --> 00:03:25.060 align:start position:0%
+these people here and here and in this
+ 
+
+00:03:25.060 --> 00:03:26.760 align:start position:0%
+these people here and here and in this
+video<00:03:25.240><c> I'm</c><00:03:25.540><c> especially</c><00:03:26.020><c> thanking</c><00:03:26.410><c> Pedro</c>
+
+00:03:26.760 --> 00:03:26.770 align:start position:0%
+video I'm especially thanking Pedro
+ 
+
+00:03:26.770 --> 00:03:28.970 align:start position:0%
+video I'm especially thanking Pedro
+Ortega<00:03:27.250><c> who</c><00:03:27.730><c> recently</c><00:03:27.970><c> became</c><00:03:28.270><c> a</c><00:03:28.480><c> patron</c>
+
+00:03:28.970 --> 00:03:28.980 align:start position:0%
+Ortega who recently became a patron
+ 
+
+00:03:28.980 --> 00:03:31.050 align:start position:0%
+Ortega who recently became a patron
+Pedro<00:03:29.980><c> is</c><00:03:30.100><c> actually</c><00:03:30.400><c> one</c><00:03:30.550><c> of</c><00:03:30.580><c> the</c><00:03:30.730><c> authors</c><00:03:31.030><c> of</c>
+
+00:03:31.050 --> 00:03:31.060 align:start position:0%
+Pedro is actually one of the authors of
+ 
+
+00:03:31.060 --> 00:03:33.450 align:start position:0%
+Pedro is actually one of the authors of
+this<00:03:31.240><c> paper</c><00:03:31.300><c> which</c><00:03:31.870><c> is</c><00:03:32.020><c> fun</c><00:03:32.230><c> and</c><00:03:32.470><c> he</c><00:03:33.220><c> was</c><00:03:33.340><c> very</c>
+
+00:03:33.450 --> 00:03:33.460 align:start position:0%
+this paper which is fun and he was very
+ 
+
+00:03:33.460 --> 00:03:35.040 align:start position:0%
+this paper which is fun and he was very
+helpful<00:03:33.760><c> in</c><00:03:34.000><c> answering</c><00:03:34.390><c> some</c><00:03:34.570><c> questions</c><00:03:34.720><c> that</c>
+
+00:03:35.040 --> 00:03:35.050 align:start position:0%
+helpful in answering some questions that
+ 
+
+00:03:35.050 --> 00:03:36.120 align:start position:0%
+helpful in answering some questions that
+I<00:03:35.140><c> had</c><00:03:35.380><c> about</c><00:03:35.410><c> the</c><00:03:35.830><c> friend-or-foe</c>
+
+00:03:36.120 --> 00:03:36.130 align:start position:0%
+I had about the friend-or-foe
+ 
+
+00:03:36.130 --> 00:03:38.070 align:start position:0%
+I had about the friend-or-foe
+environment<00:03:36.790><c> so</c><00:03:37.180><c> thank</c><00:03:37.450><c> you</c><00:03:37.570><c> again</c><00:03:37.690><c> for</c><00:03:38.020><c> that</c>
+
+00:03:38.070 --> 00:03:38.080 align:start position:0%
+environment so thank you again for that
+ 
+
+00:03:38.080 --> 00:03:39.960 align:start position:0%
+environment so thank you again for that
+and<00:03:38.440><c> thank</c><00:03:39.100><c> you</c><00:03:39.220><c> all</c><00:03:39.370><c> for</c><00:03:39.640><c> all</c><00:03:39.670><c> of</c><00:03:39.760><c> your</c>
+
+00:03:39.960 --> 00:03:39.970 align:start position:0%
+and thank you all for all of your
+ 
+
+00:03:39.970 --> 00:03:43.620 align:start position:0%
+and thank you all for all of your
+support<00:03:40.090><c> I'll</c><00:03:40.900><c> see</c><00:03:41.140><c> you</c><00:03:41.260><c> next</c><00:03:41.290><c> time</c>
+

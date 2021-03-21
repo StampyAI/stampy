@@ -1,0 +1,146 @@
+How do you get a reinforcement learning agent to do what you want, when you can't actually write a reward function that specifies what that is?
+
+The paper: https://arxiv.org/pdf/1706.03741.pdf
+The blogpost: https://openai.com/blog/deep-reinforcement-learning-from-human-preferences/
+
+Thanks to my wonderful patrons:
+https://www.patreon.com/robertskmiles
+James
+Gladamas
+Steef
+Scott Worley
+Jordan Medina
+Simon Strandgaard
+JJ Hepboin
+Pedro A Ortega
+Said Polat
+Chris Canal
+Jake Ehrlich
+Kellen lask
+Francisco Tolmasky
+Michael Andregg
+David Reid
+Robert Daniel Pickard
+Peter Rolf
+Chad Jones
+Richárd Nagyfi
+Jason Hise
+Phil Moyer
+Shevis Johnson
+Erik de Bruijn
+Alec Johnson
+Clemens Arbesser
+Ludwig Schubert
+Bryce Daifuku
+Allen Faure
+Eric James
+Qeith Wreid
+Jonatan R
+Ingvi Gautsson
+Michael Greve
+Julius Brash
+Tom O'Connor
+Robin Green
+Laura Olds
+Jon Halliday
+Paul Hobbs
+Jeroen De Dauw
+Lupuleasa Ionuț
+Tim Neilson
+Eric Scammell
+Igor Keller
+Ben Glanton
+anul kumar sinha
+Sean Gibat
+Cooper Lawton
+Will Glynn
+Tyler Herrmann
+Tomas Sayder
+Ian Munro
+Jérôme Beaulieu
+Nathan Fish
+Taras Bobrovytsky
+Anne Buit
+Vaskó Richárd
+Sebastian Birjoveanu
+Euclidean Plane
+Andrew Harcourt
+DGJono
+robertvanduursen
+Dmitri Afanasjev
+Marcel Ward
+Andrew Weir
+Ben Archer
+Kabs
+Miłosz Wierzbicki
+Tendayi Mawushe
+Jannik Olbrich
+Anne Kohlbrenner
+Jussi Männistö
+Wr4thon
+Martin Ottosen
+Archy de Berker
+Marc Pauly
+Andy Kobre
+Brian Gillespie
+Poker Chen
+Kees
+Darko Sperac
+Truls
+Paul Moffat
+Anders Öhrt
+Marco Tiraboschi
+Michael Kuhinica
+Fraser Cain
+Robin Scharf
+Seth Brothwell
+Kasper Schnack
+Klemen Slavic
+Patrick Henderson
+Oct todo22
+Melisa Kostrzewski
+Hendrik
+Daniel Munter
+Graham Henry
+Duncan Orr
+Bryan Egan
+Robert Hildebrandt
+James Fowkes
+Alan Bandurka
+Ben H
+Tatiana Ponomareva
+Michael Bates
+Simon Pilkington
+Dion Gerald Bridger
+Petr Smital
+Daniel Kokotajlo
+Fionn
+Yuchong Li
+Diagon
+Parker Lund
+Paul Emmerich
+Russell schoen
+Andreas Blomqvist
+Bertalan Bodor
+David Morgan
+Jeremy
+Ben Schultz
+Zannheim
+Daniel Eickhardt
+lyon549
+HD
+Ihor Mukha
+14zRobot
+Ivan
+Arne Strasser
+Jason Cherry
+Igor (Kerogi) Kostenko
+Isaac Boates
+Thomas Dingemanse
+Davy Ker
+Alexander Brown
+Devon Bernard
+Ted Stokes
+James Helms
+Matheson Bayley
+https://www.patreon.com/robertskmiles
