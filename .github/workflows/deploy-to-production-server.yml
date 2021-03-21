@@ -1,7 +1,7 @@
 name: Deploy to PRODelopment Server
 on:
   push:
-    branches: [master, PROD]
+    branches: [master]
 
 jobs:
   deploy:
