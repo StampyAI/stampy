@@ -21,3 +21,4 @@ jobs:
             conda env remove -n stampy
             conda env create -f environment.yml
             conda activate stampy
+            ./runstampy
