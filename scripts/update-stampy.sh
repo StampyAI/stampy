@@ -1,4 +1,5 @@
 pkill -f stam.py
+pkill -f runstampy
 cd ~/stampy
 python3 -m scripts.notify-discord-stampy-offline
 git pull
