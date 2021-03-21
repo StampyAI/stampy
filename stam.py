@@ -33,7 +33,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("A new stampy is online")
+    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I'm back!")
 
 
 @client.event
