@@ -13,13 +13,4 @@ jobs:
           host: ${{secrets.SSH_DEV_HOST}}
           key: ${{secrets.SSH_DEV_KEY}}
           username: ${{secrets.SSH_DEV_USERNAME}}
-          script: |
-            sleep 20
-            pkill -f stam.py
-            cd ~/stampy
-            python3 -m scripts.notify-discord-stampy-offline
-            git pull
-            conda env remove -n stampy
-            conda env create -f environment.yml
-            conda activate stampy
-            python3 stam.py
+          script: ./root/stampy/scripts/update-stampy.sh
