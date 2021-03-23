@@ -14,7 +14,7 @@ jobs:
           key: ${{secrets.SSH_PROD_KEY}}
           username: ${{secrets.SSH_PROD_USERNAME}}
           script: |
-            source /root/.zshrc
+            source ~/.bashrc
             for i in $(pgrep -f stam.py)
             do
                 TIME=$(ps --no-headers -o etimes $i)
