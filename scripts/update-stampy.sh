@@ -1,5 +1,17 @@
-pkill -f stam.py
-pkill -f runstampy
+for i in $(pgrep -f stam.py)
+do
+    TIME=$(ps --no-headers -o etimes $i)
+    if [ "$TIME" -ge 60 ] ; then
+        kill $i
+    fi
+done
+for i in $(pgrep -f runstampy)
+do
+    TIME=$(ps --no-headers -o etimes $i)
+    if [ "$TIME" -ge 60 ] ; then
+        kill $i
+    fi
+done
 cd ~/stampy
 conda activate stampy
 python -m scripts.notify-discord-stampy-offline
