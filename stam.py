@@ -19,7 +19,7 @@ from config import (
 )
 
 if ENVIRONMENT_TYPE == "production":
-    sys.path.append(sentience_prod_path)
+    sys.path.inset(0, sentience_prod_path)
     import sentience
 elif ENVIRONMENT_TYPE == "development":
     from modules.sentience import sentience
