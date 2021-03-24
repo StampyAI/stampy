@@ -19,6 +19,10 @@ do
     fi
 done
 
+export DISCORD_TOKEN="$(cat ~/.discordtoken)"
+export DISCORD_GUILD="$(cat ~/.discordguild)"
+export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
+export CLIENT_SECRET_PATH="$(cat ~/.clientsecretpath)"
 
 cd ~/stampy
 conda activate stampy
