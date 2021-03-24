@@ -33,7 +33,7 @@ conda env remove -n stampy
 conda env create -f environment.yml
 conda activate stampy
 mkdir -p ~/stampy.local/logs/
-log_file = ~/stampy.local/logs/"stampy-log-$(date +"%F-%T.log")"
-./runstampy > log_file 2>&1 &
-ln -s -f log_file ~/stampy.local/logs/stampy-latest.log
+export log_file=~/stampy.local/logs/stampy-log-$(date +"%F-%T.log")
+./runstampy > $log_file 2>&1 &
+ln -s -f $log_file ~/stampy.local/logs/stampy-latest.log
 conda deactivate
