@@ -1,3 +1,10 @@
+echo "Rebooting Stampy $(date +"%F-%T")"
+
+# This for loop kills the existing stampy processes
+# it checks to make sure that it only kills processes
+# that have been running for 60 seconds so that this
+# update process does not kill itself.
+
 for i in $(pgrep -f stam.py)
 do
     TIME=$(ps --no-headers -o etimes $i)
