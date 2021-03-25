@@ -1,4 +1,4 @@
-name: Deploy to PRODelopment Server
+name: Deploy to Production Server
 on:
   push:
     branches: [master]
@@ -14,11 +14,5 @@ jobs:
           key: ${{secrets.SSH_PROD_KEY}}
           username: ${{secrets.SSH_PROD_USERNAME}}
           script: |
-            pkill -f stam.py
-            cd /home/rob/stampy
-            python3 -m scripts.notify-discord-stampy-offline
-            git pull
-            conda env remove -n stampy
-            conda env create -f environment.yml
-            conda activate stampy
-            python3 stam.py
+            source ~/.bashrc
+            source ~/stampy/scripts/update-stampy.sh

@@ -86,11 +86,6 @@ class Utilities:
         Returns [] if it checked and there are no new ones
         Returns None if it didn't check because it's too soon to check again"""
 
-        if self.youtube is None:
-            print("WARNING: YouTube API Key is not set")
-            self.youtube_cooldown = 600
-            return []
-
         now = datetime.now(timezone.utc)
 
         if (now - self.last_check_timestamp) > self.youtube_cooldown:
@@ -102,6 +97,12 @@ class Utilities:
                 "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
+
+        if self.youtube is None:
+            print("WARNING: YouTube API Key is invalid or not set")
+            self.youtube_cooldown = self.youtube_cooldown * 10
+            return []
+
         request = self.youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
         )

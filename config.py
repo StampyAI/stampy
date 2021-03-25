@@ -17,7 +17,7 @@ discord_guild_env_variable = "DISCORD_GUILD"
 youtube_api_key_env_variable = "YOUTUBE_API_KEY"
 database_path_env_variable = "DATABASE_PATH"
 environment_type_env_variable = "ENVIRONMENT_TYPE"
-
+prod_local_path = "/home/rob/stampy.local"
 
 admin_usernames = ["robertskmiles", "sudonym"]
 
