@@ -13,6 +13,7 @@ jobs:
           host: ${{secrets.SSH_PROD_HOST}}
           key: ${{secrets.SSH_PROD_KEY}}
           username: ${{secrets.SSH_PROD_USERNAME}}
+          port: ${{secrets.SSH_PROD_PORT}}
           script: |
             source ~/.bashrc
             source ~/stampy/scripts/update-stampy.sh
