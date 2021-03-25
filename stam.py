@@ -15,11 +15,11 @@ from config import (
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
     bot_dev_channels,
-    sentience_prod_path,
+    prod_local_path,
 )
 
 if ENVIRONMENT_TYPE == "production":
-    sys.path.insert(0, sentience_prod_path)
+    sys.path.insert(0, prod_local_path)
     import sentience
 elif ENVIRONMENT_TYPE == "development":
     from modules.sentience import sentience
