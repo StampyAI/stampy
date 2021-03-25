@@ -19,6 +19,14 @@ do
     fi
 done
 
+for i in $(pgrep -f bash)
+do
+    TIME=$(ps --no-headers -o etimes $i)
+    if [ "$TIME" -ge 60 ] ; then
+        kill $i
+    fi
+done
+
 export DISCORD_TOKEN="$(cat ~/.discordtoken)"
 export DISCORD_GUILD="$(cat ~/.discordguild)"
 export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
