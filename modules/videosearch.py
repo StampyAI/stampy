@@ -69,7 +69,7 @@ class VideoSearch(Module):
                 description_filename = title + "-" + stub + ".description"
                 description_filepath = os.path.join(self.subsdir, description_filename)
                 if os.path.exists(description_filepath):
-                    description = open(description_filepath).read()
+                    description = open(description_filepath, encoding="utf8").read()
                 else:
                     description = ""
 
