@@ -96,7 +96,7 @@ async def on_message(message):
         print("there are", len(guild.members), "members")
         reset_users_count = 0
         for member in guild.members:
-            if utils.get_user_stamps(member) > 0:
+            if utils.get_user_score(member) > 0:
                 print(member.name, "can invite")
                 await member.add_roles(role)
                 reset_users_count += 1
@@ -126,7 +126,7 @@ async def on_message(message):
         # if the module had some confidence it could reply
         if not result:
             # but didn't reply in can_process_message()
-            confidence, result = await module.processMessage(message, client)
+            confidence, result = await module.process_message(message, client)
 
     if result:
         await message.channel.send(result)
