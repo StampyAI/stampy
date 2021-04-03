@@ -6,7 +6,9 @@ import googleapiclient.errors
 from utilities import Utilities
 import google_auth_oauthlib.flow as google_auth
 from googleapiclient.discovery import build as get_youtube_api
+from itertools import cycle
 
+spinner = cycle("\\|/-")
 
 class CommentPoster(object):
     utils = None
@@ -46,8 +48,9 @@ class CommentPoster(object):
 
             if responses_to_post:
                 print("responses_to_post:", responses_to_post)
-            else:
                 print(".", end="")
+            else:
+                print("\b" + next(spinner), end="")
                 sys.stdout.flush()
 
             if responses_to_post:
