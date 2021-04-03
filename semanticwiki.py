@@ -1,5 +1,8 @@
 import requests
+import datetime
 import json
+from utilities import utils
+
 
 ###########################################################################
 #   Question Persistence API Interface for future-proofing
@@ -7,7 +10,6 @@ import json
 
 
 class QuestionPersistence(object):
-
     def __init__(self, uri, user, api_key):
         self._uri = uri
         self._user = user
@@ -19,7 +21,10 @@ class QuestionPersistence(object):
     def login(self):
         raise NotImplementedError
 
-    def add_question(self, url, username, title, text):
+    def add_question(self, url, username, text):
+        raise NotImplementedError
+
+    def add_answer(self, url, users, text, reply_date):
         raise NotImplementedError
 
     def edit_question(self, content):
@@ -99,7 +104,7 @@ class SemanticWiki(QuestionPersistence):
         }
         data = self._session.post(self._uri, data=body)
         response = data.json()
-        print(response)
+        return response
 
     def edit(self, title, formatted_text):
         # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
@@ -115,18 +120,134 @@ class SemanticWiki(QuestionPersistence):
         response = data.json()
         return
 
-    def add_question(self, url, username, title, text):
-        title = "Maximizers and Satisficers on 10/03/2021 by Sudonym"
-        formatted_text = (
-            "{{Question|question=Testing this via the API|notquestion=Yes|asked=Yes|asker=Sudonym"
-            + "|date=2021-03-10T21:47:22.000Z|video=Quantilizers: AI That Doesn't Try Too Hard"
-            + "|canonicalversion=Test question2|followupto=test answer|stamps=plex, Sudonym|ytlikes=1}}"
-        )
-        self.edit(title, formatted_text)
+    def add_answer(self, url, users, text, reply_date):
+        # Split the url into the comment id and video url
+        url_arr = url.split("&lc=")
+        video_url = url_arr[0]
+        reply_id = url_arr[-1].split(".")[0]
+
+        # we need the short title from our table, so get the full title there too
+        titles = utils.get_title(video_url)
+
+        if titles is None:
+            return
+
+        short_title = titles[0]
+        #full_title = titles[1]
+
+        # TODO: Pass these in ass parameters instead of getting it directly from YT here
+        request = utils.youtube.commentThreads().list(part="snippet", id=reply_id)
+        response = request.execute()
+        items = response.get("items")
+        timestamp = None
+        username = None
+        if items:
+            timestamp = items[0]["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
+            asker = items[0]["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
+        pub_timestamp = datetime.datetime.fromisoformat(timestamp[:-1])
+        # Full question params
+        """
+        {{Answer
+        |answer=
+        |tags=
+        |canonicalquestion=
+        |answerto=
+        |canonical=
+        |nonaisafety=
+        |unstamped=
+        |writtenby=
+        |date=
+        }}
+        """
+        title = "{0}'s Answer to {1} on {2} by {3}".format(users[0], short_title, pub_timestamp, asker)
+        question = "{0} on {1} by {2}".format(short_title, pub_timestamp, asker)
+
+        # there has to be a better way...
+        ftext = """Answer|
+                answer={0}|
+                answerto={1}|
+                canonical=No|
+                nonaisafety=No|
+                unstamped=No|
+                writtenby={2}|
+                date={3}|
+                stamps={4}"""
+        ftext = "{{" + ftext.replace(" ", "").format(text, question, users[0], reply_date, ", ".join(users)) + "}}"
+
+        # Post the question to wiki
+        print("Trying to add reply " + text)
+        self.edit(title, ftext)
+        return
+
+    def add_question(self, url, username, text, asked=False):
+
+        # Split the url into the comment id and video url
+        url_arr = url.split("&lc=")
+        video_url = url_arr[0]
+        reply_id = url_arr[-1]
+
+        # we need the short title from our table, so get the full title there too
+        titles = utils.get_title(video_url)
+        short_title = titles[0]
+        full_title = titles[1]
+
+        # TODO: Pass these in ass parameters instead of getting it directly from YT here
+        request = utils.youtube.commentThreads().list(part="snippet", id=reply_id)
+        response = request.execute()
+        items = response.get("items")
+        timestamp = None
+        likes = None
+        if items:
+            timestamp = items[0]["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
+            likes = items[0]["snippet"]["topLevelComment"]["snippet"]["likeCount"]
+            published_timestamp = timestamp[:-1]
+        else:
+            published_timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
+            likes = 0
+        # Full question params
+        """
+        {{Question|
+        |question=
+        |tags=
+        |canonical=
+        |forrob=
+        |notquestion=
+        |asked=
+        |asker=
+        |date=
+        |video=
+        |canonicalversion=
+        |followupto=
+        |commenturl=
+        |ytlikes=
+        }}
+        """
+        title = "{0} on {1} by {2}".format(short_title, published_timestamp, username)
+
+        asked = "Yes" if asked else "No"
+
+        # there has to be a better way...
+        ftext = """Question|
+                question={0}|
+                notquestion=No|
+                canonical=No|
+                forrob=No|
+                asked={1}|
+                asker={2}|
+                date={3}|
+                video={4}|
+                ytlikes={5}|
+                commenturl={6}"""
+        ftext = "{{" + ftext.replace(" ", "").format(text, asked, username, published_timestamp, full_title, likes, url) + "}}"
+
+        # Post the question to wiki
+        self.edit(title, ftext)
         return
 
     def edit_question(self, content):
         pass
+        # I think this is probably fine, but maybe it is slightly different?
+        #self.add_question(self, url, username, text)
 
     def get_latest_question(self):
         pass
