@@ -132,6 +132,7 @@ async def on_message(message):
         await message.channel.send(result)
 
     print("########################################################")
+    sys.stdout.flush()
 
 
 @client.event
@@ -141,6 +142,9 @@ async def on_socket_raw_receive(_):
     So I'm going to use it as a kind of 'update' or 'tick' function,
     for things the bot needs to do regularly. Yes this is hacky.
     Rate limit these things, because this function might be firing a lot"""
+
+    # keep the log file fresh
+    sys.stdout.flush()
 
     # never fire more than once a second
     tick_cooldown = timedelta(seconds=1)
