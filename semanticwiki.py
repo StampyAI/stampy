@@ -1,83 +1,44 @@
-import abc
 import requests
 import json
-
 
 ###########################################################################
 #   Question Persistence API Interface for future-proofing
 ###########################################################################
-class QuestionPersistenceInterface(object):
-    __metaclass__ = abc.ABCMeta
 
-    def __init__(self):
-        self._base_uri = None
+
+class QuestionPersistence(object):
+
+    def __init__(self, uri, user, api_key):
+        self._uri = uri
+        self._user = user
+        self._api_key = api_key
         self._session = None
         self._token = None
         self._token_expiration = None
 
-    @property
-    def base_uri(self):
-        return self._base_uri
-
-    @base_uri.setter
-    def base_uri(self, uri):
-        self._base_uri = uri
-
-    @property
-    def session(self):
-        return self._session
-
-    @session.setter
-    def session(self, session):
-        self._session = session
-
-    @property
-    def token(self):
-        return self._token
-
-    @token.setter
-    def token(self, token):
-        self._token = token
-
-    @property
-    def token_expiration(self):
-        return self._token_expiration
-
-    @token_expiration.setter
-    def token_expiration(self, expiration):
-        self._token_expiration = expiration
-
-    @abc.abstractmethod
     def login(self):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def add_question(self, url, username, title, text):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def edit_question(self, content):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def get_latest_question(self):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def get_random_question(self):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def set_question_asked(self):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def set_question_replied(self):
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def get_question_count(self):
-        pass
+        raise NotImplementedError
 
 
 ###########################################################################
@@ -85,42 +46,41 @@ class QuestionPersistenceInterface(object):
 ###########################################################################
 
 
-class SemanticWiki(QuestionPersistenceInterface):
-    def __init__(self):
-        QuestionPersistenceInterface.__init__(self)
-        self.base_uri = "https://stampy.ai/w/api.php"
+class SemanticWiki(QuestionPersistence):
+    def __init__(self, uri, user, api_key):
+        QuestionPersistence.__init__(self, uri, user, api_key)
         return
 
     def login(self):
         # TODO: Auto-renew token
 
-        self.session = requests.Session()
+        self._session = requests.Session()
 
         # Retrieve login token first
         body = {"action": "query", "meta": "tokens", "type": "login", "format": "json"}
-        data = self.session.get(url=self.base_uri, params=body)
+        data = self._session.get(url=self._uri, params=body)
         response = data.json()
 
         # Now log in to the Stampy bot account with the provided login token
         body = {
             "action": "login",
-            "lgname": "Stampy@stampy",
-            "lgpassword": "n1navvcr4l670jd9q1b4f8649kudoq9s",
+            "lgname": self._user,
+            "lgpassword": self._api_key,
             "lgtoken": response["query"]["tokens"]["logintoken"],
             "format": "json",
         }
 
-        data = self.session.post(self.base_uri, data=body)
+        data = self._session.post(self._uri, data=body)
         response = data.json()
 
         # this gets our actual csrf token, now that we are logged in
         body = {"action": "query", "meta": "tokens", "format": "json"}
 
-        data = self.session.get(url=self.base_uri, params=body)
+        data = self._session.get(url=self._uri, params=body)
         response = data.json()
 
         # store this token
-        self.token = response["query"]["tokens"]["csrftoken"]
+        self._token = response["query"]["tokens"]["csrftoken"]
 
         return
 
@@ -137,7 +97,7 @@ class SemanticWiki(QuestionPersistenceInterface):
             "formatversion": "2",
             "format": "json",
         }
-        data = self.session.post(self.base_uri, data=body)
+        data = self._session.post(self._uri, data=body)
         response = data.json()
         print(response)
 
@@ -147,11 +107,11 @@ class SemanticWiki(QuestionPersistenceInterface):
         body = {
             "action": "edit",
             "title": title,
-            "token": self.token,
+            "token": self._token,
             "format": "json",
             "text": formatted_text,
         }
-        data = self.session.post(self.base_uri, data=body)
+        data = self._session.post(self._uri, data=body)
         response = data.json()
         return
 
