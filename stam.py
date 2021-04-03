@@ -12,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
     rob_id,
+    plex_id,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
     bot_dev_channels,
@@ -27,7 +28,6 @@ else:
     raise Exception(
         "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
     )
-
 
 @client.event
 async def on_ready():
@@ -66,6 +66,13 @@ async def on_message(message):
     elif message.content.lower() == "Klaatu barada nikto".lower():
         await message.channel.send("I must go now, my planet needs me")
         exit()
+    if message.content.lower() == "reboot".lower():
+        if hasattr(message.channel, "name") and message.channel.name in ["bot-dev-priv", "bot-dev", "talk-to-stampy", "robertskmiles"]:
+            if message.author.id == int(rob_id):
+                await message.channel.send("Rebooting...")
+                exit()
+            else:
+                await message.channel.send("You're not my supervisor!")
     if message.content == "reply test":
         if message.reference:
             reference = await message.channel.fetch_message(message.reference.message_id)
@@ -80,7 +87,7 @@ async def on_message(message):
         else:
             response = "This is not a reply"
         await message.channel.send(response)
-    if message.content == "resetinviteroles" and message.author.id == int(rob_id):
+    if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
         guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
@@ -89,7 +96,7 @@ async def on_message(message):
         print("there are", len(guild.members), "members")
         reset_users_count = 0
         for member in guild.members:
-            if utils.get_user_stamps(member) > 0:
+            if utils.get_user_score(member) > 0:
                 print(member.name, "can invite")
                 await member.add_roles(role)
                 reset_users_count += 1
@@ -119,12 +126,13 @@ async def on_message(message):
         # if the module had some confidence it could reply
         if not result:
             # but didn't reply in can_process_message()
-            confidence, result = await module.processMessage(message, client)
+            confidence, result = await module.process_message(message, client)
 
     if result:
         await message.channel.send(result)
 
     print("########################################################")
+    sys.stdout.flush()
 
 
 @client.event
@@ -134,6 +142,9 @@ async def on_socket_raw_receive(_):
     So I'm going to use it as a kind of 'update' or 'tick' function,
     for things the bot needs to do regularly. Yes this is hacky.
     Rate limit these things, because this function might be firing a lot"""
+
+    # keep the log file fresh
+    sys.stdout.flush()
 
     # never fire more than once a second
     tick_cooldown = timedelta(seconds=1)
