@@ -12,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
     rob_id,
+    plex_id,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
     bot_dev_channels,
@@ -27,7 +28,6 @@ else:
     raise Exception(
         "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
     )
-
 
 @client.event
 async def on_ready():
@@ -80,7 +80,7 @@ async def on_message(message):
         else:
             response = "This is not a reply"
         await message.channel.send(response)
-    if message.content == "resetinviteroles" and message.author.id == int(rob_id):
+    if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
         guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
