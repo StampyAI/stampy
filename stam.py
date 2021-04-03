@@ -66,6 +66,13 @@ async def on_message(message):
     elif message.content.lower() == "Klaatu barada nikto".lower():
         await message.channel.send("I must go now, my planet needs me")
         exit()
+    if message.content.lower() == "reboot".lower():
+        if hasattr(message.channel, "name") and message.channel.name in ["bot-dev-priv", "bot-dev", "talk-to-stampy", "robertskmiles"]:
+            if message.author.id == int(rob_id):
+                await message.channel.send("Rebooting...")
+                exit()
+            else:
+                await message.channel.send("You're not my supervisor!")
     if message.content == "reply test":
         if message.reference:
             reference = await message.channel.fetch_message(message.reference.message_id)
