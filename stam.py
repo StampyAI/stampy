@@ -1,17 +1,33 @@
 import sys
 import discord
-import traceback
 import unicodedata
 from modules.reply import Reply
 from modules.module import Module
 from utilities import client, utils
 from modules.questions import QQManager
-from modules.sentience import sentience
-from config import discord_token, rob_id
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from datetime import datetime, timezone, timedelta
+from config import (
+    discord_token,
+    rob_id,
+    plex_id,
+    ENVIRONMENT_TYPE,
+    acceptable_environment_types,
+    bot_dev_channels,
+    prod_local_path,
+)
+
+if ENVIRONMENT_TYPE == "production":
+    sys.path.insert(0, prod_local_path)
+    import sentience
+elif ENVIRONMENT_TYPE == "development":
+    from modules.sentience import sentience
+else:
+    raise Exception(
+        "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
+    )
 
 
 @client.event
@@ -20,7 +36,6 @@ async def on_ready():
     print("searching for a guild named '%s'" % utils.GUILD)
     print(client.guilds)
     guild = discord.utils.get(client.guilds, name=utils.GUILD)
-
     if guild is None:
         raise Exception("Guild Not Found : '%s'" % utils.GUILD)
 
@@ -28,6 +43,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
+    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I'm back!")
 
 
 @client.event
@@ -51,6 +67,18 @@ async def on_message(message):
     elif message.content.lower() == "Klaatu barada nikto".lower():
         await message.channel.send("I must go now, my planet needs me")
         exit()
+    if message.content.lower() == "reboot".lower():
+        if hasattr(message.channel, "name") and message.channel.name in [
+            "bot-dev-priv",
+            "bot-dev",
+            "talk-to-stampy",
+            "robertskmiles",
+        ]:
+            if message.author.id == int(rob_id):
+                await message.channel.send("Rebooting...")
+                exit()
+            else:
+                await message.channel.send("You're not my supervisor!")
     if message.content == "reply test":
         if message.reference:
             reference = await message.channel.fetch_message(message.reference.message_id)
@@ -65,7 +93,7 @@ async def on_message(message):
         else:
             response = "This is not a reply"
         await message.channel.send(response)
-    if message.content == "resetinviteroles" and message.author.id == int(rob_id):
+    if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
         guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
@@ -74,7 +102,7 @@ async def on_message(message):
         print("there are", len(guild.members), "members")
         reset_users_count = 0
         for member in guild.members:
-            if utils.get_user_stamps(member) > 0:
+            if utils.get_user_score(member) > 0:
                 print(member.name, "can invite")
                 await member.add_roles(role)
                 reset_users_count += 1
@@ -110,22 +138,25 @@ async def on_message(message):
         await message.channel.send(result)
 
     print("########################################################")
+    sys.stdout.flush()
 
 
 @client.event
-async def on_socket_raw_receive(msg):
+async def on_socket_raw_receive(_):
     """This event fires whenever basically anything at all happens.
     Anyone joining, leaving, sending anything, even typing and not sending...
     So I'm going to use it as a kind of 'update' or 'tick' function,
     for things the bot needs to do regularly. Yes this is hacky.
     Rate limit these things, because this function might be firing a lot"""
 
+    # keep the log file fresh
+    sys.stdout.flush()
+
     # never fire more than once a second
     tick_cooldown = timedelta(seconds=1)
     now = datetime.now(timezone.utc)
 
     if (now - utils.last_timestamp) > tick_cooldown:
-        print(msg)
         print("|", end="")
         utils.last_timestamp = now
     else:

@@ -67,25 +67,21 @@ class Utilities:
             self.GUILD = discord_guild
             self.YOUTUBE_API_KEY = youtube_api_key
             self.DB_PATH = database_path
+            self.youtube = None
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
-            except HttpError as e:
+            except HttpError:
                 if self.YOUTUBE_API_KEY:
                     print("YouTube API Key is set but not correct")
                 else:
                     print("YouTube API Key is not set")
-                print(e)
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
-            self.wiki = SemanticWiki(
-                wiki_config["uri"], wiki_config["user"], wiki_config["password"]
-            )
+            self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
 
     def get_youtube_comment(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -125,11 +121,14 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- "
-                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
-                end="",
+                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
+
+        if self.youtube is None:
+            print("WARNING: YouTube API Key is invalid or not set")
+            self.youtube_cooldown = self.youtube_cooldown * 10
+            return []
 
         request = self.youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
@@ -162,9 +161,7 @@ class Utilities:
             if published_timestamp > newest_timestamp:
                 newest_timestamp = published_timestamp
 
-        print(
-            "Got %s items, most recent published at %s" % (len(items), newest_timestamp)
-        )
+        print("Got %s items, most recent published at %s" % (len(items), newest_timestamp))
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
@@ -177,8 +174,7 @@ class Utilities:
             username = top_level_comment["snippet"]["authorDisplayName"]
             text = top_level_comment["snippet"]["textOriginal"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
-                % (video_id, comment_id),
+                "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
@@ -190,13 +186,8 @@ class Utilities:
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cooldown = min(
-                self.youtube_cooldown * 2, timedelta(seconds=1200)
-            )
-            print(
-                "No new comments, increasing cooldown timer to %s"
-                % self.youtube_cooldown
-            )
+            self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
+            print("No new comments, increasing cooldown timer to %s" % self.youtube_cooldown)
 
         return new_comments
 
@@ -235,12 +226,7 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(
-                comment["username"],
-                self.get_title(comment["url"])[1],
-                text_quoted,
-                comment["url"],
-            )
+            ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
 
         print("==========================")
         print(report)
@@ -255,11 +241,9 @@ class Utilities:
         return report
 
     def get_question_count(self):
-
         return self.wiki.get_question_count()
 
     def clear_votes(self):
-
         query = "DELETE FROM uservotes"
         self.db.query(query)
         self.db.commit()
@@ -307,17 +291,11 @@ class Utilities:
         self.db.commit()
 
     def get_votes_by_user(self, user):
-        query = (
-            "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
-                user
-            )
-        )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
         return self.db.query(query)[0][0]
 
     def get_votes_for_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(
-            user
-        )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
         return self.db.query(query)[0][0]
 
     def get_total_votes(self):
@@ -339,19 +317,11 @@ class Utilities:
         comment = self.get_youtube_comment(url)
 
         return self.wiki.add_question(
-            url,
-            titles[1],
-            titles[0],
-            username,
-            comment["timestamp"],
-            text,
-            comment["likes"],
+            url, titles[1], titles[0], username, comment["timestamp"], text, comment["likes"],
         )
 
     def get_title(self, url):
-        result = self.db.query(
-            'select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url)
-        )
+        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
         if result:
             return result[0][0], result[0][1]
         return None
@@ -365,3 +335,6 @@ client = discord.Client(intents=intents)
 
 utils = Utilities.get_instance()
 utils.client = client
+
+if not os.path.exists(database_path):
+    raise Exception("Couldn't find the stampy database file at %s" % database_path)

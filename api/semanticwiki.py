@@ -7,7 +7,6 @@ from api.persistence import Persistence
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
 class SemanticWiki(Persistence):
-
     def __init__(self, uri, user, api_key):
         Persistence.__init__(self, uri, user, api_key)
         # Should we just log in on init? Or separate it out?
@@ -28,7 +27,7 @@ class SemanticWiki(Persistence):
         self.post(body)
 
         response = self.post({"action": "query", "meta": "tokens", "format": "json"})
-        self._token = response["query"]["tokens"]["csrftoken"] # store this token
+        self._token = response["query"]["tokens"]["csrftoken"]  # store this token
 
         print("Logged in to Wiki!")
         return
@@ -47,12 +46,7 @@ class SemanticWiki(Persistence):
         return self.post(body)
 
     def ask(self, query):
-        body = {
-            "action": "ask",
-            "format": "json",
-            "query": query,
-            "api_version": "2"
-        }
+        body = {"action": "ask", "format": "json", "query": query, "api_version": "2"}
         return self.post(body)
 
     def post(self, body):
@@ -89,8 +83,11 @@ class SemanticWiki(Persistence):
                 date={3}|
                 stamps={4}"""
 
-        ftext = "{{" + ftext.replace(" ", "").format(text, question_title, users[0], reply_date, ", ".join(users)) + \
-                "}}"
+        ftext = (
+            "{{"
+            + ftext.replace(" ", "").format(text, question_title, users[0], reply_date, ", ".join(users))
+            + "}}"
+        )
 
         # Post the answer to wiki
         print("Trying to add reply " + text + " to wiki")
@@ -115,25 +112,30 @@ class SemanticWiki(Persistence):
                 video={4}|
                 ytlikes={5}|
                 commenturl={6}"""
-        ftext = "{{" + ftext.replace(" ", "").format(text, asked, asker,
-                                                     asked_time, full_title, likes, url) + "}}"
+        ftext = (
+            "{{"
+            + ftext.replace(" ", "").format(text, asked, asker, asked_time, full_title, likes, url)
+            + "}}"
+        )
 
         # Post the question to wiki
         print("Trying to add question " + title + " to wiki")
         self.edit(title, ftext)
         return
 
-    def edit_question(self,  url, username, text):
+    def edit_question(self, url, username, text):
         # I think this is probably fine, but maybe it is slightly different? Could check to see if it exists?
         self.add_question(url, username, text)
         return
 
     def get_unasked_question(self, sort, order):
-        query = "[[Category:Unanswered questions]]|[[AskedOnDiscord::f]]|?Question|?asker|?AskDate|?CommentURL|" + \
-                "?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
+        query = (
+            "[[Category:Unanswered questions]]|[[AskedOnDiscord::f]]|?Question|?asker|?AskDate|?CommentURL|"
+            + "?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
+        )
         response = self.ask(query)
 
-        #url, username, title, text, replies, asked = None, None, None, None, None, None
+        # url, username, title, text, replies, asked = None, None, None, None, None, None
         question = {}
         if "query" in response:
             question["question_title"] = list(response["query"]["results"].keys())[0]
@@ -167,7 +169,7 @@ class SemanticWiki(Persistence):
             "form": "Question",
             "target": title,
             "format": "json",
-            "query": "Question[{0}]={1}".format(parameter, value)
+            "query": "Question[{0}]={1}".format(parameter, value),
         }
         return self.post(body)
 
@@ -179,6 +181,3 @@ class SemanticWiki(Persistence):
         response = self.ask(query)
 
         return response["query"]["results"]["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
-
-
-

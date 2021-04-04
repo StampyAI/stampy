@@ -24,15 +24,16 @@ def load_short_titles(db_path, csv_path):
 
     cur.execute("CREATE TABLE video_titles (URL STRING PRIMARY KEY, FullTitle STRING, ShortTitle STRING);")
 
-    with open(csv_path, 'r') as fin:
+    with open(csv_path, "r") as fin:
         # csv.DictReader uses first line in file for column headings by default
         dr = csv.DictReader(fin)
-        to_db = [(i['URL'], i['FullTitle'], i['ShortTitle']) for i in dr]
+        to_db = [(i["URL"], i["FullTitle"], i["ShortTitle"]) for i in dr]
 
     cur.executemany("INSERT INTO video_titles (URL, FullTitle, ShortTitle) VALUES (?, ?, ?);", to_db)
     con.commit()
     con.close()
     return
+
 
 # if you dont have the short tables in the db, you might want to add them or things will break
 # load_short_titles("C:\\Users\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\stampy.db", "C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\shorttitles.csv")
@@ -48,11 +49,9 @@ print(utils.get_youtube_comment("https://www.youtube.com/watch?v=L5pUA3LsEaw&lc=
 # TODO: Enable this to add questions from the sqlite DB
 # questions schema:  (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING,
 #                     text STRING, replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
-#questions = utils.db.query("SELECT * FROM QUESTIONS;")
+# questions = utils.db.query("SELECT * FROM QUESTIONS;")
 # for question in questions:
 #     wiki.add_question(question[0], question[1], question[3], question[5])
-
-
 
 
 """
@@ -101,5 +100,3 @@ def extract_reply(text):
 # TODO: enable this to add answers from Discord
 client.run(discord_token)
 """
-
-

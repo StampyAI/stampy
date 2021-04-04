@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import sys
@@ -5,6 +6,9 @@ import googleapiclient.errors
 from utilities import Utilities
 import google_auth_oauthlib.flow as google_auth
 from googleapiclient.discovery import build as get_youtube_api
+from itertools import cycle
+
+spinner = cycle("\\|/-")
 
 
 class CommentPoster(object):
@@ -17,7 +21,7 @@ class CommentPoster(object):
         api_version = "v3"
 
         # Get credentials and create an API client
-        flow = google_auth.InstalledAppFlow.from_client_secrets_file(self.utils.YOUTUBE_API_KEY, scopes)
+        flow = google_auth.InstalledAppFlow.from_client_secrets_file(os.getenv("CLIENT_SECRET_PATH"), scopes)
         credentials = flow.run_console()
         self.youtube = get_youtube_api(api_service_name, api_version, credentials=credentials)
 
@@ -45,8 +49,9 @@ class CommentPoster(object):
 
             if responses_to_post:
                 print("responses_to_post:", responses_to_post)
-            else:
                 print(".", end="")
+            else:
+                print("\b" + next(spinner), end="")
                 sys.stdout.flush()
 
             if responses_to_post:

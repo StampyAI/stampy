@@ -54,12 +54,12 @@ class Reply(Module):
         }
 
         # now we're going to put it in a json file, which CommentPoster.py will read and send it
-        with open("../database/topost.json") as post_file:
+        with open("database/topost.json") as post_file:
             responses_to_post = json.load(post_file)
 
         responses_to_post.append(body)
 
-        with open("../database/topost.json", "w") as post_file:
+        with open("database/topost.json", "w") as post_file:
             json.dump(responses_to_post, post_file, indent="\t")
 
         print("dummy, posting %s to %s" % (text, question_id))

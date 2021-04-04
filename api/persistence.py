@@ -2,6 +2,7 @@
 #   Question and Answer Persistence API Interface for future-proofing
 ###########################################################################
 
+
 class Persistence(object):
     def __init__(self, uri, user, api_key):
         self._uri = uri
