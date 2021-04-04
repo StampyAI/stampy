@@ -1,4 +1,4 @@
-from semanticwiki import SemanticWiki
+from api.semanticwiki import SemanticWiki
 from utilities import utils
 import discord
 import csv
@@ -6,13 +6,13 @@ import sqlite3
 import re
 from config import discord_token
 
+
 ###########################################################################
 #  This is a temporary helper file to load the questions from SQL lite into the wiki
 #  It also can scrape the Discord to get replies to questions, and add those as well.
 #  It's super messy, partially because we have to actually run the bot / discord directly here to scrape the messages
 #  Long-term, this will go away and won't be part of the project / master branch
 ###########################################################################
-
 def load_short_titles(db_path, csv_path):
     # Get CSV from: https://docs.google.com/spreadsheets/d/1SvMD1ws9RmNPzWBRt75fRTW2rOSgOYLetL6R-5qplj8
     con = sqlite3.connect(db_path)
@@ -46,14 +46,16 @@ wiki = SemanticWiki("http://159.203.118.169/stampy_test/mediawiki-1.35.1/api.php
 
 #questions = utils.db.query("SELECT * FROM QUESTIONS;")
 
+# TODO: Enable this to add questions from the sqlite DB
 
-#CREATE TABLE questions (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING, text STRING, replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
-#for question in questions:
-#    wiki.add_question(question[0], question[1], question[3], question[5])
+# questions schema:  (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING,
+#                     text STRING, replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
+
+# for question in questions:
+#     wiki.add_question(question[0], question[1], question[3], question[5])
 
 
 client = utils.client
-
 
 @client.event
 async def on_ready():

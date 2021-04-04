@@ -2,7 +2,7 @@ import requests
 import datetime
 import json
 from utilities import utils
-from persistence import Persistence
+from api.persistence import Persistence
 
 
 ###########################################################################
