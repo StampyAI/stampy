@@ -139,8 +139,8 @@ async def on_socket_raw_receive(msg):
             if "?" in comment["text"]:
                 utils.add_question(comment)
     # This is just checking if there _are_ questions
-    qq = utils.get_question_count()
-    if qq:
+    question_count = utils.get_question_count()
+    if question_count:
         # ask a new question if it's been long enough since we last asked one
         question_ask_cooldown = timedelta(hours=6)
 
@@ -160,7 +160,7 @@ async def on_socket_raw_receive(msg):
                 print("Not asking question: previous post in the channel was a question stampy asked.")
         else:
             remaining_cooldown = str(question_ask_cooldown - (now - utils.last_question_asked_timestamp))
-            print("%s Questions in queue, waiting %s to post" % (qq, remaining_cooldown))
+            print("%s Questions in queue, waiting %s to post" % (question_count, remaining_cooldown))
             return
 
 

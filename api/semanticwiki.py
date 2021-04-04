@@ -75,37 +75,6 @@ class SemanticWiki(Persistence):
     def add_answer(self, url, users, text, question_title, reply_date):
         # add a answer, we need to figure out which question this is an answer to
 
-        # Split the url into the comment id and video url, this is hacky
-        """
-        url_arr = url.split("&lc=")
-        video_url = url_arr[0]
-        reply_id = url_arr[-1].split(".")[0]
-
-        # we need the short title from our table, so get the full title there too
-        titles = utils.get_title(video_url)
-
-        if titles is None:
-            print("No title for video " + video_url)
-            return  # We dont have a title for this video
-
-        short_title = titles[0]
-        #full_title = titles[1] # don't need this for answers
-
-        # This code is repeated but it will all go away one this YT stuff is moved
-        request = utils.youtube.commentThreads().list(part="snippet", id=reply_id)
-        response = request.execute()
-        items = response.get("items")
-        if items:
-            timestamp = items[0]["snippet"]["topLevelComment"]["snippet"]["publishedAt"][:-1]
-            asker = items[0]["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-        else:  # This happens if the comment was deleted from YT
-            timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
-            asker = "Unknown"
-
-
-        question = "{0} on {1} by {2}".format(short_title, timestamp, asker) # must match the q title
-        """
-
         # there has to be a better way to get this to fit on one line..
         # Should we create a struct of some kind of these? Or an object that creates the string?
         title = "{0}'s Answer to {1}".format(users[0], question_title)
@@ -131,49 +100,6 @@ class SemanticWiki(Persistence):
     def add_question(self, url, full_title, short_title, asker, asked_time, text, likes=0, asked=False):
 
         # Split the url into the comment id and video url
-        """
-
-        url_arr = url.split("&lc=")
-        video_url = url_arr[0]
-        reply_id = url_arr[-1]
-
-        # we need the short title from our table, so get the full title there too
-        titles = utils.get_title(video_url)
-        short_title = titles[0]
-        full_title = titles[1]
-
-        request = utils.youtube.commentThreads().list(part="snippet", id=reply_id)
-        response = request.execute()
-        items = response.get("items")
-        timestamp = None
-        likes = None
-
-        if items:
-            timestamp = items[0]["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
-            likes = items[0]["snippet"]["topLevelComment"]["snippet"]["likeCount"]
-            published_timestamp = timestamp[:-1]
-        else: # This happens if the comment was deleted from YT
-            published_timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
-            likes = 0
-
-        # Full question params
-        {{Question|
-        |question=
-        |tags=
-        |canonical=
-        |forrob=
-        |notquestion=
-        |asked=
-        |asker=
-        |date=
-        |video=
-        |canonicalversion=
-        |followupto=
-        |commenturl=
-        |ytlikes=
-        }}
-        """
-
         title = "{0} on {1} by {2}".format(short_title, asked_time, asker)
         asked = "Yes" if asked else "No"
 
@@ -213,15 +139,15 @@ class SemanticWiki(Persistence):
             question["question_title"] = list(response["query"]["results"].keys())[0]
             relevant_vals = list(response["query"]["results"].values())[0]["printouts"]
 
-            if len(relevant_vals["CommentURL"]) > 0:
+            if relevant_vals["CommentURL"]:
                 question["url"] = relevant_vals["CommentURL"][0]
-            if len(relevant_vals["Asker"]) > 0:
+            if relevant_vals["Asker"]:
                 question["username"] = relevant_vals["Asker"][0]["fulltext"][5:]
-            if len(relevant_vals["Video"]) > 0:
+            if relevant_vals["Video"]:
                 question["title"] = relevant_vals["Video"][0]["fulltext"]
-            if len(relevant_vals["Question"]) > 0:
+            if relevant_vals["Question"]:
                 question["text"] = relevant_vals["Question"][0]
-            if len(relevant_vals["AskedOnDiscord"]) > 0:
+            if relevant_vals["AskedOnDiscord"]:
                 question["asked"] = relevant_vals["AskedOnDiscord"][0] == "t"
 
         return question

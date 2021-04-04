@@ -1,5 +1,5 @@
 ###########################################################################
-#   Question Persistence API Interface for future-proofing
+#   Question and Answer Persistence API Interface for future-proofing
 ###########################################################################
 
 class Persistence(object):

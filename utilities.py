@@ -203,7 +203,8 @@ class Utilities:
     def get_latest_question(self, order_type="LATEST"):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
-
+        # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
+        # So wanted to keep it consistent for now. Maybe get _a_ question?
         comment = None
         if order_type == "RANDOM":
             comment = self.wiki.get_random_question()
