@@ -14,10 +14,10 @@ class Persistence(object):
     # def login(self):
     #    raise NotImplementedError
 
-    def add_question(self, url, username, text):
+    def add_question(self, url, full_title, short_title, asker, asked_time, text, likes, asked=False):
         raise NotImplementedError
 
-    def add_answer(self, url, users, text, reply_date):
+    def add_answer(self, url, users, text, question_title, reply_date):
         raise NotImplementedError
 
     def edit_question(self, url, username, text):

@@ -2,6 +2,7 @@ import os
 import discord
 from dotenv import load_dotenv
 from database.database import Database
+from api.semanticwiki import SemanticWiki
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
@@ -14,6 +15,7 @@ from config import (
     discord_guild,
     youtube_api_key,
     database_path,
+    wiki_config,
 )
 
 
@@ -68,7 +70,9 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name,
+                    youtube_api_version,
+                    developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError as e:
                 if self.YOUTUBE_API_KEY:
@@ -79,6 +83,33 @@ class Utilities:
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
+            self.wiki = SemanticWiki(
+                wiki_config["uri"], wiki_config["user"], wiki_config["password"]
+            )
+
+    def get_youtube_comment(self, comment_url):
+        url_arr = comment_url.split("&lc=")
+        video_url = url_arr[0]
+        reply_id = url_arr[-1].split(".")[0]
+
+        request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
+        response = request.execute()
+        items = response.get("items")
+        comment = {}
+        if items:
+            top_level_comment = items[0]["snippet"]["topLevelComment"]
+            comment["timestamp"] = top_level_comment["snippet"]["publishedAt"][:-1]
+            comment["comment_id"] = top_level_comment["id"]
+            comment["username"] = top_level_comment["snippet"]["authorDisplayName"]
+            comment["likes"] = top_level_comment["snippet"]["likeCount"]
+            comment["text"] = top_level_comment["snippet"]["textOriginal"]
+        else:  # This happens if the comment was deleted from YT
+            comment["timestamp"] = datetime.isoformat(datetime.utcnow())
+            comment["comment_id"] = reply_id
+            comment["username"] = "Unknown"
+            comment["likes"] = 0
+            comment["text"] = ""
+        return comment
 
     def check_for_new_youtube_comments(self):
         """Consider getting the latest comments from the channel
@@ -94,7 +125,9 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
+                "YT waiting >%s\t- "
+                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
+                end="",
             )
             return None
 
@@ -129,7 +162,9 @@ class Utilities:
             if published_timestamp > newest_timestamp:
                 newest_timestamp = published_timestamp
 
-        print("Got %s items, most recent published at %s" % (len(items), newest_timestamp))
+        print(
+            "Got %s items, most recent published at %s" % (len(items), newest_timestamp)
+        )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
@@ -142,7 +177,8 @@ class Utilities:
             username = top_level_comment["snippet"]["authorDisplayName"]
             text = top_level_comment["snippet"]["textOriginal"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
+                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
+                % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
@@ -154,46 +190,56 @@ class Utilities:
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
-            print("No new comments, increasing cooldown timer to %s" % self.youtube_cooldown)
+            self.youtube_cooldown = min(
+                self.youtube_cooldown * 2, timedelta(seconds=1200)
+            )
+            print(
+                "No new comments, increasing cooldown timer to %s"
+                % self.youtube_cooldown
+            )
 
         return new_comments
 
-    def get_latest_question(self):
+    def get_latest_question(self, order_type="LATEST"):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
 
-        comment = self.get_next_question("text,username,title,url")
+        comment = None
+        if order_type == "RANDOM":
+            comment = self.wiki.get_random_question()
+        elif order_type == "TOP":
+            comment = self.wiki.get_top_question()
+        else:
+            comment = self.wiki.get_latest_question()
 
-        comment_dict = {
-            "text": comment[0],
-            "username": comment[1],
-            "title": comment[2],
-            "url": comment[3],
-        }
-        self.latest_question_posted = comment_dict
+        self.latest_question_posted = comment
 
-        text = comment[0]
+        text = comment["text"]
         if len(text) > 1500:
             text = text[:1500] + " [truncated]"
         text_quoted = "> " + "\n> ".join(text.split("\n"))
 
-        title = comment[2]
-        if title:
+        if "title" in comment:
             report = (
                 "YouTube user {0} asked this question, on the video {1}!:\n"
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment[1], comment[2], text_quoted, comment[3])
+            ).format(comment["username"], comment["title"], text_quoted, comment["url"])
 
         else:
+            # TODO: What about questions that aren't from videos?
             report = (
-                "YouTube user {0} just asked a question!:\n"
+                "YouTube user {0} asked this question, on the video {1}!:\n"
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment[1], comment[2], text_quoted, comment[3])
+            ).format(
+                comment["username"],
+                self.get_title(comment["url"])[1],
+                text_quoted,
+                comment["url"],
+            )
 
         print("==========================")
         print(report)
@@ -203,15 +249,16 @@ class Utilities:
         self.last_question_asked_timestamp = datetime.now(timezone.utc)
 
         # mark it in the database as having been asked
-        self.set_question_asked(comment_dict["url"])
+        self.wiki.set_question_asked(comment["question_title"])
 
         return report
 
     def get_question_count(self):
-        query = "SELECT COUNT(*) FROM questions"
-        return self.db.query(query)[0][0]
+
+        return self.wiki.get_question_count()
 
     def clear_votes(self):
+
         query = "DELETE FROM uservotes"
         self.db.query(query)
         self.db.commit()
@@ -259,11 +306,17 @@ class Utilities:
         self.db.commit()
 
     def get_votes_by_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
+        query = (
+            "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
+                user
+            )
+        )
         return self.db.query(query)[0][0]
 
     def get_votes_for_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(
+            user
+        )
         return self.db.query(query)[0][0]
 
     def get_total_votes(self):
@@ -280,27 +333,27 @@ class Utilities:
         return users
 
     def add_question(self, url, username, title, text):
-        self.db.query(
-            "INSERT INTO questions VALUES (?,?,?,?,?)", (url, username, title, text, False),
+        # Get the video title from the video URL, without the comment id
+        titles = self.get_title(url.split("&lc=")[0])
+        comment = self.get_youtube_comment(url)
+
+        return self.wiki.add_question(
+            url,
+            titles[1],
+            titles[0],
+            username,
+            comment["timestamp"],
+            text,
+            comment["likes"],
         )
-        self.db.commit()
 
-    def get_next_question(self, columns="*"):
-        return self.db.get_last("questions WHERE replied=False AND asked=False ORDER BY rowid DESC", columns)
-
-    # TODO: see above
-    def get_random_question(self, columns="*"):
-        return self.db.get_last("questions WHERE replied=False AND asked=False ORDER BY RANDOM()", columns)
-
-    def set_question_replied(self, url):
-        self.db.query('UPDATE questions SET replied = True WHERE url="{0}"'.format(url))
-        self.db.commit()
-        return True
-
-    def set_question_asked(self, url):
-        self.db.query('UPDATE questions SET asked = True WHERE url="{0}"'.format(url))
-        self.db.commit()
-        return True
+    def get_title(self, url):
+        result = self.db.query(
+            'select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url)
+        )
+        if result:
+            return result[0][0], result[0][1]
+        return None
 
 
 load_dotenv()

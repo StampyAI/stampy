@@ -34,27 +34,28 @@ def load_short_titles(db_path, csv_path):
     con.close()
     return
 
-
-#wiki = SemanticWiki("https://stampy.ai/w/api.php", "Stampy@stampy", "bi30ih0079pacqnto30875are3um5bcf") # Prod Wiki
-wiki = SemanticWiki("http://159.203.118.169/stampy_test/mediawiki-1.35.1/api.php", "Sudonym@stampy_dev","5q0k6md7tqb4b71rehaclb79ctvvqsrr") # Dev Wiki
-
 # if you dont have the short tables in the db, you might want to add them or things will break
 # load_short_titles("C:\\Users\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\stampy.db", "C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\shorttitles.csv")
 
-#wiki.login() # No longer needed, should login on init
 
+print(utils.wiki.get_latest_question())
+print(utils.wiki.get_top_question())
+print(utils.wiki.get_random_question())
+print(utils.wiki.get_question_count())
 
-#questions = utils.db.query("SELECT * FROM QUESTIONS;")
+print(utils.get_youtube_comment("https://www.youtube.com/watch?v=L5pUA3LsEaw&lc=UgzNcXnepg3y4mDYjn94AaABAg"))
 
 # TODO: Enable this to add questions from the sqlite DB
-
 # questions schema:  (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING,
 #                     text STRING, replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
-
+#questions = utils.db.query("SELECT * FROM QUESTIONS;")
 # for question in questions:
 #     wiki.add_question(question[0], question[1], question[3], question[5])
 
 
+
+
+"""
 client = utils.client
 
 @client.event
@@ -79,7 +80,7 @@ async def on_ready():
 
 
 def extract_reply(text):
-    """Pull the text of the reply out of the message"""
+    #Pull the text of the reply out of the message
     lines = text.split("\n")
     reply_message = ""
     url = ""
@@ -98,7 +99,7 @@ def extract_reply(text):
     return url, reply_message, users
 
 # TODO: enable this to add answers from Discord
-#client.run(discord_token)
-
+client.run(discord_token)
+"""
 
 

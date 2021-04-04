@@ -1,7 +1,5 @@
 import requests
 import datetime
-import json
-from utilities import utils
 from api.persistence import Persistence
 
 
@@ -9,6 +7,7 @@ from api.persistence import Persistence
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
 class SemanticWiki(Persistence):
+
     def __init__(self, uri, user, api_key):
         Persistence.__init__(self, uri, user, api_key)
         # Should we just log in on init? Or separate it out?
@@ -16,9 +15,7 @@ class SemanticWiki(Persistence):
         self._session = requests.Session()
 
         # Retrieve login token first
-        body = {"action": "query", "meta": "tokens", "type": "login", "format": "json"}
-        data = self._session.get(url=self._uri, params=body)
-        response = data.json()
+        response = self.post({"action": "query", "meta": "tokens", "type": "login", "format": "json"})
 
         # Now log in to the Stampy bot account with the provided login token
         body = {
@@ -28,22 +25,12 @@ class SemanticWiki(Persistence):
             "lgtoken": response["query"]["tokens"]["logintoken"],
             "format": "json",
         }
+        self.post(body)
 
-        data = self._session.post(self._uri, data=body)
-        response = data.json()
-
-        # this gets our actual csrf token, now that we are logged in
-        body = {"action": "query", "meta": "tokens", "format": "json"}
-
-        data = self._session.get(url=self._uri, params=body)
-        response = data.json()
-
-        # store this token
-        self._token = response["query"]["tokens"]["csrftoken"]
+        response = self.post({"action": "query", "meta": "tokens", "format": "json"})
+        self._token = response["query"]["tokens"]["csrftoken"] # store this token
 
         print("Logged in to Wiki!")
-        print(response)
-
         return
 
     def get_page(self, title):
@@ -57,9 +44,7 @@ class SemanticWiki(Persistence):
             "formatversion": "2",
             "format": "json",
         }
-        data = self._session.post(self._uri, data=body)
-        response = data.json()
-        return response
+        return self.post(body)
 
     def ask(self, query):
         body = {
@@ -68,6 +53,9 @@ class SemanticWiki(Persistence):
             "query": query,
             "api_version": "2"
         }
+        return self.post(body)
+
+    def post(self, body):
         data = self._session.post(self._uri, data=body)
         response = data.json()
         return response
@@ -82,14 +70,13 @@ class SemanticWiki(Persistence):
             "format": "json",
             "text": content,
         }
-        data = self._session.post(self._uri, data=body)
-        response = data.json()
-        return response
+        return self.post(body)
 
-    def add_answer(self, url, users, text, reply_date):
-        # add a answer, we need to figure out which question this is an answer to TODO: pass in question?
+    def add_answer(self, url, users, text, question_title, reply_date):
+        # add a answer, we need to figure out which question this is an answer to
 
         # Split the url into the comment id and video url, this is hacky
+        """
         url_arr = url.split("&lc=")
         video_url = url_arr[0]
         reply_id = url_arr[-1].split(".")[0]
@@ -104,7 +91,6 @@ class SemanticWiki(Persistence):
         short_title = titles[0]
         #full_title = titles[1] # don't need this for answers
 
-        # TODO: Pass these in as parameters instead of getting it directly from YT here
         # This code is repeated but it will all go away one this YT stuff is moved
         request = utils.youtube.commentThreads().list(part="snippet", id=reply_id)
         response = request.execute()
@@ -116,11 +102,14 @@ class SemanticWiki(Persistence):
             timestamp = datetime.datetime.isoformat(datetime.datetime.utcnow())
             asker = "Unknown"
 
-        title = "{0}'s Answer to {1} on {2} by {3}".format(users[0], short_title, timestamp, asker)
+
         question = "{0} on {1} by {2}".format(short_title, timestamp, asker) # must match the q title
+        """
 
         # there has to be a better way to get this to fit on one line..
-        # TODO: Should we create a struct of some kind of these? Or an object that creates the string?
+        # Should we create a struct of some kind of these? Or an object that creates the string?
+        title = "{0}'s Answer to {1}".format(users[0], question_title)
+
         ftext = """Answer|
                 answer={0}|
                 answerto={1}|
@@ -130,16 +119,20 @@ class SemanticWiki(Persistence):
                 writtenby={2}|
                 date={3}|
                 stamps={4}"""
-        ftext = "{{" + ftext.replace(" ", "").format(text, question, users[0], reply_date, ", ".join(users)) + "}}"
+
+        ftext = "{{" + ftext.replace(" ", "").format(text, question_title, users[0], reply_date, ", ".join(users)) + \
+                "}}"
 
         # Post the answer to wiki
         print("Trying to add reply " + text + " to wiki")
         self.edit(title, ftext)
         return
 
-    def add_question(self, url, username, text, asked=False):
+    def add_question(self, url, full_title, short_title, asker, asked_time, text, likes=0, asked=False):
 
         # Split the url into the comment id and video url
+        """
+
         url_arr = url.split("&lc=")
         video_url = url_arr[0]
         reply_id = url_arr[-1]
@@ -149,7 +142,6 @@ class SemanticWiki(Persistence):
         short_title = titles[0]
         full_title = titles[1]
 
-        # TODO: Pass these in as parameters instead of getting it directly from YT here
         request = utils.youtube.commentThreads().list(part="snippet", id=reply_id)
         response = request.execute()
         items = response.get("items")
@@ -165,7 +157,6 @@ class SemanticWiki(Persistence):
             likes = 0
 
         # Full question params
-        """
         {{Question|
         |question=
         |tags=
@@ -183,7 +174,7 @@ class SemanticWiki(Persistence):
         }}
         """
 
-        title = "{0} on {1} by {2}".format(short_title, published_timestamp, username)
+        title = "{0} on {1} by {2}".format(short_title, asked_time, asker)
         asked = "Yes" if asked else "No"
 
         # there has to be a better way to make this fit on a line..
@@ -198,8 +189,8 @@ class SemanticWiki(Persistence):
                 video={4}|
                 ytlikes={5}|
                 commenturl={6}"""
-        ftext = "{{" + ftext.replace(" ", "").format(text, asked, username,
-                                                     published_timestamp, full_title, likes, url) + "}}"
+        ftext = "{{" + ftext.replace(" ", "").format(text, asked, asker,
+                                                     asked_time, full_title, likes, url) + "}}"
 
         # Post the question to wiki
         print("Trying to add question " + title + " to wiki")
@@ -211,21 +202,57 @@ class SemanticWiki(Persistence):
         self.add_question(url, username, text)
         return
 
+    def get_unasked_question(self, sort, order):
+        query = "[[Category:Unanswered questions]]|[[AskedOnDiscord::f]]|?Question|?asker|?AskDate|?CommentURL|" + \
+                "?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
+        response = self.ask(query)
+
+        #url, username, title, text, replies, asked = None, None, None, None, None, None
+        question = {}
+        if "query" in response:
+            question["question_title"] = list(response["query"]["results"].keys())[0]
+            relevant_vals = list(response["query"]["results"].values())[0]["printouts"]
+
+            if len(relevant_vals["CommentURL"]) > 0:
+                question["url"] = relevant_vals["CommentURL"][0]
+            if len(relevant_vals["Asker"]) > 0:
+                question["username"] = relevant_vals["Asker"][0]["fulltext"][5:]
+            if len(relevant_vals["Video"]) > 0:
+                question["title"] = relevant_vals["Video"][0]["fulltext"]
+            if len(relevant_vals["Question"]) > 0:
+                question["text"] = relevant_vals["Question"][0]
+            if len(relevant_vals["AskedOnDiscord"]) > 0:
+                question["asked"] = relevant_vals["AskedOnDiscord"][0] == "t"
+
+        return question
+
     def get_latest_question(self):
-        # TODO: For Augustus
-        pass
+        return self.get_unasked_question("AskDate", "desc")
 
     def get_random_question(self):
-        # TODO: For Augustus
-        pass
+        return self.get_unasked_question("AskDate", "rand")
+
+    def get_top_question(self):
+        return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
+
+    def set_question_property(self, title, parameter, value):
+        body = {
+            "action": "pfautoedit",
+            "form": "Question",
+            "target": title,
+            "format": "json",
+            "query": "Question[{0}]={1}".format(parameter, value)
+        }
+        return self.post(body)
 
     def set_question_asked(self, title):
-        page = self.get_page(title)
-        # TODO: update the 'asked' attribute but post back the same page otherwise
-        pass
+        return self.set_question_property(title, "asked", "Yes")
 
     def get_question_count(self):
-        # TODO: For Augustus
-        pass
+        query = "[[Meta:API Queries]]|?UnaskedQuestions"
+        response = self.ask(query)
+
+        return response["query"]["results"]["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
+
 
 

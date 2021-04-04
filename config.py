@@ -20,16 +20,27 @@ discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
 youtube_api_key_env_variable = "YOUTUBE_API_KEY"
 database_path_env_variable = "DATABASE_PATH"
+wiki_password_path_env_variable = "WIKI_BOT_PASSWORD"
 
 admin_usernames = ["robertskmiles", "sudonym"]
+
 
 discord_token = os.getenv(discord_token_env_variable)
 discord_guild = os.getenv(discord_guild_env_variable)
 youtube_api_key = os.getenv(youtube_api_key_env_variable)
 database_path = os.getenv(database_path_env_variable)
+wiki_password = os.getenv(wiki_password_path_env_variable)
+
+wiki_config = {
+    "uri": "https://stampy.ai/w/api.php",
+    "user": "Stampy@stampy",
+    "password": wiki_password
+}
 
 required_environment_variables = [
     discord_token_env_variable,
     discord_guild_env_variable,
     database_path_env_variable,
+    wiki_password_path_env_variable
+
 ]

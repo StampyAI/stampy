@@ -104,7 +104,7 @@ async def on_message(message):
         # if the module had some confidence it could reply
         if not result:
             # but didn't reply in can_process_message()
-            confidence, result = await module.processMessage(message, client)
+            confidence, result = await module.process_message(message, client)
 
     if result:
         await message.channel.send(result)
@@ -138,7 +138,8 @@ async def on_socket_raw_receive(msg):
         for comment in new_comments:
             if "?" in comment["text"]:
                 utils.add_question(comment)
-    qq = utils.get_next_question("rowid")
+    # This is just checking if there _are_ questions
+    qq = utils.get_question_count()
     if qq:
         # ask a new question if it's been long enough since we last asked one
         question_ask_cooldown = timedelta(hours=6)
@@ -147,6 +148,7 @@ async def on_socket_raw_receive(msg):
             if not utils.last_message_was_youtube_question:
                 # Don't ask anything if the last thing posted in the chat was stampy asking a question
                 utils.last_question_asked_timestamp = now
+                # this actually gets the question and sets it to asked, then sends the report
                 report = utils.get_latest_question()
                 guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
                 general = discord.utils.find(lambda c: c.name == "general", guild.channels)
@@ -158,7 +160,7 @@ async def on_socket_raw_receive(msg):
                 print("Not asking question: previous post in the channel was a question stampy asked.")
         else:
             remaining_cooldown = str(question_ask_cooldown - (now - utils.last_question_asked_timestamp))
-            print("%s Questions in queue, waiting %s to post" % (len(qq), remaining_cooldown))
+            print("%s Questions in queue, waiting %s to post" % (qq, remaining_cooldown))
             return
 
 
