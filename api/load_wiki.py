@@ -6,8 +6,15 @@ import sqlite3
 import re
 from config import discord_token
 
+###########################################################################
+#  This is a temporary helper file to load the questions from SQL lite into the wiki
+#  It also can scrape the Discord to get replies to questions, and add those as well.
+#  It's super messy, partially because we have to actually run the bot / discord directly here to scrape the messages
+#  Long-term, this will go away and won't be part of the project / master branch
+###########################################################################
 
 def load_short_titles(db_path, csv_path):
+    # Get CSV from: https://docs.google.com/spreadsheets/d/1SvMD1ws9RmNPzWBRt75fRTW2rOSgOYLetL6R-5qplj8
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     try:
@@ -28,17 +35,16 @@ def load_short_titles(db_path, csv_path):
     return
 
 
-#wiki = SemanticWiki("https://stampy.ai/w/api.php", "Stampy@stampy", "bi30ih0079pacqnto30875are3um5bcf")
-wiki = SemanticWiki("http://159.203.118.169/stampy_test/mediawiki-1.35.1/api.php", "Sudonym@stampy_dev","5q0k6md7tqb4b71rehaclb79ctvvqsrr")
+#wiki = SemanticWiki("https://stampy.ai/w/api.php", "Stampy@stampy", "bi30ih0079pacqnto30875are3um5bcf") # Prod Wiki
+wiki = SemanticWiki("http://159.203.118.169/stampy_test/mediawiki-1.35.1/api.php", "Sudonym@stampy_dev","5q0k6md7tqb4b71rehaclb79ctvvqsrr") # Dev Wiki
 
 # if you dont have the short tables in the db, you might want to add them or things will break
 # load_short_titles("C:\\Users\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\stampy.db", "C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\shorttitles.csv")
 
-wiki.login()
+#wiki.login() # No longer needed, should login on init
 
-#wiki.add_question("https://www.youtube.com/watch?v=vYhErnZdnso&lc=Ugy90Q1vmTEqZ_OpD414AaABAg", "plex", "This is a test!\n It even has a new line!")
 
-questions = utils.db.query("SELECT * FROM QUESTIONS;")
+#questions = utils.db.query("SELECT * FROM QUESTIONS;")
 
 
 #CREATE TABLE questions (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING, text STRING, replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
@@ -66,7 +72,8 @@ async def on_ready():
                 reply_time = message.created_at
                 a = "Extracted reply: {0} answered by user {1} for question {2}".format(reply_text, users[0], question_url)
                 #print(a)
-                wiki.add_answer(question_url, users, reply_text, reply_time)
+                # TODO: enable this to add answers from Discord
+                #wiki.add_answer(question_url, users, reply_text, reply_time)
 
 
 def extract_reply(text):
@@ -88,8 +95,8 @@ def extract_reply(text):
     url = lines[-1][32:].replace(">", "").replace("<", "")
     return url, reply_message, users
 
-
-client.run(discord_token)
+# TODO: enable this to add answers from Discord
+#client.run(discord_token)
 
 
 
