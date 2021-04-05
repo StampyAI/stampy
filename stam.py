@@ -8,6 +8,7 @@ from modules.questions import QQManager
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
+from modules.turry import Turry
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -237,6 +238,7 @@ if __name__ == "__main__":
         "VideoSearch": VideoSearch(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
+        "Turry": Turry(),
         "Sentience": sentience,
     }
 
