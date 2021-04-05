@@ -137,7 +137,7 @@ class SemanticWiki(Persistence):
 
         # url, username, title, text, replies, asked = None, None, None, None, None, None
         question = {}
-        if "query" in response:
+        if "query" in response and response["query"]["results"]:
             question["question_title"] = list(response["query"]["results"].keys())[0]
             relevant_vals = list(response["query"]["results"].values())[0]["printouts"]
 

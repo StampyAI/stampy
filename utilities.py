@@ -173,11 +173,15 @@ class Utilities:
             comment_id = top_level_comment["id"]
             username = top_level_comment["snippet"]["authorDisplayName"]
             text = top_level_comment["snippet"]["textOriginal"]
+            timestamp = top_level_comment["snippet"]["publishedAt"][:-1]
+            likes = top_level_comment["snippet"]["likeCount"]
             comment = {
                 "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
+                "timestamp": timestamp,
+                "likes": likes
             }
 
             new_comments.append(comment)
@@ -203,6 +207,9 @@ class Utilities:
             comment = self.wiki.get_top_question()
         else:
             comment = self.wiki.get_latest_question()
+
+        if not comment:
+            return None
 
         self.latest_question_posted = comment
 
@@ -311,13 +318,20 @@ class Utilities:
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_question(self, url, username, title, text):
+    def add_question(self, url, username, title, text, timestamp = None, likes = None):
         # Get the video title from the video URL, without the comment id
         titles = self.get_title(url.split("&lc=")[0])
-        comment = self.get_youtube_comment(url)
+        
+        if not timestamp or not likes: #if either is missing fetch both to get more up to date values
+            comment = self.get_youtube_comment(url)
+            timestamp = comment["timestamp"]
+            likes = comment["likes"]
+        
+        if not titles:
+            titles = ["Video Title Unknown", "Video Title Unknown"]
 
         return self.wiki.add_question(
-            url, titles[1], titles[0], username, comment["timestamp"], text, comment["likes"],
+            url, titles[1], titles[0], username, timestamp, text, likes,
         )
 
     def get_title(self, url):
