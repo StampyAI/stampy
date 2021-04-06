@@ -29,6 +29,7 @@ else:
         "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
     )
 
+
 @client.event
 async def on_ready():
     print(f"{client.user} has connected to Discord!")
@@ -67,7 +68,12 @@ async def on_message(message):
         await message.channel.send("I must go now, my planet needs me")
         exit()
     if message.content.lower() == "reboot".lower():
-        if hasattr(message.channel, "name") and message.channel.name in ["bot-dev-priv", "bot-dev", "talk-to-stampy", "robertskmiles"]:
+        if hasattr(message.channel, "name") and message.channel.name in [
+            "bot-dev-priv",
+            "bot-dev",
+            "talk-to-stampy",
+            "robertskmiles",
+        ]:
             if message.author.id == int(rob_id):
                 await message.channel.send("Rebooting...")
                 exit()
