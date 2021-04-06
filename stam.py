@@ -8,11 +8,10 @@ from modules.questions import QQManager
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
+from modules.StampyControls import StampyControls
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
-    rob_id,
-    plex_id,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
     bot_dev_channels,
@@ -60,56 +59,6 @@ async def on_message(message):
     if hasattr(message.channel, "name") and message.channel.name == "general":
         print("Last message was no longer us")
         utils.last_message_was_youtube_question = False
-
-    if message.content == "bot test":
-        response = "I'm alive!"
-        await message.channel.send(response)
-    elif message.content.lower() == "Klaatu barada nikto".lower():
-        await message.channel.send("I must go now, my planet needs me")
-        exit()
-    if message.content.lower() == "reboot".lower():
-        if hasattr(message.channel, "name") and message.channel.name in [
-            "bot-dev-priv",
-            "bot-dev",
-            "talk-to-stampy",
-            "robertskmiles",
-        ]:
-            if message.author.id == int(rob_id):
-                await message.channel.send("Rebooting...")
-                exit()
-            else:
-                await message.channel.send("You're not my supervisor!")
-    if message.content == "reply test":
-        if message.reference:
-            reference = await message.channel.fetch_message(message.reference.message_id)
-            reference_text = reference.content
-            reply_url = reference_text.split("\n")[-1].strip()
-
-            response = 'This is a reply to message %s:\n"%s"' % (
-                message.reference.message_id,
-                reference_text,
-            )
-            response += 'which should be taken as an answer to the question at: "%s"' % reply_url
-        else:
-            response = "This is not a reply"
-        await message.channel.send(response)
-    if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
-        print("[resetting can-invite roles]")
-        await message.channel.send("[resetting can-invite roles, please wait]")
-        guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
-        print(utils.GUILD, guild)
-        role = discord.utils.get(guild.roles, name="can-invite")
-        print("there are", len(guild.members), "members")
-        reset_users_count = 0
-        for member in guild.members:
-            if utils.get_user_score(member) > 0:
-                print(member.name, "can invite")
-                await member.add_roles(role)
-                reset_users_count += 1
-            else:
-                print(member.name, "has 0 stamps, can't invite")
-        await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
-        return
 
     # What are the options for responding to this message?
     # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
@@ -238,6 +187,7 @@ if __name__ == "__main__":
     utils.last_message_was_youtube_question = True
 
     utils.modules_dict = {
+        "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
         "QQManager": QQManager(),
         "VideoSearch": VideoSearch(),

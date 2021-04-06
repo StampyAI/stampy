@@ -36,3 +36,10 @@ required_environment_variables = [
     discord_guild_env_variable,
     database_path_env_variable,
 ]
+
+stampy_control_channels = [
+    "bot-dev-priv",
+    "bot-dev",
+    "talk-to-stampy",
+    "robertskmiles",
+]
