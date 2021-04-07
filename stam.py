@@ -2,7 +2,6 @@ import sys
 import discord
 import unicodedata
 from modules.reply import Reply
-from modules.module import Module
 from utilities import client, utils
 from modules.questions import QQManager
 from modules.videosearch import VideoSearch
@@ -57,13 +56,10 @@ async def on_message(message):
     print(message.author, message.content)
 
     if hasattr(message.channel, "name") and message.channel.name == "general":
-        print("Last message was no longer us")
+        print("the latest general discord channel message was not from stampy")
         utils.last_message_was_youtube_question = False
 
-    # What are the options for responding to this message?
-    # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
-    options = [(Module(), 0, "")]
-
+    options = []
     for module in modules:
         print("Asking module: %s" % str(module))
         output = module.can_process_message(message, client)
@@ -73,16 +69,14 @@ async def on_message(message):
             options.append((module, confidence, result))
 
     # Go with whichever module was most confident in its response
-    options = sorted(options, key=(lambda o: o[1]), reverse=True)
+    module, confidence, result = sorted(options, key=(lambda x: x[1]), reverse=True)[0]
     print(options)
-    module, confidence, result = options[0]
 
     if confidence > 0:
         # if the module had some confidence it could reply
         if not result:
-            # but didn't reply in can_process_message()
+            # if the module didn't reply in can_process_message()
             confidence, result = await module.process_message(message, client)
-
     if result:
         await message.channel.send(result)
 
@@ -92,11 +86,13 @@ async def on_message(message):
 
 @client.event
 async def on_socket_raw_receive(_):
-    """This event fires whenever basically anything at all happens.
+    """
+    This event fires whenever basically anything at all happens.
     Anyone joining, leaving, sending anything, even typing and not sending...
     So I'm going to use it as a kind of 'update' or 'tick' function,
     for things the bot needs to do regularly. Yes this is hacky.
-    Rate limit these things, because this function might be firing a lot"""
+    Rate limit these things, because this function might be firing a lot
+    """
 
     # keep the log file fresh
     sys.stdout.flush()
