@@ -30,17 +30,17 @@ class StampyControls(Module):
     async def process_message(self, message, client=None):
         if self.is_at_module(message):
             routine_name = self.is_at_me(message).lower()
-            routine = self.routines[routine_name]
+            routine = await self.routines[routine_name]
             result = routine(message)
             return 10, result
 
     @staticmethod
-    def bot_test(message):
+    async def bot_test(message):
         await message.channel.send("I'm alive!")
         return ""
 
     @staticmethod
-    def reboot(message):
+    async def reboot(message):
         if hasattr(message.channel, "name") and message.channel.name in stampy_control_channels:
             if message.author.id == int(rob_id):
                 await message.channel.send("Rebooting...")
@@ -51,7 +51,7 @@ class StampyControls(Module):
         return ""
 
     @staticmethod
-    def reply_test(message):
+    async def reply_test(message):
         if message.reference:
             reference = await message.channel.fetch_message(message.reference.message_id)
             reference_text = reference.content
@@ -67,7 +67,7 @@ class StampyControls(Module):
         await message.channel.send(response)
         return ""
 
-    def resetinviteroles(self, message):
+    async def resetinviteroles(self, message):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
         guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
