@@ -2,6 +2,7 @@ import sys
 import discord
 from modules.module import Module
 from config import rob_id, stampy_control_channels
+from utilities import get_github_info, get_memory_usage, get_running_user_info
 
 
 class StampyControls(Module):
@@ -12,8 +13,8 @@ class StampyControls(Module):
         self.routines = {
             "bot test": self.bot_test,
             "reboot": self.reboot,
-            "reply test": self.reply_test,
             "resetinviteroles": self.resetinviteroles,
+            "stats": self.get_stampy_stats,
         }
 
     def is_at_module(self, message):
@@ -30,8 +31,8 @@ class StampyControls(Module):
     async def process_message(self, message, client=None):
         if self.is_at_module(message):
             routine_name = self.is_at_me(message).lower()
-            routine = await self.routines[routine_name]
-            result = routine(message)
+            routine = self.routines[routine_name]
+            result = await routine(message)
             return 10, result
 
     @staticmethod
@@ -66,6 +67,23 @@ class StampyControls(Module):
             else:
                 print(member.name, "has 0 stamps, can't invite")
         await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
+        return ""
+
+    async def get_stampy_stats(self, message):
+        """
+        TODO: Make this its own module and add number of factoids
+        """
+        git_message = get_github_info()
+        run_message = get_running_user_info()
+        memory_message = get_memory_usage()
+        runtime_message = self.utils.get_time_running()
+        modules_message = self.utils.list_modules()
+        scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
+        await message.channel.send(
+            "\n\n".join(
+                [git_message, run_message, memory_message, runtime_message, modules_message, scores_message]
+            )
+        )
         return ""
 
     def __str__(self):
