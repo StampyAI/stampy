@@ -1,6 +1,9 @@
 import os
+import pwd
+import psutil
 import discord
-from dotenv import load_dotenv
+from git import Repo
+from time import time
 from database.database import Database
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
@@ -66,6 +69,7 @@ class Utilities:
             self.YOUTUBE_API_KEY = youtube_api_key
             self.DB_PATH = database_path
             self.youtube = None
+            self.start_time = time()
 
             try:
                 self.youtube = get_youtube_api(
@@ -79,6 +83,9 @@ class Utilities:
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
+            intents = discord.Intents.default()
+            intents.members = True
+            self.client = discord.Client(intents=intents)
 
     def check_for_new_youtube_comments(self):
         """Consider getting the latest comments from the channel
@@ -307,15 +314,52 @@ class Utilities:
         self.db.commit()
         return True
 
+    def list_modules(self):
+        message = "I have %d modules. Here are their names:" % len(self.modules_dict)
+        for module_name in self.modules_dict.keys():
+            message += "\n" + module_name
+        return message
 
-load_dotenv()
+    def get_time_running(self):
+        message = "I have been running for"
+        seconds_running = timedelta(seconds=int(time() - self.start_time))
+        time_running = datetime(1, 1, 1) + seconds_running
+        if time_running.day - 1:
+            message += " " + str(time_running.day) + " days,"
+        if time_running.hour:
+            message += " " + str(time_running.hour) + " hours,"
+        message += " " + str(time_running.minute) + " minutes"
+        message += " and " + str(time_running.second) + " seconds."
+        return message
 
-intents = discord.Intents.default()
-intents.members = True
-client = discord.Client(intents=intents)
 
-utils = Utilities.get_instance()
-utils.client = client
+def get_github_info():
+    message = (
+        "\nThe latest commit was by %(actor)s"
+        + "\nThe commit message was '%(git_message)s'"
+        + "\nThis commit was written on %(date)s"
+    )
+    repo = Repo(".")
+    master = repo.head.reference
+    return message % {
+        "actor": master.commit.author,
+        "git_message": master.commit.message.strip(),
+        "date": master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z"),
+    }
 
-if not os.path.exists(database_path):
-    raise Exception("Couldn't find the stampy database file at %s" % database_path)
+
+def get_running_user_info():
+    user_info = pwd.getpwuid(os.getuid())
+    message = (
+        "The last user to start my server was %(username)s."
+        + "\nThey used the %(shell)s shell."
+        + "\nMy Process ID is %(pid)s on this machine"
+    )
+    return message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
+
+
+def get_memory_usage():
+    process = psutil.Process(os.getpid())
+    bytes_used = int(process.memory_info().rss) / 1000000
+    megabytes_string = f"{bytes_used:,.2f} MegaBytes"
+    return "I'm using %s bytes of memory" % megabytes_string
