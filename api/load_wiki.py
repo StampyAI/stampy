@@ -13,9 +13,9 @@ from config import discord_token
 #  It's super messy, partially because we have to actually run the bot / discord directly here to scrape the messages
 #  Long-term, this will go away and won't be part of the project / master branch
 ###########################################################################
-def load_short_titles(db_path, csv_path):
+def load_short_titles(csv_path):
     # Get CSV from: https://docs.google.com/spreadsheets/d/1SvMD1ws9RmNPzWBRt75fRTW2rOSgOYLetL6R-5qplj8
-    con = sqlite3.connect(db_path)
+    con = utils.db.conn
     cur = con.cursor()
     try:
         cur.execute("DROP TABLE video_titles")
@@ -31,21 +31,22 @@ def load_short_titles(db_path, csv_path):
 
     cur.executemany("INSERT INTO video_titles (URL, FullTitle, ShortTitle) VALUES (?, ?, ?);", to_db)
     con.commit()
-    con.close()
     return
 
 
 # if you dont have the short tables in the db, you might want to add them or things will break
-load_short_titles("C:\\Users\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\stampy.db", "C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\shorttitles.csv")
+# load_short_titles("./database/shorttitles.csv")
 
-
+load_short_titles("C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\shorttitles.csv")
 # TODO: Enable this to add questions from the sqlite DB
-# questions schema:  (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING, text STRING,
+# questions schema:  (url , username STRING, title STRING, text STRING,
 #                     replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
 
+#url, username, title, text, timestamp = None, likes = None)
 questions = utils.db.query("SELECT * FROM QUESTIONS;")
 for question in questions:
-    utils.wiki.add_question(question[0], question[1], question[3], question[5])
+    print("Adding question: " + question[0])
+    utils.add_question(question[0], question[1], None, question[3])
 
 client = utils.client
 
@@ -54,7 +55,7 @@ client = utils.client
 async def on_ready():
     guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
     # TODO: Make sure this goes to General in production
-    print(utls.GUILD)
+    print(utils.GUILD)
     general = discord.utils.find(lambda c: c.name == "general", guild.channels)
     async for message in general.history(limit=200):
         if message.author.name == client.user.name.lower():
@@ -65,10 +66,10 @@ async def on_ready():
                 reply_text = reply[1]
                 users = reply[2]
                 reply_time = message.created_at
-                #a = "Extracted reply: {0} answered by user {1} for question {2}".format(reply_text, users[0], question_url)
-                #print(a)
+                title = "{0}'s Answer to {1} on {2}".format(users[0], utils.get_title(question_url)[0], reply_time)
+                print("Adding answer - " + title)
                 # TODO: enable this to add answers from Discord
-                utils.wiki.add_answer(question_url, users, reply_text, reply_time)
+                #utils.wiki.add_answer(question_url, users, reply_text, title, reply_time)
 
 
 def extract_reply(text):
