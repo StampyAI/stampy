@@ -50,23 +50,6 @@ class StampyControls(Module):
                 await message.channel.send("You're not my supervisor!")
         return ""
 
-    @staticmethod
-    async def reply_test(message):
-        if message.reference:
-            reference = await message.channel.fetch_message(message.reference.message_id)
-            reference_text = reference.content
-            reply_url = reference_text.split("\n")[-1].strip()
-
-            response = 'This is a reply to message %s:\n"%s"' % (
-                message.reference.message_id,
-                reference_text,
-            )
-            response += 'which should be taken as an answer to the question at: "%s"' % reply_url
-        else:
-            response = "This is not a reply"
-        await message.channel.send(response)
-        return ""
-
     async def resetinviteroles(self, message):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
