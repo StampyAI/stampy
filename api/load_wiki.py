@@ -42,7 +42,7 @@ load_short_titles("C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\databas
 # questions schema:  (url , username STRING, title STRING, text STRING,
 #                     replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
 
-#url, username, title, text, timestamp = None, likes = None)
+# url, username, title, text, timestamp = None, likes = None)
 questions = utils.db.query("SELECT * FROM QUESTIONS;")
 for question in questions:
     print("Adding question: " + question[0])
@@ -66,22 +66,24 @@ async def on_ready():
                 reply_text = reply[1]
                 users = reply[2]
                 reply_time = message.created_at
-                title = "{0}'s Answer to {1} on {2}".format(users[0], utils.get_title(question_url)[0], reply_time)
+                title = "{0}'s Answer to {1} on {2}".format(
+                    users[0], utils.get_title(question_url)[0], reply_time
+                )
                 print("Adding answer - " + title)
                 # TODO: enable this to add answers from Discord
-                #utils.wiki.add_answer(question_url, users, reply_text, title, reply_time)
+                # utils.wiki.add_answer(question_url, users, reply_text, title, reply_time)
 
 
 def extract_reply(text):
-    #Pull the text of the reply out of the message
+    # Pull the text of the reply out of the message
     lines = text.split("\n")
     reply_message = ""
     url = ""
     users = ""
     for line in lines:
         # pull out the quote syntax "> " and a user if there is one
-        #print(line)
-        #TODO: Is this right? The reply module one didn't work, should likely fix?
+        # print(line)
+        # TODO: Is this right? The reply module one didn't work, should likely fix?
         match = re.match(r".*> (.*)", line)
         if match:
             if line != lines[-3]:
@@ -91,5 +93,6 @@ def extract_reply(text):
     url = lines[-1][32:].replace(">", "").replace("<", "")
     return url, reply_message, users
 
+
 # TODO: enable this to add answers from Discord
-#client.run(discord_token)
+# client.run(discord_token)

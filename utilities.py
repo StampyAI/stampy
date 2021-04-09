@@ -181,7 +181,7 @@ class Utilities:
                 "text": text,
                 "title": "",
                 "timestamp": timestamp,
-                "likes": likes
+                "likes": likes,
             }
 
             new_comments.append(comment)
@@ -318,21 +318,19 @@ class Utilities:
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_question(self, url, username, title, text, timestamp = None, likes = None):
+    def add_question(self, url, username, title, text, timestamp=None, likes=None):
         # Get the video title from the video URL, without the comment id
         titles = self.get_title(url.split("&lc=")[0])
-        
-        if not timestamp or not likes: #if either is missing fetch both to get more up to date values
+
+        if not timestamp or not likes:  # if either is missing fetch both to get more up to date values
             comment = self.get_youtube_comment(url)
             timestamp = comment["timestamp"]
             likes = comment["likes"]
-        
+
         if not titles:
             titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        return self.wiki.add_question(
-            url, titles[1], titles[0], username, timestamp, text, likes,
-        )
+        return self.wiki.add_question(url, titles[1], titles[0], username, timestamp, text, likes,)
 
     def get_title(self, url):
         result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
