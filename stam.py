@@ -1,8 +1,10 @@
+import os
 import sys
 import discord
 import unicodedata
+from dotenv import load_dotenv
+from utilities import Utilities
 from modules.reply import Reply
-from utilities import client, utils
 from modules.questions import QQManager
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
@@ -15,7 +17,15 @@ from config import (
     acceptable_environment_types,
     bot_dev_channels,
     prod_local_path,
+    database_path,
 )
+
+load_dotenv()
+
+utils = Utilities.get_instance()
+
+if not os.path.exists(database_path):
+    raise Exception("Couldn't find the stampy database file at %s" % database_path)
 
 if ENVIRONMENT_TYPE == "production":
     sys.path.insert(0, prod_local_path)
@@ -28,12 +38,12 @@ else:
     )
 
 
-@client.event
+@utils.client.event
 async def on_ready():
-    print(f"{client.user} has connected to Discord!")
+    print(f"{utils.client.user} has connected to Discord!")
     print("searching for a guild named '%s'" % utils.GUILD)
-    print(client.guilds)
-    guild = discord.utils.get(client.guilds, name=utils.GUILD)
+    print(utils.client.guilds)
+    guild = discord.utils.get(utils.client.guilds, name=utils.GUILD)
     if guild is None:
         raise Exception("Guild Not Found : '%s'" % utils.GUILD)
 
@@ -41,14 +51,17 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I'm back!")
+
+    await utils.client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I'm back!")
 
 
-@client.event
+@utils.client.event
 async def on_message(message):
     # don't react to our own messages
-    if message.author == client.user:
+    if message.author == utils.client.user:
         return
+
+    utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
     print(message)
@@ -62,7 +75,7 @@ async def on_message(message):
     options = []
     for module in modules:
         print("Asking module: %s" % str(module))
-        output = module.can_process_message(message, client)
+        output = module.can_process_message(message, utils.client)
         print("output is", output)
         confidence, result = output
         if confidence > 0:
@@ -77,7 +90,7 @@ async def on_message(message):
         # if the module had some confidence it could reply
         if not result:
             # if the module didn't reply in can_process_message()
-            confidence, result = await module.process_message(message, client)
+            confidence, result = await module.process_message(message, utils.client)
     if result:
         await message.channel.send(result)
 
@@ -85,7 +98,7 @@ async def on_message(message):
     sys.stdout.flush()
 
 
-@client.event
+@utils.client.event
 async def on_socket_raw_receive(_):
     """
     This event fires whenever basically anything at all happens.
@@ -125,7 +138,7 @@ async def on_socket_raw_receive(_):
                 # Don't ask anything if the last thing posted in the chat was stampy asking a question
                 utils.last_question_asked_timestamp = now
                 report = utils.get_latest_question()
-                guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
+                guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
                 general = discord.utils.find(lambda c: c.name == "general", guild.channels)
                 await general.send(report)
                 utils.last_message_was_youtube_question = True
@@ -139,7 +152,7 @@ async def on_socket_raw_receive(_):
             return
 
 
-@client.event
+@utils.client.event
 async def on_raw_reaction_add(payload):
     print("RAW REACTION ADD")
     if len(payload.emoji.name) == 1:
@@ -150,16 +163,16 @@ async def on_raw_reaction_add(payload):
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, client)
+        await module.process_raw_reaction_event(payload, utils.client)
 
 
-@client.event
+@utils.client.event
 async def on_raw_reaction_remove(payload):
     print("RAW REACTION REMOVE")
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, client)
+        await module.process_raw_reaction_event(payload, utils.client)
 
 
 if __name__ == "__main__":
@@ -195,4 +208,4 @@ if __name__ == "__main__":
 
     modules = utils.modules_dict.values()
 
-    client.run(discord_token)
+    utils.client.run(discord_token)
