@@ -85,15 +85,25 @@ class StampsModule(Module):
         self.print_all_scores()
 
     # done
+    def get_user_scores(self):
+        message = "Here are the discord users and their power levels:\n"
+        self.utils.users = self.utils.get_users()
+        for user_id in self.utils.users:
+            name = self.utils.client.get_user(user_id)
+            if not name:
+                name = "<@" + str(user_id) + ">"
+            stamps = self.get_user_stamps(user_id)
+            message += str(name) + ": \t" + str(stamps) + "\n"
+        return message
+
     def print_all_scores(self):
         total_stamps = 0
         self.utils.users = self.utils.get_users()
-        for user in self.utils.users:
-            uid = user
-            name = self.utils.client.get_user(uid)
+        for user_id in self.utils.users:
+            name = self.utils.client.get_user(user_id)
             if not name:
-                name = "<@" + str(uid) + ">"
-            stamps = self.get_user_stamps(uid)
+                name = "<@" + str(user_id) + ">"
+            stamps = self.get_user_stamps(user_id)
             total_stamps += stamps
             print(name, "\t", stamps)
 
