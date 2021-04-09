@@ -69,7 +69,8 @@ async def on_message(message):
             options.append((module, confidence, result))
 
     # Go with whichever module was most confident in its response
-    module, confidence, result = sorted(options, key=(lambda x: x[1]), reverse=True)[0]
+    options = sorted(options, key=(lambda x: x[1]), reverse=True)
+    module, confidence, result = options[0]
     print(options)
 
     if confidence > 0:
