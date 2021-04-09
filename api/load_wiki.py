@@ -36,32 +36,25 @@ def load_short_titles(db_path, csv_path):
 
 
 # if you dont have the short tables in the db, you might want to add them or things will break
-# load_short_titles("C:\\Users\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\stampy.db", "C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\shorttitles.csv")
+load_short_titles("C:\\Users\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\stampy.db", "C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\shorttitles.csv")
 
-
-print(utils.wiki.get_latest_question())
-print(utils.wiki.get_top_question())
-print(utils.wiki.get_random_question())
-print(utils.wiki.get_question_count())
-
-print(utils.get_youtube_comment("https://www.youtube.com/watch?v=L5pUA3LsEaw&lc=UgzNcXnepg3y4mDYjn94AaABAg"))
 
 # TODO: Enable this to add questions from the sqlite DB
-# questions schema:  (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING,
-#                     text STRING, replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
-# questions = utils.db.query("SELECT * FROM QUESTIONS;")
-# for question in questions:
-#     wiki.add_question(question[0], question[1], question[3], question[5])
+# questions schema:  (url STRING NOT NULL PRIMARY KEY, username STRING, title STRING, text STRING,
+#                     replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
 
+questions = utils.db.query("SELECT * FROM QUESTIONS;")
+for question in questions:
+    utils.wiki.add_question(question[0], question[1], question[3], question[5])
 
-"""
 client = utils.client
+
 
 @client.event
 async def on_ready():
     guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
     # TODO: Make sure this goes to General in production
-    print(utils.GUILD)
+    print(utls.GUILD)
     general = discord.utils.find(lambda c: c.name == "general", guild.channels)
     async for message in general.history(limit=200):
         if message.author.name == client.user.name.lower():
@@ -72,10 +65,10 @@ async def on_ready():
                 reply_text = reply[1]
                 users = reply[2]
                 reply_time = message.created_at
-                a = "Extracted reply: {0} answered by user {1} for question {2}".format(reply_text, users[0], question_url)
+                #a = "Extracted reply: {0} answered by user {1} for question {2}".format(reply_text, users[0], question_url)
                 #print(a)
                 # TODO: enable this to add answers from Discord
-                #wiki.add_answer(question_url, users, reply_text, reply_time)
+                utils.wiki.add_answer(question_url, users, reply_text, reply_time)
 
 
 def extract_reply(text):
@@ -98,5 +91,4 @@ def extract_reply(text):
     return url, reply_message, users
 
 # TODO: enable this to add answers from Discord
-client.run(discord_token)
-"""
+#client.run(discord_token)
