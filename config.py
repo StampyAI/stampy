@@ -31,7 +31,10 @@ youtube_api_key = os.getenv(youtube_api_key_env_variable)
 database_path = os.getenv(database_path_env_variable)
 wiki_password = os.getenv(wiki_password_path_env_variable)
 
-wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
+#wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
+
+# TODO: remove hardcoded bot password -- Im aware it will be in the commit! I dont think its actually exploitable in any way
+wiki_config = {"uri": "http://104.236.99.233/w/api.php", "user": "Stampy@Stampy", "password": "loaq8tcsb1tsi9vmldfedl19bi3g825k"}
 
 ENVIRONMENT_TYPE = os.getenv(environment_type_env_variable)
 acceptable_environment_types = ("production", "development")

@@ -318,19 +318,19 @@ class Utilities:
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_question(self, url, username, title, text, timestamp=None, likes=None):
+    def add_youtube_question(self, comment):
         # Get the video title from the video URL, without the comment id
-        titles = self.get_title(url.split("&lc=")[0])
+        #TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
+        video_titles = self.get_title(comment["url"].split("&lc=")[0])
 
-        if not timestamp or not likes:  # if either is missing fetch both to get more up to date values
-            comment = self.get_youtube_comment(url)
-            timestamp = comment["timestamp"]
-            likes = comment["likes"]
-
-        if not titles:
+        if not video_titles:
+            # this should actually only happen in dev
             titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        return self.wiki.add_question(url, titles[1], titles[0], username, timestamp, text, likes,)
+        question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"], comment["username"])
+
+        return self.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
+                                      comment_url=comment["url"], video_title=video_titles[1], likes=comment["likes"])
 
     def get_title(self, url):
         result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))

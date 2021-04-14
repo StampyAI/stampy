@@ -15,13 +15,15 @@ class Persistence(object):
     # def login(self):
     #    raise NotImplementedError
 
-    def add_question(self, url, full_title, short_title, asker, asked_time, text, likes, asked=False):
+    def add_question(self, question_title, asker, asked_time, question_text,
+                     comment_url=None, video_title=None, likes=0, asked=False):
         raise NotImplementedError
 
-    def add_answer(self, url, users, text, question_title, reply_date):
+    def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
         raise NotImplementedError
 
-    def edit_question(self, url, username, text):
+    def edit_question(self, question_title, asker, asked_time, text,
+                     comment_url=None, video_title=None, likes=0, asked=False):
         raise NotImplementedError
 
     def get_latest_question(self):

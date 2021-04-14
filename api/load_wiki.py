@@ -4,7 +4,7 @@ import discord
 import csv
 import sqlite3
 import re
-from config import discord_token
+from config import discord_token, ENVIRONMENT_TYPE
 
 
 ###########################################################################
@@ -13,6 +13,8 @@ from config import discord_token
 #  It's super messy, partially because we have to actually run the bot / discord directly here to scrape the messages
 #  Long-term, this will go away and won't be part of the project / master branch
 ###########################################################################
+
+
 def load_short_titles(csv_path):
     # Get CSV from: https://docs.google.com/spreadsheets/d/1SvMD1ws9RmNPzWBRt75fRTW2rOSgOYLetL6R-5qplj8
     con = utils.db.conn
@@ -34,21 +36,41 @@ def load_short_titles(csv_path):
     return
 
 
-# if you dont have the short tables in the db, you might want to add them or things will break
-# load_short_titles("./database/shorttitles.csv")
+has_titles = utils.db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='video_titles';")
+if not has_titles:
+    load_short_titles("./database/shorttitles.csv")
 
-load_short_titles("C:\\Users\\james\\OneDrive\\Projects\\Stampy\\stampy\\database\\shorttitles.csv")
-# TODO: Enable this to add questions from the sqlite DB
-# questions schema:  (url , username STRING, title STRING, text STRING,
-#                     replied BOOL DEFAULT false, "asked" BOOL DEFAULT 'false');
 
-# url, username, title, text, timestamp = None, likes = None)
-questions = utils.db.query("SELECT * FROM QUESTIONS;")
+questions = []
+# TODO: uncomment to enable
+# questions = utils.db.query("SELECT * FROM QUESTIONS;")
+
 for question in questions:
-    print("Adding question: " + question[0])
-    utils.add_question(question[0], question[1], None, question[3])
+    comment = utils.get_youtube_comment(question[0])
+    comment["url"] = question[0]
+    comment["username"] = question[1]
+    comment["text"] = question[3]
+
+    video_titles = utils.get_title(comment["url"].split("&lc=")[0])
+
+    if not video_titles:
+        # this should actually only happen in dev
+        video_titles = ["Video Title Unknown", "Video Title Unknown"]
+
+    question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"], comment["username"])
+
+    utils.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
+                            comment_url=comment["url"], video_title=video_titles[1], likes=comment["likes"],
+                            asked=question[5])
+
 
 client = utils.client
+channel_name = "general"
+max_history = None  # None == all history
+
+if ENVIRONMENT_TYPE == "development":
+    channel_name = "test"
+    max_history = None
 
 
 @client.event
@@ -56,22 +78,36 @@ async def on_ready():
     guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
     # TODO: Make sure this goes to General in production
     print(utils.GUILD)
-    general = discord.utils.find(lambda c: c.name == "general", guild.channels)
-    async for message in general.history(limit=200):
+    general = discord.utils.find(lambda c: c.name == channel_name, guild.channels)
+    async for message in general.history(limit=99999999):
         if message.author.name == client.user.name.lower():
             text = message.clean_content
             if text.startswith("Ok, posting this:"):
                 reply = extract_reply(text)
-                question_url = reply[0]
-                reply_text = reply[1]
-                users = reply[2]
-                reply_time = message.created_at
-                title = "{0}'s Answer to {1} on {2}".format(
-                    users[0], utils.get_title(question_url)[0], reply_time
-                )
-                print("Adding answer - " + title)
-                # TODO: enable this to add answers from Discord
-                # utils.wiki.add_answer(question_url, users, reply_text, title, reply_time)
+                comment_url = reply[0]
+
+                question = utils.db.query("SELECT username FROM QUESTIONS WHERE url='{0}';".format(comment_url))
+
+                comment = utils.get_youtube_comment(comment_url)
+                comment["url"] = comment_url
+                if questions:
+                    comment["username"] = question[0][0]
+
+                video_titles = utils.get_title(comment["url"].split("&lc=")[0])
+
+                if not video_titles:
+                    # this should actually only happen in dev
+                    video_titles = ["Video Title Unknown", "Video Title Unknown"]
+
+                question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"],
+                                                            comment["username"])
+                answer_text = reply[1]
+                answer_users = reply[2]
+                answer_time = message.created_at
+
+                answer_title = answer_users[0] + "'s Answer to " + question_title
+
+                utils.wiki.add_answer(answer_title, answer_users, answer_time, answer_text, question_title)
 
 
 def extract_reply(text):
@@ -95,4 +131,4 @@ def extract_reply(text):
 
 
 # TODO: enable this to add answers from Discord
-# client.run(discord_token)
+client.run(discord_token)

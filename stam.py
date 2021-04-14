@@ -168,16 +168,8 @@ async def on_socket_raw_receive(_):
     if new_comments:
         for comment in new_comments:
             if "?" in comment["text"]:
-                utils.add_question(
-                    comment["url"],
-                    comment["username"],
-                    comment["title"],
-                    comment["text"],
-                    timestamp=comment["timestamp"],
-                    likes=comment["likes"],
-                )
+                utils.add_youtube_question(comment)
     # add_question should maybe just take in the dict, but to make sure nothing is broken extra fields have been added as optional params
-
     # This is just checking if there _are_ questions
     question_count = utils.get_question_count()
     if question_count:
