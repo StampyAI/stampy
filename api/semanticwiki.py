@@ -68,6 +68,9 @@ class SemanticWiki(Persistence):
 
     def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
+        if not answer_title:
+            print("No title provided, need the answer title for the primary key of the article")
+            return
 
         ftext = """Answer|
                 answer={0}|
@@ -92,7 +95,7 @@ class SemanticWiki(Persistence):
         return
 
     def add_question(self, question_title, asker, asked_time, text,
-                     comment_url=None, video_title=None, likes=0, asked=False):
+                     comment_url="", video_title="", likes=0, asked=False):
 
         # Split the url into the comment id and video url
         if not question_title:

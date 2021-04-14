@@ -23,7 +23,7 @@ class Persistence(object):
         raise NotImplementedError
 
     def edit_question(self, question_title, asker, asked_time, text,
-                     comment_url=None, video_title=None, likes=0, asked=False):
+                     comment_url="", video_title="", likes=0, asked=False):
         raise NotImplementedError
 
     def get_latest_question(self):
