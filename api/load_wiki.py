@@ -43,7 +43,7 @@ if not has_titles:
 
 questions = []
 # TODO: uncomment to enable
-# questions = utils.db.query("SELECT * FROM QUESTIONS;")
+questions = utils.db.query("SELECT * FROM QUESTIONS;")
 
 for question in questions:
     comment = utils.get_youtube_comment(question[0])
@@ -79,7 +79,7 @@ async def on_ready():
     # TODO: Make sure this goes to General in production
     print(utils.GUILD)
     general = discord.utils.find(lambda c: c.name == channel_name, guild.channels)
-    async for message in general.history(limit=99999999):
+    async for message in general.history(limit=max_history):
         if message.author.name == client.user.name.lower():
             text = message.clean_content
             if text.startswith("Ok, posting this:"):
