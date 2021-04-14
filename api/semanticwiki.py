@@ -8,7 +8,7 @@ from api.persistence import Persistence
 ###########################################################################
 class SemanticWiki(Persistence):
     def __init__(self, uri, user, api_key):
-        super().__init__(self, uri, user, api_key)
+        super().__init__(uri, user, api_key)
         # Should we just log in on init? Or separate it out?
         # TODO: Auto-renew token
         self._session = requests.Session()
