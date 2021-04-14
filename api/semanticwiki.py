@@ -179,8 +179,11 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
-    def set_question_asked(self, title):
-        return self.set_question_property(title, "asked", "Yes")
+    def set_question_asked(self, question_title):
+        print("Setting question: " + question_title + " as asked on Discord")
+        response = self.set_question_property(question_title, "asked", "Yes")
+        print(response)
+        return response
 
     def get_question_count(self):
         query = "[[Meta:API Queries]]|?UnaskedQuestions"
