@@ -8,7 +8,7 @@ from api.persistence import Persistence
 ###########################################################################
 class SemanticWiki(Persistence):
     def __init__(self, uri, user, api_key):
-        Persistence.__init__(self, uri, user, api_key)
+        super().__init__(self, uri, user, api_key)
         # Should we just log in on init? Or separate it out?
         # TODO: Auto-renew token
         self._session = requests.Session()
@@ -66,12 +66,8 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
-    def add_answer(self, url, users, text, question_title, reply_date):
+    def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
-
-        # there has to be a better way to get this to fit on one line..
-        # Should we create a struct of some kind of these? Or an object that creates the string?
-        title = "{0}'s Answer to {1}".format(users[0], question_title)
 
         ftext = """Answer|
                 answer={0}|
@@ -85,19 +81,24 @@ class SemanticWiki(Persistence):
 
         ftext = (
             "{{"
-            + ftext.replace(" ", "").format(text, question_title, users[0], reply_date, ", ".join(users))
+            + ftext.replace(" ", "").format(answer_text, question_title, answer_users[0], answer_time,
+                                            ", ".join(answer_users))
             + "}}"
         )
 
         # Post the answer to wiki
-        print("Trying to add reply " + text + " to wiki")
-        self.edit(title, ftext)
+        print("Trying to add reply " + answer_title + " to wiki")
+        self.edit(answer_title, ftext)
         return
 
-    def add_question(self, url, full_title, short_title, asker, asked_time, text, likes=0, asked=False):
+    def add_question(self, question_title, asker, asked_time, text,
+                     comment_url=None, video_title=None, likes=0, asked=False):
 
         # Split the url into the comment id and video url
-        title = "{0} on {1} by {2}".format(short_title, asked_time, asker)
+        if not question_title:
+            print("No title provided, need the question title for the primary key of the article")
+            return
+
         asked = "Yes" if asked else "No"
 
         # there has to be a better way to make this fit on a line..
@@ -114,18 +115,20 @@ class SemanticWiki(Persistence):
                 commenturl={6}"""
         ftext = (
             "{{"
-            + ftext.replace(" ", "").format(text, asked, asker, asked_time, full_title, likes, url)
+            + ftext.replace(" ", "").format(text, asked, asker, asked_time, video_title, likes, comment_url)
             + "}}"
         )
 
         # Post the question to wiki
-        print("Trying to add question " + title + " to wiki")
-        self.edit(title, ftext)
+        print("Trying to add question " + question_title + " to wiki")
+        self.edit(question_title, ftext)
         return
 
-    def edit_question(self, url, username, text):
+    def edit_question(self, question_title, asker, asked_time, text,
+                     comment_url=None, video_title=None, likes=0, asked=False):
         # I think this is probably fine, but maybe it is slightly different? Could check to see if it exists?
-        self.add_question(url, username, text)
+        self.add_question(question_title, asker, asked_time, text,
+                          comment_url=comment_url, video_title=video_title, likes=likes, asked=asked)
         return
 
     def get_unasked_question(self, sort, order):
