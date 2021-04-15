@@ -72,15 +72,15 @@ class SemanticWiki(Persistence):
             print("No title provided, need the answer title for the primary key of the article")
             return
 
-        ftext = """Answer|
-                answer={0}|
-                answerto={1}|
-                canonical=No|
-                nonaisafety=No|
-                unstamped=No|
-                writtenby={2}|
-                date={3}|
-                stamps={4}"""
+        ftext = """Answer
+                |answer={0}
+                |answerto={1}
+                |canonical=No
+                |nonaisafety=No
+                |unstamped=No
+                |writtenby={2}
+                |date={3}
+                |stamps={4}"""
 
         ftext = (
             "{{"
@@ -105,17 +105,17 @@ class SemanticWiki(Persistence):
         asked = "Yes" if asked else "No"
 
         # there has to be a better way to make this fit on a line..
-        ftext = """Question|
-                question={0}|
-                notquestion=No|
-                canonical=No|
-                forrob=No|
-                asked={1}|
-                asker={2}|
-                date={3}|
-                video={4}|
-                ytlikes={5}|
-                commenturl={6}"""
+        ftext = """Question
+                |question={0}
+                |notquestion=No
+                |canonical=No
+                |forrob=No
+                |asked={1}
+                |asker={2}
+                |date={3}
+                |video={4}
+                |ytlikes={5}
+                |commenturl={6}"""
         ftext = (
             "{{"
             + ftext.replace(" ", "").format(text, asked, asker, asked_time, video_title, likes, comment_url)
