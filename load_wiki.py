@@ -61,7 +61,7 @@ for question in questions:
 
     utils.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
                             comment_url=comment["url"], video_title=video_titles[1], likes=comment["likes"],
-                            asked=question[5])
+                            asked=question[5], reply_count=comment["reply_count"])
 
 
 client = utils.client

@@ -71,7 +71,9 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name,
+                    youtube_api_version,
+                    developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -81,13 +83,35 @@ class Utilities:
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
-            self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
+            self.wiki = SemanticWiki(
+                wiki_config["uri"], wiki_config["user"], wiki_config["password"]
+            )
+
+    def get_youtube_comment_replies(self, comment_url):
+        url_arr = comment_url.split("&lc=")
+        reply_id = url_arr[-1].split(".")[0]
+        request = self.youtube.comments().list(part="snippet", parentId=reply_id)
+        response = request.execute()
+        items = response.get("items")
+        reply = {}
+        for item in items:
+            reply_id = item["id"]
+            username = item["snippet"]["authorDisplayName"]
+            text = item["snippet"]["textOriginal"]
+            timestamp = item["snippet"]["publishedAt"][:-1]
+            likes = item["snippet"]["likeCount"]
+            reply = {
+                "username": username,
+                "text": text,
+                "title": "",
+                "timestamp": timestamp,
+                "likes": likes,
+            }
 
     def get_youtube_comment(self, comment_url):
         url_arr = comment_url.split("&lc=")
         video_url = url_arr[0]
         reply_id = url_arr[-1].split(".")[0]
-
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
         response = request.execute()
         items = response.get("items")
@@ -99,12 +123,14 @@ class Utilities:
             comment["username"] = top_level_comment["snippet"]["authorDisplayName"]
             comment["likes"] = top_level_comment["snippet"]["likeCount"]
             comment["text"] = top_level_comment["snippet"]["textOriginal"]
+            comment["reply_count"] = items[0]["snippet"]["totalReplyCount"]
         else:  # This happens if the comment was deleted from YT
             comment["timestamp"] = datetime.isoformat(datetime.utcnow())
             comment["comment_id"] = reply_id
             comment["username"] = "Unknown"
             comment["likes"] = 0
             comment["text"] = ""
+            comment["reply_count"] = 0
         return comment
 
     def check_for_new_youtube_comments(self):
@@ -121,7 +147,9 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
+                "YT waiting >%s\t- "
+                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
+                end="",
             )
             return None
 
@@ -161,7 +189,9 @@ class Utilities:
             if published_timestamp > newest_timestamp:
                 newest_timestamp = published_timestamp
 
-        print("Got %s items, most recent published at %s" % (len(items), newest_timestamp))
+        print(
+            "Got %s items, most recent published at %s" % (len(items), newest_timestamp)
+        )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
@@ -175,13 +205,16 @@ class Utilities:
             text = top_level_comment["snippet"]["textOriginal"]
             timestamp = top_level_comment["snippet"]["publishedAt"][:-1]
             likes = top_level_comment["snippet"]["likeCount"]
+            reply_count = item["snippet"]["totalReplyCount"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
+                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
+                % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
                 "timestamp": timestamp,
                 "likes": likes,
+                "reply_count": reply_count,
             }
 
             new_comments.append(comment)
@@ -190,8 +223,13 @@ class Utilities:
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
-            print("No new comments, increasing cooldown timer to %s" % self.youtube_cooldown)
+            self.youtube_cooldown = min(
+                self.youtube_cooldown * 2, timedelta(seconds=1200)
+            )
+            print(
+                "No new comments, increasing cooldown timer to %s"
+                % self.youtube_cooldown
+            )
 
         return new_comments
 
@@ -233,7 +271,12 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
+            ).format(
+                comment["username"],
+                self.get_title(comment["url"])[1],
+                text_quoted,
+                comment["url"],
+            )
 
         print("==========================")
         print(report)
@@ -298,11 +341,17 @@ class Utilities:
         self.db.commit()
 
     def get_votes_by_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
+        query = (
+            "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
+                user
+            )
+        )
         return self.db.query(query)[0][0]
 
     def get_votes_for_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(
+            user
+        )
         return self.db.query(query)[0][0]
 
     def get_total_votes(self):
@@ -320,20 +369,32 @@ class Utilities:
 
     def add_youtube_question(self, comment):
         # Get the video title from the video URL, without the comment id
-        #TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
+        # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
         video_titles = self.get_title(comment["url"].split("&lc=")[0])
 
         if not video_titles:
             # this should actually only happen in dev
             titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"], comment["username"])
+        question_title = "{0} on {1} by {2}".format(
+            video_titles[0], comment["timestamp"], comment["username"]
+        )
 
-        return self.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
-                                      comment_url=comment["url"], video_title=video_titles[1], likes=comment["likes"])
+        return self.wiki.add_question(
+            question_title,
+            comment["username"],
+            comment["timestamp"],
+            comment["text"],
+            comment_url=comment["url"],
+            video_title=video_titles[1],
+            likes=comment["likes"],
+            reply_count=comment["reply_count"],
+        )
 
     def get_title(self, url):
-        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
+        result = self.db.query(
+            'select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url)
+        )
         if result:
             return result[0][0], result[0][1]
         return None
