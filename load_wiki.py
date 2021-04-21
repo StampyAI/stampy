@@ -1,5 +1,6 @@
 from api.semanticwiki import SemanticWiki
 from utilities import utils
+from datetime import datetime
 import discord
 import csv
 import sqlite3
@@ -43,7 +44,7 @@ if not has_titles:
 
 questions = []
 # TODO: uncomment to enable
-questions = utils.db.query("SELECT * FROM QUESTIONS;")
+# questions = utils.db.query("SELECT * FROM QUESTIONS;")
 
 for question in questions:
     comment = utils.get_youtube_comment(question[0])
@@ -61,7 +62,7 @@ for question in questions:
 
     utils.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
                             comment_url=comment["url"], video_title=video_titles[1], likes=comment["likes"],
-                            asked=question[5], reply_count=comment["reply_count"])
+                            asked=True, reply_count=comment["reply_count"])
 
 
 client = utils.client
@@ -70,7 +71,7 @@ max_history = None  # None == all history
 
 if ENVIRONMENT_TYPE == "development":
     channel_name = "test"
-    max_history = None
+    max_history = 20
 
 
 @client.event
@@ -82,7 +83,36 @@ async def on_ready():
     async for message in general.history(limit=max_history):
         if message.author.name == client.user.name.lower():
             text = message.clean_content
-            if text.startswith("Ok, posting this:"):
+            if text.startswith("YouTube user"):
+                question = extract_question(text)
+                comment_url = question[0]
+                comment = utils.get_youtube_comment(comment_url)
+                discord_time = message.created_at
+                if comment["username"] == "Unknown":
+                    comment["timestamp"] = datetime.isoformat(discord_time)
+                    comment["username"] = question[2]
+                    comment["text"] = question[1]
+                video_titles = utils.get_title(comment_url.split("&lc=")[0])
+
+                if not video_titles:
+                    # this should actually only happen in dev
+                    video_titles = ["Video Title Unknown", "Video Title Unknown"]
+
+                question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"], comment["username"])
+ 
+                data = utils.wiki.post({"action": "query", "titles": question_title, "format": "json"})
+
+                if("-1" in data["query"]["pages"]):
+                    utils.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
+                                        comment_url=comment_url, video_title=video_titles[1], likes=comment["likes"],
+                                        asked=True, reply_count=comment["reply_count"])
+                else:
+                    print("Question " + question_title + " was already in the wiki")
+
+                
+                #
+
+        """if text.startswith("Ok, posting this:"):
                 reply = extract_reply(text)
                 comment_url = reply[0]
 
@@ -107,8 +137,25 @@ async def on_ready():
 
                 answer_title = answer_users[0] + "'s Answer to " + question_title
 
-                utils.wiki.add_answer(answer_title, answer_users, answer_time, answer_text, question_title)
+                utils.wiki.add_answer(answer_title, answer_users, answer_time, answer_text, question_title)"""
 
+def extract_question(text):
+    # Pull the text of the reply out of the message
+    lines = text.split("\n")
+    question_message = ""
+    question_user = ""
+    for line in lines:
+        # pull out the quote syntax "> " and a user if there is one
+        # print(line)
+        # TODO: Is this right? The reply module one didn't work, should likely fix?
+        match = re.match(r".*> (.*)", line)
+        if match:
+            question_message += match.group(1)
+        match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", line)
+        if match:
+            question_user += match.group(1)
+    url = lines[-1]
+    return url, question_message, question_user
 
 def extract_reply(text):
     # Pull the text of the reply out of the message
