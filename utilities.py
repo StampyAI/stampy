@@ -376,12 +376,12 @@ class Utilities:
             # this should actually only happen in dev
             titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        question_title = "{0} on {1} by {2}".format(
-            video_titles[0], comment["timestamp"], comment["username"]
+        display_title = "{0}'s question on {1}".format(
+            comment["username"], video_titles[0],
         )
 
         return self.wiki.add_question(
-            question_title,
+            display_title,
             comment["username"],
             comment["timestamp"],
             comment["text"],

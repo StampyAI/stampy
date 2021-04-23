@@ -107,7 +107,7 @@ class SemanticWiki(Persistence):
 
     def add_question(
         self,
-        question_title,
+        display_title,
         asker,
         asked_time,
         text,
@@ -119,11 +119,13 @@ class SemanticWiki(Persistence):
     ):
 
         # Split the url into the comment id and video url
-        if not question_title:
+        if not display_title:
             print(
                 "No title provided, need the question title for the primary key of the article"
             )
             return
+
+        comment_id = comment["url"].split("&lc=")[1]
 
         asked = "Yes" if asked else "No"
 
@@ -139,7 +141,8 @@ class SemanticWiki(Persistence):
                 |video={4}
                 |ytlikes={5}
                 |commenturl={6}
-                |replycount={7}"""
+                |replycount={7}
+                |titleoverride={8}"""
         ftext = (
             "{{"
             + ftext.replace(" ", "").format(
@@ -151,13 +154,14 @@ class SemanticWiki(Persistence):
                 likes,
                 comment_url,
                 reply_count,
+                display_title
             )
             + "}}"
         )
 
         # Post the question to wiki
         print("Trying to add question " + question_title + " to wiki")
-        self.edit(question_title, ftext)
+        self.edit(display_title + " id=" + comment_id, ftext)
         return
 
     def edit_question(
