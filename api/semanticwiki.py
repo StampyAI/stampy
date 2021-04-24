@@ -161,7 +161,7 @@ class SemanticWiki(Persistence):
 
         # Post the question to wiki
         print("Trying to add question " + question_title + " to wiki")
-        self.edit(display_title + " id=" + comment_id, ftext)
+        self.edit(display_title + " id:" + comment_id, ftext)
         return
 
     def edit_question(
