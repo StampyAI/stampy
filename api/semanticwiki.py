@@ -191,8 +191,8 @@ class SemanticWiki(Persistence):
 
     def get_unasked_question(self, sort, order):
         query = (
-            "[[Category:Unanswered questions]][[AskedOnDiscord::f]]|?Question|?asker|?AskDate|?CommentURL|"
-            + "?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
+            "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]]|?Question|?asker|?AskDate|"
+            + "?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
         )
         response = self.ask(query)
 
