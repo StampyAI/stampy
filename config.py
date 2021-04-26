@@ -7,8 +7,8 @@ rob_id = "181142785259208704"
 stampy_id = "736241264856662038"
 plex_id = "756254556811165756"
 god_id = "0"
-rob_miles_youtube_channel_id = "UCLB7AzTwc6VFZrBsO2ucBMg"
-stampy_youtube_channel_id = "UCFDiTXRowzFvh81VOsnf5wg"
+rob_miles_youtube_channel_id = "UCDvKrlpIXM0BGYLD2jjLGvg"
+stampy_youtube_channel_id = "DvKrlpIXM0BGYLD2jjLGvg"
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
 
 bot_dev_channels = {"production": 808138366330994688, "development": 803448149946662923}

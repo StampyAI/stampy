@@ -1,5 +1,6 @@
 import requests
 import datetime
+import re
 from api.persistence import Persistence
 
 
@@ -77,28 +78,16 @@ class SemanticWiki(Persistence):
                 "No title provided, need the answer title for the primary key of the article"
             )
             return
-
-        ftext = """Answer
-                |answer={0}
-                |answerto={1}
+        ftext = f"""Answer
+                |answer={answer_text}
+                |answerto={question_title}
                 |canonical=No
                 |nonaisafety=No
                 |unstamped=No
-                |writtenby={2}
-                |date={3}
-                |stamps={4}"""
-
-        ftext = (
-            "{{"
-            + ftext.replace(" ", "").format(
-                answer_text,
-                question_title,
-                answer_users[0],
-                answer_time,
-                ", ".join(answer_users),
-            )
-            + "}}"
-        )
+                |writtenby={answer_users[0]}
+                |date={answer_time}
+                |stamps={', '.join(answer_users)}"""
+        ftext = "{{" + ftext + "}}"
 
         # Post the answer to wiki
         print("Trying to add reply " + answer_title + " to wiki")
@@ -125,42 +114,30 @@ class SemanticWiki(Persistence):
             )
             return
 
-        comment_id = comment["url"].split("&lc=")[1]
-
+        comment_id = comment_url.split("&lc=")[1] if comment_url else ""
         asked = "Yes" if asked else "No"
-
+        formatted_asked_time = re.sub(
+            r'(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2}):\d{2}(\.\d+)?Z?',
+            r'\1T\2',
+            asked_time)
         # there has to be a better way to make this fit on a line..
-        ftext = """Question
-                |question={0}
+        ftext = f"""Question
+                |question={text}
                 |notquestion=No
                 |canonical=No
                 |forrob=No
-                |asked={1}
-                |asker={2}
-                |date={3}
-                |video={4}
-                |ytlikes={5}
-                |commenturl={6}
-                |replycount={7}
-                |titleoverride={8}"""
-        ftext = (
-            "{{"
-            + ftext.replace(" ", "").format(
-                text,
-                asked,
-                asker,
-                asked_time,
-                video_title,
-                likes,
-                comment_url,
-                reply_count,
-                display_title
-            )
-            + "}}"
-        )
+                |asked={asked}
+                |asker={asker}
+                |date={formatted_asked_time}
+                |video={video_title}
+                |ytlikes={likes}
+                |commenturl={comment_url}
+                |replycount={reply_count}
+                |titleoverride={display_title}"""
+        ftext = "{{" + ftext + "}}"
 
         # Post the question to wiki
-        print("Trying to add question " + question_title + " to wiki")
+        print("Trying to add question " + display_title + " to wiki")
         self.edit(display_title + " id:" + comment_id, ftext)
         return
 

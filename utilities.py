@@ -374,7 +374,7 @@ class Utilities:
 
         if not video_titles:
             # this should actually only happen in dev
-            titles = ["Video Title Unknown", "Video Title Unknown"]
+            video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
         display_title = "{0}'s question on {1}".format(
             comment["username"], video_titles[0],
