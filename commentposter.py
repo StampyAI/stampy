@@ -10,6 +10,7 @@ from itertools import cycle
 
 spinner = cycle("\\|/-")
 
+
 class CommentPoster(object):
     utils = None
 
@@ -20,7 +21,7 @@ class CommentPoster(object):
         api_version = "v3"
 
         # Get credentials and create an API client
-        flow = google_auth.InstalledAppFlow.from_client_secrets_file(os.getenv('CLIENT_SECRET_PATH'), scopes)
+        flow = google_auth.InstalledAppFlow.from_client_secrets_file(os.getenv("CLIENT_SECRET_PATH"), scopes)
         credentials = flow.run_console()
         self.youtube = get_youtube_api(api_service_name, api_version, credentials=credentials)
 

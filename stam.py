@@ -29,6 +29,7 @@ else:
         "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
     )
 
+
 @client.event
 async def on_ready():
     print(f"{client.user} has connected to Discord!")
@@ -67,7 +68,12 @@ async def on_message(message):
         await message.channel.send("I must go now, my planet needs me")
         exit()
     if message.content.lower() == "reboot".lower():
-        if hasattr(message.channel, "name") and message.channel.name in ["bot-dev-priv", "bot-dev", "talk-to-stampy", "robertskmiles"]:
+        if hasattr(message.channel, "name") and message.channel.name in [
+            "bot-dev-priv",
+            "bot-dev",
+            "talk-to-stampy",
+            "robertskmiles",
+        ]:
             if message.author.id == int(rob_id):
                 await message.channel.send("Rebooting...")
                 exit()
@@ -162,9 +168,11 @@ async def on_socket_raw_receive(_):
     if new_comments:
         for comment in new_comments:
             if "?" in comment["text"]:
-                utils.add_question(comment)
-    qq = utils.get_next_question("rowid")
-    if qq:
+                utils.add_youtube_question(comment)
+    # add_question should maybe just take in the dict, but to make sure nothing is broken extra fields have been added as optional params
+    # This is just checking if there _are_ questions
+    question_count = utils.get_question_count()
+    if question_count:
         # ask a new question if it's been long enough since we last asked one
         question_ask_cooldown = timedelta(hours=6)
 
@@ -172,6 +180,7 @@ async def on_socket_raw_receive(_):
             if not utils.last_message_was_youtube_question:
                 # Don't ask anything if the last thing posted in the chat was stampy asking a question
                 utils.last_question_asked_timestamp = now
+                # this actually gets the question and sets it to asked, then sends the report
                 report = utils.get_latest_question()
                 guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
                 general = discord.utils.find(lambda c: c.name == "general", guild.channels)
@@ -183,7 +192,7 @@ async def on_socket_raw_receive(_):
                 print("Not asking question: previous post in the channel was a question stampy asked.")
         else:
             remaining_cooldown = str(question_ask_cooldown - (now - utils.last_question_asked_timestamp))
-            print("%s Questions in queue, waiting %s to post" % (len(qq), remaining_cooldown))
+            print("%s Questions in queue, waiting %s to post" % (question_count, remaining_cooldown))
             return
 
 
