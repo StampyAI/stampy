@@ -86,7 +86,7 @@ class StampsModule(Module):
 
     # done
     def get_user_scores(self):
-        message = "Here are the discord users and their power levels:\n"
+        message = "Here are the discord users and how many stamps they're worth:\n"
         self.utils.users = self.utils.get_users()
         for user_id in self.utils.users:
             name = self.utils.client.get_user(user_id)

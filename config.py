@@ -11,7 +11,7 @@ rob_miles_youtube_channel_id = "UCLB7AzTwc6VFZrBsO2ucBMg"  # if DEV: "UCDvKrlpIX
 stampy_youtube_channel_id = "UCFDiTXRowzFvh81VOsnf5wg"  # if DEV: "DvKrlpIXM0BGYLD2jjLGvg"
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
 
-bot_dev_channels = {"production": 808138366330994688, "development": 803448149946662923}
+bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}
 
 discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
@@ -46,7 +46,7 @@ required_environment_variables = [
     wiki_password_path_env_variable,
 ]
 
-stampy_control_channels = [
+stampy_control_channel_names = [
     "bot-dev-priv",
     "bot-dev",
     "talk-to-stampy",

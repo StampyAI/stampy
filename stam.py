@@ -16,7 +16,7 @@ from config import (
     discord_token,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
-    bot_dev_channels,
+    bot_dev_channel_id,
     prod_local_path,
     database_path,
     rob_id,
@@ -54,7 +54,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id[ENVIRONMENT_TYPE]).send("I just (re)started!")
 
 
 @utils.client.event
