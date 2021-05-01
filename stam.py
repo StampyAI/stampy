@@ -8,6 +8,7 @@ from modules.questions import QQManager
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
+from modules.gpt3module import GPT3Module
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -43,7 +44,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I'm back!")
+    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I just (re)started!")
 
 
 @client.event
@@ -126,16 +127,18 @@ async def on_message(message):
     # Go with whichever module was most confident in its response
     options = sorted(options, key=(lambda o: o[1]), reverse=True)
     print(options)
-    module, confidence, result = options[0]
+    for option in options:
+        module, confidence, result = option
 
-    if confidence > 0:
-        # if the module had some confidence it could reply
-        if not result:
-            # but didn't reply in can_process_message()
-            confidence, result = await module.process_message(message, client)
+        if confidence > 0:
+            # if the module had some confidence it could reply
+            if not result:
+                # but didn't reply in can_process_message()
+                confidence, result = await module.process_message(message, client)
 
-    if result:
-        await message.channel.send(result)
+        if result:
+            await message.channel.send(result)
+            break
 
     print("########################################################")
     sys.stdout.flush()
@@ -246,6 +249,7 @@ if __name__ == "__main__":
         "VideoSearch": VideoSearch(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
+        "GPT3Module": GPT3Module(),
         "Sentience": sentience,
     }
 
