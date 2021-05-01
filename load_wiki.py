@@ -89,7 +89,7 @@ async def on_ready():
                 comment = utils.get_youtube_comment(comment_url)
                 discord_time = message.created_at
                 if comment["username"] == "Unknown":
-                    comment["timestamp"] = datetime.isoformat(discord_time)
+                    comment["timestamp"] = datetime.isoformat(discord_time.replace(microsecond=0))
                     comment["username"] = question[2]
                     comment["text"] = question[1]
                 video_titles = utils.get_title(comment_url.split("&lc=")[0])
@@ -109,10 +109,11 @@ async def on_ready():
                 else:
                     print("Question " + question_title + " was already in the wiki")
 
+    print("Done with on_ready()")
                 
                 #
 
-        """if text.startswith("Ok, posting this:"):
+    """if text.startswith("Ok, posting this:"):
                 reply = extract_reply(text)
                 comment_url = reply[0]
 
@@ -120,7 +121,7 @@ async def on_ready():
 
                 comment = utils.get_youtube_comment(comment_url)
                 comment["url"] = comment_url
-                if questions:
+                if question:
                     comment["username"] = question[0][0]
 
                 video_titles = utils.get_title(comment["url"].split("&lc=")[0])
@@ -154,7 +155,7 @@ def extract_question(text):
         match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", line)
         if match:
             question_user += match.group(1)
-    url = lines[-1]
+    url = lines[-1].strip("<>\n ")
     return url, question_message, question_user
 
 def extract_reply(text):
@@ -172,7 +173,7 @@ def extract_reply(text):
             if line != lines[-3]:
                 reply_message += match.group(1)
             else:
-                users = line[46:-1].split(",")
+                users = [name.strip() for name in re.split(",? and|,", line[46:-1])]
     url = lines[-1][32:].replace(">", "").replace("<", "")
     return url, reply_message, users
 
