@@ -78,7 +78,7 @@ class StampyControls(Module):
         memory_message = get_memory_usage()
         runtime_message = self.utils.get_time_running()
         modules_message = self.utils.list_modules()
-        scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
+        # scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
         await message.channel.send(
             "\n\n".join(
                 [git_message, run_message, memory_message, runtime_message, modules_message, scores_message]
