@@ -6,6 +6,7 @@ dependencies:
   - numpy
   - sqlite
   - pip:
+    - openai
     - black
     - discord-py
     - google-api-python-client
