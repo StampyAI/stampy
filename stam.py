@@ -10,6 +10,7 @@ from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
+from modules.gpt3module import GPT3Module
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -18,6 +19,8 @@ from config import (
     bot_dev_channels,
     prod_local_path,
     database_path,
+    rob_id,
+    plex_id,
 )
 
 load_dotenv()
@@ -51,8 +54,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-
-    await utils.client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I'm back!")
+    await utils.client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I just (re)started!")
 
 
 @utils.client.event
@@ -73,6 +75,59 @@ async def on_message(message):
         utils.last_message_was_youtube_question = False
 
     options = []
+    if message.content == "bot test":
+        response = "I'm alive!"
+        await message.channel.send(response)
+    elif message.content.lower() == "Klaatu barada nikto".lower():
+        await message.channel.send("I must go now, my planet needs me")
+        exit()
+    if message.content.lower() == "reboot".lower():
+        if hasattr(message.channel, "name") and message.channel.name in [
+            "bot-dev-priv",
+            "bot-dev",
+            "talk-to-stampy",
+            "robertskmiles",
+        ]:
+            if message.author.id == int(rob_id):
+                await message.channel.send("Rebooting...")
+                exit()
+            else:
+                await message.channel.send("You're not my supervisor!")
+    if message.content == "reply test":
+        if message.reference:
+            reference = await message.channel.fetch_message(message.reference.message_id)
+            reference_text = reference.content
+            reply_url = reference_text.split("\n")[-1].strip()
+
+            response = 'This is a reply to message %s:\n"%s"' % (
+                message.reference.message_id,
+                reference_text,
+            )
+            response += 'which should be taken as an answer to the question at: "%s"' % reply_url
+        else:
+            response = "This is not a reply"
+        await message.channel.send(response)
+    if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
+        print("[resetting can-invite roles]")
+        await message.channel.send("[resetting can-invite roles, please wait]")
+        guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
+        print(utils.GUILD, guild)
+        role = discord.utils.get(guild.roles, name="can-invite")
+        print("there are", len(guild.members), "members")
+        reset_users_count = 0
+        for member in guild.members:
+            if utils.get_user_score(member) > 0:
+                print(member.name, "can invite")
+                await member.add_roles(role)
+                reset_users_count += 1
+            else:
+                print(member.name, "has 0 stamps, can't invite")
+        await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
+        return
+
+    # What are the options for responding to this message?
+    # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
+    options = []
     for module in modules:
         print("Asking module: %s" % str(module))
         output = module.can_process_message(message, utils.client)
@@ -82,17 +137,20 @@ async def on_message(message):
             options.append((module, confidence, result))
 
     # Go with whichever module was most confident in its response
-    options = sorted(options, key=(lambda x: x[1]), reverse=True)
-    module, confidence, result = options[0]
+    options = sorted(options, key=(lambda o: o[1]), reverse=True)
     print(options)
+    for option in options:
+        module, confidence, result = option
 
-    if confidence > 0:
-        # if the module had some confidence it could reply
-        if not result:
-            # if the module didn't reply in can_process_message()
-            confidence, result = await module.process_message(message, utils.client)
-    if result:
-        await message.channel.send(result)
+        if confidence > 0:
+            # if the module had some confidence it could reply
+            if not result:
+                # but didn't reply in can_process_message()
+                confidence, result = await module.process_message(message, utils.client)
+
+        if result:
+            await message.channel.send(result)
+            break
 
     print("########################################################")
     sys.stdout.flush()
@@ -127,9 +185,11 @@ async def on_socket_raw_receive(_):
     if new_comments:
         for comment in new_comments:
             if "?" in comment["text"]:
-                utils.add_question(comment)
-    qq = utils.get_next_question("rowid")
-    if qq:
+                utils.add_youtube_question(comment)
+    # add_question should maybe just take in the dict, but to make sure nothing is broken extra fields have been added as optional params
+    # This is just checking if there _are_ questions
+    question_count = utils.get_question_count()
+    if question_count:
         # ask a new question if it's been long enough since we last asked one
         question_ask_cooldown = timedelta(hours=6)
 
@@ -137,6 +197,7 @@ async def on_socket_raw_receive(_):
             if not utils.last_message_was_youtube_question:
                 # Don't ask anything if the last thing posted in the chat was stampy asking a question
                 utils.last_question_asked_timestamp = now
+                # this actually gets the question and sets it to asked, then sends the report
                 report = utils.get_latest_question()
                 guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
                 general = discord.utils.find(lambda c: c.name == "general", guild.channels)
@@ -148,7 +209,7 @@ async def on_socket_raw_receive(_):
                 print("Not asking question: previous post in the channel was a question stampy asked.")
         else:
             remaining_cooldown = str(question_ask_cooldown - (now - utils.last_question_asked_timestamp))
-            print("%s Questions in queue, waiting %s to post" % (len(qq), remaining_cooldown))
+            print("%s Questions in queue, waiting %s to post" % (question_count, remaining_cooldown))
             return
 
 
@@ -203,6 +264,7 @@ if __name__ == "__main__":
         "VideoSearch": VideoSearch(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
+        "GPT3Module": GPT3Module(),
         "Sentience": sentience,
     }
 
