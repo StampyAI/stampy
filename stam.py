@@ -97,7 +97,7 @@ async def on_message(message):
                 # but didn't reply in can_process_message()
                 confidence, result = await module.process_message(message, utils.client)
 
-        if result:
+        if result or confidence:
             await message.channel.send(result)
             break
 
