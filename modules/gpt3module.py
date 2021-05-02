@@ -1,13 +1,9 @@
-# from stam import is_at_me, Module
 from modules.module import Module
 import discord
-import asyncio
-import re
-
-import os
 import openai
+from config import openai_api_key
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+openai.api_key = openai_api_key
 
 start_sequence = "\nA:"
 restart_sequence = "\n\nQ: "
@@ -75,20 +71,12 @@ class GPT3Module(Module):
             prompt = self.startprompt + text + start_sequence
 
             response = openai.Completion.create(
-                engine=engine,
-                prompt=prompt,
-                temperature=0,
-                max_tokens=100,
-                top_p=1,
-                stop=["\n"],
+                engine=engine, prompt=prompt, temperature=0, max_tokens=100, top_p=1, stop=["\n"],
             )
 
             if response["choices"]:
                 choice = response["choices"][0]
-                if (
-                    choice["finish_reason"] == "stop"
-                    and choice["text"].strip() != "Unknown"
-                ):
+                if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
                     print("GPT-3 Replied!:")
                     reply = (10, "*" + choice["text"].strip(". ") + "*")
 

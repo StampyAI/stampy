@@ -1,24 +1,34 @@
+import os
 import sys
 import discord
 import unicodedata
+from dotenv import load_dotenv
+from utilities import Utilities
 from modules.reply import Reply
-from modules.module import Module
-from utilities import client, utils
 from modules.questions import QQManager
 from modules.videosearch import VideoSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
+from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
-    rob_id,
-    plex_id,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
-    bot_dev_channels,
+    bot_dev_channel_id,
     prod_local_path,
+    database_path,
+    rob_id,
+    plex_id,
 )
+
+load_dotenv()
+
+utils = Utilities.get_instance()
+
+if not os.path.exists(database_path):
+    raise Exception("Couldn't find the stampy database file at %s" % database_path)
 
 if ENVIRONMENT_TYPE == "production":
     sys.path.insert(0, prod_local_path)
@@ -31,12 +41,12 @@ else:
     )
 
 
-@client.event
+@utils.client.event
 async def on_ready():
-    print(f"{client.user} has connected to Discord!")
+    print(f"{utils.client.user} has connected to Discord!")
     print("searching for a guild named '%s'" % utils.GUILD)
-    print(client.guilds)
-    guild = discord.utils.get(client.guilds, name=utils.GUILD)
+    print(utils.client.guilds)
+    guild = discord.utils.get(utils.client.guilds, name=utils.GUILD)
     if guild is None:
         raise Exception("Guild Not Found : '%s'" % utils.GUILD)
 
@@ -44,14 +54,16 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await client.get_channel(bot_dev_channels[ENVIRONMENT_TYPE]).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id[ENVIRONMENT_TYPE]).send("I just (re)started!")
 
 
-@client.event
+@utils.client.event
 async def on_message(message):
     # don't react to our own messages
-    if message.author == client.user:
+    if message.author == utils.client.user:
         return
+
+    utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
     print(message)
@@ -59,9 +71,10 @@ async def on_message(message):
     print(message.author, message.content)
 
     if hasattr(message.channel, "name") and message.channel.name == "general":
-        print("Last message was no longer us")
+        print("the latest general discord channel message was not from stampy")
         utils.last_message_was_youtube_question = False
 
+    options = []
     if message.content == "bot test":
         response = "I'm alive!"
         await message.channel.send(response)
@@ -97,7 +110,7 @@ async def on_message(message):
     if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
         print("[resetting can-invite roles]")
         await message.channel.send("[resetting can-invite roles, please wait]")
-        guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
+        guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
         print(utils.GUILD, guild)
         role = discord.utils.get(guild.roles, name="can-invite")
         print("there are", len(guild.members), "members")
@@ -114,11 +127,10 @@ async def on_message(message):
 
     # What are the options for responding to this message?
     # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
-    options = [(Module(), 0, "")]
-
+    options = []
     for module in modules:
         print("Asking module: %s" % str(module))
-        output = module.can_process_message(message, client)
+        output = module.can_process_message(message, utils.client)
         print("output is", output)
         confidence, result = output
         if confidence > 0:
@@ -134,7 +146,7 @@ async def on_message(message):
             # if the module had some confidence it could reply
             if not result:
                 # but didn't reply in can_process_message()
-                confidence, result = await module.process_message(message, client)
+                confidence, result = await module.process_message(message, utils.client)
 
         if result:
             await message.channel.send(result)
@@ -144,13 +156,15 @@ async def on_message(message):
     sys.stdout.flush()
 
 
-@client.event
+@utils.client.event
 async def on_socket_raw_receive(_):
-    """This event fires whenever basically anything at all happens.
+    """
+    This event fires whenever basically anything at all happens.
     Anyone joining, leaving, sending anything, even typing and not sending...
     So I'm going to use it as a kind of 'update' or 'tick' function,
     for things the bot needs to do regularly. Yes this is hacky.
-    Rate limit these things, because this function might be firing a lot"""
+    Rate limit these things, because this function might be firing a lot
+    """
 
     # keep the log file fresh
     sys.stdout.flush()
@@ -185,7 +199,7 @@ async def on_socket_raw_receive(_):
                 utils.last_question_asked_timestamp = now
                 # this actually gets the question and sets it to asked, then sends the report
                 report = utils.get_latest_question()
-                guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
+                guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
                 general = discord.utils.find(lambda c: c.name == "general", guild.channels)
                 await general.send(report)
                 utils.last_message_was_youtube_question = True
@@ -199,7 +213,7 @@ async def on_socket_raw_receive(_):
             return
 
 
-@client.event
+@utils.client.event
 async def on_raw_reaction_add(payload):
     print("RAW REACTION ADD")
     if len(payload.emoji.name) == 1:
@@ -210,16 +224,16 @@ async def on_raw_reaction_add(payload):
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, client)
+        await module.process_raw_reaction_event(payload, utils.client)
 
 
-@client.event
+@utils.client.event
 async def on_raw_reaction_remove(payload):
     print("RAW REACTION REMOVE")
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, client)
+        await module.process_raw_reaction_event(payload, utils.client)
 
 
 if __name__ == "__main__":
@@ -244,6 +258,7 @@ if __name__ == "__main__":
     utils.last_message_was_youtube_question = True
 
     utils.modules_dict = {
+        "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
         "QQManager": QQManager(),
         "VideoSearch": VideoSearch(),
@@ -255,4 +270,4 @@ if __name__ == "__main__":
 
     modules = utils.modules_dict.values()
 
-    client.run(discord_token)
+    utils.client.run(discord_token)

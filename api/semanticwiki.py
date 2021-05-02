@@ -15,9 +15,7 @@ class SemanticWiki(Persistence):
         self._session = requests.Session()
 
         # Retrieve login token first
-        response = self.post(
-            {"action": "query", "meta": "tokens", "type": "login", "format": "json"}
-        )
+        response = self.post({"action": "query", "meta": "tokens", "type": "login", "format": "json"})
 
         # Now log in to the Stampy bot account with the provided login token
         body = {
@@ -69,14 +67,10 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
-    def add_answer(
-        self, answer_title, answer_users, answer_time, answer_text, question_title
-    ):
+    def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
         if not answer_title:
-            print(
-                "No title provided, need the answer title for the primary key of the article"
-            )
+            print("No title provided, need the answer title for the primary key of the article")
             return
         ftext = f"""Answer
                 |answer={answer_text}
@@ -109,17 +103,14 @@ class SemanticWiki(Persistence):
 
         # Split the url into the comment id and video url
         if not display_title:
-            print(
-                "No title provided, need the question title for the primary key of the article"
-            )
+            print("No title provided, need the question title for the primary key of the article")
             return
 
         comment_id = comment_url.split("&lc=")[1] if comment_url else ""
         asked = "Yes" if asked else "No"
         formatted_asked_time = re.sub(
-            r'(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2}):\d{2}(\.\d+)?Z?',
-            r'\1T\2',
-            asked_time)
+            r"(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2}):\d{2}(\.\d+)?Z?", r"\1T\2", asked_time
+        )
         # there has to be a better way to make this fit on a line..
         ftext = f"""Question
                 |question={text}
@@ -169,7 +160,9 @@ class SemanticWiki(Persistence):
     def get_unasked_question(self, sort, order):
         query = (
             "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
-            + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
+            + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
+                sort, order
+            )
         )
         response = self.ask(query)
 
@@ -231,6 +224,4 @@ class SemanticWiki(Persistence):
         query = "[[Meta:API Queries]]|?UnaskedQuestions"
         response = self.ask(query)
 
-        return response["query"]["results"]["Meta:API Queries"]["printouts"][
-            "UnaskedQuestions"
-        ][0]
+        return response["query"]["results"]["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
