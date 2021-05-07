@@ -89,6 +89,9 @@ class SemanticWiki(Persistence):
                 |stamps={', '.join(answer_users)}"""
         ftext = "{{" + ftext + "}}"
 
+        # replace square brackets with extra UTF-8 brackets
+        ftext = ftext.replace("[", "\uff3b").replace("]", "\uff3b")
+
         # Post the answer to wiki
         print("Trying to add reply " + answer_title + " to wiki")
         self.edit(answer_title, ftext)
@@ -117,9 +120,8 @@ class SemanticWiki(Persistence):
         comment_id = comment_url.split("&lc=")[1] if comment_url else ""
         asked = "Yes" if asked else "No"
         formatted_asked_time = re.sub(
-            r'(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2}):\d{2}(\.\d+)?Z?',
-            r'\1T\2',
-            asked_time)
+            r"(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2}):\d{2}(\.\d+)?Z?", r"\1T\2", asked_time
+        )
         # there has to be a better way to make this fit on a line..
         ftext = f"""Question
                 |question={text}
@@ -135,6 +137,9 @@ class SemanticWiki(Persistence):
                 |replycount={reply_count}
                 |titleoverride={display_title}"""
         ftext = "{{" + ftext + "}}"
+
+        # replace square brackets with extra UTF-8 brackets
+        ftext = ftext.replace("[", "\uFF3B").replace("]", "\uFF3D")
 
         # Post the question to wiki
         print("Trying to add question " + display_title + " to wiki")
@@ -169,7 +174,9 @@ class SemanticWiki(Persistence):
     def get_unasked_question(self, sort, order):
         query = (
             "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
-            + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(sort, order)
+            + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
+                sort, order
+            )
         )
         response = self.ask(query)
 
