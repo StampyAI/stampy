@@ -11,6 +11,7 @@ from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
+from modules.Factoids import Factoids
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -265,6 +266,7 @@ if __name__ == "__main__":
         "Reply": Reply(),
         "InviteManager": InviteManager(),
         "GPT3Module": GPT3Module(),
+        "Factoids": Factoids(),
         "Sentience": sentience,
     }
 
