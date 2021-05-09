@@ -2,7 +2,9 @@ import re
 import json
 import discord
 from modules.module import Module
+from utilities import utils
 from config import stampy_youtube_channel_id, youtube_testing_thread_url
+from datetime import datetime
 
 
 class Reply(Module):
@@ -128,6 +130,27 @@ class Reply(Module):
             quoted_reply_message,
             question_url,
         )
+
+        # save the question to the wiki as well
+        question_user = "Unknown User"
+        if reference_text:
+            match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
+        if match:
+            question_user = match.group(1)  # YouTube user (.*) asked this question
+
+        video_url, comment_id = question_url.split("&lc=")
+        video_titles = utils.get_title(video_url)
+        if not video_titles:
+            # this should actually only happen in dev
+            video_titles = ["Video Title Unknown", "Video Title Unknown"]
+
+        question_display_title = f"""{question_user}'s question on {video_titles[0]}"""       # Cyprian Guerra's question on Pascal's Mugging
+        answer_title = f"""{message.author.display_name}'s Answer to {question_display_title}"""
+
+        answer_time = datetime.now() # How should this be formated?
+
+        utils.wiki.add_answer(answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id)
+        ##
 
         self.post_reply(reply_message, question_id)
 
