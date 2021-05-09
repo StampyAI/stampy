@@ -43,7 +43,7 @@ class QQManager(Module):
             text = self.is_at_me(message)
 
             if self.re_nextq.match(text):
-                result = self.utils.get_latest_question()
+                result = self.utils.get_question()
                 if result:
                     return 10, result
                 else:

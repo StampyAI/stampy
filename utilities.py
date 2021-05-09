@@ -233,7 +233,7 @@ class Utilities:
 
         return new_comments
 
-    def get_latest_question(self, order_type="TOP"):
+    def get_question(self, order_type="TOP"):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
