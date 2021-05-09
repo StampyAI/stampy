@@ -1,6 +1,9 @@
 import os
+import pwd
+import psutil
 import discord
-from dotenv import load_dotenv
+from git import Repo
+from time import time
 from database.database import Database
 from api.semanticwiki import SemanticWiki
 from datetime import datetime, timezone, timedelta
@@ -68,12 +71,11 @@ class Utilities:
             self.YOUTUBE_API_KEY = youtube_api_key
             self.DB_PATH = database_path
             self.youtube = None
+            self.start_time = time()
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -83,9 +85,10 @@ class Utilities:
 
             print("Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
-            self.wiki = SemanticWiki(
-                wiki_config["uri"], wiki_config["user"], wiki_config["password"]
-            )
+            intents = discord.Intents.default()
+            intents.members = True
+            self.client = discord.Client(intents=intents)
+            self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -147,9 +150,7 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- "
-                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
-                end="",
+                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
 
@@ -189,9 +190,7 @@ class Utilities:
             if published_timestamp > newest_timestamp:
                 newest_timestamp = published_timestamp
 
-        print(
-            "Got %s items, most recent published at %s" % (len(items), newest_timestamp)
-        )
+        print("Got %s items, most recent published at %s" % (len(items), newest_timestamp))
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
@@ -207,8 +206,7 @@ class Utilities:
             likes = top_level_comment["snippet"]["likeCount"]
             reply_count = item["snippet"]["totalReplyCount"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
-                % (video_id, comment_id),
+                "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
@@ -223,13 +221,8 @@ class Utilities:
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cooldown = min(
-                self.youtube_cooldown * 2, timedelta(seconds=1200)
-            )
-            print(
-                "No new comments, increasing cooldown timer to %s"
-                % self.youtube_cooldown
-            )
+            self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
+            print("No new comments, increasing cooldown timer to %s" % self.youtube_cooldown)
 
         return new_comments
 
@@ -271,12 +264,7 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(
-                comment["username"],
-                self.get_title(comment["url"])[1],
-                text_quoted,
-                comment["url"],
-            )
+            ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
 
         print("==========================")
         print(report)
@@ -341,17 +329,11 @@ class Utilities:
         self.db.commit()
 
     def get_votes_by_user(self, user):
-        query = (
-            "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(
-                user
-            )
-        )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
         return self.db.query(query)[0][0]
 
     def get_votes_for_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(
-            user
-        )
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
         return self.db.query(query)[0][0]
 
     def get_total_votes(self):
@@ -376,9 +358,7 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(
-            comment["username"], video_titles[0],
-        )
+        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
 
         return self.wiki.add_question(
             display_title,
@@ -392,22 +372,57 @@ class Utilities:
         )
 
     def get_title(self, url):
-        result = self.db.query(
-            'select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url)
-        )
+        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
         if result:
             return result[0][0], result[0][1]
         return None
 
+    def list_modules(self):
+        message = "I have %d modules. Here are their names:" % len(self.modules_dict)
+        for module_name in self.modules_dict.keys():
+            message += "\n" + module_name
+        return message
 
-load_dotenv()
+    def get_time_running(self):
+        message = "I have been running for"
+        seconds_running = timedelta(seconds=int(time() - self.start_time))
+        time_running = datetime(1, 1, 1) + seconds_running
+        if time_running.day - 1:
+            message += " " + str(time_running.day) + " days,"
+        if time_running.hour:
+            message += " " + str(time_running.hour) + " hours,"
+        message += " " + str(time_running.minute) + " minutes"
+        message += " and " + str(time_running.second) + " seconds."
+        return message
 
-intents = discord.Intents.default()
-intents.members = True
-client = discord.Client(intents=intents)
 
-utils = Utilities.get_instance()
-utils.client = client
+def get_github_info():
+    message = (
+        "\nThe latest commit was by %(actor)s"
+        + "\nThe commit message was '%(git_message)s'"
+        + "\nThis commit was written on %(date)s"
+    )
+    repo = Repo(".")
+    master = repo.head.reference
+    return message % {
+        "actor": master.commit.author,
+        "git_message": master.commit.message.strip(),
+        "date": master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z"),
+    }
 
-if not os.path.exists(database_path):
-    raise Exception("Couldn't find the stampy database file at %s" % database_path)
+
+def get_running_user_info():
+    user_info = pwd.getpwuid(os.getuid())
+    message = (
+        "The last user to start my server was %(username)s."
+        + "\nThey used the %(shell)s shell."
+        + "\nMy Process ID is %(pid)s on this machine"
+    )
+    return message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
+
+
+def get_memory_usage():
+    process = psutil.Process(os.getpid())
+    bytes_used = int(process.memory_info().rss) / 1000000
+    megabytes_string = f"{bytes_used:,.2f} MegaBytes"
+    return "I'm using %s bytes of memory" % megabytes_string

@@ -60,9 +60,17 @@ for question in questions:
 
     question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"], comment["username"])
 
-    utils.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
-                            comment_url=comment["url"], video_title=video_titles[1], likes=comment["likes"],
-                            asked=True, reply_count=comment["reply_count"])
+    utils.wiki.add_question(
+        question_title,
+        comment["username"],
+        comment["timestamp"],
+        comment["text"],
+        comment_url=comment["url"],
+        video_title=video_titles[1],
+        likes=comment["likes"],
+        asked=True,
+        reply_count=comment["reply_count"],
+    )
 
 
 client = utils.client
@@ -98,20 +106,30 @@ async def on_ready():
                     # this should actually only happen in dev
                     video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-                question_title = "{0} on {1} by {2}".format(video_titles[0], comment["timestamp"], comment["username"])
- 
+                question_title = "{0} on {1} by {2}".format(
+                    video_titles[0], comment["timestamp"], comment["username"]
+                )
+
                 data = utils.wiki.post({"action": "query", "titles": question_title, "format": "json"})
 
-                if("-1" in data["query"]["pages"]):
-                    utils.wiki.add_question(question_title, comment["username"], comment["timestamp"], comment["text"],
-                                        comment_url=comment_url, video_title=video_titles[1], likes=comment["likes"],
-                                        asked=True, reply_count=comment["reply_count"])
+                if "-1" in data["query"]["pages"]:
+                    utils.wiki.add_question(
+                        question_title,
+                        comment["username"],
+                        comment["timestamp"],
+                        comment["text"],
+                        comment_url=comment_url,
+                        video_title=video_titles[1],
+                        likes=comment["likes"],
+                        asked=True,
+                        reply_count=comment["reply_count"],
+                    )
                 else:
                     print("Question " + question_title + " was already in the wiki")
 
     print("Done with on_ready()")
-                
-                #
+
+    #
 
     """if text.startswith("Ok, posting this:"):
                 reply = extract_reply(text)
@@ -140,6 +158,7 @@ async def on_ready():
 
                 utils.wiki.add_answer(answer_title, answer_users, answer_time, answer_text, question_title)"""
 
+
 def extract_question(text):
     # Pull the text of the reply out of the message
     lines = text.split("\n")
@@ -157,6 +176,7 @@ def extract_question(text):
             question_user += match.group(1)
     url = lines[-1].strip("<>\n ")
     return url, question_message, question_user
+
 
 def extract_reply(text):
     # Pull the text of the reply out of the message

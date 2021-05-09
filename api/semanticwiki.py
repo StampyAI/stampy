@@ -15,9 +15,7 @@ class SemanticWiki(Persistence):
         self._session = requests.Session()
 
         # Retrieve login token first
-        response = self.post(
-            {"action": "query", "meta": "tokens", "type": "login", "format": "json"}
-        )
+        response = self.post({"action": "query", "meta": "tokens", "type": "login", "format": "json"})
 
         # Now log in to the Stampy bot account with the provided login token
         body = {
@@ -69,14 +67,10 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
-    def add_answer(
-        self, answer_title, answer_users, answer_time, answer_text, question_title
-    ):
+    def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
         if not answer_title:
-            print(
-                "No title provided, need the answer title for the primary key of the article"
-            )
+            print("No title provided, need the answer title for the primary key of the article")
             return
         ftext = f"""Answer
                 |answer={answer_text}
@@ -112,9 +106,7 @@ class SemanticWiki(Persistence):
 
         # Split the url into the comment id and video url
         if not display_title:
-            print(
-                "No title provided, need the question title for the primary key of the article"
-            )
+            print("No title provided, need the question title for the primary key of the article")
             return
 
         comment_id = comment_url.split("&lc=")[1] if comment_url else ""
@@ -238,6 +230,4 @@ class SemanticWiki(Persistence):
         query = "[[Meta:API Queries]]|?UnaskedQuestions"
         response = self.ask(query)
 
-        return response["query"]["results"]["Meta:API Queries"]["printouts"][
-            "UnaskedQuestions"
-        ][0]
+        return response["query"]["results"]["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
