@@ -40,13 +40,29 @@ class WikiUpdate(Module):
                     "reviewed", "0"
                 ),
             },
+            "Out of Scope": {
+                "re": re.compile(
+                    r"((Stampy)?[Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) (out of scope)(,? [Ss]tampy)?"
+                ),
+                "command": self.get_simple_property_change_partial_function(
+                    "outofscope", "Yes"
+                ),
+            },
+            "Cannonical": {
+                "re": re.compile(
+                    r"((Stampy)?[Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) (canonical)(,? [Ss]tampy)?"
+                ),
+                "command": self.get_simple_property_change_partial_function(
+                    "canonical", "Yes"
+                ),
+            },
         }
 
         self.command = None
 
     def can_process_message(self, message, client=None):
         """From the Module() Interface. Is this a message we can process?"""
-
+        self.command = None
         for k, v in self.command_dict.items():
             if v["re"].match(message.clean_content):
                 self.command = v["command"]
@@ -75,7 +91,7 @@ class WikiUpdate(Module):
         """Changes just a single property from the referenced question (or the last question stampy posted)"""
         wiki_title = await self.get_wiki_title(message)
         if not wiki_title:
-            return 6, "It is not clear what question you are referring to"
+            return 5, "It is not clear what question you are referring to"
 
         self.utils.wiki.set_question_property(wiki_title, property_name, new_value)
 
@@ -105,8 +121,9 @@ class WikiUpdate(Module):
                     r"YouTube user (.*?)( just)? asked (a|this) question",
                     reference_text,
                 )
-            if match:
-                question_user = match.group(1)  # YouTube user (.*) asked this question
+            if not match:
+                return None
+            question_user = match.group(1)  # YouTube user (.*) asked this question
         else:
             if not self.utils.latest_question_posted:
                 return None
