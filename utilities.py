@@ -426,6 +426,3 @@ def get_memory_usage():
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
     return "I'm using %s bytes of memory" % megabytes_string
-    
-
-utils = Utilities.get_instance()
