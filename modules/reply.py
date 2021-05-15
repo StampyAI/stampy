@@ -2,7 +2,6 @@ import re
 import json
 import discord
 from modules.module import Module
-from utilities import utils
 from config import stampy_youtube_channel_id, youtube_testing_thread_url
 from datetime import datetime
 
@@ -139,7 +138,7 @@ class Reply(Module):
             question_user = match.group(1)  # YouTube user (.*) asked this question
 
         video_url, comment_id = question_url.split("&lc=")
-        video_titles = utils.get_title(video_url)
+        video_titles = self.utils.get_title(video_url)
         if not video_titles:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
@@ -149,7 +148,7 @@ class Reply(Module):
 
         answer_time = datetime.now() # How should this be formated?
 
-        utils.wiki.add_answer(answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id)
+        self.utils.wiki.add_answer(answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id)
         ##
 
         self.post_reply(reply_message, question_id)
