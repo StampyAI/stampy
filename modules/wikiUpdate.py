@@ -11,14 +11,14 @@ class WikiUpdate(Module):
         Module.__init__(self)
 
         # command_dict contains all the commands, which regex triggers them
-        # and which function [signature (*f)(self, message)] should be triggered when the regex matches
+        # and which function [signature async (*f)(self, message)] should be triggered when the regex matches
         # for simple commands that change a single property, get_simple_property_change_partial_function can be used
         # for more complicated commands, command should be a reference to a function or lambda function
         # [if a command is particularly important put it at the start of the dict, since matches are evaluated in order]
         self.command_dict = {
             "Not A Question": {
                 "re": re.compile(
-                    r"((Stampy )?[Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) (not (a )?question)(,? [Ss]tampy)?"
+                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) '?not (a )?question'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "notquestion", "Yes"
@@ -26,7 +26,7 @@ class WikiUpdate(Module):
             },
             "For Rob": {
                 "re": re.compile(
-                    r"((Stampy )?[Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) (for rob)(,? [Ss]tampy)?"
+                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?for rob'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "forrob", "Yes"
@@ -34,7 +34,7 @@ class WikiUpdate(Module):
             },
             "Rejected": {
                 "re": re.compile(
-                    r"(Stampy )?((([Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) rejected)|reject (that|this))(,? [Ss]tampy)?"
+                    r"(([Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) '?rejected'?)|reject (that|this)"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "reviewed", "0"
@@ -42,7 +42,7 @@ class WikiUpdate(Module):
             },
             "Out of Scope": {
                 "re": re.compile(
-                    r"((Stampy)?[Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) (out of scope)(,? [Ss]tampy)?"
+                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?(out of scope|not[- ]ai)'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "outofscope", "Yes"
@@ -50,12 +50,28 @@ class WikiUpdate(Module):
             },
             "Cannonical": {
                 "re": re.compile(
-                    r"((Stampy)?[Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) (canonical)(,? [Ss]tampy)?"
+                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?canonical'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "canonical", "Yes"
                 ),
             },
+            "Technical": {
+                "re": re.compile(
+                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?(technical|difficult)'?"
+                ),
+                "command": self.get_simple_property_change_partial_function(
+                    "difficulty", "Technical"
+                ),
+            },
+            "Easy": {
+                "re": re.compile(
+                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?(easy|101)'?"
+                ),
+                "command": self.get_simple_property_change_partial_function(
+                    "difficulty", "Easy"
+                ),
+            }
         }
 
         self.command = None
@@ -63,8 +79,13 @@ class WikiUpdate(Module):
     def can_process_message(self, message, client=None):
         """From the Module() Interface. Is this a message we can process?"""
         self.command = None
+        text = message.clean_content
+        at_me_text = self.is_at_me(message)
+        if at_me_text:
+            text = at_me_text
+
         for k, v in self.command_dict.items():
-            if v["re"].match(message.clean_content):
+            if v["re"].match(text):
                 self.command = v["command"]
                 break
 
