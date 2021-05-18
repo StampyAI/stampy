@@ -18,61 +18,50 @@ class WikiUpdate(Module):
         # [if a command is particularly important put it at the start of the dict, since matches are evaluated in order]
         self.command_dict = {
             "Not A Question": {
-                "re": re.compile(
-                    tag_this_as_regex + r"(n'?t| '?not) (a )?question'?"
-                ),
+                "re": re.compile(tag_this_as_regex + r"(n'?t| '?not) (a )?question'?"),
                 "command": self.get_simple_property_change_partial_function(
                     "notquestion", "Yes"
                 ),
             },
             "For Rob": {
-                "re": re.compile(
-                    tag_this_as_regex + r" '?for rob'?"
-                ),
+                "re": re.compile(tag_this_as_regex + r" '?for ?rob'?"),
                 "command": self.get_simple_property_change_partial_function(
                     "forrob", "Yes"
                 ),
             },
             "Rejected": {
                 "re": re.compile(
-                    tag_this_as_regex + r" '?rejected'?|reject (that|this)" # is it confusing that |option2 matches option2 alone, and not tag_this_as_regex+option2?
+                    tag_this_as_regex
+                    + r" '?rejected'?|reject (that|this)"  # is it confusing that |option2 matches option2 alone, and not tag_this_as_regex+option2?
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "reviewed", "0"
                 ),
             },
             "Out of Scope": {
-                "re": re.compile(
-                    tag_this_as_regex + r" '?(out of scope|not[- ]ai)'?"
-                ),
+                "re": re.compile(tag_this_as_regex + r" '?(out of scope|not[- ]ai)'?"),
                 "command": self.get_simple_property_change_partial_function(
                     "outofscope", "Yes"
                 ),
             },
             "Cannonical": {
-                "re": re.compile(
-                    tag_this_as_regex + r" '?canonical'?"
-                ),
+                "re": re.compile(tag_this_as_regex + r" '?canonical'?"),
                 "command": self.get_simple_property_change_partial_function(
                     "canonical", "Yes"
                 ),
             },
             "Technical": {
-                "re": re.compile(
-                    tag_this_as_regex + r" '?(technical|difficult)'?"
-                ),
+                "re": re.compile(tag_this_as_regex + r" '?(technical|difficult)'?"),
                 "command": self.get_simple_property_change_partial_function(
                     "difficulty", "Technical"
                 ),
             },
             "Easy": {
-                "re": re.compile(
-                    tag_this_as_regex + r" '?(easy|101)'?"
-                ),
+                "re": re.compile(tag_this_as_regex + r" '?(easy|101)'?"),
                 "command": self.get_simple_property_change_partial_function(
                     "difficulty", "Easy"
                 ),
-            }
+            },
         }
 
         self.command = None
@@ -84,6 +73,9 @@ class WikiUpdate(Module):
         at_me_text = self.is_at_me(message)
         if at_me_text:
             text = at_me_text
+        else:
+            if self.utils.client.user not in message.mentions:
+                return 0, ""
 
         for v in self.command_dict.values():
             if v["re"].match(text):
