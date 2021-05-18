@@ -10,6 +10,7 @@ class WikiUpdate(Module):
     def __init__(self):
         Module.__init__(self)
 
+        tag_this_as_regex = r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) "
         # command_dict contains all the commands, which regex triggers them
         # and which function [signature async (*f)(self, message)] should be triggered when the regex matches
         # for simple commands that change a single property, get_simple_property_change_partial_function can be used
@@ -18,7 +19,7 @@ class WikiUpdate(Module):
         self.command_dict = {
             "Not A Question": {
                 "re": re.compile(
-                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) '?not (a )?question'?"
+                    tag_this_as_regex + r"'?not (a )?question'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "notquestion", "Yes"
@@ -26,7 +27,7 @@ class WikiUpdate(Module):
             },
             "For Rob": {
                 "re": re.compile(
-                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?for rob'?"
+                    tag_this_as_regex + r"'?for rob'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "forrob", "Yes"
@@ -34,7 +35,7 @@ class WikiUpdate(Module):
             },
             "Rejected": {
                 "re": re.compile(
-                    r"(([Tt]ag (that|this)( as)?|[Tt](hat|his) is|[Tt]hat'?s|[Tt](his|at) (question|comment) is) '?rejected'?)|reject (that|this)"
+                    tag_this_as_regex + r"'?rejected'?|reject (that|this)" # is it confusing that |option2 matches option2 alone, and not tag_this_as_regex+option2?
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "reviewed", "0"
@@ -42,7 +43,7 @@ class WikiUpdate(Module):
             },
             "Out of Scope": {
                 "re": re.compile(
-                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?(out of scope|not[- ]ai)'?"
+                    tag_this_as_regex+r"'?(out of scope|not[- ]ai)'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "outofscope", "Yes"
@@ -50,7 +51,7 @@ class WikiUpdate(Module):
             },
             "Cannonical": {
                 "re": re.compile(
-                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?canonical'?"
+                    tag_this_as_regex + r"'?canonical'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "canonical", "Yes"
@@ -58,7 +59,7 @@ class WikiUpdate(Module):
             },
             "Technical": {
                 "re": re.compile(
-                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?(technical|difficult)'?"
+                    tag_this_as_regex + r"'?(technical|difficult)'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "difficulty", "Technical"
@@ -66,7 +67,7 @@ class WikiUpdate(Module):
             },
             "Easy": {
                 "re": re.compile(
-                    r"([Tt]ag (that|this)( as)?|[Tt](hat|his) is|([Tt]hat'?s)|[Tt](his|at) (question|comment) is) '?(easy|101)'?"
+                    tag_this_as_regex + r"'?(easy|101)'?"
                 ),
                 "command": self.get_simple_property_change_partial_function(
                     "difficulty", "Easy"
@@ -84,7 +85,7 @@ class WikiUpdate(Module):
         if at_me_text:
             text = at_me_text
 
-        for k, v in self.command_dict.items():
+        for v in self.command_dict.values():
             if v["re"].match(text):
                 self.command = v["command"]
                 break
@@ -116,15 +117,7 @@ class WikiUpdate(Module):
 
         self.utils.wiki.set_question_property(wiki_title, property_name, new_value)
 
-        return (
-            8,
-            "Processing "
-            + property_name
-            + "="
-            + new_value
-            + " request on "
-            + wiki_title,
-        )
+        return f"Processing {property_name}={new_value} request on {wiki_title}"
 
     async def get_wiki_title(self, message):
         """parses the message reference to get the wiki title of the referenced question"""
