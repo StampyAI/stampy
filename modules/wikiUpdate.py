@@ -10,7 +10,7 @@ class WikiUpdate(Module):
     def __init__(self):
         Module.__init__(self)
 
-        tag_this_as_regex = r"([Tt]ag (that|this)( as)?|[Tt]hat'?s|[Tt](his|at)( question| comment)? is)"
+        tag_this_as_regex = r"([Tt]ag (that|this)( as)?|[Tt]hat'?s|[Tt]h(is|at)( question| comment)? is)"
         # command_dict contains all the commands, which regex triggers them
         # and which function [signature async (*f)(self, message)] should be triggered when the regex matches
         # for simple commands that change a single property, get_simple_property_change_partial_function can be used
