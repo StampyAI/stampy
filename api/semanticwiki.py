@@ -83,6 +83,9 @@ class SemanticWiki(Persistence):
                 |stamps={', '.join(answer_users)}"""
         ftext = "{{" + ftext + "}}"
 
+        # replace square brackets with extra UTF-8 brackets
+        ftext = ftext.replace("[", "\uff3b").replace("]", "\uff3b")
+
         # Post the answer to wiki
         print("Trying to add reply " + answer_title + " to wiki")
         self.edit(answer_title, ftext)
@@ -126,6 +129,9 @@ class SemanticWiki(Persistence):
                 |replycount={reply_count}
                 |titleoverride={display_title}"""
         ftext = "{{" + ftext + "}}"
+
+        # replace square brackets with extra UTF-8 brackets
+        ftext = ftext.replace("[", "\uFF3B").replace("]", "\uFF3D")
 
         # Post the question to wiki
         print("Trying to add question " + display_title + " to wiki")

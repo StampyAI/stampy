@@ -12,6 +12,7 @@ from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
+from modules.wikiUpdate import WikiUpdate
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -75,57 +76,6 @@ async def on_message(message):
         print("the latest general discord channel message was not from stampy")
         utils.last_message_was_youtube_question = False
 
-    options = []
-    if message.content == "bot test":
-        response = "I'm alive!"
-        await message.channel.send(response)
-    elif message.content.lower() == "Klaatu barada nikto".lower():
-        await message.channel.send("I must go now, my planet needs me")
-        exit()
-    if message.content.lower() == "reboot".lower():
-        if hasattr(message.channel, "name") and message.channel.name in [
-            "bot-dev-priv",
-            "bot-dev",
-            "talk-to-stampy",
-            "robertskmiles",
-        ]:
-            if message.author.id == int(rob_id):
-                await message.channel.send("Rebooting...")
-                exit()
-            else:
-                await message.channel.send("You're not my supervisor!")
-    if message.content == "reply test":
-        if message.reference:
-            reference = await message.channel.fetch_message(message.reference.message_id)
-            reference_text = reference.content
-            reply_url = reference_text.split("\n")[-1].strip()
-
-            response = 'This is a reply to message %s:\n"%s"' % (
-                message.reference.message_id,
-                reference_text,
-            )
-            response += 'which should be taken as an answer to the question at: "%s"' % reply_url
-        else:
-            response = "This is not a reply"
-        await message.channel.send(response)
-    if message.content == "resetinviteroles" and (message.author.id in [int(rob_id), int(plex_id)]):
-        print("[resetting can-invite roles]")
-        await message.channel.send("[resetting can-invite roles, please wait]")
-        guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
-        print(utils.GUILD, guild)
-        role = discord.utils.get(guild.roles, name="can-invite")
-        print("there are", len(guild.members), "members")
-        reset_users_count = 0
-        for member in guild.members:
-            if utils.get_user_score(member) > 0:
-                print(member.name, "can invite")
-                await member.add_roles(role)
-                reset_users_count += 1
-            else:
-                print(member.name, "has 0 stamps, can't invite")
-        await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
-        return
-
     # What are the options for responding to this message?
     # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
     options = []
@@ -149,8 +99,9 @@ async def on_message(message):
                 # but didn't reply in can_process_message()
                 confidence, result = await module.process_message(message, utils.client)
 
-        if result:
-            await message.channel.send(result)
+        if confidence:
+            if result:
+                await message.channel.send(result)
             break
 
     print("########################################################")
@@ -199,7 +150,7 @@ async def on_socket_raw_receive(_):
                 # Don't ask anything if the last thing posted in the chat was stampy asking a question
                 utils.last_question_asked_timestamp = now
                 # this actually gets the question and sets it to asked, then sends the report
-                report = utils.get_latest_question()
+                report = utils.get_question(order_type="LATEST")
                 guild = discord.utils.find(lambda g: g.name == utils.GUILD, utils.client.guilds)
                 general = discord.utils.find(lambda c: c.name == "general", guild.channels)
                 await general.send(report)
@@ -268,6 +219,7 @@ if __name__ == "__main__":
         "GPT3Module": GPT3Module(),
         "Factoids": Factoids(),
         "Sentience": sentience,
+        "WikiUpdate" : WikiUpdate(),
     }
 
     modules = utils.modules_dict.values()

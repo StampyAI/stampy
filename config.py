@@ -38,6 +38,10 @@ wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "p
 ENVIRONMENT_TYPE = os.getenv(environment_type_env_variable)
 acceptable_environment_types = ("production", "development")
 
+if ENVIRONMENT_TYPE == "development":
+    rob_miles_youtube_channel_id = "UCDvKrlpIXM0BGYLD2jjLGvg"
+    stampy_youtube_channel_id = "DvKrlpIXM0BGYLD2jjLGvg"
+
 required_environment_variables = [
     environment_type_env_variable,
     discord_token_env_variable,
