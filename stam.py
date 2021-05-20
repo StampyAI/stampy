@@ -141,7 +141,7 @@ async def on_socket_raw_receive(_):
     question_count = utils.get_question_count()
     if question_count:
         # ask a new question if it's been long enough since we last asked one
-        question_ask_cooldown = timedelta(hours=6)
+        question_ask_cooldown = timedelta(hours=12)
 
         if (now - utils.last_question_asked_timestamp) > question_ask_cooldown:
             if not utils.last_message_was_youtube_question:
