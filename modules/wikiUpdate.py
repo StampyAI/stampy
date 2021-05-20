@@ -109,7 +109,7 @@ class WikiUpdate(Module):
 
         self.utils.wiki.set_question_property(wiki_title, property_name, new_value)
 
-        return f"Processing {property_name}={new_value} request on {wiki_title}"
+        return 8, f"Processing {property_name}={new_value} request on {wiki_title}"
 
     async def get_wiki_title(self, message):
         """parses the message reference to get the wiki title of the referenced question"""
