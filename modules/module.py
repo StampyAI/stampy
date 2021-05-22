@@ -90,6 +90,11 @@ class Module(object):
             # DMs are always at you
             at_me = True
 
+        if Utilities.get_instance().client.user in message.mentions:
+            # regular mentions are already covered above, this covers the case that someone reply @'s Stampy
+            print("X At me because of mention")
+            at_me = True
+
         if at_me:
             return text
         else:

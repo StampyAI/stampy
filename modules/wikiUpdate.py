@@ -10,7 +10,7 @@ class WikiUpdate(Module):
     def __init__(self):
         Module.__init__(self)
 
-        tag_this_as_regex = r"([Tt]ag (that|this)( as)?|[Tt]hat'?s|[Tt]h(is|at)( question| comment)? is)"
+        tag_this_as_regex = r"(([Tt]ag|[Mm]ark) (that|this)( question| comment)?( as)?|[Tt]hat'?s|[Tt]h(is|at)( question| comment)? is)"
         # command_dict contains all the commands, which regex triggers them
         # and which function [signature async (*f)(self, message)] should be triggered when the regex matches
         # for simple commands that change a single property, get_simple_property_change_partial_function can be used
@@ -69,13 +69,9 @@ class WikiUpdate(Module):
     def can_process_message(self, message, client=None):
         """From the Module() Interface. Is this a message we can process?"""
         self.command = None
-        text = message.clean_content
-        at_me_text = self.is_at_me(message)
-        if at_me_text:
-            text = at_me_text
-        else:
-            if self.utils.client.user not in message.mentions:
-                return 0, ""
+        text = self.is_at_me(message)
+        if not text:
+            return 0, ""
 
         for v in self.command_dict.values():
             if v["re"].match(text):
@@ -109,7 +105,7 @@ class WikiUpdate(Module):
 
         self.utils.wiki.set_question_property(wiki_title, property_name, new_value)
 
-        return 8, f"Processing {property_name}={new_value} request on {wiki_title}"
+        return 8, f"Ok, setting {property_name} to {new_value} on '{wiki_title}"
 
     async def get_wiki_title(self, message):
         """parses the message reference to get the wiki title of the referenced question"""
