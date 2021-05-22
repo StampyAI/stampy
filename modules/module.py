@@ -48,7 +48,9 @@ class Module(object):
         This is an async function so it can interact with the Discord API if it needs to"""
         return 0, ""
 
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
+    async def process_reaction_event(
+        self, reaction, user, event_type="REACTION_ADD", client=None
+    ):
         """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
         Use this to allow modules to handle adding and removing reactions on messages"""
         return 0, ""
@@ -72,7 +74,9 @@ class Module(object):
         text = message.clean_content
         at_me = False
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
-        text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text)
+        text, subs = re.subn(
+            "<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text
+        )
         if subs:
             at_me = True
 
@@ -88,6 +92,11 @@ class Module(object):
         if type(message.channel) == discord.DMChannel:
             print("X At me because DM")
             # DMs are always at you
+            at_me = True
+
+        if Utilities.get_instance().client.user in message.mentions:
+            # regular mentions are already covered above, this covers the case that someone reply @'s Stampy
+            print("X At me because of mention")
             at_me = True
 
         if at_me:

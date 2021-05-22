@@ -69,13 +69,9 @@ class WikiUpdate(Module):
     def can_process_message(self, message, client=None):
         """From the Module() Interface. Is this a message we can process?"""
         self.command = None
-        text = message.clean_content
-        at_me_text = self.is_at_me(message)
-        if at_me_text:
-            text = at_me_text
-        else:
-            if self.utils.client.user not in message.mentions:
-                return 0, ""
+        text = self.is_at_me(message)
+        if not text:
+            return 0, ""
 
         for v in self.command_dict.values():
             if v["re"].match(text):
