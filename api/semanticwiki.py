@@ -52,8 +52,11 @@ class SemanticWiki(Persistence):
 
     def post(self, body):
         data = self._session.post(self._uri, data=body)
-        response = data.json()
-        return response
+        try:
+            response = data.json()
+            return response
+        except:
+            return data
 
     def edit(self, title, content):
         # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
@@ -116,18 +119,18 @@ class SemanticWiki(Persistence):
         )
         # there has to be a better way to make this fit on a line..
         ftext = f"""Question
-                |question={text}
-                |notquestion=No
-                |canonical=No
-                |forrob=No
-                |asked={asked}
-                |asker={asker}
-                |date={formatted_asked_time}
-                |video={video_title}
-                |ytlikes={likes}
-                |commenturl={comment_url}
-                |replycount={reply_count}
-                |titleoverride={display_title}"""
+|question={text}
+|notquestion=No
+|canonical=No
+|forrob=No
+|asked={asked}
+|asker={asker}
+|date={formatted_asked_time}
+|video={video_title}
+|ytlikes={likes}
+|commenturl={comment_url}
+|replycount={reply_count}
+|titleoverride={display_title}"""
         ftext = "{{" + ftext + "}}"
 
         # replace square brackets with extra UTF-8 brackets
