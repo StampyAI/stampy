@@ -53,6 +53,7 @@ class SemanticWiki(Persistence):
     def post(self, body):
         data = self._session.post(self._uri, data=body)
         response = data.json()
+        return response
 
     def edit(self, title, content):
         # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
