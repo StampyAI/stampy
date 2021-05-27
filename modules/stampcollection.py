@@ -2,7 +2,7 @@ import re
 import discord
 import numpy as np
 from config import admin_usernames
-from modules.module import Module
+from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 
 
@@ -141,7 +141,11 @@ class StampsModule(Module):
 
             for channel in guild.channels:
                 print(
-                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
+                    "#### Considering",
+                    channel.type,
+                    type(channel.type),
+                    channel.name,
+                    "####",
                 )
                 if channel.type == discord.ChannelType.text:
                     print("#### Logging", channel.name, "####")
@@ -162,7 +166,11 @@ class StampsModule(Module):
                                         print(string)
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type, user.id, message.author.id, False, False,
+                                            reaction_type,
+                                            user.id,
+                                            message.author.id,
+                                            False,
+                                            False,
                                         )
         self.calculate_stamps()
 
@@ -223,13 +231,14 @@ class StampsModule(Module):
     def user_is_admin(username):
         return username in admin_usernames
 
-    async def process_message(self, message, client=None):
-        text = self.is_at_me(message)
+    def process_message(self, message, client=None):
+        return Response(text="I am stamps", confidence=6)
+        # text = self.is_at_me(message)
 
-        # TODO: maybe have an admin list?
-        if text == "reloadallstamps" and self.user_is_admin(message.author.name):
-            print("FULL STAMP HISTORY RESET BAYBEEEEEE")
-            self.reset_stamps()
-            await self.load_votes_from_history()
-            return 10, "Working on it, could take a bit"
-        return 0, ""
+        # # TODO: maybe have an admin list?
+        # if text == "reloadallstamps" and self.user_is_admin(message.author.name):
+        #     print("FULL STAMP HISTORY RESET BAYBEEEEEE")
+        #     self.reset_stamps()
+        #     await self.load_votes_from_history()
+        #     return 10, "Working on it, could take a bit"
+        # return 0, ""
