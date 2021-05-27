@@ -1,9 +1,11 @@
 import os
 import sys
+import inspect
 import discord
 import unicodedata
 from dotenv import load_dotenv
 from utilities import Utilities
+from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
 from modules.videosearch import VideoSearch
@@ -68,14 +70,72 @@ async def on_message(message):
     utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
-    print(message)
-    print(message.reference)
-    print(message.author, message.content)
+    print(datetime.now().isoformat(sep=" "))
+    if hasattr(message.channel, "name"):
+        print(f"Message: id={message.id} in '{message.channel.name}' (id={message.channel.id})")
+    else:
+        print(f"DM: id={message.id}")
+    print(f"from {message.author.name}#{message.author.discriminator} (id={message.author.id})")
+    if message.reference:
+        print("In reply to:", message.reference)
+    print(f"    {message.content}")
+    print("###################################")
 
     if hasattr(message.channel, "name") and message.channel.name == "general":
         print("the latest general discord channel message was not from stampy")
         utils.last_message_was_youtube_question = False
 
+    responses = [Response()]
+    for module in modules:
+        print("Asking module: %s" % str(module))
+        response = module.process_message(message, utils.client)
+        if response:
+            response.module = module  # tag it with the module it came from, for future reference
+            responses.append(response)
+
+    print("###################################")
+
+    for i in range(30):  # don't hang if infinite regress
+        responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
+
+        # print some debug
+        print("Responses:")
+        for response in responses:
+            if response.callback:
+                argstring = ", ".join([a.__repr__() for a in response.args])
+                if response.kwargs:
+                    argstring += ", " + ", ".join([f"{k}={v.__repr__()}" for k, v in response.kwargs.items()])
+                print(
+                    f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
+                    f"{argstring})`"
+                )
+            else:
+                print(f'  {response.confidence}: {response.module}: "{response.text}"')
+
+        top_response = responses.pop(0)
+
+        if top_response.callback:
+            print("Top response is a callback. Calling it")
+            if inspect.iscoroutinefunction(top_response.callback):
+                new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
+            else:
+                new_response = top_response.callback(*top_response.args, **top_response.kwargs)
+
+            new_response.module = top_response.module
+            responses.append(new_response)
+        else:
+            if top_response.text:
+                print("Replying:", top_response.text)
+                await message.channel.send(top_response.text)
+            print("########################################################")
+            sys.stdout.flush()
+            return
+
+    # if we ever get here, we've gone 30 layers deep without the top response being text
+    # that's likely an infinite regress
+    await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
+
+    x = """
     # What are the options for responding to this message?
     # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
     options = []
@@ -104,8 +164,7 @@ async def on_message(message):
                 await message.channel.send(result)
             break
 
-    print("########################################################")
-    sys.stdout.flush()
+    """
 
 
 @utils.client.event
@@ -210,13 +269,13 @@ if __name__ == "__main__":
     utils.last_message_was_youtube_question = True
 
     utils.modules_dict = {
-        "StampyControls": StampyControls(),
+        # "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
-        "QQManager": QQManager(),
-        "VideoSearch": VideoSearch(),
-        "Reply": Reply(),
-        "InviteManager": InviteManager(),
-        "GPT3Module": GPT3Module(),
+        # "QQManager": QQManager(),
+        # "VideoSearch": VideoSearch(),
+        # "Reply": Reply(),
+        # "InviteManager": InviteManager(),
+        # "GPT3Module": GPT3Module(),
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate" : WikiUpdate(),
