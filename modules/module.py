@@ -10,8 +10,8 @@ class Response:
     """The response a module gives.
     Two types of response are possible:
         1. Text responses, with a string and a confidence rating, and
-        2. Callback responses, with an async function, args/kwargs for the function,
-           and the *optimistic expected confidence the function will deliver*
+        2. Callback responses, with a (possibly async) function, args/kwargs for the function,
+           and the *optimistic expected confidence of the function's response*
     Set `text` or `callback`, not both.
 
     For example, suppose the incoming message says "What is AIXI?"
@@ -19,7 +19,7 @@ class Response:
 
         Response(text="https://www.google.com/search?q=AIXI", confidence=2)
 
-    This means "This module thinks Stampy should give the user a link to a google search for 'AIXI',
+    This means "This module suggests Stampy give the user a link to a google search for 'AIXI',
     but only with confidence 2/10, because that's a weak response"
     If no other module responds with confidence 2 or more, Stampy will give the google link response.
 
@@ -37,7 +37,7 @@ class Response:
     Alignment Forum has a tag with the exact string the user asked about), but do check that there are
     no better options first, before we hit the Alignment Forum API.
     If another module responds with confidence 9 or 10, the callback function is never called,
-    but if the callback response's expected confidence is the highest confidence response, we call
+    but if the callback response's given confidence is the highest of any response, we call
 
         await search_alignment_forum_tags("AIXI", type='exact_match')
 
@@ -55,12 +55,12 @@ class Response:
         Response(text="I don't know, there's no alignment forum tag for that", confidence=1)
 
     Callback functions can also return callback responses, so the process can be recursive.
-    Do not do anything stupid with this.
+    Please do not do anything stupid with this.
 
     Picking confidence levels to give for callbacks is kind of subtle. You're effectively saying
     "What confidence of response would another module have to give, such that would be not worth
     running this callback?". This will vary depending on: how good the response could be, how likely
-    a good response is, and how slow/expensive the callback is.    
+    a good response is, and how slow/expensive the callback function is.    
     """
 
     confidence: float = 0.0
@@ -72,6 +72,8 @@ class Response:
     kwargs: dict = field(default_factory=dict)
 
     module: object = None
+
+    why: str = ""
 
 
 class Module(object):
@@ -149,20 +151,20 @@ class Module(object):
 
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
-            print("X At me because re_at_me matched or starting with [sS][,:]? ")
+            # print("X At me because re_at_me matched or starting with [sS][,:]? ")
             text = text.partition(" ")[2]
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
             text = re.sub(",? @?[sS](tampy)?$", "", text)
             at_me = True
-            print("X At me because it ends with stampy")
+            # print("X At me because it ends with stampy")
 
         if type(message.channel) == discord.DMChannel:
-            print("X At me because DM")
+            # print("X At me because DM")
             # DMs are always at you
             at_me = True
 
         if at_me:
             return text
         else:
-            print("Message is Not At Me")
+            # print("Message is Not At Me")
             return False

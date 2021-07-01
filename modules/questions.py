@@ -1,5 +1,5 @@
 import re
-from modules.module import Module
+from modules.module import Module, Response
 
 
 class QQManager(Module):
@@ -13,7 +13,7 @@ class QQManager(Module):
             r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
         )
 
-    def can_process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
             if re.match(
@@ -29,28 +29,32 @@ class QQManager(Module):
                         result = "There are %d questions in the queue" % qq
                 else:
                     result = "The question queue is empty"
-                return 9, result
+                return Response(confidence=9,
+                                text=result,
+                                why="%s asked about the question queue" % message.author.name
+                                )
             elif self.re_nextq.match(text):  # we're being asked for the next question
-                # Popping a question off the stack modifies things, so just return a
-                # "yes, we can handle this" and let processMessage do it
-                return 9, ""
+                # Popping a question off the stack modifies things, so do it with a callback
+                return Response(confidence=10,
+                                callback=self.post_question,
+                                args=[message]
+                                )
 
         # This is either not at me, or not something we can handle
-        return 0, ""
+        return Response()
 
-    async def process_message(self, message, client=None):
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
-
-            if self.re_nextq.match(text):
-                result = self.utils.get_question()
-                if result:
-                    return 10, result
-                else:
-                    return 8, "There are no questions in the queue"
-            else:
-                print("Shouldn't be able to get here")
-                return 0, ""
+    async def post_question(self, message):
+        result = self.utils.get_question()
+        if result:
+            return Response(confidence=10,
+                            text=result,
+                            why="%s asked for a question to answer" % message.author.name
+                           )
+        else:
+            return Response(confidence=8,
+                            text="There are no questions in the queue",
+                            why="%s asked for a question to answer, but I haven't got any" % message.author.name
+                           )
 
     def __str__(self):
         return "Question Queue Manager"
