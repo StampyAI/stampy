@@ -1,6 +1,6 @@
 import sys
 import discord
-from modules.module import Module
+from modules.module import Module, Response
 from config import rob_id, stampy_control_channel_names
 from utilities import get_github_info, get_memory_usage, get_running_user_info
 
@@ -23,22 +23,17 @@ class StampyControls(Module):
             return text.lower() in self.routines
         return False
 
-    def can_process_message(self, message, client=None):
-        if self.is_at_module(message):
-            return 10, ""
-        return 0, ""
-
-    async def process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         if self.is_at_module(message):
             routine_name = self.is_at_me(message).lower()
             routine = self.routines[routine_name]
-            result = await routine(message)
-            return 10, result
+            return Response(confidence=10, callback=routine, args=[message])
+        return Response()
 
     @staticmethod
     async def bot_test(message):
         await message.channel.send("I'm alive!")
-        return ""
+        return Response()
 
     @staticmethod
     async def reboot(message):
@@ -49,7 +44,7 @@ class StampyControls(Module):
                 exit()
             else:
                 await message.channel.send("You're not my supervisor!")
-        return ""
+        return Response()
 
     async def resetinviteroles(self, message):
         print("[resetting can-invite roles]")
@@ -67,7 +62,7 @@ class StampyControls(Module):
             else:
                 print(member.name, "has 0 stamps, can't invite")
         await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
-        return ""
+        return Response()
 
     async def get_stampy_stats(self, message):
         """
@@ -82,7 +77,7 @@ class StampyControls(Module):
         await message.channel.send(
             "\n\n".join([git_message, run_message, memory_message, runtime_message, modules_message])
         )
-        return ""
+        return Response()
 
     def __str__(self):
         return "Stampy Controls Module"

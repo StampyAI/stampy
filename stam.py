@@ -67,7 +67,7 @@ async def on_message(message):
     if message.author == utils.client.user:
         return
 
-    utils.modules_dict["StampsModule"].calculate_stamps()
+    # utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
     print(datetime.now().isoformat(sep=" "))
@@ -79,7 +79,7 @@ async def on_message(message):
     if message.reference:
         print("In reply to:", message.reference)
     print(f"    {message.content}")
-    print("###################################")
+    print("#####################################")
 
     if hasattr(message.channel, "name") and message.channel.name == "general":
         print("the latest general discord channel message was not from stampy")
@@ -87,13 +87,17 @@ async def on_message(message):
 
     responses = [Response()]
     for module in modules:
-        print("Asking module: %s" % str(module))
+        print("# Asking module: %s" % str(module))
         response = module.process_message(message, utils.client)
         if response:
             response.module = module  # tag it with the module it came from, for future reference
+
+            if response.callback:  # break ties between callbacks and text in favour of text
+                response.confidence -= 0.001
+
             responses.append(response)
 
-    print("###################################")
+    print("#####################################")
 
     for i in range(30):  # don't hang if infinite regress
         responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
@@ -132,39 +136,8 @@ async def on_message(message):
             return
 
     # if we ever get here, we've gone 30 layers deep without the top response being text
-    # that's likely an infinite regress
-    await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
-
-    x = """
-    # What are the options for responding to this message?
-    # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
-    options = []
-    for module in modules:
-        print("Asking module: %s" % str(module))
-        output = module.can_process_message(message, utils.client)
-        print("output is", output)
-        confidence, result = output
-        if confidence > 0:
-            options.append((module, confidence, result))
-
-    # Go with whichever module was most confident in its response
-    options = sorted(options, key=(lambda o: o[1]), reverse=True)
-    print(options)
-    for option in options:
-        module, confidence, result = option
-
-        if confidence > 0:
-            # if the module had some confidence it could reply
-            if not result:
-                # but didn't reply in can_process_message()
-                confidence, result = await module.process_message(message, utils.client)
-
-        if confidence:
-            if result:
-                await message.channel.send(result)
-            break
-
-    """
+    # so that's likely an infinite regress
+    message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
 
 
 @utils.client.event
@@ -269,13 +242,13 @@ if __name__ == "__main__":
     utils.last_message_was_youtube_question = True
 
     utils.modules_dict = {
-        # "StampyControls": StampyControls(),
+        "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
-        # "QQManager": QQManager(),
-        # "VideoSearch": VideoSearch(),
-        # "Reply": Reply(),
-        # "InviteManager": InviteManager(),
-        # "GPT3Module": GPT3Module(),
+        "QQManager": QQManager(),
+        "VideoSearch": VideoSearch(),
+        "Reply": Reply(),
+        "InviteManager": InviteManager(),
+        "GPT3Module": GPT3Module(),
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate" : WikiUpdate(),

@@ -1,6 +1,6 @@
 import re
 import os
-from modules.module import Module
+from modules.module import Module, Response
 from config import subs_dir
 
 
@@ -123,15 +123,20 @@ class VideoSearch(Module):
                 matches.append(r)
         return matches
 
-    def can_process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             m = re.match(self.re_search, text)
             if m:
-                return 9, ""
+                query = regex_match.group("query")
+                return Response(confidence=9,
+                                callback=self.process_search_request,
+                                args=[query]
+                               )
+
         # This is either not at me, or not something we can handle
-        return 0, ""
+        return Response()
 
     @staticmethod
     def list_relevant_videos(result):
@@ -147,23 +152,21 @@ class VideoSearch(Module):
 
         return reply
 
-    async def process_message(self, message, client=None):
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
+    async def process_search_request(self, query):
+        print('Video Query is:, "%s"' % query)
+        result = self.search(query)
+        if result:
+            print("Result:", result)
+            return Response(confidence=10,
+                            text=self.list_relevant_videos(result),
+                            why="Those are the videos that seem related!"
+                           )
+        else:
+            return Response(confidence=8,
+                            text="No matches found",
+                            why="I couldn't find any relevant videos"
+                           )
 
-            regex_match = re.match(self.re_search, text)
-            if regex_match:
-                query = regex_match.group("query")
-                print('Video Query is:, "%s"' % query)
-                result = self.search(query)
-                if result:
-                    print("Result:", result)
-                    return 10, self.list_relevant_videos(result)
-                else:
-                    return 8, "No matches found"
-            else:
-                print("Shouldn't be able to get here")
-                return 0, ""
 
     def __str__(self):
         return "Video Search Manager"
