@@ -113,6 +113,8 @@ async def on_message(message):
                 )
             else:
                 print(f'  {response.confidence}: {response.module}: "{response.text}"')
+                if response.why:
+                    print(f'       (because "{response.why}")')
 
         top_response = responses.pop(0)
 
