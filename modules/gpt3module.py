@@ -58,7 +58,6 @@ class GPT3Module(Module):
             engine = "davinci"
 
         text = self.is_at_me(message)
-        response = Response()
 
         if text.endswith("?"):
             print("Asking GPT-3")
@@ -72,15 +71,13 @@ class GPT3Module(Module):
                 choice = response["choices"][0]
                 if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
                     print("GPT-3 Replied!:")
-                    response = Response(confidence=10,
+                    return Response(confidence=10,
                                         text="*" + choice["text"].strip(". ") + "*",
                                         why="GPT-3 made me say it!")
 
-        if not response.confidence:
-            print("GPT-3 failed:")
-
-        print(response)
-        return response
+        # if we haven't returned yet
+        print("GPT-3 failed:")
+        return Response()
 
     def __str__(self):
         return "GPT-3 Questions Module"

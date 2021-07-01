@@ -1,7 +1,7 @@
 import re
 import json
 import discord
-from modules.module import Module
+from modules.module import Module, Response
 from config import stampy_youtube_channel_id, youtube_testing_thread_url
 from datetime import datetime
 
@@ -65,20 +65,18 @@ class Reply(Module):
 
         print("dummy, posting %s to %s" % (text, question_id))
 
-    def can_process_message(self, message, client=None):
-        """From the Module() Interface. Is this a message we can process?"""
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             if self.is_post_request(text):
                 print("this is a posting request")
-                return 9, "Ok, I'll post this when it has more than 30 stamp points"
+                return Response(confidence=9,
+                                text="Ok, I'll post this when it has more than 30 stamp points",
+                                why="%s asked me to post a reply to YouTube" % message.author.name
+                               )
 
-        return 0, ""
-
-    async def process_message(self, message, client=None):
-        """From the Module() Interface. Handle a reply posting request message"""
-        return 0, ""
+        return Response()
 
     async def post_message(self, message, approvers=None):
         if approvers is None:

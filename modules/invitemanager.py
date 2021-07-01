@@ -1,6 +1,6 @@
 import re
 import discord
-from modules.module import Module
+from modules.module import Module, Response
 
 
 class InviteManager(Module):
