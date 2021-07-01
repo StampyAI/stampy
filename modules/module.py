@@ -114,22 +114,22 @@ class Module(object):
         Ties are broken in module priority order. You can also return a float if you really want
         """
         # By default, we have 0 confidence that we can answer this, and our response is ""
-        return 0, ""
+        return Response()
 
-    async def process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to"""
-        return 0, ""
+        return Response()
 
     async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
         """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
         Use this to allow modules to handle adding and removing reactions on messages"""
-        return 0, ""
+        return Response()
 
     async def process_raw_reaction_event(self, event, client=None):
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
-        return 0, ""
+        return Response()
 
     def __str__(self):
         return "Dummy Module"
