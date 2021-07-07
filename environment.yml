@@ -12,6 +12,7 @@ dependencies:
     - gitpython
     - google-api-python-client
     - google-auth-oauthlib
+    - jellyfish
     - openai
     - psutil
     - python-dotenv
