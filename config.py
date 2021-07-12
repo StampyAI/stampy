@@ -52,6 +52,7 @@ required_environment_variables = [
 ]
 
 stampy_control_channel_names = [
+    "test",
     "bot-dev-priv",
     "bot-dev",
     "talk-to-stampy",
