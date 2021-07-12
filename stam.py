@@ -4,7 +4,7 @@ import inspect
 import discord
 import unicodedata
 from dotenv import load_dotenv
-from utilities import Utilities
+from utilities import Utilities, get_question_id
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -15,6 +15,7 @@ from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
+from modules.testModule import TestModule
 from datetime import datetime, timezone, timedelta
 from config import (
     maximum_recursion_depth,
@@ -24,6 +25,8 @@ from config import (
     bot_dev_channel_id,
     prod_local_path,
     database_path,
+    TEST_RESPONSE_PREFIX,
+    TEST_QUESTION_PREFIX,
 )
 
 load_dotenv()
@@ -62,8 +65,11 @@ async def on_ready():
 
 @utils.client.event
 async def on_message(message):
-    # don't react to our own messages
-    if message.author == utils.client.user:
+    # don't react to our own messages unless running test
+    message_author_is_stampy = message.author == utils.client.user
+    if utils.test_mode and message_author_is_stampy:
+        print("test question")
+    elif message_author_is_stampy:
         return
 
     # utils.modules_dict["StampsModule"].calculate_stamps()
@@ -105,12 +111,14 @@ async def on_message(message):
         print("Responses:")
         for response in responses:
             if response.callback:
-                argstring = ", ".join([a.__repr__() for a in response.args])
+                args_string = ", ".join([a.__repr__() for a in response.args])
                 if response.kwargs:
-                    argstring += ", " + ", ".join([f"{k}={v.__repr__()}" for k, v in response.kwargs.items()])
+                    args_string += ", " + ", ".join(
+                        [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
+                    )
                 print(
                     f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
-                    f"{argstring})`"
+                    f"{args_string})`"
                 )
             else:
                 print(f'  {response.confidence}: {response.module}: "{response.text}"')
@@ -130,6 +138,14 @@ async def on_message(message):
             responses.append(new_response)
         else:
             if top_response.text:
+                if (
+                    utils.test_mode
+                    and (TEST_QUESTION_PREFIX not in top_response.text)
+                    and utils.stampy_is_author(message)
+                ):
+                    top_response.text = (
+                        TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
+                    )
                 print("Replying:", top_response.text)
                 await message.channel.send(top_response.text)
             print("########################################################")
@@ -171,7 +187,8 @@ async def on_socket_raw_receive(_):
         for comment in new_comments:
             if "?" in comment["text"]:
                 utils.add_youtube_question(comment)
-    # add_question should maybe just take in the dict, but to make sure nothing is broken extra fields have been added as optional params
+    # add_question should maybe just take in the dict, but to make sure
+    # nothing is broken extra fields have been added as optional params
     # This is just checking if there _are_ questions
     question_count = utils.get_question_count()
     if question_count:
@@ -253,6 +270,7 @@ if __name__ == "__main__":
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
+        "TestModule": TestModule(),
     }
 
     modules = utils.modules_dict.values()

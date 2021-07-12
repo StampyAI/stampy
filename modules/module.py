@@ -1,8 +1,9 @@
 import re
 import discord
-from utilities import Utilities
-from dataclasses import dataclass, field
 from typing import Callable
+from dataclasses import dataclass, field
+from utilities import Utilities, get_question_id
+from config import TEST_QUESTION_PREFIX
 
 
 @dataclass
@@ -139,14 +140,39 @@ class Module(object):
         return "Dummy Module"
 
     @staticmethod
-    def is_at_me(message):
+    def create_integration_test(
+        question="", expected_response="", test_wait_time=1.5, minimum_allowed_similarity=1.0
+    ):
+        return {
+            "question": question,
+            "expected_response": expected_response,
+            "received_response": "NEVER RECEIVED A RESPONSE",
+            "test_wait_time": test_wait_time,
+            "minimum_allowed_similarity": minimum_allowed_similarity,
+        }
+
+    @staticmethod
+    def clean_test_prefixes(message, prefix):
+        text = message.clean_content
+        prefix_number = get_question_id(message)
+        prefix_with_number = prefix + str(prefix_number) + ": "
+        if prefix_with_number == text[: len(prefix_with_number)]:
+            return text[len(prefix_with_number) :]
+        return text
+
+    def is_at_me(self, message):
         """
         Determine if the message is directed at Stampy
         If it's not, return False. If it is, strip away the
         name part and return the remainder of the message
         """
-
-        text = message.clean_content
+        text = ""
+        if self.utils.test_mode:
+            if self.utils.stampy_is_author(message):
+                if TEST_QUESTION_PREFIX in message.clean_content:
+                    text = "stampy " + self.clean_test_prefixes(message, TEST_QUESTION_PREFIX)
+        if not text:
+            text = message.clean_content
         at_me = False
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
         text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text)
@@ -159,7 +185,6 @@ class Module(object):
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
             text = re.sub(",? @?[sS](tampy)?$", "", text)
             at_me = True
-            # print("X At me because it ends with stampy")
 
         if type(message.channel) == discord.DMChannel:
             # DMs are always at you

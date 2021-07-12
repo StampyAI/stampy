@@ -1,4 +1,5 @@
 import os
+import re
 import pwd
 import psutil
 import discord
@@ -90,6 +91,9 @@ class Utilities:
             self.client = discord.Client(intents=intents)
             self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
 
+    def stampy_is_author(self, message):
+        return message.author == self.client.user
+
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
         reply_id = url_arr[-1].split(".")[0]
@@ -120,7 +124,7 @@ class Utilities:
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
         response = request.execute()
         items = response.get("items")
-        comment = {}
+        comment = {"video_url": video_url}
         if items:
             top_level_comment = items[0]["snippet"]["topLevelComment"]
             comment["timestamp"] = top_level_comment["snippet"]["publishedAt"][:-1]
@@ -233,7 +237,6 @@ class Utilities:
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
-        comment = None
         if order_type == "RANDOM":
             comment = self.wiki.get_random_question()
         elif order_type == "TOP":
@@ -428,3 +431,11 @@ def get_memory_usage():
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
     return "I'm using %s bytes of memory" % megabytes_string
+
+
+def get_question_id(message):
+    text = message.clean_content
+    first_number_found = re.search(r"\d+", text)
+    if first_number_found:
+        return int(first_number_found.group())
+    return ""

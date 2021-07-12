@@ -22,6 +22,9 @@ wiki_password_path_env_variable = "WIKI_BOT_PASSWORD"
 environment_type_env_variable = "ENVIRONMENT_TYPE"
 openai_env_variable = "OPENAI_API_KEY"
 
+TEST_QUESTION_PREFIX = "TEST_QUESTION "
+TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
+
 prod_local_path = "/home/rob/stampy.local"
 
 admin_usernames = ["robertskmiles", "sudonym"]
