@@ -240,6 +240,7 @@ class StampsModule(Module):
         await message.channel.send("Doing full stamp history reset, could take a while")
         self.reset_stamps()
         await self.load_votes_from_history()
+
         return Response(
             confidence=10,
             text="full stamp history reset complete",

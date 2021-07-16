@@ -7,7 +7,11 @@ class QQManager(Module):
 
     def __init__(self):
         Module.__init__(self)
+<<<<<<< HEAD
         self.re_next_question = re.compile(
+=======
+        self.re_nextq = re.compile(
+>>>>>>> 8b1ba87e7802ca04fdc2e7da4f8769877b62f7b9
             r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
             r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
             r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
@@ -29,12 +33,25 @@ class QQManager(Module):
                         result = "There are %d questions in the queue" % qq
                 else:
                     result = "The question queue is empty"
+<<<<<<< HEAD
                 return Response(
                     confidence=9, text=result, why="%s asked about the question queue" % message.author.name
                 )
             elif self.re_next_question.match(text):  # we're being asked for the next question
                 # Popping a question off the stack modifies things, so do it with a callback
                 return Response(confidence=10, callback=self.post_question, args=[message])
+=======
+                return Response(confidence=9,
+                                text=result,
+                                why="%s asked about the question queue" % message.author.name
+                                )
+            elif self.re_nextq.match(text):  # we're being asked for the next question
+                # Popping a question off the stack modifies things, so do it with a callback
+                return Response(confidence=10,
+                                callback=self.post_question,
+                                args=[message]
+                                )
+>>>>>>> 8b1ba87e7802ca04fdc2e7da4f8769877b62f7b9
 
         # This is either not at me, or not something we can handle
         return Response()
@@ -42,6 +59,7 @@ class QQManager(Module):
     async def post_question(self, message):
         result = self.utils.get_question()
         if result:
+<<<<<<< HEAD
             return Response(
                 confidence=10, text=result, why="%s asked for a question to answer" % message.author.name
             )
@@ -51,6 +69,17 @@ class QQManager(Module):
                 text="There are no questions in the queue",
                 why="%s asked for a question to answer, but I haven't got any" % message.author.name,
             )
+=======
+            return Response(confidence=10,
+                            text=result,
+                            why="%s asked for a question to answer" % message.author.name
+                           )
+        else:
+            return Response(confidence=8,
+                            text="There are no questions in the queue",
+                            why="%s asked for a question to answer, but I haven't got any" % message.author.name
+                           )
+>>>>>>> 8b1ba87e7802ca04fdc2e7da4f8769877b62f7b9
 
     def __str__(self):
         return "Question Queue Manager"

@@ -71,6 +71,7 @@ class Reply(Module):
 
             if self.is_post_request(text):
                 print("this is a posting request")
+
                 return Response(
                     confidence=9,
                     text="Ok, I'll post this when it has more than 30 stamp points",
