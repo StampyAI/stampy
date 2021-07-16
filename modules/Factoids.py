@@ -1,5 +1,4 @@
-from modules.module import Module
-import discord
+from modules.module import Module, Response
 import random
 import sqlite3
 import re
@@ -12,7 +11,7 @@ def randbool(p):
         return False
 
 
-def isBotDev(user):
+def is_bot_dev(user):
     if user.id == 181142785259208704:
         return True
     roles = getattr(user, "roles", [])
@@ -121,9 +120,7 @@ class Factoids(Module):
             countdown -= 1
 
             # first handle the dummy/custom factoids
-            string = string.replace(
-                "{{$who}}", self.who
-            )  # who triggered this response?
+            string = string.replace("{{$who}}", self.who)  # who triggered this response?
             # string = string.replace("{{$whoFirstname}}", whoFirstname)
             # string = string.replace("{{$whoLastname}}", whoLastname)
             # string = string.replace("{{$whoFullname}}", whoFullname)
@@ -134,9 +131,7 @@ class Factoids(Module):
             # only make 1 replace per iteration, so a message can have more than one person chosen
             string = string.replace("{{$someone}}", random.choice(list(self.people)), 1)
 
-            if not self.re_replace.match(
-                string
-            ):  # If there are no more {{}} to sub, break out
+            if not self.re_replace.match(string):  # If there are no more {{}} to sub, break out
                 break
 
             tag = self.re_replace.match(string).group(1)
@@ -149,7 +144,7 @@ class Factoids(Module):
 
         return string
 
-    def can_process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         atme = False
         self.who = message.author.name
         self.people.add(self.who)
@@ -191,7 +186,7 @@ class Factoids(Module):
                 pf[3],
                 pf[1],
             )
-            return (10, result)
+            return Response(confidence=10, text=result, why=why)
 
         # if the text is a valid factoid, maybe reply
         elif factoids and (atme or randbool(0.3)):
@@ -211,14 +206,18 @@ class Factoids(Module):
             )
             self.prevFactoid[room] = (text, rawvalue, by, verb)  # key, value, verb
             if atme:
-                return (9, result)
+                return Response(confidence=9, text=result, why=why)
             else:
-                return (8, result)
+                return Response(confidence=8, text=result, why=why)
 
         # handle adding new factoids
         elif text.lower().startswith("remember") or text.startswith("sr "):
-            if DM and not isBotDev(message.author):
-                return (2, "Sorry, I don't remember things in DMs")
+            if DM and not is_bot_dev(message.author):
+                return Response(
+                    confidence=2,
+                    text="Sorry, I don't remember things in DMs",
+                    why=f"{message.author} was trying to save a factoid in a DM",
+                )
             else:
                 isadd = True
                 withbrackets = False
@@ -231,6 +230,7 @@ class Factoids(Module):
                 elif " are " in text:
                     verb = "are"
                 else:  # we don't have a verb, this isn't a valid add command
+                    verb = ""
                     isadd = False
 
                 if isadd:
@@ -254,7 +254,7 @@ class Factoids(Module):
                     print("adding factoid %s %s %s %s" % (key, value, message.author.id, verb))
                     self.db.add(key, value, message.author.id, verb)
                     self.prevFactoid[room] = (key, value, message.author.id, verb)
-                    return (10, result)
+                    return Response(confidence=10, text=result, why=why)
 
         # some debug stuff, listing all responses for a factoid
         elif text.startswith("list ") or text.startswith("listall "):
@@ -263,7 +263,7 @@ class Factoids(Module):
             if values:
                 random.shuffle(values)  # is this the right thing to do here?
                 result = "%s values for factoid '%s':" % (len(values), fact)
-                count = (lword == "listall" and isBotDev(message.author)) and 200 or 10
+                count = (lword == "listall" and is_bot_dev(message.author)) and 200 or 10
                 for value in values[:count]:
                     result += "\n<%s> '%s' by %s" % value
                 if len(values) > count:
@@ -272,14 +272,10 @@ class Factoids(Module):
                     self.who,
                     fact,
                 )
-                return (10, result)
+                return Response(confidence=10, text=result, why=why)
 
         # This is either not at me, or not something we can handle
-        return (0, "")
-
-    async def process_message(self, message, client=None):
-        # we did everything in can_process_message
-        return (0, "")
+        return Response(confidence=0, text="")
 
     def __str__(self):
         return "Factoids"

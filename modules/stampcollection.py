@@ -220,15 +220,14 @@ class StampsModule(Module):
 
             if re.match(r"(how many stamps am i worth)\??", text.lower()):
                 authors_stamps = self.get_user_stamps(message.author)
-                return Response(confidence=9,
-                                text="You're worth %.2f stamps to me" % authors_stamps,
-                                why="%s asked how many stamps they're worth" % message.author.name)
+                return Response(
+                    confidence=9,
+                    text="You're worth %.2f stamps to me" % authors_stamps,
+                    why="%s asked how many stamps they're worth" % message.author.name,
+                )
 
             elif text == "reloadallstamps" and message.author.id == 181142785259208704:
-                return Response(confidence=10,
-                                callback=self.reloadallstamps,
-                                args=[message])
-
+                return Response(confidence=10, callback=self.reloadallstamps, args=[message])
 
         return Response()
 
@@ -241,7 +240,8 @@ class StampsModule(Module):
         await message.channel.send("Doing full stamp history reset, could take a while")
         self.reset_stamps()
         await self.load_votes_from_history()
-        return Response(confidence=10,
-                        text="full stamp history reset complete",
-                        why="robertskmiles reset the stamp history"
-                        )
+        return Response(
+            confidence=10,
+            text="full stamp history reset complete",
+            why="robertskmiles reset the stamp history",
+        )

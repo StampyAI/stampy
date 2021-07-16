@@ -58,9 +58,9 @@ class Response:
     Please do not do anything stupid with this.
 
     Picking confidence levels to give for callbacks is kind of subtle. You're effectively saying
-    "What confidence of response would another module have to give, such that would be not worth
+    "What confidence of response would another module have to give, such that it would be not worth
     running this callback?". This will vary depending on: how good the response could be, how likely
-    a good response is, and how slow/expensive the callback function is.    
+    a good response is, and how slow/expensive the callback function is.
     """
 
     confidence: float = 0.0
@@ -74,6 +74,9 @@ class Response:
     module: object = None
 
     why: str = ""
+
+    def __bool__(self):
+        return bool(self.text) or bool(self.callback) or bool(self.confidence)
 
 
 class Module(object):

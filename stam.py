@@ -23,8 +23,6 @@ from config import (
     bot_dev_channel_id,
     prod_local_path,
     database_path,
-    rob_id,
-    plex_id,
 )
 
 load_dotenv()
@@ -253,7 +251,7 @@ if __name__ == "__main__":
         "GPT3Module": GPT3Module(),
         "Factoids": Factoids(),
         "Sentience": sentience,
-        "WikiUpdate" : WikiUpdate(),
+        "WikiUpdate": WikiUpdate(),
     }
 
     modules = utils.modules_dict.values()

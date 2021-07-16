@@ -58,23 +58,24 @@ class VideoSearch(Module):
         return "\n".join(lines)
 
     def load_videos(self):
-        for entry in os.scandir(self.subsdir):
-            if entry.name.endswith(".en.vtt"):
-                vtt_groups = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
-                title = vtt_groups.group(1)
-                stub = vtt_groups.group(2)
+        with os.scandir(self.subsdir) as entries:
+            for entry in entries:
+                if entry.name.endswith(".en.vtt"):
+                    vtt_groups = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
+                    title = vtt_groups.group(1)
+                    stub = vtt_groups.group(2)
 
-                text = self.process_vtt_file(entry.path)
+                    text = self.process_vtt_file(entry.path)
 
-                description_filename = title + "-" + stub + ".description"
-                description_filepath = os.path.join(self.subsdir, description_filename)
-                if os.path.exists(description_filepath):
-                    description = open(description_filepath, encoding="utf8").read()
-                else:
-                    description = ""
+                    description_filename = title + "-" + stub + ".description"
+                    description_filepath = os.path.join(self.subsdir, description_filename)
+                    if os.path.exists(description_filepath):
+                        description = open(description_filepath, encoding="utf8").read()
+                    else:
+                        description = ""
 
-                video = self.Video(title, stub, text, description)
-                self.videos.append(video)
+                    video = self.Video(title, stub, text, description)
+                    self.videos.append(video)
 
     @staticmethod
     def extract_keywords(query):
@@ -129,11 +130,8 @@ class VideoSearch(Module):
 
             m = re.match(self.re_search, text)
             if m:
-                query = regex_match.group("query")
-                return Response(confidence=9,
-                                callback=self.process_search_request,
-                                args=[query]
-                               )
+                query = m.group("query")
+                return Response(confidence=9, callback=self.process_search_request, args=[query])
 
         # This is either not at me, or not something we can handle
         return Response()
@@ -157,16 +155,13 @@ class VideoSearch(Module):
         result = self.search(query)
         if result:
             print("Result:", result)
-            return Response(confidence=10,
-                            text=self.list_relevant_videos(result),
-                            why="Those are the videos that seem related!"
-                           )
+            return Response(
+                confidence=10,
+                text=self.list_relevant_videos(result),
+                why="Those are the videos that seem related!",
+            )
         else:
-            return Response(confidence=8,
-                            text="No matches found",
-                            why="I couldn't find any relevant videos"
-                           )
-
+            return Response(confidence=8, text="No matches found", why="I couldn't find any relevant videos")
 
     def __str__(self):
         return "Video Search Manager"

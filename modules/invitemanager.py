@@ -15,52 +15,50 @@ class InviteManager(Module):
             "joined the server, or you've already been given an invite this week"
         )
 
+        self.guild = self.utils.client.guilds[0]
+        self.invite_role = discord.utils.get(self.guild.roles, name="can-invite")
+
     def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             m = re.match(self.re_request, text)
             if m:
-                guild = client.guilds[0]
-                invite_role = discord.utils.get(guild.roles, name="can-invite")
-                member = guild.get_member(message.author.id)
-                print(guild, invite_role, member, message.author.id)
-                if invite_role in member.roles:
-                    return Response(confidence=10,
-                                    callback=self.post_invite,
-                                    args=[message],
-                                    kwargs={'client': client}
-                                   )
+                member = self.guild.get_member(message.author.id)
+                if self.invite_role in member.roles:
+                    return Response(confidence=10, callback=self.post_invite, args=[message])
                 else:
-                    return Response(confidence=10,
-                                    text=self.sorry_message,
-                                    why="%s asked for an invite, but they're not allowed one (right now)" % member.name
-                                   )
+                    return Response(
+                        confidence=10,
+                        text=self.sorry_message,
+                        why="%s asked for an invite, but they're not allowed one (right now)" % member.name,
+                    )
 
         # This is either not at me, or not something we can handle
         return Response()
 
-    async def post_invite(self, message, client=None):
+    async def post_invite(self, message):
         """Generate and send an invite"""
-        guild = client.guilds[0]
-        welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
-        member = guild.get_member(message.author.id)
+        welcome = discord.utils.find(lambda c: c.name == "welcome", self.guild.channels)
+        member = self.guild.get_member(message.author.id)
         invite = await welcome.create_invite(
-            max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
+            max_uses=1,
+            temporary=False,
+            unique=True,
+            reason="Requested by %s" % message.author.name,
         )
         print("Generated invite for", member.name, invite)
 
         # remove the invite role so they only get one
-        await member.remove_roles(invite_role)
+        await member.remove_roles(self.invite_role)
 
-        return Response(confidence=10,
-                        text="Here you go!: %s\n"
-                             "This is the only invite I'll give you this week, "
-                             "and it will only work once, so use it wisely!" % invite.url,
-                        why="%s asked for an invite so I gave them one" % member.name
-                       )
-
-        return Response()
+        return Response(
+            confidence=10,
+            text="Here you go!: %s\n"
+            "This is the only invite I'll give you this week, "
+            "and it will only work once, so use it wisely!" % invite.url,
+            why="%s asked for an invite so I gave them one" % member.name,
+        )
 
     def __str__(self):
         return "Invite Manager Module"
