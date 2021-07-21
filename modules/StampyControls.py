@@ -32,8 +32,7 @@ class StampyControls(Module):
 
     @staticmethod
     async def bot_test(message):
-        await message.channel.send("I'm alive!")
-        return Response()
+        return Response(confidence=10, text="I'm alive!")
 
     @staticmethod
     async def reboot(message):
@@ -42,9 +41,7 @@ class StampyControls(Module):
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 exit()
-            else:
-                await message.channel.send("You're not my supervisor!")
-        return Response()
+        return Response(confidence=10, text="You're not my supervisor!")
 
     async def resetinviteroles(self, message):
         print("[resetting can-invite roles]")
@@ -61,8 +58,7 @@ class StampyControls(Module):
                 reset_users_count += 1
             else:
                 print(member.name, "has 0 stamps, can't invite")
-        await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
-        return Response()
+        return Response(confidence=10, text="[Invite Roles Reset for %s users]" % reset_users_count)
 
     async def get_stampy_stats(self, message):
         """
@@ -74,10 +70,10 @@ class StampyControls(Module):
         runtime_message = self.utils.get_time_running()
         modules_message = self.utils.list_modules()
         # scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
-        await message.channel.send(
-            "\n\n".join([git_message, run_message, memory_message, runtime_message, modules_message])
+        stats_message = "\n\n".join(
+            [git_message, run_message, memory_message, runtime_message, modules_message]
         )
-        return Response()
+        return Response(confidence=10, text=stats_message)
 
     def __str__(self):
         return "Stampy Controls Module"
