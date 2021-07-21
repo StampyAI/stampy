@@ -17,6 +17,7 @@ from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
 from datetime import datetime, timezone, timedelta
 from config import (
+    maximum_recursion_depth,
     discord_token,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
@@ -97,7 +98,7 @@ async def on_message(message):
 
     print("#####################################")
 
-    for i in range(30):  # don't hang if infinite regress
+    for i in range(maximum_recursion_depth):  # don't hang if infinite regress
         responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
 
         # print some debug
@@ -135,7 +136,7 @@ async def on_message(message):
             sys.stdout.flush()
             return
 
-    # if we ever get here, we've gone 30 layers deep without the top response being text
+    # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
     # so that's likely an infinite regress
     message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
 

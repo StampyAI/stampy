@@ -1,5 +1,6 @@
 import os
 
+maximum_recursion_depth = 30
 subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"

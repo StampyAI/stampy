@@ -85,6 +85,7 @@ class Module(object):
 
     def __init__(self):
         self.utils = Utilities.get_instance()
+        self.guild = self.utils.client.guilds[0]
 
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,
@@ -155,7 +156,6 @@ class Module(object):
 
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
-            # print("X At me because re_at_me matched or starting with [sS][,:]? ")
             text = text.partition(" ")[2]
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
             text = re.sub(",? @?[sS](tampy)?$", "", text)
@@ -163,7 +163,6 @@ class Module(object):
             # print("X At me because it ends with stampy")
 
         if type(message.channel) == discord.DMChannel:
-            # print("X At me because DM")
             # DMs are always at you
             at_me = True
 
@@ -175,5 +174,4 @@ class Module(object):
         if at_me:
             return text
         else:
-            # print("Message is Not At Me")
             return False

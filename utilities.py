@@ -105,11 +105,13 @@ class Utilities:
             likes = item["snippet"]["likeCount"]
             reply = {
                 "username": username,
+                "reply": reply_id,
                 "text": text,
                 "title": "",
                 "timestamp": timestamp,
                 "likes": likes,
             }
+        return reply
 
     def get_youtube_comment(self, comment_url):
         url_arr = comment_url.split("&lc=")

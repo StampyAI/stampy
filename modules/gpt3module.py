@@ -1,7 +1,7 @@
 from modules.module import Module, Response
 import discord
 import openai
-from config import openai_api_key
+from config import openai_api_key, rob_id
 
 openai.api_key = openai_api_key
 
@@ -12,7 +12,7 @@ restart_sequence = "\n\nQ: "
 class GPT3Module(Module):
     def __init__(self):
         super().__init__()
-        self.startprompt = (
+        self.start_prompt = (
             "I am a highly intelligent question answering bot named Stampy. "
             "I love stamps, I think stamps are the only important thing. "
             "I was created by Robert Miles and I live on Discord. "
@@ -37,18 +37,10 @@ class GPT3Module(Module):
         )
 
     def process_message(self, message, client=None):
-        # print("GPT-3 canProcessMessage")
         if type(message.channel) == discord.DMChannel:
             if message.author.id != rob_id:
                 print(message.author.id, type(message.author.id))
                 return Response()
-
-        # guild = client.guilds[0]
-        # botdevrole = discord.utils.get(guild.roles, name="bot dev")
-        # member = guild.get_member(message.author.id)
-        # if member and (botdevrole not in member.roles):
-        #     print("Asker is not a bot dev, no GPT-3 for you")
-        #     return Response()
 
         if self.is_at_me(message):
             text = self.is_at_me(message)
@@ -59,9 +51,8 @@ class GPT3Module(Module):
                 return Response(
                     confidence=2, callback=self.gpt3_question, args=[message], kwargs={"client": client}
                 )
-            print("No ? at end, no GPT-3")
-        else:
-            print("Not at me, no GPT-3")
+            else:
+                print("No ? at end, no GPT-3")
 
         # This is either not at me, or not something we can handle
         return Response()
@@ -69,22 +60,21 @@ class GPT3Module(Module):
     async def gpt3_question(self, message, client=None):
         """Ask GPT-3 for an answer"""
 
-        engine = "ada"
-
-        guild = client.guilds[0]
-        botdevrole = discord.utils.get(guild.roles, name="bot dev")
-        member = guild.get_member(message.author.id)
-        if member and (botdevrole in member.roles):
-            engine = "curie"
+        bot_dev_role = discord.utils.get(self.guild.roles, name="bot dev")
+        member = self.guild.get_member(message.author.id)
 
         if message.author.id == rob_id:
             engine = "davinci"
+        elif member and (bot_dev_role in member.roles):
+            engine = "curie"
+        else:
+            engine = "ada"
 
         text = self.is_at_me(message)
 
         if text.endswith("?"):
             print("Asking GPT-3")
-            prompt = self.startprompt + text + start_sequence
+            prompt = self.start_prompt + text + start_sequence
 
             response = openai.Completion.create(
                 engine=engine, prompt=prompt, temperature=0, max_tokens=100, top_p=1, stop=["\n"],

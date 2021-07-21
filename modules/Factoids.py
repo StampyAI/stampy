@@ -1,4 +1,5 @@
 from modules.module import Module, Response
+from config import rob_id
 import random
 import sqlite3
 import re
@@ -237,7 +238,7 @@ class Factoids(Module):
             if values:
                 random.shuffle(values)  # is this the right thing to do here?
                 result = "%s values for factoid '%s':" % (len(values), fact)
-                count = (lword == "listall" and is_bot_dev(message.author)) and 200 or 10
+                count = 200 if (lword == "listall" and is_bot_dev(message.author)) else 10
                 for value in values[:count]:
                     result += "\n<%s> '%s' by %s" % value
                 if len(values) > count:
