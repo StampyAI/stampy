@@ -85,7 +85,6 @@ class Module(object):
 
     def __init__(self):
         self.utils = Utilities.get_instance()
-        self.guild = self.utils.client.guilds[0]
 
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,
@@ -175,3 +174,8 @@ class Module(object):
             return text
         else:
             return False
+
+    def get_guild_and_invite_role(self):
+        guild = self.utils.client.guilds[0]
+        invite_role = discord.utils.get(guild.roles, name="can-invite")
+        return guild, invite_role

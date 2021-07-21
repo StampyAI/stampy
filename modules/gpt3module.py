@@ -60,8 +60,10 @@ class GPT3Module(Module):
     async def gpt3_question(self, message, client=None):
         """Ask GPT-3 for an answer"""
 
-        bot_dev_role = discord.utils.get(self.guild.roles, name="bot dev")
-        member = self.guild.get_member(message.author.id)
+        guild, _ = self.get_guild_and_invite_role()
+
+        bot_dev_role = discord.utils.get(guild.roles, name="bot dev")
+        member = guild.get_member(message.author.id)
 
         if message.author.id == rob_id:
             engine = "davinci"

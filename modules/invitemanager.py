@@ -14,16 +14,16 @@ class InviteManager(Module):
             "Sorry, you don't have the `can-invite` role.\nEither you recently "
             "joined the server, or you've already been given an invite this week"
         )
-        self.invite_role = discord.utils.get(self.guild.roles, name="can-invite")
 
     def process_message(self, message, client=None):
+        guild, invite_role = self.get_guild_and_invite_role()
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             m = re.match(self.re_request, text)
             if m:
-                member = self.guild.get_member(message.author.id)
-                if self.invite_role in member.roles:
+                member = guild.get_member(message.author.id)
+                if invite_role in member.roles:
                     return Response(confidence=10, callback=self.post_invite, args=[message])
                 else:
                     return Response(
@@ -37,15 +37,17 @@ class InviteManager(Module):
 
     async def post_invite(self, message):
         """Generate and send an invite"""
-        welcome = discord.utils.find(lambda c: c.name == "welcome", self.guild.channels)
-        member = self.guild.get_member(message.author.id)
+        guild, invite_role = self.get_guild_and_invite_role()
+
+        welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
+        member = guild.get_member(message.author.id)
         invite = await welcome.create_invite(
             max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
         )
         print("Generated invite for", member.name, invite)
 
         # remove the invite role so they only get one
-        await member.remove_roles(self.invite_role)
+        await member.remove_roles(invite_role)
 
         return Response(
             confidence=10,
