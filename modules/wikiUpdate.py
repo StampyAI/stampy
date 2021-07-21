@@ -71,11 +71,7 @@ class WikiUpdate(Module):
     @staticmethod
     def get_simple_property_change_partial_function(property_name, new_value):
         """returns a function that when executed given a specific message performs the appropriate property change"""
-        return partial(
-            process_simple_property_change,
-            property_name=property_name,
-            new_value=new_value,
-        )
+        return partial(process_simple_property_change, property_name=property_name, new_value=new_value,)
 
 
 # Defined out of class by necessity
@@ -113,10 +109,7 @@ async def get_wiki_title(message):
 
         question_user = "Unknown User"
         if reference_text:
-            match = re.match(
-                r"YouTube user (.*?)( just)? asked (a|this) question",
-                reference_text,
-            )
+            match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text,)
             if not match:
                 return None
             question_user = match.group(1)  # YouTube user (.*) asked this question

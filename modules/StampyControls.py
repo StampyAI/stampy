@@ -38,7 +38,7 @@ class StampyControls(Module):
     @staticmethod
     async def reboot(message):
         if hasattr(message.channel, "name") and message.channel.name in stampy_control_channel_names:
-            if message.author.id == int(rob_id):
+            if message.author.id == rob_id:
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 exit()

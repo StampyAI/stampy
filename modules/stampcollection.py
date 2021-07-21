@@ -22,7 +22,7 @@ class StampsModule(Module):
         print("WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, rob_id)
+        self.utils.update_vote(god_id, str(rob_id))
 
     def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
 
@@ -141,11 +141,7 @@ class StampsModule(Module):
 
             for channel in guild.channels:
                 print(
-                    "#### Considering",
-                    channel.type,
-                    type(channel.type),
-                    channel.name,
-                    "####",
+                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
                 )
                 if channel.type == discord.ChannelType.text:
                     print("#### Logging", channel.name, "####")
@@ -166,11 +162,7 @@ class StampsModule(Module):
                                         print(string)
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type,
-                                            user.id,
-                                            message.author.id,
-                                            False,
-                                            False,
+                                            reaction_type, user.id, message.author.id, False, False,
                                         )
         self.calculate_stamps()
 
@@ -226,7 +218,7 @@ class StampsModule(Module):
                     why="%s asked how many stamps they're worth" % message.author.name,
                 )
 
-            elif text == "reloadallstamps" and message.author.id == 181142785259208704:
+            elif text == "reloadallstamps" and message.author.id == rob_id:
                 return Response(confidence=10, callback=self.reloadallstamps, args=[message])
 
         return Response()

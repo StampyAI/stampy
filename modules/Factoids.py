@@ -12,7 +12,7 @@ def randbool(p):
 
 
 def is_bot_dev(user):
-    if user.id == 181142785259208704:
+    if user.id == rob_id:
         return True
     roles = getattr(user, "roles", [])
     return "bot dev" in [role.name for role in roles]
@@ -77,8 +77,7 @@ class Factoids(Module):
             # con.text_factory = str
             c = con.cursor()
             c.execute(
-                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """,
-                (key, verb, value),
+                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """, (key, verb, value),
             )
             con.commit()
             c.close()
@@ -89,8 +88,7 @@ class Factoids(Module):
             # con.text_factory = str
             c = con.cursor()
             c.execute(
-                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""",
-                (key,),
+                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""", (key,),
             )
 
             vals = c.fetchall()
@@ -174,18 +172,8 @@ class Factoids(Module):
             self.db.remove(*pf)
             if room == "bot-dev":
                 result = "debug: %s\n" % str(pf)
-            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
-                self.who,
-                pf[0],
-                pf[3],
-                pf[1],
-            )
-            why = """%s told me to forget that "%s" %s "%s"\n""" % (
-                self.who,
-                pf[0],
-                pf[3],
-                pf[1],
-            )
+            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
+            why = """%s told me to forget that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
             return Response(confidence=10, text=result, why=why)
 
         # if the text is a valid factoid, maybe reply
@@ -199,11 +187,7 @@ class Factoids(Module):
             else:
                 result = "%s %s %s" % (text, verb, value)
 
-            why = '%s said the factoid "%s" so I said "%s"' % (
-                self.who,
-                text,
-                rawvalue,
-            )
+            why = '%s said the factoid "%s" so I said "%s"' % (self.who, text, rawvalue,)
             self.prevFactoid[room] = (text, rawvalue, by, verb)  # key, value, verb
             if atme:
                 return Response(confidence=9, text=result, why=why)
@@ -239,18 +223,8 @@ class Factoids(Module):
                         key, _, value = text.partition(" <%s> " % verb)
                     else:
                         key, _, value = text.partition(" %s " % verb)
-                    result = """Ok %s, remembering that "%s" %s "%s" """ % (
-                        self.who,
-                        key,
-                        verb,
-                        value,
-                    )
-                    why = "%s told me to remember that '%s' %s '%s'" % (
-                        self.who,
-                        key,
-                        verb,
-                        value,
-                    )
+                    result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
+                    why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
                     print("adding factoid %s %s %s %s" % (key, value, message.author.id, verb))
                     self.db.add(key, value, message.author.id, verb)
                     self.prevFactoid[room] = (key, value, message.author.id, verb)
@@ -268,10 +242,7 @@ class Factoids(Module):
                     result += "\n<%s> '%s' by %s" % value
                 if len(values) > count:
                     result += "\n and %s more" % (len(values) - count)
-                why = "%s asked me to list the values for the factoid '%s'" % (
-                    self.who,
-                    fact,
-                )
+                why = "%s asked me to list the values for the factoid '%s'" % (self.who, fact,)
                 return Response(confidence=10, text=result, why=why)
 
         # This is either not at me, or not something we can handle
