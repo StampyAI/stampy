@@ -2,7 +2,7 @@ import re
 import discord
 import numpy as np
 from config import admin_usernames
-from modules.module import Module
+from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 
 
@@ -22,7 +22,7 @@ class StampsModule(Module):
         print("WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, rob_id)
+        self.utils.update_vote(god_id, str(rob_id))
 
     def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
 
@@ -206,30 +206,35 @@ class StampsModule(Module):
             # self.save_votesdict_to_json()
             print("Score after stamp:", self.get_user_stamps(to_id))
 
-    def can_process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             if re.match(r"(how many stamps am i worth)\??", text.lower()):
                 authors_stamps = self.get_user_stamps(message.author)
-                return 9, "You're worth %.2f stamps to me" % authors_stamps
+                return Response(
+                    confidence=9,
+                    text="You're worth %.2f stamps to me" % authors_stamps,
+                    why="%s asked how many stamps they're worth" % message.author.name,
+                )
 
-            elif text == "reloadallstamps" and message.author.name == "robertskmiles":
-                return 10, ""
+            elif text == "reloadallstamps" and message.author.id == rob_id:
+                return Response(confidence=10, callback=self.reloadallstamps, args=[message])
 
-        return 0, ""
+        return Response()
 
     @staticmethod
     def user_is_admin(username):
         return username in admin_usernames
 
-    async def process_message(self, message, client=None):
-        text = self.is_at_me(message)
+    async def reloadallstamps(self, message):
+        print("FULL STAMP HISTORY RESET BAYBEEEEEE")
+        await message.channel.send("Doing full stamp history reset, could take a while")
+        self.reset_stamps()
+        await self.load_votes_from_history()
 
-        # TODO: maybe have an admin list?
-        if text == "reloadallstamps" and self.user_is_admin(message.author.name):
-            print("FULL STAMP HISTORY RESET BAYBEEEEEE")
-            self.reset_stamps()
-            await self.load_votes_from_history()
-            return 10, "Working on it, could take a bit"
-        return 0, ""
+        return Response(
+            confidence=10,
+            text="full stamp history reset complete",
+            why="robertskmiles reset the stamp history",
+        )

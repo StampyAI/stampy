@@ -1,9 +1,10 @@
 import os
 
+maximum_recursion_depth = 30
 subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
-rob_id = "181142785259208704"
+rob_id = 181142785259208704
 stampy_id = "736241264856662038"
 plex_id = "756254556811165756"
 god_id = "0"

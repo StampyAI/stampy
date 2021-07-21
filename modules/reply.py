@@ -1,7 +1,7 @@
 import re
 import json
 import discord
-from modules.module import Module
+from modules.module import Module, Response
 from config import stampy_youtube_channel_id, youtube_testing_thread_url
 from datetime import datetime
 
@@ -65,20 +65,20 @@ class Reply(Module):
 
         print("dummy, posting %s to %s" % (text, question_id))
 
-    def can_process_message(self, message, client=None):
-        """From the Module() Interface. Is this a message we can process?"""
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             if self.is_post_request(text):
                 print("this is a posting request")
-                return 9, "Ok, I'll post this when it has more than 30 stamp points"
 
-        return 0, ""
+                return Response(
+                    confidence=9,
+                    text="Ok, I'll post this when it has more than 30 stamp points",
+                    why="%s asked me to post a reply to YouTube" % message.author.name,
+                )
 
-    async def process_message(self, message, client=None):
-        """From the Module() Interface. Handle a reply posting request message"""
-        return 0, ""
+        return Response()
 
     async def post_message(self, message, approvers=None):
         if approvers is None:
@@ -92,7 +92,7 @@ class Reply(Module):
         elif len(approvers) == 2:
             approver_string = " and ".join(approvers)
         else:
-            approvers[-1] = "and " + approvers[-1]
+            approvers[len(approvers) - 1] = "and " + approvers[-1]
             approver_string = ", ".join(approvers)
 
         # strip off stampy's name
@@ -111,6 +111,7 @@ class Reply(Module):
             if "youtube.com" not in question_url:
                 return "I'm confused about what YouTube comment to reply to..."
         else:
+            reference_text = None
             if not self.utils.latest_question_posted:
                 report = (
                     "I don't remember the URL of the last question I posted here,"
@@ -134,8 +135,8 @@ class Reply(Module):
         question_user = "Unknown User"
         if reference_text:
             match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
-        if match:
-            question_user = match.group(1)  # YouTube user (.*) asked this question
+            if match:
+                question_user = match.group(1)  # YouTube user (.*) asked this question
 
         video_url, comment_id = question_url.split("&lc=")
         video_titles = self.utils.get_title(video_url)
@@ -143,12 +144,14 @@ class Reply(Module):
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        question_display_title = f"""{question_user}'s question on {video_titles[0]}"""       # Cyprian Guerra's question on Pascal's Mugging
+        question_display_title = f"""{question_user}'s question on {video_titles[0]}"""
         answer_title = f"""{message.author.display_name}'s Answer to {question_display_title}"""
 
-        answer_time = datetime.now() # How should this be formated?
+        answer_time = datetime.now()  # How should this be formated?
 
-        self.utils.wiki.add_answer(answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id)
+        self.utils.wiki.add_answer(
+            answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id
+        )
         ##
 
         self.post_reply(reply_message, question_id)

@@ -1,9 +1,11 @@
 import os
 import sys
+import inspect
 import discord
 import unicodedata
 from dotenv import load_dotenv
 from utilities import Utilities
+from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
 from modules.videosearch import VideoSearch
@@ -15,14 +17,13 @@ from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
 from datetime import datetime, timezone, timedelta
 from config import (
+    maximum_recursion_depth,
     discord_token,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
     bot_dev_channel_id,
     prod_local_path,
     database_path,
-    rob_id,
-    plex_id,
 )
 
 load_dotenv()
@@ -65,47 +66,79 @@ async def on_message(message):
     if message.author == utils.client.user:
         return
 
-    utils.modules_dict["StampsModule"].calculate_stamps()
+    # utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
-    print(message)
-    print(message.reference)
-    print(message.author, message.content)
+    print(datetime.now().isoformat(sep=" "))
+    if hasattr(message.channel, "name"):
+        print(f"Message: id={message.id} in '{message.channel.name}' (id={message.channel.id})")
+    else:
+        print(f"DM: id={message.id}")
+    print(f"from {message.author.name}#{message.author.discriminator} (id={message.author.id})")
+    if message.reference:
+        print("In reply to:", message.reference)
+    print(f"    {message.content}")
+    print("#####################################")
 
     if hasattr(message.channel, "name") and message.channel.name == "general":
         print("the latest general discord channel message was not from stampy")
         utils.last_message_was_youtube_question = False
 
-    # What are the options for responding to this message?
-    # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
-    options = []
+    responses = [Response()]
     for module in modules:
-        print("Asking module: %s" % str(module))
-        output = module.can_process_message(message, utils.client)
-        print("output is", output)
-        confidence, result = output
-        if confidence > 0:
-            options.append((module, confidence, result))
+        print("# Asking module: %s" % str(module))
+        response = module.process_message(message, utils.client)
+        if response:
+            response.module = module  # tag it with the module it came from, for future reference
 
-    # Go with whichever module was most confident in its response
-    options = sorted(options, key=(lambda o: o[1]), reverse=True)
-    print(options)
-    for option in options:
-        module, confidence, result = option
+            if response.callback:  # break ties between callbacks and text in favour of text
+                response.confidence -= 0.001
 
-        if confidence > 0:
-            # if the module had some confidence it could reply
-            if not result:
-                # but didn't reply in can_process_message()
-                confidence, result = await module.process_message(message, utils.client)
+            responses.append(response)
 
-        if confidence:
-            if result:
-                await message.channel.send(result)
-            break
+    print("#####################################")
 
-    print("########################################################")
-    sys.stdout.flush()
+    for i in range(maximum_recursion_depth):  # don't hang if infinite regress
+        responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
+
+        # print some debug
+        print("Responses:")
+        for response in responses:
+            if response.callback:
+                argstring = ", ".join([a.__repr__() for a in response.args])
+                if response.kwargs:
+                    argstring += ", " + ", ".join([f"{k}={v.__repr__()}" for k, v in response.kwargs.items()])
+                print(
+                    f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
+                    f"{argstring})`"
+                )
+            else:
+                print(f'  {response.confidence}: {response.module}: "{response.text}"')
+                if response.why:
+                    print(f'       (because "{response.why}")')
+
+        top_response = responses.pop(0)
+
+        if top_response.callback:
+            print("Top response is a callback. Calling it")
+            if inspect.iscoroutinefunction(top_response.callback):
+                new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
+            else:
+                new_response = top_response.callback(*top_response.args, **top_response.kwargs)
+
+            new_response.module = top_response.module
+            responses.append(new_response)
+        else:
+            if top_response.text:
+                print("Replying:", top_response.text)
+                await message.channel.send(top_response.text)
+            print("########################################################")
+            sys.stdout.flush()
+            return
+
+    # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
+    # so that's likely an infinite regress
+    message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
 
 
 @utils.client.event
@@ -219,7 +252,7 @@ if __name__ == "__main__":
         "GPT3Module": GPT3Module(),
         "Factoids": Factoids(),
         "Sentience": sentience,
-        "WikiUpdate" : WikiUpdate(),
+        "WikiUpdate": WikiUpdate(),
     }
 
     modules = utils.modules_dict.values()
