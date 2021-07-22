@@ -17,7 +17,7 @@ async def on_ready():
     print("Logged in as")
     print(client.user.name)
     print(client.user.id)
-    cmd.Git(git_directory)
+    cmd.Git(git_directory).pull()
     repo = Repo(git_directory)
     master = repo.head.reference
     actor = master.commit.author
