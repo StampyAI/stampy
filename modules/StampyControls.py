@@ -11,7 +11,6 @@ class StampyControls(Module):
     def __init__(self):
         super().__init__()
         self.routines = {
-            "bot test": self.bot_test,
             "reboot": self.reboot,
             "resetinviteroles": self.resetinviteroles,
             "stats": self.get_stampy_stats,
@@ -27,12 +26,13 @@ class StampyControls(Module):
         if self.is_at_module(message):
             routine_name = self.is_at_me(message).lower()
             routine = self.routines[routine_name]
-            return Response(confidence=10, callback=routine, args=[message])
-        return Response()
-
-    @staticmethod
-    async def bot_test(message):
-        await message.channel.send("I'm alive!")
+            return Response(
+                confidence=10,
+                callback=routine,
+                why="%s said '%s', which is a special command, so I ran the %s routine"
+                % (message.author.name, routine_name, routine_name),
+                args=[message],
+            )
         return Response()
 
     @staticmethod
@@ -42,13 +42,15 @@ class StampyControls(Module):
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 exit()
-            else:
-                await message.channel.send("You're not my supervisor!")
-        return Response()
+        return Response(
+            confidence=10,
+            why="%s tried to kill me! They said 'reboot'" % message.author.name,
+            text="You're not my supervisor!",
+        )
 
     async def resetinviteroles(self, message):
         print("[resetting can-invite roles]")
-        await message.channel.send("[resetting can-invite roles, please wait]")
+        await message.channel.send("[resetting can-invite roles, this may take a minute]")
         guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
         print(self.utils.GUILD, guild)
         role = discord.utils.get(guild.roles, name="can-invite")
@@ -57,12 +59,15 @@ class StampyControls(Module):
         for member in guild.members:
             if self.utils.get_user_score(member) > 0:
                 print(member.name, "can invite")
-                await member.add_roles(role)
+                member.add_roles(role)
                 reset_users_count += 1
             else:
                 print(member.name, "has 0 stamps, can't invite")
-        await message.channel.send("[Invite Roles Reset for %s users]" % reset_users_count)
-        return Response()
+        return Response(
+            confidence=10,
+            why="%s asked me to reset roles, which" % message.author.name,
+            text="[Invite Roles Reset for %s users]" % reset_users_count,
+        )
 
     async def get_stampy_stats(self, message):
         """
@@ -74,10 +79,12 @@ class StampyControls(Module):
         runtime_message = self.utils.get_time_running()
         modules_message = self.utils.list_modules()
         # scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
-        await message.channel.send(
-            "\n\n".join([git_message, run_message, memory_message, runtime_message, modules_message])
+        stats_message = "\n\n".join(
+            [git_message, run_message, memory_message, runtime_message, modules_message]
         )
-        return Response()
+        return Response(
+            confidence=10, why="because %s asked for my stats" % message.author.name, text=stats_message
+        )
 
     def __str__(self):
         return "Stampy Controls Module"
