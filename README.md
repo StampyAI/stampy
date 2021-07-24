@@ -33,6 +33,7 @@ relevant data while you are testing code e.g. mine is
 `/Users/christophercanal/PycharmProjects/stampy/database/database.py`
 because I cloned the stampy repo to
 `/Users/christophercanal/PycharmProjects`
+	* if you get errors such as "`sqlite3.OperationError: no such table: uservotes`" and have followed a standard conda route as above you might try setting DATABASE_PATH as "'/stampy/database/stampy.db`"
 	* Set "`ENVIRONMENT_PATH`" to "development"
 	* Get the "`WIKI_BOT_PASSWORD`" and "`YOUTUBE_API_KEY`" from the pinned messages in #bot-dev-priv on discord
 6. Verify that your setup is working
