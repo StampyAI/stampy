@@ -1,4 +1,6 @@
 import os
+import dotenv
+dotenv.load_dotenv()
 
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
