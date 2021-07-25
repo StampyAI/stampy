@@ -55,7 +55,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channel_id[ENVIRONMENT_TYPE]).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started!")
 
 
 @utils.client.event

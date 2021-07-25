@@ -10,11 +10,21 @@ rob_id = 181142785259208704
 stampy_id = "736241264856662038"
 plex_id = "756254556811165756"
 god_id = "0"
-rob_miles_youtube_channel_id = "UCLB7AzTwc6VFZrBsO2ucBMg"  # if DEV: "UCDvKrlpIXM0BGYLD2jjLGvg"
-stampy_youtube_channel_id = "UCFDiTXRowzFvh81VOsnf5wg"  # if DEV: "DvKrlpIXM0BGYLD2jjLGvg"
+
+ENVIRONMENT_TYPE = os.environ["ENVIRONMENT_TYPE"]
+acceptable_environment_types = ("production", "development")
+assert ENVIRONMENT_TYPE in acceptable_environment_types, f'ENVIRONMENT_TYPE {ENVIRONMENT_TYPE} is not in {acceptable_environment_types}'
+
+if ENVIRONMENT_TYPE == "development":
+    rob_miles_youtube_channel_id = "UCDvKrlpIXM0BGYLD2jjLGvg"
+    stampy_youtube_channel_id = "DvKrlpIXM0BGYLD2jjLGvg"
+
+
+rob_miles_youtube_channel_id = {"production": "UCLB7AzTwc6VFZrBsO2ucBMg", "development": "UCDvKrlpIXM0BGYLD2jjLGvg"}[ENVIRONMENT_TYPE]
+stampy_youtube_channel_id = {"production": "UCFDiTXRowzFvh81VOsnf5wg", "development": "DvKrlpIXM0BGYLD2jjLGvg"}[ENVIRONMENT_TYPE]
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
 
-bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}
+bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
 
 prod_local_path = "/home/rob/stampy.local"
 
@@ -29,15 +39,6 @@ wiki_password = os.environ["WIKI_BOT_PASSWORD"]
 openai_api_key = os.getenv("OPENAI_API_KEY", "null")
 
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
-
-ENVIRONMENT_TYPE = os.environ["ENVIRONMENT_TYPE"]
-acceptable_environment_types = ("production", "development")
-assert ENVIRONMENT_TYPE in acceptable_environment_types, \
-    f'ENVIRONMENT_TYPE {ENVIRONMENT_TYPE} is not in {acceptable_environment_types}'
-
-if ENVIRONMENT_TYPE == "development":
-    rob_miles_youtube_channel_id = "UCDvKrlpIXM0BGYLD2jjLGvg"
-    stampy_youtube_channel_id = "DvKrlpIXM0BGYLD2jjLGvg"
 
 
 stampy_control_channel_names = [
