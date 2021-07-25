@@ -33,7 +33,7 @@ relevant data while you are testing code e.g. mine is
 `/Users/christophercanal/PycharmProjects/stampy/database/database.py`
 because I cloned the stampy repo to
 `/Users/christophercanal/PycharmProjects`
-	* Set "`ENVIRONMENT_PATH`" to "development"
+	* Set "`ENVIRONMENT_TYPE`" to "development"
 	* Get the "`WIKI_BOT_PASSWORD`" and "`YOUTUBE_API_KEY`" from the pinned messages in #bot-dev-priv on discord
 6. Verify that your setup is working
     * Run conda activate stampy
@@ -48,4 +48,4 @@ Checkout the [Trello](https://trello.com/b/LBmYgkes/stampy). It's a great place 
 
 If you make a change to source code, please create a new branch first, then commit your changes there. Open a pull request on github and ask for other developers to review your code before merging.
 
-See [TUTORIAL.md](https://github.com/robertskmiles/stampy/blob/master/TUTORIAL.md) for a step-by-step tutorial detailing how to add features. 
+See [TUTORIAL.md](https://github.com/robertskmiles/stampy/blob/master/TUTORIAL.md) for a step-by-step tutorial detailing how to add features.
