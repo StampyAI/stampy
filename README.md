@@ -27,12 +27,7 @@ current version of stampy.
 5. Set Environment Variables
     * Ask Sudonym for a "`DISCORD_TOKEN`" and "`DISCORD_GUILD`". You should [set
 these environment variables](https://www.schrodinger.com/kb/1842) in your [bashrc or zshrc](https://devconnected.com/set-environment-variable-bash-how-to/#:~:text=In%20order%20to%20set%20a,to%20have%20this%20environment%20variable.).
-    * Set "`DATABASE_PATH`" path equal to the full path of the database file
-from the repo, or another database file that you will use to hold
-relevant data while you are testing code e.g. mine is
-`/Users/christophercanal/PycharmProjects/stampy/database/database.py`
-because I cloned the stampy repo to
-`/Users/christophercanal/PycharmProjects`
+    * Set "`DATABASE_PATH`" path equal to the full path of the database file to use, eg. `/home/user/stampy/database/stampy.db`
 	* Set "`ENVIRONMENT_TYPE`" to "development"
 	* Get the "`WIKI_BOT_PASSWORD`" and "`YOUTUBE_API_KEY`" from the pinned messages in #bot-dev-priv on discord
 6. Verify that your setup is working
