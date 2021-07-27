@@ -1,9 +1,9 @@
 import re
 from asyncio import sleep
-from modules.module import Module
 from utilities import get_question_id
+from modules.module import Module, Response
 from jellyfish import jaro_winkler_similarity
-from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX
+from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
 
 
 class TestModule(Module):
@@ -35,11 +35,6 @@ class TestModule(Module):
         if text:
             return any([phrase in text for phrase in self.TEST_PHRASES])
         return False
-
-    def can_process_message(self, message, client=None):
-        if self.is_at_module(message):
-            return 10, ""
-        return 0, ""
 
     @staticmethod
     def get_question_id(message):
@@ -87,14 +82,16 @@ class TestModule(Module):
         return score
 
     async def process_message(self, message, client=None):
-        if self.is_at_module(message):
+        if not self.is_at_module(message):
+            return Response()
+        else:
             if self.is_test_response(message):
                 response_id = get_question_id(message)
                 print(message.clean_content, response_id, self.is_at_me(message))
                 self.sent_test[response_id].update(
                     {"received_response": self.clean_test_prefixes(message, TEST_RESPONSE_PREFIX)}
                 )
-                return 10, ""
+                return Response(confidence=10, text=test_response_message, why="this was a test",)
             else:
                 await self.send_test_questions(message)
                 score = self.evaluate_test()
@@ -113,4 +110,4 @@ class TestModule(Module):
                     await message.channel.send(test_status_message)
                 self.sent_test = []
                 self.utils.message_prefix = ""
-                return 10, test_message
+                return Response(confidence=10, text=test_message, why="this was a test")

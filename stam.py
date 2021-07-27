@@ -18,15 +18,16 @@ from modules.wikiUpdate import WikiUpdate
 from modules.testModule import TestModule
 from datetime import datetime, timezone, timedelta
 from config import (
-    maximum_recursion_depth,
     discord_token,
-    ENVIRONMENT_TYPE,
-    acceptable_environment_types,
-    bot_dev_channel_id,
-    prod_local_path,
     database_path,
+    prod_local_path,
+    ENVIRONMENT_TYPE,
+    bot_dev_channel_id,
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
+    test_response_message,
+    maximum_recursion_depth,
+    acceptable_environment_types,
 )
 
 load_dotenv()
@@ -95,6 +96,7 @@ async def on_message(message):
         print("# Asking module: %s" % str(module))
         response = module.process_message(message, utils.client)
         if response:
+            print(response, module)
             response.module = module  # tag it with the module it came from, for future reference
 
             if response.callback:  # break ties between callbacks and text in favour of text
@@ -143,6 +145,8 @@ async def on_message(message):
                     and (TEST_QUESTION_PREFIX not in top_response.text)
                     and utils.stampy_is_author(message)
                 ):
+                    if test_response_message == top_response.text:
+                        return
                     top_response.text = (
                         TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
                     )

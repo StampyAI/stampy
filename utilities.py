@@ -73,6 +73,7 @@ class Utilities:
             self.DB_PATH = database_path
             self.youtube = None
             self.start_time = time()
+            self.test_mode = False
 
             try:
                 self.youtube = get_youtube_api(
