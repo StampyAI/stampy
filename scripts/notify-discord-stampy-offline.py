@@ -1,6 +1,6 @@
 import discord
 from git import Repo, cmd
-from config import ENVIRONMENT_TYPE, bot_dev_channel_id, discord_token
+from config import bot_dev_channel_id, discord_token
 
 client = discord.Client()
 
@@ -25,7 +25,7 @@ async def on_ready():
     date = master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z")
     message = offline_message % (actor, git_message, date)
     print(message)
-    await client.get_channel(bot_dev_channel_id[ENVIRONMENT_TYPE]).send(message)
+    await client.get_channel(bot_dev_channel_id).send(message)
     print("------")
     exit()
 

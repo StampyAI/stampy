@@ -11,7 +11,6 @@ from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
 from config import (
-    required_environment_variables,
     youtube_api_version,
     youtube_api_service_name,
     rob_miles_youtube_channel_id,
@@ -21,12 +20,6 @@ from config import (
     database_path,
     wiki_config,
 )
-
-
-def check_environment(environment_variables):
-    for env in environment_variables:
-        if env not in os.environ:
-            raise Exception("%s Environment Variable not set" % env)
 
 
 class Utilities:
@@ -58,7 +51,6 @@ class Utilities:
     @staticmethod
     def get_instance():
         if Utilities.__instance is None:
-            check_environment(required_environment_variables)
             Utilities()
         return Utilities.__instance
 
