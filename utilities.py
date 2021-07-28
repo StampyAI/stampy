@@ -18,6 +18,8 @@ from config import (
     discord_guild,
     youtube_api_key,
     database_path,
+    TEST_RESPONSE_PREFIX,
+    TEST_QUESTION_PREFIX,
     wiki_config,
 )
 
@@ -376,7 +378,7 @@ class Utilities:
         return None
 
     def list_modules(self):
-        message = "I have %d modules. Here are their names:" % len(self.modules_dict)
+        message = f"I have {len(self.modules_dict)} modules. Here are their names:"
         for module_name in self.modules_dict.keys():
             message += "\n" + module_name
         return message
@@ -432,3 +434,20 @@ def get_question_id(message):
     if first_number_found:
         return int(first_number_found.group())
     return ""
+
+
+def contains_prefix_with_number(text, prefix) -> object:
+    prefix = prefix.strip()  # remove white space for regex formatting
+    return bool(re.search(rf"^{prefix}\s[0-9]+", text))
+
+
+def is_test_response(text):
+    return contains_prefix_with_number(text, TEST_RESPONSE_PREFIX)
+
+
+def is_test_question(text):
+    return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
+
+
+def is_test_message(text):
+    return is_test_response(text) or is_test_question(text)

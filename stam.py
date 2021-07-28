@@ -3,7 +3,7 @@ import sys
 import inspect
 import discord
 import unicodedata
-from utilities import Utilities, get_question_id
+from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -23,7 +23,6 @@ from config import (
     ENVIRONMENT_TYPE,
     bot_dev_channel_id,
     TEST_RESPONSE_PREFIX,
-    TEST_QUESTION_PREFIX,
     test_response_message,
     maximum_recursion_depth,
     acceptable_environment_types,
@@ -66,8 +65,8 @@ async def on_ready():
 async def on_message(message):
     # don't react to our own messages unless running test
     message_author_is_stampy = message.author == utils.client.user
-    if utils.test_mode and message_author_is_stampy:
-        print("test question")
+    if is_test_message(message.clean_content) and utils.test_mode:
+        print("TESTING " + message.clean_content)
     elif message_author_is_stampy:
         return
 
@@ -91,7 +90,7 @@ async def on_message(message):
 
     responses = [Response()]
     for module in modules:
-        print("# Asking module: %s" % str(module))
+        print(f"# Asking module: {module}")
         response = module.process_message(message, utils.client)
         if response:
             response.module = module  # tag it with the module it came from, for future reference
@@ -137,16 +136,13 @@ async def on_message(message):
             responses.append(new_response)
         else:
             if top_response.text:
-                if (
-                    utils.test_mode
-                    and (TEST_QUESTION_PREFIX not in top_response.text)
-                    and utils.stampy_is_author(message)
-                ):
-                    if test_response_message == top_response.text:
-                        return
-                    top_response.text = (
-                        TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
-                    )
+                if utils.test_mode:
+                    if is_test_response(message.clean_content):
+                        return  # must return after process message is called so that response can be evaluated
+                    if is_test_question(message.clean_content):
+                        top_response.text = (
+                            TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
+                        )
                 print("Replying:", top_response.text)
                 await message.channel.send(top_response.text)
             print("########################################################")

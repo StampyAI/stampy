@@ -1,6 +1,6 @@
 import re
 from asyncio import sleep
-from utilities import get_question_id
+from utilities import get_question_id, is_test_response, is_test_message
 from modules.module import Module, Response
 from jellyfish import jaro_winkler_similarity
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
@@ -29,12 +29,6 @@ class TestModule(Module):
 
     def is_at_module(self, message):
         return any([phrase in message.clean_content for phrase in self.TEST_PHRASES])
-
-    def is_test_response(self, text):
-        text = self.is_at_me(text)
-        if text:
-            return any([phrase in text for phrase in self.TEST_PHRASES])
-        return False
 
     @staticmethod
     def get_question_id(message):
@@ -71,21 +65,44 @@ class TestModule(Module):
             if question["minimum_allowed_similarity"] == 1.0:
                 if question["expected_response"] == question["received_response"]:
                     correct_count += 1
+                    question["results"] = "PASSED"
+                else:
+                    question["results"] = "FAILED"
             else:
                 text_similarity = jaro_winkler_similarity(
                     question["expected_response"], question["received_response"]
                 )
                 if text_similarity >= question["minimum_allowed_similarity"]:
                     correct_count += 1
+                    question["results"] = "PASSED"
+                else:
+                    question["results"] = "FAILED"
         score = correct_count / len(self.sent_test)
-        self.sent_test = []
         return score
 
-    async def process_message(self, message, client=None):
+    async def run_integration_test(self, message):
+        await self.send_test_questions(message)
+        score = self.evaluate_test()
+        test_message = "The percent of test passed is %.2f%%" % (score * 100)
+        await sleep(3)  # Wait for test messages to go to discord and back to server
+        self.utils.test_mode = False
+        for question_number, question in enumerate(self.sent_test):
+            test_status_message = (
+                f"QUESTION # {question_number}: {question['results']}\n"
+                + f"The sent message was '{question['question'][:200]}'\n"
+                + f"the expected message was '{question['expected_response'][:200]}'\n"
+                + f"the received message was '{question['received_response'][:200]}'\n\n\n"
+            )
+            await message.channel.send(test_status_message)
+        self.sent_test = []  # Delete all test from memory
+        self.utils.message_prefix = ""
+        return Response(confidence=10, text=test_message, why="this was a test")
+
+    def process_message(self, message, client=None):
         if not self.is_at_module(message):
             return Response()
         else:
-            if self.is_test_response(message):
+            if is_test_response(message.clean_content):
                 response_id = get_question_id(message)
                 print(message.clean_content, response_id, self.is_at_me(message))
                 self.sent_test[response_id].update(
@@ -93,21 +110,4 @@ class TestModule(Module):
                 )
                 return Response(confidence=10, text=test_response_message, why="this was a test",)
             else:
-                await self.send_test_questions(message)
-                score = self.evaluate_test()
-                test_message = "The percent of test passed is %.2f%%" % (score * 100)
-                await sleep(3)  # Wait for test messages to go to discord and back to server
-                self.utils.test_mode = False
-                for question in self.sent_test:
-                    test_status_message = (
-                        "The sent message was '%s', the expected message was '%s', the received message was '%s'"
-                        % (
-                            question["question"][:200],
-                            question["expected_response"][:200],
-                            question["received_response"][:200],
-                        )
-                    )
-                    await message.channel.send(test_status_message)
-                self.sent_test = []
-                self.utils.message_prefix = ""
-                return Response(confidence=10, text=test_message, why="this was a test")
+                return Response(confidence=10, callback=self.run_integration_test, args=[message])

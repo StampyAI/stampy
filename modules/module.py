@@ -166,13 +166,18 @@ class Module(object):
         If it's not, return False. If it is, strip away the
         name part and return the remainder of the message
         """
-        text = ""
+        text = message.clean_content
         if self.utils.test_mode:
             if self.utils.stampy_is_author(message):
                 if TEST_QUESTION_PREFIX in message.clean_content:
+                    print("#" * 60)
+                    print("#" * 60)
+                    print("#" * 60)
                     text = "stampy " + self.clean_test_prefixes(message, TEST_QUESTION_PREFIX)
-        if not text:
-            text = message.clean_content
+                    print(text)
+                    print("#" * 60)
+                    print("#" * 60)
+                    print("#" * 60)
         at_me = False
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
         text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text)
