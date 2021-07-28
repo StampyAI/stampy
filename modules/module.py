@@ -2,7 +2,7 @@ import re
 import discord
 from utilities import Utilities
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Callable, Optional
 
 
 @dataclass
@@ -68,7 +68,7 @@ class Response:
 
     text: str = ""
 
-    callback: Callable = None
+    callback: Optional[Callable] = None
     args: list = field(default_factory=list)
     kwargs: dict = field(default_factory=dict)
 
