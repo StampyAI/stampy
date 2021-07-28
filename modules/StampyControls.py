@@ -61,6 +61,13 @@ class StampyControls(Module):
         )
 
     async def resetinviteroles(self, message):
+        if self.utils.test_mode:
+            print("Stampy is in test mode, not updating invite roles")
+            return Response(
+                confidence=10,
+                why="%s asked me to reset roles, which" % message.author.name,
+                text=self.RESET_INVITES_MESSAGE,
+            )
         print("[resetting can-invite roles]")
         await self.send_control_message(message, self.RESET_INVITES_MESSAGE)
         guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
@@ -76,8 +83,6 @@ class StampyControls(Module):
                     reset_users_count += 1
                 else:
                     print(member.name, "has 0 stamps, can't invite")
-        else:
-            print("Stampy is in test mode, not updating invite roles")
         return Response(
             confidence=10,
             why="%s asked me to reset roles, which" % message.author.name,

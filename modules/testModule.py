@@ -1,6 +1,6 @@
 import re
 from asyncio import sleep
-from utilities import get_question_id, is_test_response, is_test_message
+from utilities import get_question_id, is_test_response, is_test_question
 from modules.module import Module, Response
 from jellyfish import jaro_winkler_similarity
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
@@ -10,14 +10,10 @@ class TestModule(Module):
     # This module is the only module that gets stampy to ask its self multiple questions
     # In test mode, stampy only responds to itself, whereas in other modes stampy responds only to not itself
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
-    TEST_PHRASES = {
-        "test yourself",
-        "test modules",
-        TEST_QUESTION_PREFIX,
-        TEST_RESPONSE_PREFIX,
-    }
-    TESTING_MODE_RESPONSE_MESSAGE = (
-        "I am running my integration test right now and I cannot answer you question until I am finished"
+    TEST_MODULE_PROMPTS = {"test yourself", "test modules"}
+    TEST_PHRASES = TEST_PREFIXES | TEST_MODULE_PROMPTS
+    TEST_MODE_RESPONSE_MESSAGE = (
+        "I am running my integration test right now and I cannot handle your request until I am finished"
     )
 
     def __str__(self):
@@ -28,7 +24,7 @@ class TestModule(Module):
         self.sent_test = []
 
     def is_at_module(self, message):
-        return any([phrase in message.clean_content for phrase in self.TEST_PHRASES])
+        return any([(phrase in message.clean_content) for phrase in self.TEST_PHRASES])
 
     @staticmethod
     def get_question_id(message):
@@ -82,9 +78,9 @@ class TestModule(Module):
 
     async def run_integration_test(self, message):
         await self.send_test_questions(message)
+        await sleep(3)  # Wait for test messages to go to discord and back to server
         score = self.evaluate_test()
         test_message = "The percent of test passed is %.2f%%" % (score * 100)
-        await sleep(3)  # Wait for test messages to go to discord and back to server
         self.utils.test_mode = False
         for question_number, question in enumerate(self.sent_test):
             test_status_message = (
@@ -94,6 +90,7 @@ class TestModule(Module):
                 + f"the received message was '{question['received_response'][:200]}'\n\n\n"
             )
             await message.channel.send(test_status_message)
+        await sleep(3)
         self.sent_test = []  # Delete all test from memory
         self.utils.message_prefix = ""
         return Response(confidence=10, text=test_message, why="this was a test")
@@ -109,5 +106,16 @@ class TestModule(Module):
                     {"received_response": self.clean_test_prefixes(message, TEST_RESPONSE_PREFIX)}
                 )
                 return Response(confidence=10, text=test_response_message, why="this was a test",)
+            elif self.utils.test_mode:
+                return Response(
+                    confidence=9, text=self.TEST_MODE_RESPONSE_MESSAGE, why="Test already running"
+                )
             else:
                 return Response(confidence=10, callback=self.run_integration_test, args=[message])
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(question=prompt, expected_response=self.TEST_MODE_RESPONSE_MESSAGE)
+            for prompt in self.TEST_MODULE_PROMPTS
+        ]
