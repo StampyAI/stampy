@@ -92,10 +92,9 @@ class Module(object):
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    def can_process_message(self, message, client=None):
-        """Look at the message and decide if you want to handle it
-        Return a pair of values: (confidence rating out of 10, message)
-        Including a response message is optional, use an empty string to just indicate a confidence
+    def process_message(self, message, client=None):
+        """Handle the message, return a string which is your response.
+        This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
         `can_process_message` should contain only operations which can be executed safely even if
         another module reports a higher confidence and ends up being the one to respond.If your
@@ -118,12 +117,6 @@ class Module(object):
 
         Ties are broken in module priority order. You can also return a float if you really want
         """
-        # By default, we have 0 confidence that we can answer this, and our response is ""
-        return Response()
-
-    def process_message(self, message, client=None):
-        """Handle the message, return a string which is your response.
-        This is an async function so it can interact with the Discord API if it needs to"""
         return Response()
 
     async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
@@ -137,7 +130,7 @@ class Module(object):
         return Response()
 
     def __str__(self):
-        return "Dummy Module"
+        return "Base Module"
 
     @staticmethod
     def create_integration_test(
