@@ -117,7 +117,7 @@ class StampyControls(Module):
             self.create_integration_test(
                 question="stats",
                 expected_response=self.create_stampy_stats_message(),
-                test_wait_time=4,
+                test_wait_time=2,
                 minimum_allowed_similarity=0.8,
             ),
         ]

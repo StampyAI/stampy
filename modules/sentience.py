@@ -5,7 +5,7 @@ class Sentience(Module):
     CONFUSED_RESPONSE = "I don't understand"
 
     def process_message(self, message, client=None):
-        return Response(confidence=0.0000001, text=self.CONFUSED_RESPONSE)
+        return Response(confidence=3, text=self.CONFUSED_RESPONSE)
 
     def __str__(self):
         return "Sentience"

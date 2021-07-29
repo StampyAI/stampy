@@ -59,6 +59,7 @@ class TestModule(Module):
         correct_count = 0
         for question in self.sent_test:
             if question["expected_regex"]:
+                question["expected_response"] = "REGULAR EXPRESSION: " + question["expected_regex"]
                 if re.search(question["expected_regex"], question["received_response"]):
                     correct_count += 1
                     question["results"] = "PASSED"
