@@ -251,3 +251,17 @@ class Factoids(Module):
 
     def __str__(self):
         return "Factoids"
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="remember chriscanal is the person who wrote this test",
+                expected_response='Ok stampy, remembering that "chriscanal" is "the person who wrote this test"',
+            ),
+            self.create_integration_test(question="list chriscanal", expected_regex="values for factoid+",),
+            self.create_integration_test(
+                question="forget that",
+                expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',
+            ),
+        ]
