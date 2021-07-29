@@ -175,7 +175,6 @@ class VideoSearch(Module):
         return [
             self.create_integration_test(
                 question="Which video did rob play civilization V in?",
-                minimum_allowed_similarity=0.95,
                 expected_regex="Superintelligence Mod for Civilization V+",
             ),
             self.create_integration_test(

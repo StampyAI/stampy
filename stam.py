@@ -23,7 +23,6 @@ from config import (
     ENVIRONMENT_TYPE,
     bot_dev_channel_id,
     TEST_RESPONSE_PREFIX,
-    test_response_message,
     maximum_recursion_depth,
     acceptable_environment_types,
 )

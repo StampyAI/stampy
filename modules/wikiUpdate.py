@@ -1,5 +1,4 @@
 import re
-from utilities import Utilities
 from modules.module import Module, Response
 
 
