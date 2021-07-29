@@ -36,6 +36,7 @@ test_response_message = "LOGGED_TEST_RESPONSE"
 
 TEST_QUESTION_PREFIX = "TEST_QUESTION "
 TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
+CONFUSED_RESPONSE = "I don't understand"
 
 prod_local_path = "/home/rob/stampy.local"
 
