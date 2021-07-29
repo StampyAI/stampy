@@ -1,6 +1,6 @@
 import re
 from asyncio import sleep
-from utilities import get_question_id, is_test_response, is_test_question
+from utilities import get_question_id, is_test_response
 from modules.module import Module, Response
 from jellyfish import jaro_winkler_similarity
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
@@ -58,7 +58,13 @@ class TestModule(Module):
     def evaluate_test(self):
         correct_count = 0
         for question in self.sent_test:
-            if question["minimum_allowed_similarity"] == 1.0:
+            if question["expected_regex"]:
+                if re.search(question["expected_regex"], question["received_response"]):
+                    correct_count += 1
+                    question["results"] = "PASSED"
+                else:
+                    question["results"] = "FAILED"
+            elif question["minimum_allowed_similarity"] == 1.0:
                 if question["expected_response"] == question["received_response"]:
                     correct_count += 1
                     question["results"] = "PASSED"
