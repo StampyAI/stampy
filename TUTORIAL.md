@@ -4,10 +4,11 @@
 This document details how to implement a new feature for Stampy, by creating a module - Stampy is organized into modules, which inherit from the `Module` class.
 
 To explain how to implement a new Stampy feature, let's work through an example: Choosing between options. The goal is a feature that works like this:
-####Example 1
+
+#### Example 1
 - User: Stampy, choose A or B 
 - Stampy: B  
-####Example 2
+#### Example 2
 - User: Stampy, choose one, two, or three  
 - Stampy: one  
 
