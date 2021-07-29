@@ -4,3 +4,4 @@ database/topost.json
 factoids.db
 .idea/*
 .env
+modules/choose.py

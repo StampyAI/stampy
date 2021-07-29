@@ -1,6 +1,5 @@
-import requests
-import datetime
 import re
+import requests
 from api.persistence import Persistence
 
 
