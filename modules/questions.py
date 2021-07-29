@@ -5,6 +5,8 @@ from modules.module import Module, Response
 class QQManager(Module):
     """Module to manage commands about the question queue"""
 
+    EMPTY_QUEUE_MESSAGE = "There are no questions in the queue"
+
     def __init__(self):
         Module.__init__(self)
 
@@ -47,15 +49,17 @@ class QQManager(Module):
         return Response()
 
     async def post_question(self, message):
+        if self.utils.test_mode:
+            return Response(confidence=9, text=self.EMPTY_QUEUE_MESSAGE, why="test")
         result = self.utils.get_question()
-        if result and not self.utils.test_mode:
+        if result:
             return Response(
                 confidence=10, text=result, why="%s asked for a question to answer" % message.author.name
             )
         else:
             return Response(
                 confidence=8,
-                text="There are no questions in the queue",
+                text=self.EMPTY_QUEUE_MESSAGE,
                 why="%s asked for a question to answer, but I haven't got any" % message.author.name,
             )
 
@@ -71,6 +75,6 @@ class QQManager(Module):
             ),
             self.create_integration_test(
                 question="what is the next questions in the queue",
-                expected_response=self.question_count_response(self.utils.get_question_count()),
-            ),
+                expected_response=self.EMPTY_QUEUE_MESSAGE,
+            ),  # TODO update test to allow for actual checking of questions
         ]

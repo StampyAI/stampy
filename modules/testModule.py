@@ -11,7 +11,7 @@ class TestModule(Module):
     # In test mode, stampy only responds to itself, whereas in other modes stampy responds only to not itself
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
     TEST_MODULE_PROMPTS = {"test yourself", "test modules"}
-    TEST_PHRASES = TEST_PREFIXES | TEST_MODULE_PROMPTS
+    TEST_PHRASES = {TEST_RESPONSE_PREFIX} | TEST_MODULE_PROMPTS
     TEST_MODE_RESPONSE_MESSAGE = (
         "I am running my integration test right now and I cannot handle your request until I am finished"
     )
@@ -105,7 +105,7 @@ class TestModule(Module):
                 self.sent_test[response_id].update(
                     {"received_response": self.clean_test_prefixes(message, TEST_RESPONSE_PREFIX)}
                 )
-                return Response(confidence=10, text=test_response_message, why="this was a test",)
+                return Response(confidence=8, text=test_response_message, why="this was a test",)
             elif self.utils.test_mode:
                 return Response(
                     confidence=9, text=self.TEST_MODE_RESPONSE_MESSAGE, why="Test already running"
