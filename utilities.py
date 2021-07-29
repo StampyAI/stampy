@@ -436,7 +436,7 @@ def get_question_id(message):
     return ""
 
 
-def contains_prefix_with_number(text, prefix) -> object:
+def contains_prefix_with_number(text, prefix):
     prefix = prefix.strip()  # remove white space for regex formatting
     return bool(re.search(rf"^{prefix}\s[0-9]+", text))
 

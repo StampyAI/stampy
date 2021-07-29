@@ -20,15 +20,14 @@ class QQManager(Module):
             r"(long is|long's)) (the|your)( question)? queue( now)?\??",
         )
 
-    @staticmethod
-    def question_count_response(count):
+    def question_count_response(self, count):
         if count:
             if count == 1:
                 result = "There's one question in the queue"
             else:
                 result = f"There are {count} questions in the queue"
         else:
-            result = "The question queue is empty"
+            result = self.EMPTY_QUEUE_MESSAGE
         return result
 
     def process_message(self, message, client=None):

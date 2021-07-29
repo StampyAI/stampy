@@ -67,7 +67,7 @@ class WikiUpdate(Module):
 
         return Response(
             confidence=8,
-            text=f"Ok, setting {property_name} to {new_value} on '{wiki_title}",
+            text=f"Ok, setting {property_name} to {new_value} on '{wiki_title}'",
             why="The message was directed at stampy and matched the regex to change property"
             + property_name
             + ". And so stampy went ahead and made that change, and reported to the chat that he did so.",
@@ -121,5 +121,5 @@ class WikiUpdate(Module):
         return [
             self.create_integration_test(
                 question="mark this question as rejected", expected_response=self.UNCLEAR_REQUEST_MESSAGE,
-            )
+            )  # TODO create more meaningful test here
         ]
