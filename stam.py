@@ -235,8 +235,6 @@ async def on_raw_reaction_remove(payload):
 
 
 if __name__ == "__main__":
-    modules = utils.modules_dict.values()
-
     utils.modules_dict = {
         "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
@@ -250,5 +248,6 @@ if __name__ == "__main__":
         "WikiUpdate": WikiUpdate(),
         "TestModule": TestModule(),
     }
+    modules = utils.modules_dict.values()
 
     utils.client.run(discord_token)
