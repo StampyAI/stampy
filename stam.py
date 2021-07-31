@@ -235,25 +235,7 @@ async def on_raw_reaction_remove(payload):
 
 
 if __name__ == "__main__":
-    # when was the most recent comment we saw posted?
-    utils.latest_comment_timestamp = datetime.now(timezone.utc)
-
-    # when did we last hit the API to check for comments?
-    utils.last_check_timestamp = datetime.now(timezone.utc)
-
-    # how many seconds should we wait before we can hit YT API again
-    # this the start value. It doubles every time we don't find anything new
-    utils.youtube_cooldown = timedelta(seconds=60)
-
-    # timestamp of when we last ran the tick function
-    utils.last_timestamp = datetime.now(timezone.utc)
-
-    # timestamp of last time we asked a youtube question
-    utils.last_question_asked_timestamp = datetime.now(timezone.utc)
-
-    # Was the last message posted in #general by anyone, us asking a question from YouTube?
-    # We start off not knowing, but it's better to assume yes than no
-    utils.last_message_was_youtube_question = True
+    modules = utils.modules_dict.values()
 
     utils.modules_dict = {
         "StampyControls": StampyControls(),
@@ -268,7 +250,5 @@ if __name__ == "__main__":
         "WikiUpdate": WikiUpdate(),
         "TestModule": TestModule(),
     }
-
-    modules = utils.modules_dict.values()
 
     utils.client.run(discord_token)
