@@ -7,6 +7,8 @@ from datetime import datetime
 
 
 class Reply(Module):
+    POST_MESSAGE = "Ok, I'll post this when it has more than 30 stamp points"
+
     def __str__(self):
         return "YouTube Reply Posting Module"
 
@@ -74,7 +76,7 @@ class Reply(Module):
 
                 return Response(
                     confidence=9,
-                    text="Ok, I'll post this when it has more than 30 stamp points",
+                    text=self.POST_MESSAGE,
                     why="%s asked me to post a reply to YouTube" % message.author.name,
                 )
 
@@ -225,3 +227,7 @@ class Reply(Module):
                 else:
                     report = "This reply has %s stamp points. I will send it when it has 30" % stamp_score
                     await channel.send(report)
+
+    @property
+    def test_cases(self):
+        return [self.create_integration_test(question="post this", expected_response=self.POST_MESSAGE)]

@@ -1,4 +1,5 @@
 import os
+import re
 import pwd
 import psutil
 import discord
@@ -17,6 +18,8 @@ from config import (
     discord_guild,
     youtube_api_key,
     database_path,
+    TEST_RESPONSE_PREFIX,
+    TEST_QUESTION_PREFIX,
     wiki_config,
 )
 
@@ -64,6 +67,7 @@ class Utilities:
             self.DB_PATH = database_path
             self.youtube = None
             self.start_time = time()
+            self.test_mode = False
 
             try:
                 self.youtube = get_youtube_api(
@@ -81,6 +85,9 @@ class Utilities:
             intents.members = True
             self.client = discord.Client(intents=intents)
             self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
+
+    def stampy_is_author(self, message):
+        return message.author == self.client.user
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -112,7 +119,7 @@ class Utilities:
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
         response = request.execute()
         items = response.get("items")
-        comment = {}
+        comment = {"video_url": video_url}
         if items:
             top_level_comment = items[0]["snippet"]["topLevelComment"]
             comment["timestamp"] = top_level_comment["snippet"]["publishedAt"][:-1]
@@ -225,7 +232,6 @@ class Utilities:
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
-        comment = None
         if order_type == "RANDOM":
             comment = self.wiki.get_random_question()
         elif order_type == "TOP":
@@ -372,7 +378,7 @@ class Utilities:
         return None
 
     def list_modules(self):
-        message = "I have %d modules. Here are their names:" % len(self.modules_dict)
+        message = f"I have {len(self.modules_dict)} modules. Here are their names:"
         for module_name in self.modules_dict.keys():
             message += "\n" + module_name
         return message
@@ -420,3 +426,28 @@ def get_memory_usage():
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
     return "I'm using %s bytes of memory" % megabytes_string
+
+
+def get_question_id(message):
+    text = message.clean_content
+    first_number_found = re.search(r"\d+", text)
+    if first_number_found:
+        return int(first_number_found.group())
+    return ""
+
+
+def contains_prefix_with_number(text, prefix):
+    prefix = prefix.strip()  # remove white space for regex formatting
+    return bool(re.search(rf"^{prefix}\s[0-9]+", text))
+
+
+def is_test_response(text):
+    return contains_prefix_with_number(text, TEST_RESPONSE_PREFIX)
+
+
+def is_test_question(text):
+    return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
+
+
+def is_test_message(text):
+    return is_test_response(text) or is_test_question(text)

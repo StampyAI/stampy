@@ -9,6 +9,8 @@ class VideoSearch(Module):
     A module that searches the titles, descriptions and transcripts of videos, to find keywords/phrases
     """
 
+    NOT_FOUND_MESSAGE = "No matches found"
+
     def __init__(self):
         super().__init__()
         self.re_search = re.compile(
@@ -161,7 +163,21 @@ class VideoSearch(Module):
                 why="Those are the videos that seem related!",
             )
         else:
-            return Response(confidence=8, text="No matches found", why="I couldn't find any relevant videos")
+            return Response(
+                confidence=8, text=self.NOT_FOUND_MESSAGE, why="I couldn't find any relevant videos"
+            )
 
     def __str__(self):
         return "Video Search Manager"
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="Which video did rob play civilization V in?",
+                expected_regex="Superintelligence Mod for Civilization V+",
+            ),
+            self.create_integration_test(
+                question="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
+            ),
+        ]

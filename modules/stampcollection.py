@@ -7,6 +7,10 @@ from config import rob_id, god_id, stampy_id
 
 
 class StampsModule(Module):
+
+    STAMPS_RESET_MESSAGE = "full stamp history reset complete"
+    UNAUTHORIZED_MESSAGE = "You can't do that!"
+
     def __str__(self):
         return "Stamps Module"
 
@@ -214,12 +218,15 @@ class StampsModule(Module):
                 authors_stamps = self.get_user_stamps(message.author)
                 return Response(
                     confidence=9,
-                    text="You're worth %.2f stamps to me" % authors_stamps,
-                    why="%s asked how many stamps they're worth" % message.author.name,
+                    text=f"You're worth {authors_stamps:.2f} stamps to me",
+                    why=f"{message.author.name} asked how many stamps they're worth",
                 )
 
-            elif text == "reloadallstamps" and message.author.id == rob_id:
-                return Response(confidence=10, callback=self.reloadallstamps, args=[message])
+            elif text == "reloadallstamps":
+                if message.author.id == rob_id:
+                    return Response(confidence=10, callback=self.reloadallstamps, args=[message])
+                else:
+                    return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
         return Response()
 
@@ -232,9 +239,18 @@ class StampsModule(Module):
         await message.channel.send("Doing full stamp history reset, could take a while")
         self.reset_stamps()
         await self.load_votes_from_history()
-
         return Response(
-            confidence=10,
-            text="full stamp history reset complete",
-            why="robertskmiles reset the stamp history",
+            confidence=10, text=self.STAMPS_RESET_MESSAGE, why="robertskmiles reset the stamp history",
         )
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="how many stamps am I worth?",
+                expected_regex=r"^You're worth ?[+-]?\d+(?:\.\d+)? stamps to me$",
+            ),
+            self.create_integration_test(
+                question="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE
+            ),
+        ]
