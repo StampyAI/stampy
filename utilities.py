@@ -69,6 +69,26 @@ class Utilities:
             self.start_time = time()
             self.test_mode = False
 
+            # when was the most recent comment we saw posted?
+            self.latest_comment_timestamp = datetime.now(timezone.utc)
+
+            # when did we last hit the API to check for comments?
+            self.last_check_timestamp = datetime.now(timezone.utc)
+
+            # how many seconds should we wait before we can hit YT API again
+            # this the start value. It doubles every time we don't find anything new
+            self.youtube_cooldown = timedelta(seconds=60)
+
+            # timestamp of when we last ran the tick function
+            self.last_timestamp = datetime.now(timezone.utc)
+
+            # timestamp of last time we asked a youtube question
+            self.last_question_asked_timestamp = datetime.now(timezone.utc)
+
+            # Was the last message posted in #general by anyone, us asking a question from YouTube?
+            # We start off not knowing, but it's better to assume yes than no
+            self.last_message_was_youtube_question = True
+
             try:
                 self.youtube = get_youtube_api(
                     youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,

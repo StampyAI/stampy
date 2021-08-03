@@ -1,8 +1,8 @@
 import re
 import discord
-from typing import Callable
-from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
+from dataclasses import dataclass, field
+from typing import Callable, Optional
 from config import TEST_QUESTION_PREFIX
 
 
@@ -69,7 +69,7 @@ class Response:
 
     text: str = ""
 
-    callback: Callable = None
+    callback: Optional[Callable] = None
     args: list = field(default_factory=list)
     kwargs: dict = field(default_factory=dict)
 
