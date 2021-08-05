@@ -3,9 +3,12 @@ import os
 from modules.module import Module, Response
 import csv
 import requests
+from lxml import etree
+import zipfile
+from io import BytesIO
 
-csv_url = (
-    "https://docs.google.com/spreadsheets/d/1PwWbWZ6FPqAgZWOoOcXM8N_tUCuxpEyMbN1NYYC02aM/export?format=csv"
+spreadsheet_url = (
+    "https://docs.google.com/spreadsheets/d/1PwWbWZ6FPqAgZWOoOcXM8N_tUCuxpEyMbN1NYYC02aM/export?format=zip"
 )
 
 
@@ -31,47 +34,85 @@ class ANSearch(Module):
         self.load_items()
 
     class Item:
-        def __init__(self, row):
-            self.row = row
+        def __init__(self):
+            self.category = ""
+            self.is_highlight = False
+            self.url = ""
+            self.title = ""
+            self.authors = ""
+            self.summary = ""
+            self.opinion = ""
 
             self.score = 0
 
         def __repr__(self):
-            return '<Item: %f "%s">' % (self.score, self.row)
+            return '<Item: %f "%s" %d>' % (self.score, self.title, len(self.summary))
 
         def __str__(self):
             return self.__repr__()
 
     def load_items(self):
         # TODO - Any kind of error checking and handling
-        response = requests.get(csv_url)
 
-        csv_reader = csv.reader(response.content.decode().splitlines())
+        # regex for pulling the first markdown link, with its title and url
+        re_markdown_link = re.compile(rb"""\[(?P<title>[^\]]+)\]\((?P<url>[^\)]+)\)""")
 
-        for row in csv_reader:
-            print(row)
-            item = self.Item(row=row)
-            self.items.append(item)
+        # download the sheet as zipped html from the google sheets API.
+        response = requests.get(spreadsheet_url)
 
-    # def load_videos(self):
-    #     with os.scandir(self.subsdir) as entries:
-    #         for entry in entries:
-    #             if entry.name.endswith(".en.vtt"):
-    #                 vtt_groups = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
-    #                 title = vtt_groups.group(1)
-    #                 stub = vtt_groups.group(2)
-    #
-    #                 text = self.process_vtt_file(entry.path)
-    #
-    #                 description_filename = title + "-" + stub + ".description"
-    #                 description_filepath = os.path.join(self.subsdir, description_filename)
-    #                 if os.path.exists(description_filepath):
-    #                     description = open(description_filepath, encoding="utf8").read()
-    #                 else:
-    #                     description = ""
-    #
-    #                 video = self.Video(title, stub, text, description)
-    #                 self.videos.append(video)
+        # we have to use BytesIO to unzip in memory
+        bytes = BytesIO(response.content)
+        zip_file = zipfile.ZipFile(bytes)
+        with zip_file.open("Database.html") as html_file:
+
+            # pull out the main body of the table
+            html_data = html_file.read().decode("utf-8")
+            table = etree.HTML(html_data).find("body/div/table/tbody")
+
+            rows = iter(table)
+
+            # first two rows are headers and freeze bar, chuck them out
+            headers = next(rows)
+            bar = next(rows)
+
+            for row in rows:
+                item = self.Item()
+
+                item.category = row[1].text or ""
+
+                # column 2 contains "highlight" if the item is a highlight
+                item.is_highlight = bool(row[2].text)
+
+                # column 3 is the title, which is also a link to the paper/post
+                # so we fill 2 fields from this 1 column
+                title_field_text = etree.tostring(row[3], method="text", encoding="UTF-8")
+                if title_field_text:
+                    atag = row[3].find(".//a")  # ../ means it doesn't have to be the immediate child
+                    if atag is not None:
+                        item.title = atag.text or ""
+                        item.url = atag.attrib["href"] or ""
+                    else:  # no A tag, maybe a markdown link?
+                        match_object = re.search(re_markdown_link, title_field_text)
+                        if match_object:
+                            item.title = match_object["title"].decode("utf-8") or ""
+                            item.url = match_object["url"].decode("utf-8") or ""
+                        else:  # no markdown link either...
+                            # print("What is even happening here")
+                            # print(etree.tostring(row[3]))
+                            # print(etree.tostring(row))
+                            continue
+
+                    item.authors = (
+                        etree.tostring(row[4], method="text", encoding="UTF-8").decode("utf-8") or ""
+                    )
+                    item.summary = (
+                        etree.tostring(row[9], method="text", encoding="UTF-8").decode("utf-8") or ""
+                    )
+                    item.opinion = (
+                        etree.tostring(row[10], method="text", encoding="UTF-8").decode("utf-8") or ""
+                    )
+
+                    self.items.append(item)
 
     @staticmethod
     def extract_keywords(query):
@@ -92,6 +133,7 @@ class ANSearch(Module):
         return keywords
 
     def sort_by_relevance(self, items, search_string, reverse=False):
+        # TODO: Semantic search or something else less braindead
         keywords = self.extract_keywords(search_string)
         print('Keywords:, "%s"' % keywords)
 
@@ -99,17 +141,22 @@ class ANSearch(Module):
             item.score = 0
             for keyword in keywords:
                 keyword = keyword.lower()
-                for field in item.row:
-                    item.score += 1.0 * field.lower().count(keyword) / (len(field) + 1)
+                # print(item.title.lower())
+                # print(item.title.lower().count(keyword))
+                # print((len(item.title) + 1))
 
-                # item.score += 3.0 * item.title.lower().count(keyword) / (len(item.title) + 1)
-                # item.score += 1.0 * item.description.lower().count(keyword) / (len(item.description) + 1)
-                # item.score += 1.0 * item.text.lower().count(keyword) / (len(item.text) + 1)
+                item.score += 1.0 * item.title.lower().count(keyword) / (len(item.title) + 1)
+                item.score += 1.0 * item.authors.lower().count(keyword) / (len(item.authors) + 1)
+                item.score += 1.0 * item.summary.lower().count(keyword) / (len(item.summary) + 1)
+
+                if item.is_highlight:
+                    item.score *= 1.5
+
         return sorted(items, key=(lambda v: v.score), reverse=reverse)
 
     def search(self, query):
         result = self.sort_by_relevance(self.items, query, reverse=True)
-        print("Search Result:", result)
+        print("Search Result:", result[:5])
 
         best_score = result[0].score
         if best_score == 0:
@@ -120,7 +167,7 @@ class ANSearch(Module):
         for r in result[1:10]:
             if r.score > 0:
                 print(r)
-            if r.score > (best_score / 2.0):
+            if r.score > (best_score * 0.2):
                 matches.append(r)
         return matches
 
@@ -139,14 +186,14 @@ class ANSearch(Module):
     @staticmethod
     def list_relevant_items(result):
         item = result[0]
-        item_description = "`%s`" % item.row
+        item_description = "*%s*\n%s\n> %s" % (item.title, item.url, item.summary[:1500])
 
         reply = "This seems relevant:\n" + item_description
 
-        # if len(result) > 1:
-        #     reply += "\nIt could also be:\n"
-        #     for item in result[1:5]:
-        #         reply += "- `%s`" % item.row
+        if len(result) > 1:
+            reply += "\n\nIt could also be:\n"
+            for item in result[1:5]:
+                reply += "- *%s*:\n  (<%s>)\n" % (item.title, item.url)
 
         if len(reply) >= 2000:
             reply = reply[:1995] + "...`"
@@ -172,3 +219,9 @@ class ANSearch(Module):
 
     def __str__(self):
         return "Alignment Newsletter Search"
+
+
+if __name__ == "__main__":
+    module = ANSearch()
+    module.load_items()
+    print(module.items[0])
