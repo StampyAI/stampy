@@ -64,11 +64,9 @@ class Response:
     running this callback?". This will vary depending on: how good the response could be, how likely
     a good response is, and how slow/expensive the callback function is.
     """
-
+    embed: discord.Embed = None
     confidence: float = 0.0
-
     text: str = ""
-
     callback: Optional[Callable] = None
     args: list = field(default_factory=list)
     kwargs: dict = field(default_factory=dict)
