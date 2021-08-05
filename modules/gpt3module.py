@@ -1,6 +1,7 @@
-from modules.module import Module, Response
-import discord
 import openai
+import discord
+from modules.module import Module, Response
+from config import CONFUSED_RESPONSE
 from config import openai_api_key, rob_id
 
 openai.api_key = openai_api_key
@@ -107,3 +108,12 @@ class GPT3Module(Module):
 
     def __str__(self):
         return "GPT-3 Questions Module"
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="GPT3 api is only hit in production because it is expensive?",
+                expected_response=CONFUSED_RESPONSE,
+            )  # TODO write actual test for this once sentience is merged in
+        ]

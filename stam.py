@@ -3,8 +3,7 @@ import sys
 import inspect
 import discord
 import unicodedata
-from dotenv import load_dotenv
-from utilities import Utilities
+from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -16,18 +15,19 @@ from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
+from modules.testModule import TestModule
 from datetime import datetime, timezone, timedelta
 from config import (
-    maximum_recursion_depth,
     discord_token,
-    ENVIRONMENT_TYPE,
-    acceptable_environment_types,
-    bot_dev_channel_id,
-    prod_local_path,
     database_path,
+    prod_local_path,
+    ENVIRONMENT_TYPE,
+    bot_dev_channel_id,
+    TEST_RESPONSE_PREFIX,
+    maximum_recursion_depth,
+    acceptable_environment_types,
 )
 
-load_dotenv()
 
 utils = Utilities.get_instance()
 
@@ -58,13 +58,16 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channel_id[ENVIRONMENT_TYPE]).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started!")
 
 
 @utils.client.event
 async def on_message(message):
-    # don't react to our own messages
-    if message.author == utils.client.user:
+    # don't react to our own messages unless running test
+    message_author_is_stampy = message.author == utils.client.user
+    if is_test_message(message.clean_content) and utils.test_mode:
+        print("TESTING " + message.clean_content)
+    elif message_author_is_stampy:
         return
 
     # utils.modules_dict["StampsModule"].calculate_stamps()
@@ -87,7 +90,7 @@ async def on_message(message):
 
     responses = [Response()]
     for module in modules:
-        print("# Asking module: %s" % str(module))
+        print(f"# Asking module: {module}")
         response = module.process_message(message, utils.client)
         if response:
             response.module = module  # tag it with the module it came from, for future reference
@@ -106,12 +109,14 @@ async def on_message(message):
         print("Responses:")
         for response in responses:
             if response.callback:
-                argstring = ", ".join([a.__repr__() for a in response.args])
+                args_string = ", ".join([a.__repr__() for a in response.args])
                 if response.kwargs:
-                    argstring += ", " + ", ".join([f"{k}={v.__repr__()}" for k, v in response.kwargs.items()])
+                    args_string += ", " + ", ".join(
+                        [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
+                    )
                 print(
                     f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
-                    f"{argstring})`"
+                    f"{args_string})`"
                 )
             else:
                 print(f'  {response.confidence}: {response.module}: "{response.text}"')
@@ -131,6 +136,13 @@ async def on_message(message):
             responses.append(new_response)
         else:
             if top_response.text:
+                if utils.test_mode:
+                    if is_test_response(message.clean_content):
+                        return  # must return after process message is called so that response can be evaluated
+                    if is_test_question(message.clean_content):
+                        top_response.text = (
+                            TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
+                        )
                 print("Replying:", top_response.text)
                 await message.channel.send(top_response.text)
             print("########################################################")
@@ -172,7 +184,8 @@ async def on_socket_raw_receive(_):
         for comment in new_comments:
             if "?" in comment["text"]:
                 utils.add_youtube_question(comment)
-    # add_question should maybe just take in the dict, but to make sure nothing is broken extra fields have been added as optional params
+    # add_question should maybe just take in the dict, but to make sure
+    # nothing is broken extra fields have been added as optional params
     # This is just checking if there _are_ questions
     question_count = utils.get_question_count()
     if question_count:
@@ -223,26 +236,6 @@ async def on_raw_reaction_remove(payload):
 
 
 if __name__ == "__main__":
-    # when was the most recent comment we saw posted?
-    utils.latest_comment_timestamp = datetime.now(timezone.utc)
-
-    # when did we last hit the API to check for comments?
-    utils.last_check_timestamp = datetime.now(timezone.utc)
-
-    # how many seconds should we wait before we can hit YT API again
-    # this the start value. It doubles every time we don't find anything new
-    utils.youtube_cooldown = timedelta(seconds=60)
-
-    # timestamp of when we last ran the tick function
-    utils.last_timestamp = datetime.now(timezone.utc)
-
-    # timestamp of last time we asked a youtube question
-    utils.last_question_asked_timestamp = datetime.now(timezone.utc)
-
-    # Was the last message posted in #general by anyone, us asking a question from YouTube?
-    # We start off not knowing, but it's better to assume yes than no
-    utils.last_message_was_youtube_question = True
-
     utils.modules_dict = {
         "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
@@ -255,8 +248,8 @@ if __name__ == "__main__":
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
+        "TestModule": TestModule(),
     }
-
     modules = utils.modules_dict.values()
 
     utils.client.run(discord_token)

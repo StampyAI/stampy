@@ -29,7 +29,7 @@ class InviteManager(Module):
                     return Response(
                         confidence=10,
                         text=self.sorry_message,
-                        why="%s asked for an invite, but they're not allowed one (right now)" % member.name,
+                        why=f"{member.name} asked for an invite, but they're not allowed one (right now)",
                     )
 
         # This is either not at me, or not something we can handle
@@ -59,3 +59,11 @@ class InviteManager(Module):
 
     def __str__(self):
         return "Invite Manager Module"
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="can you make me an invite link?", expected_response=self.sorry_message
+            )
+        ]
