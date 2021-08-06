@@ -12,7 +12,7 @@ class AtemporalModule(Module):
     def __init__(self):
         Module.__init__(self)
         self.re_tz = re.compile(r"(UK)")
-        self.add_tz()
+        #self.add_tz()
 
     def __str__(self):
         return "A module outside of time"
@@ -26,28 +26,12 @@ class AtemporalModule(Module):
                 tz = self.get_timezone(text)
                 source_date = tz.localize(date)
                 utc_date = source_date.astimezone(pytz.utc)
-                embed = discord.Embed(title="Friendly Neighborhood Timezones:",
-                                      timestamp=utc_date)
-                #embed = discord.Embed(title="Friendly Neighborhood Timezones:",
-                #                      timestamp=utc_date)
-                embed = discord.Embed()
-                for tz in self.timezones:
-                    embed.add_field(name=tz.zone,
-                                    value=source_date.astimezone(tz).strftime("%m/%d/%Y %I:%M %p"),
-                                    inline=False)
-
+                # embed = discord.Embed(title=)
                 response = Response(confidence=4,
-                                    embed=embed,
+                                    text=f"Friendly Neighborhood Timezone: <t:{int(utc_date.timestamp())}:F>",
                                     why=f"{message.author.name} "
                                         f"asked mentioned a time, so I converted it into a local time embed")
                 return response
-
-    def add_tz(self):
-        self.timezones.append(pytz.timezone("Australia/Sydney"))
-        self.timezones.append(pytz.timezone("Europe/Berlin"))
-        self.timezones.append(pytz.timezone("US/Central"))
-        self.timezones.append(pytz.timezone("US/Pacific"))
-        return
 
     def get_timezone(self, text):
         timezone_result = pytz.timezone("Europe/London")
@@ -56,3 +40,10 @@ class AtemporalModule(Module):
             if tz == "UK":
                 timezone_result = pytz.timezone("Europe/London")
         return timezone_result
+
+   #def add_tz(self):
+    #    self.timezones.append(pytz.timezone("Australia/Sydney"))
+    #    self.timezones.append(pytz.timezone("Europe/Berlin"))
+    #    self.timezones.append(pytz.timezone("US/Central"))
+    #    self.timezones.append(pytz.timezone("US/Pacific"))
+    #    return
