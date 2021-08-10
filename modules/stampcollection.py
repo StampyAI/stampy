@@ -1,6 +1,7 @@
 import re
 import discord
 import numpy as np
+from utilities import log
 from config import admin_usernames
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
@@ -23,7 +24,7 @@ class StampsModule(Module):
         self.calculate_stamps()
 
     def reset_stamps(self):
-        print("WIPING STAMP RECORDS")
+        log.info("WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
         self.utils.update_vote(god_id, str(rob_id))
@@ -57,7 +58,7 @@ class StampsModule(Module):
 
     def calculate_stamps(self):
         """Set up and solve the system of linear equations"""
-        print("RECALCULATING STAMP SCORES")
+        log.info("RECALCULATING STAMP SCORES")
 
         self.utils.users = self.utils.get_users()
         self.utils.update_ids_list()
@@ -67,13 +68,19 @@ class StampsModule(Module):
         users_matrix = np.zeros((user_count, user_count))
 
         votes = self.utils.get_all_user_votes()
-        print(votes)
+        log.info(votes)
 
         for from_id, to_id, votes_for_user in votes:
             from_id_index = self.utils.index[from_id]
             toi = self.utils.index[to_id]
             total_votes_by_user = self.utils.get_votes_by_user(from_id)
-            print(from_id_index, toi, votes_for_user, total_votes_by_user)
+            log.info(
+                "calculate_stamps",
+                from_id_index=from_id_index,
+                toi=toi,
+                votes_for_user=votes_for_user,
+                total_votes_by_user=total_votes_by_user,
+            )
             if total_votes_by_user != 0:
                 score = (self.user_karma * votes_for_user) / total_votes_by_user
                 users_matrix[toi, from_id_index] = score
@@ -109,28 +116,33 @@ class StampsModule(Module):
                 name = "<@" + str(user_id) + ">"
             stamps = self.get_user_stamps(user_id)
             total_stamps += stamps
-            print(name, "\t", stamps)
+            log.info("stamp scores", name=name, stamps=stamps)
 
-        print("Total votes:", self.total_votes)
-        print("Total Stamps:", total_stamps)
+        log.info("Total votes", total_votes=self.total_votes)
+        log.info("Total Stamps", total_stamps=total_stamps)
 
     def get_user_stamps(self, user):
         index = self.utils.index_dammit(user)
-        print("get_user_stamps for %s, index=%s" % (user, index))
+        log.info("get_user_stamps", user=user, index=index)
         if index:
             stamps = self.utils.scores[index] * self.total_votes
-            print(stamps, self.utils.scores[index], self.total_votes)
+            log.info(
+                "stamps",
+                stamps=stamps,
+                index=index,
+                scores=self.utils.scores[index],
+                total_votes=self.total_votes,
+            )
         else:
             stamps = 0.0
         return stamps
 
     def load_votes_from_csv(self, filename="stamps.csv"):
-
         with open(filename, "r") as stamps_file:
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
                 msg_id, react_type, from_id, to_id = line.strip().split(",")
-                print(msg_id, react_type, from_id, to_id)
+                log.info(msg_id=msg_id, react_type=react_type, from_id=from_id, to_id=to_id)
                 self.update_vote(react_type, from_id, to_id, False, False)
 
         self.calculate_stamps()
@@ -144,11 +156,14 @@ class StampsModule(Module):
             stamplog.write("msgid,type,from,to\n")
 
             for channel in guild.channels:
-                print(
-                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
+                log.info(
+                    "vote_history",
+                    channel_type=channel.type,
+                    channel_type_type=type(channel.type),
+                    channel_name=channel.name,
                 )
                 if channel.type == discord.ChannelType.text:
-                    print("#### Logging", channel.name, "####")
+                    log.info("vote_history", channel_name=channel.name)
                     async for message in channel.history(limit=None):
                         reactions = message.reactions
                         if reactions:
@@ -163,7 +178,13 @@ class StampsModule(Module):
                                             user.id,
                                             message.author.id,
                                         )
-                                        print(string)
+                                        log.info(
+                                            "vote_history",
+                                            message_id=message.id,
+                                            reaction_type=reaction_type,
+                                            user_id=user.id,
+                                            message_author_id=message.author.id,
+                                        )
                                         stamplog.write(string + "\n")
                                         self.update_vote(
                                             reaction_type, user.id, message.author.id, False, False,
@@ -174,8 +195,14 @@ class StampsModule(Module):
         # guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
         emoji = getattr(reaction.emoji, "name", reaction.emoji)
         if emoji == "stamp":
-            print("### STAMP AWARDED ###")
-            print("%s,%s,%s,%s" % (reaction.message.id, emoji, user.id, reaction.message.audthor.id))
+            log.info(
+                "process_reaction_event",
+                update="STAMP AWARDED",
+                reaction_message_id=reaction.message.id,
+                emoji=emoji,
+                user_id=user.id,
+                message_author_id=reaction.message.audthor.id,
+            )
 
     async def process_raw_reaction_event(self, event, client=None):
         event_type = event.event_type
@@ -197,18 +224,21 @@ class StampsModule(Module):
             return
 
         if emoji in ["stamp", "goldstamp"]:
-
-            ms_gid = event.message_id
             from_id = event.user_id
             to_id = message.author.id
 
-            print("%s,%s,%s,%s" % (ms_gid, emoji, from_id, to_id))
+            log.info(
+                "process_raw_reaction_event",
+                update="STAMP AWARDED",
+                event_message_id=event.message_id,
+                from_id=emoji,
+                to_id=to_id,
+                emoji=emoji,
+            )
 
-            print("### STAMP AWARDED ###")
-            print("Score before stamp:", self.get_user_stamps(to_id))
+            log.info("process_raw_reaction_event", score_before_stamp=self.get_user_stamps(to_id))
             self.update_vote(emoji, from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
-            # self.save_votesdict_to_json()
-            print("Score after stamp:", self.get_user_stamps(to_id))
+            log.info("process_raw_reaction_event", score_after_stamp=self.get_user_stamps(to_id))
 
     def process_message(self, message, client=None):
         if self.is_at_me(message):
@@ -235,7 +265,7 @@ class StampsModule(Module):
         return username in admin_usernames
 
     async def reloadallstamps(self, message):
-        print("FULL STAMP HISTORY RESET BAYBEEEEEE")
+        log.info("reloadallstamps", update="FULL STAMP HISTORY RESET BAYBEEEEEE")
         await message.channel.send("Doing full stamp history reset, could take a while")
         self.reset_stamps()
         await self.load_votes_from_history()
