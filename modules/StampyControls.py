@@ -2,7 +2,14 @@ import sys
 import discord
 from modules.module import Module, Response
 from config import rob_id, stampy_control_channel_names, TEST_RESPONSE_PREFIX
-from utilities import get_github_info, get_memory_usage, get_running_user_info, get_question_id
+from utilities import (
+    get_github_info,
+    get_memory_usage,
+    get_running_user_info,
+    get_question_id,
+    get_time_running,
+    list_modules,
+)
 
 
 class StampyControls(Module):
@@ -93,8 +100,8 @@ class StampyControls(Module):
         git_message = get_github_info()
         run_message = get_running_user_info()
         memory_message = get_memory_usage()
-        runtime_message = self.utils.get_time_running()
-        modules_message = self.utils.list_modules()
+        runtime_message = get_time_running(self.utils.start_time)
+        modules_message = list_modules(self.utils.modules_dict)
         # scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
         return "\n\n".join([git_message, run_message, memory_message, runtime_message, modules_message])
 

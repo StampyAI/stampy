@@ -36,7 +36,6 @@ def load_questions(file):
         db.query(
             "INSERT INTO questions VALUES (?,?,?,?,?,?,?);", (url, username, title, text, False, False, None),
         )
-
     db.commit()
 
 

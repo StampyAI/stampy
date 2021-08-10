@@ -24,70 +24,47 @@ from config import (
 )
 
 
-class Utilities:
+class DiscordUtils:
     __instance = None
-    db = None
-    discord = None
-    client = None
-
-    TOKEN = None
-    GUILD = None
-    YOUTUBE_API_KEY = None
-    DB_PATH = None
-
-    last_message_was_youtube_question = None
-    latest_comment_timestamp = None
-    last_check_timestamp = None
-    youtube_cooldown = None
-    last_timestamp = None
-    last_question_asked_timestamp = None
-    latest_question_posted = None
-
-    users = None
-    ids = None
-    index = None
-    scores = None
 
     modules_dict = {}
 
     @staticmethod
     def get_instance():
-        if Utilities.__instance is None:
-            Utilities()
-        return Utilities.__instance
+        if DiscordUtils.__instance is None:
+            DiscordUtils()
+        return DiscordUtils.__instance
 
     def __init__(self):
-        if Utilities.__instance is not None:
+        if DiscordUtils.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
-            Utilities.__instance = self
+            DiscordUtils.__instance = self
             self.TOKEN = discord_token
             self.GUILD = discord_guild
-            self.YOUTUBE_API_KEY = youtube_api_key
-            self.DB_PATH = database_path
-            self.youtube = None
             self.start_time = time()
             self.test_mode = False
-
-            try:
-                self.youtube = get_youtube_api(
-                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
-                )
-            except HttpError:
-                if self.YOUTUBE_API_KEY:
-                    print("YouTube API Key is set but not correct")
-                else:
-                    print("YouTube API Key is not set")
-
-            print("Trying to open db - " + self.DB_PATH)
-            self.db = Database(self.DB_PATH)
             intents = discord.Intents.default()
             intents.members = True
             self.client = discord.Client(intents=intents)
-            self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
 
     def stampy_is_author(self, message):
         return message.author == self.client.user
+
+
+class YoutubeUtils:
+    def __init__(self):
+        self.YOUTUBE_API_KEY = youtube_api_key
+        try:
+            pass
+            self.youtube = get_youtube_api(
+                youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
+            )
+        except HttpError:
+            if self.YOUTUBE_API_KEY:
+                print("YouTube API Key is set but not correct")
+            else:
+                print("YouTube API Key is not set")
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -227,6 +204,11 @@ class Utilities:
 
         return new_comments
 
+
+class WikiUtils:
+    def __init__(self):
+        self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
+
     def get_question(self, order_type="TOP"):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
@@ -281,42 +263,39 @@ class Utilities:
     def get_question_count(self):
         return self.wiki.get_question_count()
 
-    def clear_votes(self):
-        query = "DELETE FROM uservotes"
-        self.db.query(query)
-        self.db.commit()
+    def add_youtube_question(self, comment):
+        # Get the video title from the video URL, without the comment id
+        # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
+        video_titles = self.get_title(comment["url"].split("&lc=")[0])
 
-    def update_ids_list(self):
+        if not video_titles:
+            # this should actually only happen in dev
+            video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        self.ids = sorted(list(self.users))
-        self.index = {0: 0}
-        for userid in self.ids:
-            self.index[userid] = self.ids.index(userid)
+        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
 
-    def index_dammit(self, user):
-        """Get an index into the scores array from whatever you get"""
+        return self.wiki.add_question(
+            display_title,
+            comment["username"],
+            comment["timestamp"],
+            comment["text"],
+            comment_url=comment["url"],
+            video_title=video_titles[1],
+            likes=comment["likes"],
+            reply_count=comment["reply_count"],
+        )
 
-        if user in self.index:
-            # maybe we got given a valid ID?
-            return self.index[user]
-        elif str(user) in self.index:
-            return self.index[str(user)]
 
-        # maybe we got given a User or Member object that has an ID?
-        uid = getattr(user, "id", None)
-        print(uid)
-        print(self.index)
-        if uid:
-            return self.index_dammit(uid)
+class DatabaseUtils:
+    def __init__(self, db_path):
+        self.DB_PATH = db_path
+        self.db = Database(db_path)
 
+    def get_title(self, url):
+        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
+        if result:
+            return result[0][0], result[0][1]
         return None
-
-    def get_user_score(self, user):
-        index = self.index_dammit(user)
-        if index:
-            return self.scores[index]
-        else:
-            return 0.0
 
     def update_vote(self, user, voted_for, vote_quantity):
         query = (
@@ -349,51 +328,60 @@ class Utilities:
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_youtube_question(self, comment):
-        # Get the video title from the video URL, without the comment id
-        # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
-        video_titles = self.get_title(comment["url"].split("&lc=")[0])
+    def clear_votes(self):
+        query = "DELETE FROM uservotes"
+        self.db.query(query)
+        self.db.commit()
 
-        if not video_titles:
-            # this should actually only happen in dev
-            video_titles = ["Video Title Unknown", "Video Title Unknown"]
+    def update_ids_list(self):
+        self.ids = sorted(list(self.users))
+        self.index = {0: 0}
+        for userid in self.ids:
+            self.index[userid] = self.ids.index(userid)
 
-        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
+    def index_dammit(self, user):
+        """Get an index into the scores array from whatever you get"""
 
-        return self.wiki.add_question(
-            display_title,
-            comment["username"],
-            comment["timestamp"],
-            comment["text"],
-            comment_url=comment["url"],
-            video_title=video_titles[1],
-            likes=comment["likes"],
-            reply_count=comment["reply_count"],
-        )
+        if user in self.index:
+            # maybe we got given a valid ID?
+            return self.index[user]
+        elif str(user) in self.index:
+            return self.index[str(user)]
 
-    def get_title(self, url):
-        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
-        if result:
-            return result[0][0], result[0][1]
+        # maybe we got given a User or Member object that has an ID?
+        uid = getattr(user, "id", None)
+        print(uid)
+        print(self.index)
+        if uid:
+            return self.index_dammit(uid)
         return None
 
-    def list_modules(self):
-        message = f"I have {len(self.modules_dict)} modules. Here are their names:"
-        for module_name in self.modules_dict.keys():
-            message += "\n" + module_name
-        return message
+    def get_user_score(self, user):
+        index = self.index_dammit(user)
+        if index:
+            return self.scores[index]
+        else:
+            return 0.0
 
-    def get_time_running(self):
-        message = "I have been running for"
-        seconds_running = timedelta(seconds=int(time() - self.start_time))
-        time_running = datetime(1, 1, 1) + seconds_running
-        if time_running.day - 1:
-            message += " " + str(time_running.day) + " days,"
-        if time_running.hour:
-            message += " " + str(time_running.hour) + " hours,"
-        message += " " + str(time_running.minute) + " minutes"
-        message += " and " + str(time_running.second) + " seconds."
-        return message
+
+def list_modules(modules_dict):
+    message = f"I have {len(modules_dict)} modules. Here are their names:"
+    for module_name in modules_dict.keys():
+        message += "\n" + module_name
+    return message
+
+
+def get_time_running(start_time):
+    message = "I have been running for"
+    seconds_running = timedelta(seconds=int(time() - start_time))
+    time_running = datetime(1, 1, 1) + seconds_running
+    if time_running.day - 1:
+        message += " " + str(time_running.day) + " days,"
+    if time_running.hour:
+        message += " " + str(time_running.hour) + " hours,"
+    message += " " + str(time_running.minute) + " minutes"
+    message += " and " + str(time_running.second) + " seconds."
+    return message
 
 
 def get_github_info():
