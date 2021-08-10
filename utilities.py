@@ -91,7 +91,9 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name,
+                    youtube_api_version,
+                    developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -171,7 +173,8 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
+                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
+                end="",
             )
             return None
 
@@ -284,7 +287,12 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
+            ).format(
+                comment["username"],
+                self.get_title(comment["url"])[1],
+                text_quoted,
+                comment["url"],
+            )
 
         print("==========================")
         print(report)
@@ -378,7 +386,10 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
+        display_title = "{0}'s question on {1}".format(
+            comment["username"],
+            video_titles[0],
+        )
 
         return self.wiki.add_question(
             display_title,

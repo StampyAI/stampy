@@ -80,7 +80,12 @@ class GPT3Module(Module):
             prompt = self.start_prompt + text + start_sequence
 
             response = openai.Completion.create(
-                engine=engine, prompt=prompt, temperature=0, max_tokens=100, top_p=1, stop=["\n"],
+                engine=engine,
+                prompt=prompt,
+                temperature=0,
+                max_tokens=100,
+                top_p=1,
+                stop=["\n"],
             )
 
             if response["choices"]:

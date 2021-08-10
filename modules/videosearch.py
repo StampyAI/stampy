@@ -178,6 +178,7 @@ class VideoSearch(Module):
                 expected_regex="Superintelligence Mod for Civilization V+",
             ),
             self.create_integration_test(
-                question="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
+                question="which video is trash?",
+                expected_response=self.NOT_FOUND_MESSAGE,
             ),
         ]

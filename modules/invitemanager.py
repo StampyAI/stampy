@@ -42,7 +42,10 @@ class InviteManager(Module):
         welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
         member = guild.get_member(message.author.id)
         invite = await welcome.create_invite(
-            max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
+            max_uses=1,
+            temporary=False,
+            unique=True,
+            reason="Requested by %s" % message.author.name,
         )
         print("Generated invite for", member.name, invite)
 

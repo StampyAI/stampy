@@ -145,7 +145,11 @@ class StampsModule(Module):
 
             for channel in guild.channels:
                 print(
-                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
+                    "#### Considering",
+                    channel.type,
+                    type(channel.type),
+                    channel.name,
+                    "####",
                 )
                 if channel.type == discord.ChannelType.text:
                     print("#### Logging", channel.name, "####")
@@ -166,7 +170,11 @@ class StampsModule(Module):
                                         print(string)
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type, user.id, message.author.id, False, False,
+                                            reaction_type,
+                                            user.id,
+                                            message.author.id,
+                                            False,
+                                            False,
                                         )
         self.calculate_stamps()
 
@@ -240,7 +248,9 @@ class StampsModule(Module):
         self.reset_stamps()
         await self.load_votes_from_history()
         return Response(
-            confidence=10, text=self.STAMPS_RESET_MESSAGE, why="robertskmiles reset the stamp history",
+            confidence=10,
+            text=self.STAMPS_RESET_MESSAGE,
+            why="robertskmiles reset the stamp history",
         )
 
     @property
