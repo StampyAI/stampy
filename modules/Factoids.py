@@ -78,7 +78,8 @@ class Factoids(Module):
             # con.text_factory = str
             c = con.cursor()
             c.execute(
-                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """, (key, verb, value),
+                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """,
+                (key, verb, value),
             )
             con.commit()
             c.close()
@@ -89,7 +90,8 @@ class Factoids(Module):
             # con.text_factory = str
             c = con.cursor()
             c.execute(
-                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""", (key,),
+                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""",
+                (key,),
             )
 
             vals = c.fetchall()
@@ -165,6 +167,22 @@ class Factoids(Module):
             text = self.is_at_me(message)
 
         factoids = self.db.getall(text)
+        key = text
+
+        re_factoid_request = re.compile(
+            r"""(([Ww]hat)('s| is| are| do you know about| can you tell me about)) (?P<query>.+)\?"""
+        )
+        m = re.match(re_factoid_request, text)
+        if m:
+            query = m.group("query")
+            query = re.sub(r"\bmy\b", f"{self.who}'s", query)
+            query = re.sub(r"\bme\b", self.who, query)
+            print(query)
+
+            if not factoids:
+                key = query
+
+            factoids += self.db.getall(query)
 
         # forgetting factoids
         if (room in self.prevFactoid) and atme and (text == "forget that"):
@@ -173,8 +191,18 @@ class Factoids(Module):
             self.db.remove(*pf)
             if room == "bot-dev":
                 result = "debug: %s\n" % str(pf)
-            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
-            why = """%s told me to forget that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
+            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
+                self.who,
+                pf[0],
+                pf[3],
+                pf[1],
+            )
+            why = """%s told me to forget that "%s" %s "%s"\n""" % (
+                self.who,
+                pf[0],
+                pf[3],
+                pf[1],
+            )
             return Response(confidence=10, text=result, why=why)
 
         # if the text is a valid factoid, maybe reply
@@ -186,10 +214,14 @@ class Factoids(Module):
             if verb == "reply":
                 result = value
             else:
-                result = "%s %s %s" % (text, verb, value)
+                result = "%s %s %s" % (re.sub(f"{self.who}'s", "your", key), verb, value)
 
-            why = '%s said the factoid "%s" so I said "%s"' % (self.who, text, rawvalue,)
-            self.prevFactoid[room] = (text, rawvalue, by, verb)  # key, value, verb
+            why = '%s said the factoid "%s" so I said "%s"' % (
+                self.who,
+                key,
+                rawvalue,
+            )
+            self.prevFactoid[room] = (key, rawvalue, by, verb)  # key, value, verb
             if atme:
                 return Response(confidence=9, text=result, why=why)
             else:
@@ -224,8 +256,27 @@ class Factoids(Module):
                         key, _, value = text.partition(" <%s> " % verb)
                     else:
                         key, _, value = text.partition(" %s " % verb)
-                    result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
-                    why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
+
+                    key = re.sub(r"\bmy\b", f"{self.who}'s", key)
+
+                    new_key = re.sub(r"\bI\b", f"{self.who}", key)
+                    if new_key != key:
+                        key = new_key
+                        if verb == "am":
+                            verb = "is"
+
+                    result = """Ok %s, remembering that "%s" %s "%s" """ % (
+                        self.who,
+                        key,
+                        verb,
+                        value,
+                    )
+                    why = "%s told me to remember that '%s' %s '%s'" % (
+                        self.who,
+                        key,
+                        verb,
+                        value,
+                    )
                     print("adding factoid %s %s %s %s" % (key, value, message.author.id, verb))
                     self.db.add(key, value, message.author.id, verb)
                     self.prevFactoid[room] = (key, value, message.author.id, verb)
@@ -243,7 +294,10 @@ class Factoids(Module):
                     result += "\n<%s> '%s' by %s" % value
                 if len(values) > count:
                     result += "\n and %s more" % (len(values) - count)
-                why = "%s asked me to list the values for the factoid '%s'" % (self.who, fact,)
+                why = "%s asked me to list the values for the factoid '%s'" % (
+                    self.who,
+                    fact,
+                )
                 return Response(confidence=10, text=result, why=why)
 
         # This is either not at me, or not something we can handle
@@ -259,7 +313,10 @@ class Factoids(Module):
                 question="remember chriscanal is the person who wrote this test",
                 expected_response='Ok stampy, remembering that "chriscanal" is "the person who wrote this test"',
             ),
-            self.create_integration_test(question="list chriscanal", expected_regex="values for factoid+",),
+            self.create_integration_test(
+                question="list chriscanal",
+                expected_regex="values for factoid+",
+            ),
             self.create_integration_test(
                 question="forget that",
                 expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',
