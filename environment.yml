@@ -7,6 +7,7 @@ dependencies:
   - pip
   - sqlite
   - pip:
+    - lxml
     - black
     - discord-py
     - gitpython

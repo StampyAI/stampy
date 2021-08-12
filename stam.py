@@ -8,6 +8,7 @@ from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
 from modules.videosearch import VideoSearch
+from modules.ANSearch import ANSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
@@ -240,6 +241,7 @@ if __name__ == "__main__":
         "StampsModule": StampsModule(),
         "QQManager": QQManager(),
         "VideoSearch": VideoSearch(),
+        "ANSearch": ANSearch(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
         "GPT3Module": GPT3Module(),
