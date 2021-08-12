@@ -248,7 +248,9 @@ class StampsModule(Module):
         self.reset_stamps()
         await self.load_votes_from_history()
         return Response(
-            confidence=10, text=self.STAMPS_RESET_MESSAGE, why="robertskmiles reset the stamp history",
+            confidence=10,
+            text=self.STAMPS_RESET_MESSAGE,
+            why="robertskmiles reset the stamp history",
         )
 
     @property
