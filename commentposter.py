@@ -26,17 +26,30 @@ class CommentPoster(object):
         self.youtube = get_youtube_api(api_service_name, api_version, credentials=credentials)
 
     def post_comment(self, comment_body):
+        # attempts to post comment
+        # returns 2xx response or raises HTTP error
         request = self.youtube.comments().insert(part="snippet", body=comment_body)
 
         try:
             response = request.execute()
         except googleapiclient.errors.HttpError as e:
             print(e)
-            return
+            raise
 
         print(response)
         print(type(response))
         return response
+
+    # def verify_reply(self, parent_id):
+    # verifies that a reply authored by Stampy is present 
+    # in the replies of the comment specifed by parent_id
+
+    # def run(self): (rewrite)
+    # periodic stuff
+    # try loading responses; for each response: 
+    # if not attempted, attempt to post
+    # if attempted and sufficently late, verify_reply
+    # if reply verified, remove reply from responses
 
     def run(self):
         while True:
