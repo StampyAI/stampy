@@ -28,6 +28,7 @@ class CommentPoster(object):
     def post_comment(self, comment_body):
         # attempts to post comment
         # returns 2xx response or raises HTTP error
+        # modify to not post if a "failed" field is present
         request = self.youtube.comments().insert(part="snippet", body=comment_body)
 
         try:
@@ -45,10 +46,11 @@ class CommentPoster(object):
 
     # def run(self): (rewrite)
     # periodic stuff
-    # load topost: attempt to post each
+    # load topost: attempt to post if not failed (removing failed field)
     #   if successful, pop from topost and push returned resource to new file toverify
     # load toverify: if late enough (checked by publishedAt)
     #   if reply verified, remove from toverify
+    #   if reply not verified, put to topost with a field set to "failed"
 
     def run(self):
         while True:
