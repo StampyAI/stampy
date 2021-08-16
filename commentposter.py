@@ -40,16 +40,15 @@ class CommentPoster(object):
         print(type(response))
         return response
 
-    # def verify_reply(self, parent_id):
-    # verifies that a reply authored by Stampy is present 
-    # in the replies of the comment specifed by parent_id
+    # def verify_reply(self, comment):
+    # checks for  the existence of a comment with comment's id
 
     # def run(self): (rewrite)
     # periodic stuff
-    # try loading responses; for each response: 
-    # if not attempted, attempt to post
-    # if attempted and sufficently late, verify_reply
-    # if reply verified, remove reply from responses
+    # load topost: attempt to post each
+    #   if successful, pop from topost and push returned resource to new file toverify
+    # load toverify: if late enough (checked by publishedAt)
+    #   if reply verified, remove from toverify
 
     def run(self):
         while True:
