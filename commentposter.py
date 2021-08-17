@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import pickle
 import sys
 import googleapiclient.errors
 from utilities import Utilities
@@ -10,6 +11,7 @@ from itertools import cycle
 
 spinner = cycle("\\|/-")
 
+# TODO: Rewrite relevant code to write to db, not topost.json
 
 class CommentPoster(object):
     utils = None
@@ -28,55 +30,55 @@ class CommentPoster(object):
     def post_comment(self, comment_body):
         # attempts to post comment
         # returns 2xx response or raises HTTP error
+
         request = self.youtube.comments().insert(part="snippet", body=comment_body)
+        response = request.execute()
 
-        try:
-            response = request.execute()
-        except googleapiclient.errors.HttpError as e:
-            print(e)
-            raise
-
-        print(response)
+        # print(response)
         print(type(response))
         return response
 
-    # def verify_comment(self, comment_id):
-    # checks for  the existence of a comment with comment's id
+    def verify_comment(self, comment_id):
+        request = self.youtube.comments().list(part="id", id=comment_id)
 
-    # def run(self): (rewrite)
-    # periodically,
-    # toverify: if old_enough, verify_comment
-    #   drop or set failed
-    # topost: post_comment
-    #   set pub time or set failed
+        try:
+            response = request.execute() # if no error, comment was found
+            return True
+        except googleapiclient.errors.HttpError as e:
+            if e.status_code == 404: # comment not found
+                return False
+            else:
+                raise
 
     # table comment_queue
-    # body (what is needed for post_comment), failed, id, pub time
+    # body (what is needed for post_comment), id, pub time, verify time, failed
 
     def run(self):
+        query = lambda q: self.utils.db.query(q)
+        old_enough = lambda t: time.time() - t >= 600 # 10 minutes
+
         while True:
             time.sleep(1)
-            with open("database/topost.json") as post_file:
+
+            # verify posts
+            toverify = query("SELECT id, pub_time FROM comment_queue WHERE id!=NULL AND verify_time=NULL")
+            for (comment_id, comment_time) in toverify:
+                if old_enough(comment_time) and self.verify_comment(comment_id):
+                    query("UPDATE comment_queue SET ver_time=? WHERE id=?",
+                        (time.time(), comment_id))
+                else:
+                    query("UPDATE comment_queue SET failed=TRUE WHERE id=?",
+                            (comment_id,))
+            # post new
+            topost = query("SELECT body FROM comment_queue WHERE id==NULL AND failed!=True")
+            for body in topost:
                 try:
-                    responses_to_post = json.load(post_file)
-                except json.decoder.JSONDecodeError:
-                    responses_to_post = []
-
-            if responses_to_post:
-                print("responses_to_post:", responses_to_post)
-                print(".", end="")
-            else:
-                print("\b" + next(spinner), end="")
-                sys.stdout.flush()
-
-            if responses_to_post:
-                body = responses_to_post.pop()
-
-                self.post_comment(body)
-
-            with open("database/topost.json", "w") as post_file:
-                # we modified the queue, put the rest back, if any
-                json.dump(responses_to_post, post_file, indent="\t")
+                    response = self.post_comment(body)
+                    query("UPDATE comment_queue SET pub_time=?, id=? WHERE body=?",
+                            (time.time(), response["id"], body)
+                except googleapiclient.errors.HttpError as e:
+                    query("UPDATE comment_queue SET failed=TRUE WHERE body=?",
+                            (body,))
 
 
 if __name__ == "__main__":
