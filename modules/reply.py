@@ -2,11 +2,13 @@ import re
 import json
 import discord
 from modules.module import Module, Response
+from utilities import Utilities
 from config import stampy_youtube_channel_id, youtube_testing_thread_url
 from datetime import datetime
 
 
 class Reply(Module):
+
     POST_MESSAGE = "Ok, I'll post this when it has more than 30 stamp points"
 
     def __str__(self):
@@ -45,9 +47,9 @@ class Reply(Module):
 
     @staticmethod
     def post_reply(text, question_id):
-        """Actually post the reply to YouTube. Currently this involves a horrible hack"""
+        """Queue reply for posting to YouTube"""
 
-        # first build the dictionary that will be passed to youtube.comments().insert as the 'body' arg
+        # build body for youtube.comments().insert
         body = {
             "snippet": {
                 "parentId": question_id,
@@ -56,16 +58,11 @@ class Reply(Module):
             }
         }
 
-        # now we're going to put it in a json file, which CommentPoster.py will read and send it
-        with open("database/topost.json") as post_file:
-            responses_to_post = json.load(post_file)
+        # insert into comment queue database
+        query = lambda q: self.utils.db.query(q)
+        query("INSERT INTO comment_queue (body) VALUES (?)", (body,))
 
-        responses_to_post.append(body)
-
-        with open("database/topost.json", "w") as post_file:
-            json.dump(responses_to_post, post_file, indent="\t")
-
-        print("dummy, posting %s to %s" % (text, question_id))
+        print(f"dummy, posting {text} to {question_id}")
 
     def process_message(self, message, client=None):
         if self.is_at_me(message):
@@ -77,7 +74,7 @@ class Reply(Module):
                 return Response(
                     confidence=9,
                     text=self.POST_MESSAGE,
-                    why="%s asked me to post a reply to YouTube" % message.author.name,
+                    why=f"{message.author.name} asked me to post a reply to YouTube"
                 )
 
         return Response()

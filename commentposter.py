@@ -11,8 +11,6 @@ from itertools import cycle
 
 spinner = cycle("\\|/-")
 
-# TODO: Rewrite relevant code to write to db, not topost.json
-
 class CommentPoster(object):
     utils = None
 
@@ -51,7 +49,11 @@ class CommentPoster(object):
                 raise
 
     # table comment_queue
-    # body (what is needed for post_comment), id, pub time, verify time, failed
+    # body varchar(3000) NOT NULL
+    # id int
+    # pub_time float
+    # ver_time float
+    # failed bool
 
     def run(self):
         query = lambda q: self.utils.db.query(q)
