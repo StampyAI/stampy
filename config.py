@@ -25,6 +25,9 @@ plex_id = "756254556811165756"
 god_id = "0"
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
 
+# Multiply this by the total number of votes made, to get the number of stamps needed to post a reply comment
+comment_posting_threshold_factor = 0.15
+
 discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
 youtube_api_key_env_variable = "YOUTUBE_API_KEY"

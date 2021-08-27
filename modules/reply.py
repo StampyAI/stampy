@@ -2,12 +2,12 @@ import re
 import json
 import discord
 from modules.module import Module, Response
-from config import stampy_youtube_channel_id, youtube_testing_thread_url
+from config import stampy_youtube_channel_id, youtube_testing_thread_url, comment_posting_threshold_factor
 from datetime import datetime
 
 
 class Reply(Module):
-    POST_MESSAGE = "Ok, I'll post this when it has more than 30 stamp points"
+    POST_MESSAGE = "Ok, I'll post this when it has more than %s stamp points"
 
     def __str__(self):
         return "YouTube Reply Posting Module"
@@ -67,6 +67,10 @@ class Reply(Module):
 
         print("dummy, posting %s to %s" % (text, question_id))
 
+    def comment_posting_threshold(self):
+        """Return the number of stamps a reply needs in order to be posted"""
+        return self.utils.get_total_votes() * comment_posting_threshold_factor
+
     def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
@@ -76,7 +80,7 @@ class Reply(Module):
 
                 return Response(
                     confidence=9,
-                    text=self.POST_MESSAGE,
+                    text=self.POST_MESSAGE % self.comment_posting_threshold(),
                     why="%s asked me to post a reply to YouTube" % message.author.name,
                 )
 
@@ -217,7 +221,7 @@ class Reply(Module):
                     return
 
                 stamp_score, approvers = await self.evaluate_message_stamps(message)
-                if stamp_score > 30:
+                if stamp_score > self.comment_posting_threshold():
                     report = await self.post_message(message, approvers)
 
                     # mark it with an envelope to show it was sent
@@ -225,9 +229,16 @@ class Reply(Module):
 
                     await channel.send(report)
                 else:
-                    report = "This reply has %s stamp points. I will send it when it has 30" % stamp_score
+                    report = "This reply has %s stamp points. I will send it when it has %s" % (
+                        stamp_score,
+                        self.comment_posting_threshold(),
+                    )
                     await channel.send(report)
 
     @property
     def test_cases(self):
-        return [self.create_integration_test(question="post this", expected_response=self.POST_MESSAGE)]
+        return [
+            self.create_integration_test(
+                question="post this", expected_response=self.POST_MESSAGE % self.comment_posting_threshold()
+            )
+        ]
