@@ -56,31 +56,35 @@ class CommentPoster(object):
     # failed bool
 
     def run(self):
-        query = lambda q: self.utils.db.query(q)
+        query = self.utils.db.query
         old_enough = lambda t: time.time() - t >= 600 # 10 minutes
 
         while True:
             time.sleep(1)
 
             # verify posts
-            toverify = query("SELECT id, pub_time FROM comment_queue WHERE id!=NULL AND verify_time=NULL")
+            toverify = query("SELECT id, pub_time FROM comment_queue WHERE id!=NULL AND ver_time=NULL")
             for (comment_id, comment_time) in toverify:
                 if old_enough(comment_time) and self.verify_comment(comment_id):
                     query("UPDATE comment_queue SET ver_time=? WHERE id=?",
                         (time.time(), comment_id))
+                    print(f"{comment_id = } verified")
                 else:
                     query("UPDATE comment_queue SET failed=TRUE WHERE id=?",
                             (comment_id,))
+                    print(f"{comment_id = } failed to verify")
             # post new
             topost = query("SELECT body FROM comment_queue WHERE id==NULL AND failed!=True")
             for body in topost:
                 try:
                     response = self.post_comment(body)
                     query("UPDATE comment_queue SET pub_time=?, id=? WHERE body=?",
-                            (time.time(), response["id"], body)
+                            (time.time(), response["id"], body))
+                    print(f"Comment posted: {body!r}")
                 except googleapiclient.errors.HttpError as e:
                     query("UPDATE comment_queue SET failed=TRUE WHERE body=?",
                             (body,))
+                    print(f"Comment not posted with error {e}; {body}")
 
 
 if __name__ == "__main__":
