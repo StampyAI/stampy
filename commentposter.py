@@ -68,11 +68,11 @@ class CommentPoster(object):
                 if old_enough(comment_time) and self.verify_comment(comment_id):
                     query("UPDATE comment_queue SET ver_time=? WHERE id=?",
                         (time.time(), comment_id))
-                    print(f"{comment_id = } verified")
+                    result = f"{comment_id = } verified"
                 else:
                     query("UPDATE comment_queue SET failed=TRUE WHERE id=?",
                             (comment_id,))
-                    print(f"{comment_id = } failed to verify")
+                    result = f"{comment_id = } failed to verify"
             # post new
             topost = query("SELECT body FROM comment_queue WHERE id==NULL AND failed!=True")
             for body in topost:
@@ -80,11 +80,12 @@ class CommentPoster(object):
                     response = self.post_comment(body)
                     query("UPDATE comment_queue SET pub_time=?, id=? WHERE body=?",
                             (time.time(), response["id"], body))
-                    print(f"Comment posted: {body!r}")
+                    result = f"Comment posted: {body!r}"
                 except googleapiclient.errors.HttpError as e:
                     query("UPDATE comment_queue SET failed=TRUE WHERE body=?",
                             (body,))
-                    print(f"Comment not posted with error {e}; {body}")
+                    result = f"Comment not posted with error {e}; comment: {body}"
+            print(result)
 
 
 if __name__ == "__main__":

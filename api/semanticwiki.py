@@ -50,9 +50,9 @@ class SemanticWiki(Persistence):
         return self.post(body)
 
     def post(self, body):
-        data = self._session.post(self._uri, data=body)
-        response = data.json()
-        return response
+         data = self._session.post(self._uri, data=body)
+         response = data.json()
+         return response
 
     def edit(self, title, content):
         # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
@@ -102,7 +102,7 @@ class SemanticWiki(Persistence):
         asked=False,
         reply_count=0,
     ):
-
+        return True # Blocks execution for development TODO: Remove before PR
         # Split the url into the comment id and video url
         if not display_title:
             print("No title provided, need the question title for the primary key of the article")

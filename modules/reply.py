@@ -59,8 +59,7 @@ class Reply(Module):
         }
 
         # insert into comment queue database
-        query = lambda q: self.utils.db.query(q)
-        query("INSERT INTO comment_queue (body) VALUES (?)", (body,))
+        self.utils.db.query("INSERT INTO comment_queue (body) VALUES (?)", (body,))
 
         print(f"dummy, posting {text} to {question_id}")
 
