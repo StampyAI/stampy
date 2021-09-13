@@ -7,6 +7,8 @@ from utilities import Utilities, get_question_id, is_test_response, is_test_mess
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
+from modules.wolfram import Wolfram
+from modules.duckduckgo import DuckDuckGo
 from modules.videosearch import VideoSearch
 from modules.ANSearch import ANSearch
 from modules.invitemanager import InviteManager
@@ -242,6 +244,8 @@ if __name__ == "__main__":
         "QQManager": QQManager(),
         "VideoSearch": VideoSearch(),
         "ANSearch": ANSearch(),
+        "Wolfram": Wolfram(),
+        "DuckDuckGo": DuckDuckGo(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
         "GPT3Module": GPT3Module(),
