@@ -16,6 +16,7 @@ from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
 from modules.testModule import TestModule
+from modules.FAQ import FaqModule
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -58,7 +59,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started! <FAQ MODULE TESTING>")
 
 
 @utils.client.event
@@ -249,6 +250,7 @@ if __name__ == "__main__":
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
         "TestModule": TestModule(),
+        "FAQModule": FaqModule(),
     }
     modules = utils.modules_dict.values()
 
