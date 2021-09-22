@@ -45,6 +45,14 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
+    def get_page_content(self, title):
+        content = self.get_page("MediaWiki:Stampy-intro")
+        try:
+            return content["query"]["pages"][0]["revisions"][0]["slots"]["main"]["content"]
+        except (KeyError, IndexError):
+            return None
+
+
     def ask(self, query):
         body = {"action": "ask", "format": "json", "query": query, "api_version": "2"}
         return self.post(body)
