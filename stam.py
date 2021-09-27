@@ -147,6 +147,9 @@ async def on_message(message):
                             TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
                         )
                 print("Replying:", top_response.text)
+                # TODO: Check to see if module allows embed?
+                if top_response.text and top_response.embed:
+                    await message.channel.send(top_response.text, embed=top_response.embed)
                 if top_response.text:
                     await message.channel.send(top_response.text)
                 if top_response.embed:
