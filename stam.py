@@ -148,8 +148,8 @@ async def on_message(message):
                         )
                 print("Replying:", top_response.text)
                 # TODO: check to see if module is allowed to embed via a config?
-                # TODO: Does this work if embed and text are None type?
-                await message.channel.send(top_response.text, embed=top_response.embed)
+                if top_response.text or top_response.embed:
+                    await message.channel.send(top_response.text, embed=top_response.embed)
             print("########################################################")
             sys.stdout.flush()
             return
