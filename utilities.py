@@ -1,6 +1,8 @@
 import os
 import re
-import pwd
+# Sadly some of us run windows...
+if not os.name == 'nt':
+    import pwd
 import psutil
 import discord
 from git import Repo
