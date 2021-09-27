@@ -25,7 +25,7 @@ class AtemporalModule(Module):
                 confidence=4,
                 text=f"Friendly Neighborhood Timezone: <t:{int(source_date.timestamp())}:F>",
                 why=f"{message.author.name} "
-                f"asked mentioned a time, so I converted it into a local time embed",
+                f" mentioned a time, so I converted it into a local time embed",
             )
             return response
 
