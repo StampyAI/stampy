@@ -112,7 +112,11 @@ class TestModule(Module):
                 self.sent_test[response_id].update(
                     {"received_response": self.clean_test_prefixes(message, TEST_RESPONSE_PREFIX)}
                 )
-                return Response(confidence=8, text=test_response_message, why="this was a test",)
+                return Response(
+                    confidence=8,
+                    text=test_response_message,
+                    why="this was a test",
+                )
             elif self.utils.test_mode:
                 return Response(
                     confidence=9, text=self.TEST_MODE_RESPONSE_MESSAGE, why="Test already running"

@@ -79,9 +79,18 @@ class GPT3Module(Module):
             print("Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
 
-            response = openai.Completion.create(
-                engine=engine, prompt=prompt, temperature=0, max_tokens=100, top_p=1, stop=["\n"],
-            )
+            try:
+                response = openai.Completion.create(
+                    engine=engine,
+                    prompt=prompt,
+                    temperature=0,
+                    max_tokens=100,
+                    top_p=1,
+                    stop=["\n"],
+                )
+            except openai.error.AuthenticationError:
+                print("OpenAI Authentication Failed")
+                return Response()
 
             if response["choices"]:
                 choice = response["choices"][0]

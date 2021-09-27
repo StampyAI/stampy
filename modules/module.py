@@ -177,7 +177,7 @@ class Module(object):
             at_me = True
             text = text.partition(" ")[2]
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
-            text = re.sub(",? @?[sS](tampy)?$", "", text)
+            text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
             at_me = True
 
         if type(message.channel) == discord.DMChannel:

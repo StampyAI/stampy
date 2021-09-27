@@ -67,13 +67,13 @@ class StampsModule(Module):
         users_matrix = np.zeros((user_count, user_count))
 
         votes = self.utils.get_all_user_votes()
-        print(votes)
+        # print(votes)
 
         for from_id, to_id, votes_for_user in votes:
             from_id_index = self.utils.index[from_id]
             toi = self.utils.index[to_id]
             total_votes_by_user = self.utils.get_votes_by_user(from_id)
-            print(from_id_index, toi, votes_for_user, total_votes_by_user)
+            # print(from_id_index, toi, votes_for_user, total_votes_by_user)
             if total_votes_by_user != 0:
                 score = (self.user_karma * votes_for_user) / total_votes_by_user
                 users_matrix[toi, from_id_index] = score
@@ -86,7 +86,7 @@ class StampsModule(Module):
 
         self.utils.scores = list(np.linalg.solve(users_matrix, user_count_matrix))
 
-        self.print_all_scores()
+        # self.print_all_scores()
 
     # done
     def get_user_scores(self):
@@ -119,7 +119,7 @@ class StampsModule(Module):
         print("get_user_stamps for %s, index=%s" % (user, index))
         if index:
             stamps = self.utils.scores[index] * self.total_votes
-            print(stamps, self.utils.scores[index], self.total_votes)
+            # print(stamps, self.utils.scores[index], self.total_votes)
         else:
             stamps = 0.0
         return stamps
@@ -130,7 +130,7 @@ class StampsModule(Module):
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
                 msg_id, react_type, from_id, to_id = line.strip().split(",")
-                print(msg_id, react_type, from_id, to_id)
+                # print(msg_id, react_type, from_id, to_id)
                 self.update_vote(react_type, from_id, to_id, False, False)
 
         self.calculate_stamps()
@@ -145,7 +145,11 @@ class StampsModule(Module):
 
             for channel in guild.channels:
                 print(
-                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
+                    "#### Considering",
+                    channel.type,
+                    type(channel.type),
+                    channel.name,
+                    "####",
                 )
                 if channel.type == discord.ChannelType.text:
                     print("#### Logging", channel.name, "####")
@@ -166,7 +170,11 @@ class StampsModule(Module):
                                         print(string)
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type, user.id, message.author.id, False, False,
+                                            reaction_type,
+                                            user.id,
+                                            message.author.id,
+                                            False,
+                                            False,
                                         )
         self.calculate_stamps()
 
@@ -240,7 +248,9 @@ class StampsModule(Module):
         self.reset_stamps()
         await self.load_votes_from_history()
         return Response(
-            confidence=10, text=self.STAMPS_RESET_MESSAGE, why="robertskmiles reset the stamp history",
+            confidence=10,
+            text=self.STAMPS_RESET_MESSAGE,
+            why="robertskmiles reset the stamp history",
         )
 
     @property
