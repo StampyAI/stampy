@@ -69,7 +69,7 @@ youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
 wiki_password = getenv("WIKI_BOT_PASSWORD")
 openai_api_key = getenv("OPENAI_API_KEY", default="null")
-wolfram_token = getenv("WOLFRAM_TOKEN")
+wolfram_token = getenv("WOLFRAM_TOKEN", default="null")
 
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 

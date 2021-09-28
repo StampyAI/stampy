@@ -156,7 +156,7 @@ class Reply(Module):
         answer_time = datetime.now()  # How should this be formated?
 
         self.utils.wiki.add_answer(
-            answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id
+            answer_title, message.author.display_name, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id
         )
         ##
 
