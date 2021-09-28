@@ -17,6 +17,7 @@ from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
+from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
 from datetime import datetime, timezone, timedelta
 from config import (
@@ -137,7 +138,7 @@ async def on_message(message):
             new_response.module = top_response.module
             responses.append(new_response)
         else:
-            if top_response.text:
+            if top_response:
                 if utils.test_mode:
                     if is_test_response(message.clean_content):
                         return  # must return after process message is called so that response can be evaluated
@@ -146,7 +147,9 @@ async def on_message(message):
                             TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
                         )
                 print("Replying:", top_response.text)
-                await message.channel.send(top_response.text)
+                # TODO: check to see if module is allowed to embed via a config?
+                if top_response.text or top_response.embed:
+                    await message.channel.send(top_response.text, embed=top_response.embed)
             print("########################################################")
             sys.stdout.flush()
             return
@@ -252,6 +255,7 @@ if __name__ == "__main__":
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
+        "Atemporal": AtemporalModule(),
         "TestModule": TestModule(),
     }
     modules = utils.modules_dict.values()
