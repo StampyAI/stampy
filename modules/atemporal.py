@@ -32,7 +32,7 @@ class AtemporalModule(Module):
                 why=f"{message.author.name} "
                     f" mentioned a time, so I converted it into a localize timestamp",
             )
-            if (("<@&817518998148087858>" in message.content and "office hours" in message.content)
+            if (("<@&892821821739634709>" in message.content and "office hours" in message.content)
                     or self.re_iso8601.search(text) is not None) and date.hour > 0:
                 return potential_response
 
