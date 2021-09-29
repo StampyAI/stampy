@@ -64,11 +64,9 @@ class Response:
     running this callback?". This will vary depending on: how good the response could be, how likely
     a good response is, and how slow/expensive the callback function is.
     """
-
+    embed: discord.Embed = None
     confidence: float = 0.0
-
     text: str = ""
-
     callback: Optional[Callable] = None
     args: list = field(default_factory=list)
     kwargs: dict = field(default_factory=dict)
@@ -179,7 +177,7 @@ class Module(object):
             at_me = True
             text = text.partition(" ")[2]
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
-            text = re.sub(",? @?[sS](tampy)?$", "", text)
+            text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
             at_me = True
 
         if type(message.channel) == discord.DMChannel:

@@ -29,7 +29,7 @@ class Persistence(object):
     ):
         raise NotImplementedError
 
-    def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
+    def add_answer(self, answer_title, answer_writer, answer_users, answer_time, answer_text, question_title):
         raise NotImplementedError
 
     def edit_question(

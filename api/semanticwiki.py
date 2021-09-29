@@ -74,7 +74,7 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
-    def add_answer(self, answer_title, answer_users, answer_time, answer_text, question_title):
+    def add_answer(self, answer_title, answer_writer, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
         if not answer_title:
             print("No title provided, need the answer title for the primary key of the article")
@@ -85,7 +85,7 @@ class SemanticWiki(Persistence):
                 |canonical=No
                 |nonaisafety=No
                 |unstamped=No
-                |writtenby={answer_users[0]}
+                |writtenby={answer_writer}
                 |date={answer_time}
                 |stamps={', '.join(answer_users)}"""
         ftext = "{{" + ftext + "}}"
