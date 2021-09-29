@@ -11,7 +11,9 @@ class AtemporalModule(Module):
     def __init__(self):
         Module.__init__(self)
         self.re_iso8601 = re.compile(
-            r'([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?'
+            r'([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|'
+            r'(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)'
+            r'([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?'
         )
         return
 
@@ -32,7 +34,7 @@ class AtemporalModule(Module):
                 why=f"{message.author.name} "
                     f" mentioned a time, so I converted it into a localize timestamp",
             )
-            if (("<@&817518998148087858>" in message.content and "office hours" in message.content)
+            if (("<@&736247946676535438>" in message.content and "office hours" in message.content)
                     or self.re_iso8601.search(text) is not None) and date.hour > 0:
                 return potential_response
 
