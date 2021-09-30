@@ -60,6 +60,11 @@ stampy_youtube_channel_id = {
 
 bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
 
+stamp_scores_csv_file_path = {
+    "production": "/var/www/html/stamps-export.csv",
+    "development": "stamps-export.csv",
+}[ENVIRONMENT_TYPE]
+
 admin_usernames = ["robertskmiles", "sudonym"]
 
 
