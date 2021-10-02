@@ -60,8 +60,6 @@ stampy_youtube_channel_id = {
 
 bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
 
-admin_usernames = ["robertskmiles", "sudonym"]
-
 
 discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
