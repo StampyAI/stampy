@@ -3,9 +3,7 @@ import re
 import requests
 from api.persistence import Persistence
 
-##
-## BIG TODO: REORGANIZE THE ORDER OF THIS CLASS
-##
+
 ###########################################################################
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
@@ -35,6 +33,17 @@ class SemanticWiki(Persistence):
         print("Logged in to Wiki!")
         return
 
+    ########################################
+    # BASE SEMANTICWIKI DIRECT CALLS
+    # these calls offer the most freedom, they let you talk to the mediawiki API directly,
+    # but they return large dictionaries that need to be navigated through to get relevant data
+    ########################################
+
+    def post(self, body):
+        data = self._session.post(self._uri, data=body)
+        response = data.json()
+        return response
+
     def get_page(self, title):
         # Gets a page by the title (the unique id)
         body = {
@@ -51,6 +60,42 @@ class SemanticWiki(Persistence):
     def ask(self, query):
         body = {"action": "ask", "format": "json", "query": query, "api_version": "2"}
         return self.post(body)
+
+    def edit(self, title, content):
+        # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
+        # This edits the page of the given title with the new content
+        body = {
+            "action": "edit",
+            "title": title,
+            "token": self._token,
+            "format": "json",
+            "text": content,
+        }
+        return self.post(body)
+
+    def pfauto_edit(self, title, form, parameter, value):
+        body = {
+            "action": "pfautoedit",
+            "form": form,
+            "target": title,
+            "format": "json",
+            "query": f"Question[{parameter}]={value}",
+        }
+        return self.post(body)
+
+    ########################################
+    # SINTACTIC SUGAR FOR SEMANTICWIKI CALLS
+    # these functions are wrappers around the base API calls that return only the important information
+    # they will not always be usable, but they should be prefered over base api call when possible
+    # Be ready to handle a None return if the api call fails
+    ########################################
+
+    def get_page_content(self, title):
+        content = self.get_page("MediaWiki:Stampy-intro")
+        try:
+            return content["query"]["pages"][0]["revisions"][0]["slots"]["main"]["content"]
+        except (KeyError, IndexError):
+            return None
 
     def get_page_properties(self, pagename, *properties):
         """Returns an array containing
@@ -79,22 +124,11 @@ class SemanticWiki(Persistence):
         else:
             raise ValueError("get_page_properties requires at least one property as input")
 
-    def post(self, body):
-        data = self._session.post(self._uri, data=body)
-        response = data.json()
-        return response
-
-    def edit(self, title, content):
-        # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
-        # This edits the page of the given title with the new content
-        body = {
-            "action": "edit",
-            "title": title,
-            "token": self._token,
-            "format": "json",
-            "text": content,
-        }
-        return self.post(body)
+    ########################################
+    # FUNCTIONS WITH SPECIFIC USES
+    # these functions perform unique tasks that are core to the functioning of particular modules
+    # most of them handle the saving and updating of questions and answers
+    ########################################
 
     def add_answer(self, answer_title, answer_writer, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
@@ -241,16 +275,6 @@ class SemanticWiki(Persistence):
 
     def set_question_property(self, title, parameter, value):
         return self.pfauto_edit(title, "Question", parameter, value)
-
-    def pfauto_edit(self, title, form, parameter, value):
-        body = {
-            "action": "pfautoedit",
-            "form": form,
-            "target": title,
-            "format": "json",
-            "query": f"Question[{parameter}]={value}",
-        }
-        return self.post(body)
 
     def set_question_asked(self, question_title):
         print("Setting question: " + question_title + " as asked on Discord")
