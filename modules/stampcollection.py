@@ -2,11 +2,15 @@ import re
 import discord
 import numpy as np
 from config import admin_usernames
-from modules.module import Module
+from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 
 
 class StampsModule(Module):
+
+    STAMPS_RESET_MESSAGE = "full stamp history reset complete"
+    UNAUTHORIZED_MESSAGE = "You can't do that!"
+
     def __str__(self):
         return "Stamps Module"
 
@@ -22,7 +26,7 @@ class StampsModule(Module):
         print("WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, rob_id)
+        self.utils.update_vote(god_id, str(rob_id))
 
     def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
 
@@ -63,13 +67,13 @@ class StampsModule(Module):
         users_matrix = np.zeros((user_count, user_count))
 
         votes = self.utils.get_all_user_votes()
-        print(votes)
+        # print(votes)
 
         for from_id, to_id, votes_for_user in votes:
             from_id_index = self.utils.index[from_id]
             toi = self.utils.index[to_id]
             total_votes_by_user = self.utils.get_votes_by_user(from_id)
-            print(from_id_index, toi, votes_for_user, total_votes_by_user)
+            # print(from_id_index, toi, votes_for_user, total_votes_by_user)
             if total_votes_by_user != 0:
                 score = (self.user_karma * votes_for_user) / total_votes_by_user
                 users_matrix[toi, from_id_index] = score
@@ -82,7 +86,7 @@ class StampsModule(Module):
 
         self.utils.scores = list(np.linalg.solve(users_matrix, user_count_matrix))
 
-        self.print_all_scores()
+        # self.print_all_scores()
 
     # done
     def get_user_scores(self):
@@ -115,7 +119,7 @@ class StampsModule(Module):
         print("get_user_stamps for %s, index=%s" % (user, index))
         if index:
             stamps = self.utils.scores[index] * self.total_votes
-            print(stamps, self.utils.scores[index], self.total_votes)
+            # print(stamps, self.utils.scores[index], self.total_votes)
         else:
             stamps = 0.0
         return stamps
@@ -126,7 +130,7 @@ class StampsModule(Module):
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
                 msg_id, react_type, from_id, to_id = line.strip().split(",")
-                print(msg_id, react_type, from_id, to_id)
+                # print(msg_id, react_type, from_id, to_id)
                 self.update_vote(react_type, from_id, to_id, False, False)
 
         self.calculate_stamps()
@@ -141,7 +145,11 @@ class StampsModule(Module):
 
             for channel in guild.channels:
                 print(
-                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
+                    "#### Considering",
+                    channel.type,
+                    type(channel.type),
+                    channel.name,
+                    "####",
                 )
                 if channel.type == discord.ChannelType.text:
                     print("#### Logging", channel.name, "####")
@@ -162,7 +170,11 @@ class StampsModule(Module):
                                         print(string)
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type, user.id, message.author.id, False, False,
+                                            reaction_type,
+                                            user.id,
+                                            message.author.id,
+                                            False,
+                                            False,
                                         )
         self.calculate_stamps()
 
@@ -206,30 +218,49 @@ class StampsModule(Module):
             # self.save_votesdict_to_json()
             print("Score after stamp:", self.get_user_stamps(to_id))
 
-    def can_process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             if re.match(r"(how many stamps am i worth)\??", text.lower()):
                 authors_stamps = self.get_user_stamps(message.author)
-                return 9, "You're worth %.2f stamps to me" % authors_stamps
+                return Response(
+                    confidence=9,
+                    text=f"You're worth {authors_stamps:.2f} stamps to me",
+                    why=f"{message.author.name} asked how many stamps they're worth",
+                )
 
-            elif text == "reloadallstamps" and message.author.name == "robertskmiles":
-                return 10, ""
+            elif text == "reloadallstamps":
+                if message.author.id == rob_id:
+                    return Response(confidence=10, callback=self.reloadallstamps, args=[message])
+                else:
+                    return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
-        return 0, ""
+        return Response()
 
     @staticmethod
     def user_is_admin(username):
         return username in admin_usernames
 
-    async def process_message(self, message, client=None):
-        text = self.is_at_me(message)
+    async def reloadallstamps(self, message):
+        print("FULL STAMP HISTORY RESET BAYBEEEEEE")
+        await message.channel.send("Doing full stamp history reset, could take a while")
+        self.reset_stamps()
+        await self.load_votes_from_history()
+        return Response(
+            confidence=10,
+            text=self.STAMPS_RESET_MESSAGE,
+            why="robertskmiles reset the stamp history",
+        )
 
-        # TODO: maybe have an admin list?
-        if text == "reloadallstamps" and self.user_is_admin(message.author.name):
-            print("FULL STAMP HISTORY RESET BAYBEEEEEE")
-            self.reset_stamps()
-            await self.load_votes_from_history()
-            return 10, "Working on it, could take a bit"
-        return 0, ""
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="how many stamps am I worth?",
+                expected_regex=r"^You're worth ?[+-]?\d+(?:\.\d+)? stamps to me$",
+            ),
+            self.create_integration_test(
+                question="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE
+            ),
+        ]

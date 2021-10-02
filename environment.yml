@@ -2,16 +2,19 @@ name: stampy
 channels:
   - defaults
 dependencies:
-  - pip
+  - python=3.9
   - numpy
+  - pip
   - sqlite
   - pip:
-    - openai
+    - lxml
     - black
-    - psutil
     - discord-py
+    - gitpython
     - google-api-python-client
     - google-auth-oauthlib
+    - jellyfish
+    - openai
+    - psutil
     - python-dotenv
-    - gitpython
-
+    - datefinder

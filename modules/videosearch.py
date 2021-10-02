@@ -1,6 +1,6 @@
 import re
 import os
-from modules.module import Module
+from modules.module import Module, Response
 from config import subs_dir
 
 
@@ -8,6 +8,8 @@ class VideoSearch(Module):
     """
     A module that searches the titles, descriptions and transcripts of videos, to find keywords/phrases
     """
+
+    NOT_FOUND_MESSAGE = "No matches found"
 
     def __init__(self):
         super().__init__()
@@ -58,23 +60,24 @@ class VideoSearch(Module):
         return "\n".join(lines)
 
     def load_videos(self):
-        for entry in os.scandir(self.subsdir):
-            if entry.name.endswith(".en.vtt"):
-                vtt_groups = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
-                title = vtt_groups.group(1)
-                stub = vtt_groups.group(2)
+        with os.scandir(self.subsdir) as entries:
+            for entry in entries:
+                if entry.name.endswith(".en.vtt"):
+                    vtt_groups = re.match(r"^(.+?)-([a-zA-Z0-9\-_]{11})\.en(-GB)?\.vtt$", entry.name)
+                    title = vtt_groups.group(1)
+                    stub = vtt_groups.group(2)
 
-                text = self.process_vtt_file(entry.path)
+                    text = self.process_vtt_file(entry.path)
 
-                description_filename = title + "-" + stub + ".description"
-                description_filepath = os.path.join(self.subsdir, description_filename)
-                if os.path.exists(description_filepath):
-                    description = open(description_filepath, encoding="utf8").read()
-                else:
-                    description = ""
+                    description_filename = title + "-" + stub + ".description"
+                    description_filepath = os.path.join(self.subsdir, description_filename)
+                    if os.path.exists(description_filepath):
+                        description = open(description_filepath, encoding="utf8").read()
+                    else:
+                        description = ""
 
-                video = self.Video(title, stub, text, description)
-                self.videos.append(video)
+                    video = self.Video(title, stub, text, description)
+                    self.videos.append(video)
 
     @staticmethod
     def extract_keywords(query):
@@ -123,15 +126,17 @@ class VideoSearch(Module):
                 matches.append(r)
         return matches
 
-    def can_process_message(self, message, client=None):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             m = re.match(self.re_search, text)
             if m:
-                return 9, ""
+                query = m.group("query")
+                return Response(confidence=9, callback=self.process_search_request, args=[query])
+
         # This is either not at me, or not something we can handle
-        return 0, ""
+        return Response()
 
     @staticmethod
     def list_relevant_videos(result):
@@ -147,23 +152,33 @@ class VideoSearch(Module):
 
         return reply
 
-    async def process_message(self, message, client=None):
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
-
-            regex_match = re.match(self.re_search, text)
-            if regex_match:
-                query = regex_match.group("query")
-                print('Video Query is:, "%s"' % query)
-                result = self.search(query)
-                if result:
-                    print("Result:", result)
-                    return 10, self.list_relevant_videos(result)
-                else:
-                    return 8, "No matches found"
-            else:
-                print("Shouldn't be able to get here")
-                return 0, ""
+    async def process_search_request(self, query):
+        print('Video Query is:, "%s"' % query)
+        result = self.search(query)
+        if result:
+            print("Result:", result)
+            return Response(
+                confidence=10,
+                text=self.list_relevant_videos(result),
+                why="Those are the videos that seem related!",
+            )
+        else:
+            return Response(
+                confidence=8, text=self.NOT_FOUND_MESSAGE, why="I couldn't find any relevant videos"
+            )
 
     def __str__(self):
         return "Video Search Manager"
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="Which video did rob play civilization V in?",
+                expected_regex="Superintelligence Mod for Civilization V+",
+            ),
+            self.create_integration_test(
+                question="which video is trash?",
+                expected_response=self.NOT_FOUND_MESSAGE,
+            ),
+        ]

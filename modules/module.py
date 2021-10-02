@@ -1,6 +1,82 @@
 import re
 import discord
-from utilities import Utilities
+from utilities import Utilities, get_question_id
+from dataclasses import dataclass, field
+from typing import Callable, Optional
+from config import TEST_QUESTION_PREFIX
+
+
+@dataclass
+class Response:
+    """The response a module gives.
+    Two types of response are possible:
+        1. Text responses, with a string and a confidence rating, and
+        2. Callback responses, with a (possibly async) function, args/kwargs for the function,
+           and the *optimistic expected confidence of the function's response*
+    Set `text` or `callback`, not both.
+
+    For example, suppose the incoming message says "What is AIXI?"
+    One module may spot that this is a question, and generate a quick joke as a text response:
+
+        Response(text="https://www.google.com/search?q=AIXI", confidence=2)
+
+    This means "This module suggests Stampy give the user a link to a google search for 'AIXI',
+    but only with confidence 2/10, because that's a weak response"
+    If no other module responds with confidence 2 or more, Stampy will give the google link response.
+
+    Another module may spot that "What is AIXI?" is a question it may be able to actually answer well,
+    but it doesn't know without slow/expensive operations that we don't want to do if we don't have to,
+    like hitting a remote API or running a large language model. So it generates a callback response:
+
+        Response(callback=self.search_alignment_forum_tags,
+                 args=["AIXI"],
+                 kwargs={'type'='exact_match'},
+                 confidence=8
+                )
+
+    This means "This module has the potential for a confidence 8 response (in this case, if the
+    Alignment Forum has a tag with the exact string the user asked about), but do check that there are
+    no better options first, before we hit the Alignment Forum API.
+    If another module responds with confidence 9 or 10, the callback function is never called,
+    but if the callback response's given confidence is the highest of any response, we call
+
+        await search_alignment_forum_tags("AIXI", type='exact_match')
+
+    This function will return a Response object in exactly the same way.
+    For example, if the search finds a hit:
+
+        Response(text="AIXI is a mathematical formalism for a hypothetical (super)intelligence, "
+                      "developed by Marcus Hutter.\n"
+                      "See <https://www.alignmentforum.org/tag/aixi> for more",
+                 confidence=8
+                )
+
+    Or if there's no match for the search:
+
+        Response(text="I don't know, there's no alignment forum tag for that", confidence=1)
+
+    Callback functions can also return callback responses, so the process can be recursive.
+    Please do not do anything stupid with this.
+
+    Picking confidence levels to give for callbacks is kind of subtle. You're effectively saying
+
+    "What confidence of response would another module have to give, such that it would be not worth
+    running this callback?". This will vary depending on: how good the response could be, how likely
+    a good response is, and how slow/expensive the callback function is.
+    """
+    embed: discord.Embed = None
+    confidence: float = 0.0
+    text: str = ""
+    callback: Optional[Callable] = None
+    args: list = field(default_factory=list)
+    kwargs: dict = field(default_factory=dict)
+
+    module: object = None
+
+    why: str = ""
+
+    def __bool__(self):
+        return bool(self.text) or bool(self.callback) or bool(self.confidence)
 
 
 class Module(object):
@@ -14,10 +90,9 @@ class Module(object):
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    def can_process_message(self, message, client=None):
-        """Look at the message and decide if you want to handle it
-        Return a pair of values: (confidence rating out of 10, message)
-        Including a response message is optional, use an empty string to just indicate a confidence
+    def process_message(self, message, client=None):
+        """Handle the message, return a string which is your response.
+        This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
         `can_process_message` should contain only operations which can be executed safely even if
         another module reports a higher confidence and ends up being the one to respond.If your
@@ -40,36 +115,58 @@ class Module(object):
 
         Ties are broken in module priority order. You can also return a float if you really want
         """
-        # By default, we have 0 confidence that we can answer this, and our response is ""
-        return 0, ""
-
-    async def process_message(self, message, client=None):
-        """Handle the message, return a string which is your response.
-        This is an async function so it can interact with the Discord API if it needs to"""
-        return 0, ""
+        return Response()
 
     async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
         """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
         Use this to allow modules to handle adding and removing reactions on messages"""
-        return 0, ""
+        return Response()
 
     async def process_raw_reaction_event(self, event, client=None):
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
-        return 0, ""
+        return Response()
 
     def __str__(self):
-        return "Dummy Module"
+        return "Base Module"
 
     @staticmethod
-    def is_at_me(message):
+    def create_integration_test(
+        question="",
+        expected_response="",
+        expected_regex=None,
+        test_wait_time=0.5,
+        minimum_allowed_similarity=1.0,
+    ):
+        return {
+            "question": question,
+            "expected_response": expected_response,
+            "received_response": "NEVER RECEIVED A RESPONSE",
+            "expected_regex": expected_regex,
+            "test_wait_time": test_wait_time,
+            "minimum_allowed_similarity": minimum_allowed_similarity,
+        }
+
+    @staticmethod
+    def clean_test_prefixes(message, prefix):
+        text = message.clean_content
+        prefix_number = get_question_id(message)
+        prefix_with_number = prefix + str(prefix_number) + ": "
+        if prefix_with_number == text[: len(prefix_with_number)]:
+            return text[len(prefix_with_number) :]
+        return text
+
+    def is_at_me(self, message):
         """
         Determine if the message is directed at Stampy
         If it's not, return False. If it is, strip away the
         name part and return the remainder of the message
         """
-
         text = message.clean_content
+        if self.utils.test_mode:
+            if self.utils.stampy_is_author(message):
+                if TEST_QUESTION_PREFIX in message.clean_content:
+                    text = "stampy " + self.clean_test_prefixes(message, TEST_QUESTION_PREFIX)
         at_me = False
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
         text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text)
@@ -78,15 +175,12 @@ class Module(object):
 
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
-            print("X At me because re_at_me matched or starting with [sS][,:]? ")
             text = text.partition(" ")[2]
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
-            text = re.sub(",? @?[sS](tampy)?$", "", text)
+            text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
             at_me = True
-            print("X At me because it ends with stampy")
 
         if type(message.channel) == discord.DMChannel:
-            print("X At me because DM")
             # DMs are always at you
             at_me = True
 
@@ -98,5 +192,9 @@ class Module(object):
         if at_me:
             return text
         else:
-            print("Message is Not At Me")
             return False
+
+    def get_guild_and_invite_role(self):
+        guild = self.utils.client.guilds[0]
+        invite_role = discord.utils.get(guild.roles, name="can-invite")
+        return guild, invite_role

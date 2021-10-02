@@ -1,30 +1,36 @@
 import os
 import sys
+import inspect
 import discord
 import unicodedata
-from dotenv import load_dotenv
-from utilities import Utilities
+from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question
+from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
+from modules.wolfram import Wolfram
+from modules.duckduckgo import DuckDuckGo
 from modules.videosearch import VideoSearch
+from modules.ANSearch import ANSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
+from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
+from modules.atemporal import AtemporalModule
+from modules.testModule import TestModule
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
-    ENVIRONMENT_TYPE,
-    acceptable_environment_types,
-    bot_dev_channel_id,
-    prod_local_path,
     database_path,
-    rob_id,
-    plex_id,
+    prod_local_path,
+    ENVIRONMENT_TYPE,
+    bot_dev_channel_id,
+    TEST_RESPONSE_PREFIX,
+    maximum_recursion_depth,
+    acceptable_environment_types,
 )
 
-load_dotenv()
 
 utils = Utilities.get_instance()
 
@@ -55,56 +61,102 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channel_id[ENVIRONMENT_TYPE]).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started!")
 
 
 @utils.client.event
 async def on_message(message):
-    # don't react to our own messages
-    if message.author == utils.client.user:
+    # don't react to our own messages unless running test
+    message_author_is_stampy = message.author == utils.client.user
+    if is_test_message(message.clean_content) and utils.test_mode:
+        print("TESTING " + message.clean_content)
+    elif message_author_is_stampy:
         return
 
-    utils.modules_dict["StampsModule"].calculate_stamps()
+    # utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
-    print(message)
-    print(message.reference)
-    print(message.author, message.content)
+    print(datetime.now().isoformat(sep=" "))
+    if hasattr(message.channel, "name"):
+        print(f"Message: id={message.id} in '{message.channel.name}' (id={message.channel.id})")
+    else:
+        print(f"DM: id={message.id}")
+    print(f"from {message.author.name}#{message.author.discriminator} (id={message.author.id})")
+    if message.reference:
+        print("In reply to:", message.reference)
+    print(f"    {message.content}")
+    print("#####################################")
 
     if hasattr(message.channel, "name") and message.channel.name == "general":
         print("the latest general discord channel message was not from stampy")
         utils.last_message_was_youtube_question = False
 
-    # What are the options for responding to this message?
-    # Pre-populate with a dummy module, with 0 confidence about its proposed response of ""
-    options = []
+    responses = [Response()]
     for module in modules:
-        print("Asking module: %s" % str(module))
-        output = module.can_process_message(message, utils.client)
-        print("output is", output)
-        confidence, result = output
-        if confidence > 0:
-            options.append((module, confidence, result))
+        print(f"# Asking module: {module}")
+        response = module.process_message(message, utils.client)
+        if response:
+            response.module = module  # tag it with the module it came from, for future reference
 
-    # Go with whichever module was most confident in its response
-    options = sorted(options, key=(lambda o: o[1]), reverse=True)
-    print(options)
-    for option in options:
-        module, confidence, result = option
+            if response.callback:  # break ties between callbacks and text in favour of text
+                response.confidence -= 0.001
 
-        if confidence > 0:
-            # if the module had some confidence it could reply
-            if not result:
-                # but didn't reply in can_process_message()
-                confidence, result = await module.process_message(message, utils.client)
+            responses.append(response)
 
-        if confidence:
-            if result:
-                await message.channel.send(result)
-            break
+    print("#####################################")
 
-    print("########################################################")
-    sys.stdout.flush()
+    for i in range(maximum_recursion_depth):  # don't hang if infinite regress
+        responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
+
+        # print some debug
+        print("Responses:")
+        for response in responses:
+            if response.callback:
+                args_string = ", ".join([a.__repr__() for a in response.args])
+                if response.kwargs:
+                    args_string += ", " + ", ".join(
+                        [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
+                    )
+                print(
+                    f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
+                    f"{args_string})`"
+                )
+            else:
+                print(f'  {response.confidence}: {response.module}: "{response.text}"')
+                if response.why:
+                    print(f'       (because "{response.why}")')
+
+        top_response = responses.pop(0)
+
+        if top_response.callback:
+            print("Top response is a callback. Calling it")
+            if inspect.iscoroutinefunction(top_response.callback):
+                new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
+            else:
+                new_response = top_response.callback(*top_response.args, **top_response.kwargs)
+
+            new_response.module = top_response.module
+            responses.append(new_response)
+        else:
+            if top_response:
+                if utils.test_mode:
+                    if is_test_response(message.clean_content):
+                        return  # must return after process message is called so that response can be evaluated
+                    if is_test_question(message.clean_content):
+                        top_response.text = (
+                            TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
+                        )
+                print("Replying:", top_response.text)
+                # TODO: check to see if module is allowed to embed via a config?
+                if top_response.text or top_response.embed:
+                    await message.channel.send(top_response.text, embed=top_response.embed)
+            print("########################################################")
+            sys.stdout.flush()
+            return
+
+    # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
+    # so that's likely an infinite regress
+    message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
 
 
 @utils.client.event
@@ -137,12 +189,13 @@ async def on_socket_raw_receive(_):
         for comment in new_comments:
             if "?" in comment["text"]:
                 utils.add_youtube_question(comment)
-    # add_question should maybe just take in the dict, but to make sure nothing is broken extra fields have been added as optional params
+    # add_question should maybe just take in the dict, but to make sure
+    # nothing is broken extra fields have been added as optional params
     # This is just checking if there _are_ questions
     question_count = utils.get_question_count()
     if question_count:
         # ask a new question if it's been long enough since we last asked one
-        question_ask_cooldown = timedelta(hours=6)
+        question_ask_cooldown = timedelta(hours=12)
 
         if (now - utils.last_question_asked_timestamp) > question_ask_cooldown:
             if not utils.last_message_was_youtube_question:
@@ -188,38 +241,23 @@ async def on_raw_reaction_remove(payload):
 
 
 if __name__ == "__main__":
-    # when was the most recent comment we saw posted?
-    utils.latest_comment_timestamp = datetime.now(timezone.utc)
-
-    # when did we last hit the API to check for comments?
-    utils.last_check_timestamp = datetime.now(timezone.utc)
-
-    # how many seconds should we wait before we can hit YT API again
-    # this the start value. It doubles every time we don't find anything new
-    utils.youtube_cooldown = timedelta(seconds=60)
-
-    # timestamp of when we last ran the tick function
-    utils.last_timestamp = datetime.now(timezone.utc)
-
-    # timestamp of last time we asked a youtube question
-    utils.last_question_asked_timestamp = datetime.now(timezone.utc)
-
-    # Was the last message posted in #general by anyone, us asking a question from YouTube?
-    # We start off not knowing, but it's better to assume yes than no
-    utils.last_message_was_youtube_question = True
-
     utils.modules_dict = {
         "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
         "QQManager": QQManager(),
         "VideoSearch": VideoSearch(),
+        "ANSearch": ANSearch(),
+        "Wolfram": Wolfram(),
+        "DuckDuckGo": DuckDuckGo(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
         "GPT3Module": GPT3Module(),
+        "Factoids": Factoids(),
         "Sentience": sentience,
-        "WikiUpdate" : WikiUpdate(),
+        "WikiUpdate": WikiUpdate(),
+        "Atemporal": AtemporalModule(),
+        "TestModule": TestModule(),
     }
-
     modules = utils.modules_dict.values()
 
     utils.client.run(discord_token)

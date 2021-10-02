@@ -31,6 +31,7 @@ export DISCORD_TOKEN="$(cat ~/.discordtoken)"
 export DISCORD_GUILD="$(cat ~/.discordguild)"
 export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
 export CLIENT_SECRET_PATH="$(cat ~/.clientsecretpath)"
+export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
 
 cd ~/stampy
 conda activate stampy

@@ -1,5 +1,8 @@
 import os
-import pwd
+import re
+# Sadly some of us run windows...
+if not os.name == 'nt':
+    import pwd
 import psutil
 import discord
 from git import Repo
@@ -10,7 +13,6 @@ from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
 from config import (
-    required_environment_variables,
     youtube_api_version,
     youtube_api_service_name,
     rob_miles_youtube_channel_id,
@@ -18,14 +20,10 @@ from config import (
     discord_guild,
     youtube_api_key,
     database_path,
+    TEST_RESPONSE_PREFIX,
+    TEST_QUESTION_PREFIX,
     wiki_config,
 )
-
-
-def check_environment(environment_variables):
-    for env in environment_variables:
-        if env not in os.environ:
-            raise Exception("%s Environment Variable not set" % env)
 
 
 class Utilities:
@@ -57,7 +55,6 @@ class Utilities:
     @staticmethod
     def get_instance():
         if Utilities.__instance is None:
-            check_environment(required_environment_variables)
             Utilities()
         return Utilities.__instance
 
@@ -72,10 +69,33 @@ class Utilities:
             self.DB_PATH = database_path
             self.youtube = None
             self.start_time = time()
+            self.test_mode = False
+
+            # when was the most recent comment we saw posted?
+            self.latest_comment_timestamp = datetime.now(timezone.utc)
+
+            # when did we last hit the API to check for comments?
+            self.last_check_timestamp = datetime.now(timezone.utc)
+
+            # how many seconds should we wait before we can hit YT API again
+            # this the start value. It doubles every time we don't find anything new
+            self.youtube_cooldown = timedelta(seconds=60)
+
+            # timestamp of when we last ran the tick function
+            self.last_timestamp = datetime.now(timezone.utc)
+
+            # timestamp of last time we asked a youtube question
+            self.last_question_asked_timestamp = datetime.now(timezone.utc)
+
+            # Was the last message posted in #general by anyone, us asking a question from YouTube?
+            # We start off not knowing, but it's better to assume yes than no
+            self.last_message_was_youtube_question = True
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name,
+                    youtube_api_version,
+                    developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -89,6 +109,9 @@ class Utilities:
             intents.members = True
             self.client = discord.Client(intents=intents)
             self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
+
+    def stampy_is_author(self, message):
+        return message.author == self.client.user
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -105,11 +128,13 @@ class Utilities:
             likes = item["snippet"]["likeCount"]
             reply = {
                 "username": username,
+                "reply": reply_id,
                 "text": text,
                 "title": "",
                 "timestamp": timestamp,
                 "likes": likes,
             }
+        return reply
 
     def get_youtube_comment(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -118,7 +143,7 @@ class Utilities:
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
         response = request.execute()
         items = response.get("items")
-        comment = {}
+        comment = {"video_url": video_url}
         if items:
             top_level_comment = items[0]["snippet"]["topLevelComment"]
             comment["timestamp"] = top_level_comment["snippet"]["publishedAt"][:-1]
@@ -150,7 +175,8 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
+                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
+                end="",
             )
             return None
 
@@ -231,7 +257,6 @@ class Utilities:
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
-        comment = None
         if order_type == "RANDOM":
             comment = self.wiki.get_random_question()
         elif order_type == "TOP":
@@ -264,7 +289,12 @@ class Utilities:
                 + "{2}\n"
                 + "Is it an interesting question? Maybe we can answer it!\n"
                 + "{3}"
-            ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
+            ).format(
+                comment["username"],
+                self.get_title(comment["url"])[1],
+                text_quoted,
+                comment["url"],
+            )
 
         print("==========================")
         print(report)
@@ -358,7 +388,10 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
+        display_title = "{0}'s question on {1}".format(
+            comment["username"],
+            video_titles[0],
+        )
 
         return self.wiki.add_question(
             display_title,
@@ -378,7 +411,7 @@ class Utilities:
         return None
 
     def list_modules(self):
-        message = "I have %d modules. Here are their names:" % len(self.modules_dict)
+        message = f"I have {len(self.modules_dict)} modules. Here are their names:"
         for module_name in self.modules_dict.keys():
             message += "\n" + module_name
         return message
@@ -426,3 +459,28 @@ def get_memory_usage():
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
     return "I'm using %s bytes of memory" % megabytes_string
+
+
+def get_question_id(message):
+    text = message.clean_content
+    first_number_found = re.search(r"\d+", text)
+    if first_number_found:
+        return int(first_number_found.group())
+    return ""
+
+
+def contains_prefix_with_number(text, prefix):
+    prefix = prefix.strip()  # remove white space for regex formatting
+    return bool(re.search(rf"^{prefix}\s[0-9]+", text))
+
+
+def is_test_response(text):
+    return contains_prefix_with_number(text, TEST_RESPONSE_PREFIX)
+
+
+def is_test_question(text):
+    return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
+
+
+def is_test_message(text):
+    return is_test_response(text) or is_test_question(text)

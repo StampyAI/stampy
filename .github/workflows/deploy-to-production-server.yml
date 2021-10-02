@@ -74,10 +74,12 @@ jobs:
             export CLIENT_SECRET_PATH="$(cat ~/.clientsecretpath)"
             export WIKI_BOT_PASSWORD="$(cat ~/.wikibotpassword)"
             export OPENAI_API_KEY="$(cat ~/.openaikey)"
+            export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
 
             cd ~/stampy
             conda activate stampy
             python -m scripts.notify-discord-stampy-offline
+            git stash
             git pull
             conda deactivate
             conda env remove -n stampy
