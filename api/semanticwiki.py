@@ -40,12 +40,16 @@ class SemanticWiki(Persistence):
     ########################################
 
     def post(self, body):
+        """Most basic way to comunicate with the Mediawiki API. body must be a dictionary of things that make sense
+        in the context of the API."""
         data = self._session.post(self._uri, data=body)
         response = data.json()
         return response
 
     def get_page(self, title):
-        # Gets a page by the title (the unique id)
+        """Gets a page by the title (page titles are unique).
+        Returns a lot of information on revisions and their contents.
+        If you only care about the content use get_page_content"""
         body = {
             "action": "query",
             "prop": "revisions",
@@ -58,12 +62,17 @@ class SemanticWiki(Persistence):
         return self.post(body)
 
     def ask(self, query):
+        """Ask is query language that lets you gather properties from pages matching a set of criteria.
+        See https://www.semantic-mediawiki.org/wiki/Ask for info.
+        If all you need is to extract a property from a page you have the title to, use get_page_properties"""
         body = {"action": "ask", "format": "json", "query": query, "api_version": "2"}
         return self.post(body)
 
     def edit(self, title, content):
-        # available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
-        # This edits the page of the given title with the new content
+        """available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
+        This edits the page of the given title with the new content
+        If a page with name `title` does not already exists, one will be create
+        """
         body = {
             "action": "edit",
             "title": title,
@@ -74,12 +83,17 @@ class SemanticWiki(Persistence):
         return self.post(body)
 
     def pfauto_edit(self, title, form, parameter, value):
+        """A system to make small changes to already existing pages.
+        To be editable with this method, a page must be an instance of a Form
+        (a Question, Answer or Video are examples of forms)
+
+        """
         body = {
             "action": "pfautoedit",
             "form": form,
             "target": title,
             "format": "json",
-            "query": f"Question[{parameter}]={value}",
+            "query": f"{form}[{parameter}]={value}",
         }
         return self.post(body)
 
@@ -91,7 +105,9 @@ class SemanticWiki(Persistence):
     ########################################
 
     def get_page_content(self, title):
-        content = self.get_page("MediaWiki:Stampy-intro")
+        """Retrieves the source text for a page with name `title`.
+        If no such page exists (or there are other API errors) returns None"""
+        content = self.get_page(title)
         try:
             return content["query"]["pages"][0]["revisions"][0]["slots"]["main"]["content"]
         except (KeyError, IndexError):
@@ -125,8 +141,8 @@ class SemanticWiki(Persistence):
             raise ValueError("get_page_properties requires at least one property as input")
 
     ########################################
-    # FUNCTIONS WITH SPECIFIC USES
-    # these functions perform unique tasks that are core to the functioning of particular modules
+    # FUNCTIONS WITH VERY SPECIFIC USES
+    # these functions perform very unique tasks that are core to the functioning of particular modules
     # most of them handle the saving and updating of questions and answers
     ########################################
 
