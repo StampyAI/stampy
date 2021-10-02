@@ -1,4 +1,3 @@
-import collections
 import re
 import requests
 from api.persistence import Persistence
