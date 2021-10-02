@@ -1,7 +1,6 @@
 import re
 import discord
 import numpy as np
-from config import admin_usernames
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 
@@ -237,10 +236,6 @@ class StampsModule(Module):
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
         return Response()
-
-    @staticmethod
-    def user_is_admin(username):
-        return username in admin_usernames
 
     async def reloadallstamps(self, message):
         print("FULL STAMP HISTORY RESET BAYBEEEEEE")
