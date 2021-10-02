@@ -1,8 +1,11 @@
+import collections
 import re
 import requests
 from api.persistence import Persistence
 
-
+##
+## BIG TODO: REORGANIZE THE ORDER OF THIS CLASS
+##
 ###########################################################################
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
@@ -48,6 +51,33 @@ class SemanticWiki(Persistence):
     def ask(self, query):
         body = {"action": "ask", "format": "json", "query": query, "api_version": "2"}
         return self.post(body)
+
+    def get_page_properties(self, pagename, *properties):
+        """Returns an array containing
+        All the values of that property in the page with the specified `pagename`. These arrays may be empty if the
+        property is not set.
+
+        if more than one property is given , returns a dictionary containing all of the property names as keys.
+        In this case each value is an array as equivalent to the one returned if this function had been called with just
+        that one property.
+
+        If no properties are given, throws an error
+
+        In the cases where the page does not exist or the wiki query fails, returns None
+        NOTE: it may make more sense to return an empty dict. Keep an eye out for future changes on this"""
+        if len(properties) > 1:
+            try:
+                properties_string = "|?".join(properties)
+                return self.ask(f"[[{pagename}]]|?{properties_string}")["query"]["results"][pagename]["printouts"]
+            except (KeyError, IndexError):
+                return None
+        elif len(properties) == 1:
+            try:
+                return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][pagename]["printouts"][properties[0]]
+            except (KeyError, IndexError):
+                return None
+        else:
+            raise ValueError("get_page_properties requires at least one property as input")
 
     def post(self, body):
         data = self._session.post(self._uri, data=body)
@@ -210,12 +240,15 @@ class SemanticWiki(Persistence):
         return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
 
     def set_question_property(self, title, parameter, value):
+        return self.pfauto_edit(title, "Question", parameter, value)
+
+    def pfauto_edit(self, title, form, parameter, value):
         body = {
             "action": "pfautoedit",
-            "form": "Question",
+            "form": form,
             "target": title,
             "format": "json",
-            "query": "Question[{0}]={1}".format(parameter, value),
+            "query": f"Question[{parameter}]={value}",
         }
         return self.post(body)
 
