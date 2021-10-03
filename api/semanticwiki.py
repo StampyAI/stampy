@@ -70,7 +70,7 @@ class SemanticWiki(Persistence):
     def edit(self, title, content):
         """available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
         This edits the page of the given title with the new content
-        If a page with name `title` does not already exists, one will be create
+        If a page with name `title` does not already exists, one will be created.
         """
         body = {
             "action": "edit",
@@ -81,11 +81,11 @@ class SemanticWiki(Persistence):
         }
         return self.post(body)
 
-    def pfauto_edit(self, title, form, parameter, value):
+    def page_forms_auto_edit(self, title, form, parameter, value):
         """A system to make small changes to already existing pages.
         To be editable with this method, a page must be an instance of a Form
         (a Question, Answer or Video are examples of forms)
-
+        https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Modifying_pages_automatically for more info
         """
         body = {
             "action": "pfautoedit",
@@ -97,7 +97,7 @@ class SemanticWiki(Persistence):
         return self.post(body)
 
     ########################################
-    # SINTACTIC SUGAR FOR SEMANTICWIKI CALLS
+    # SYNTACTIC SUGAR FOR SEMANTICWIKI CALLS
     # these functions are wrappers around the base API calls that return only the important information
     # they will not always be usable, but they should be prefered over base api call when possible
     # Be ready to handle a None return if the api call fails
@@ -289,7 +289,7 @@ class SemanticWiki(Persistence):
         return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
 
     def set_question_property(self, title, parameter, value):
-        return self.pfauto_edit(title, "Question", parameter, value)
+        return self.page_forms_auto_edit(title, "Question", parameter, value)
 
     def set_question_asked(self, question_title):
         print("Setting question: " + question_title + " as asked on Discord")
