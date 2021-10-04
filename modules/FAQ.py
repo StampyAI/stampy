@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 import discord
 from modules.module import Module, Response
 from config import stampy_id
@@ -5,12 +7,16 @@ from config import stampy_id
 
 class FaqModule(Module):
     template_channel_id = 876541727048077312
+    feedback_channel_id = 894314718251085845
     faq_user_channel_prefix = 'faq-for-'
     select_message_emoji_name = "👆"
     approve_result_base_name = "green_stamp"
     approve_result_emoji_name = f"<:{approve_result_base_name}:870032324279033896>"
     reject_result_emoji_name = "🚩"
     reaction_emoji_list = [select_message_emoji_name, approve_result_base_name, reject_result_emoji_name]
+    max_wait = 3600
+
+    channels_waiting_to_return_to_questions = {}
 
     def process_message(self, message, client=None):
         if type(message.channel) == discord.DMChannel:
@@ -33,7 +39,7 @@ class FaqModule(Module):
     async def process_raw_reaction_event(self, event, client=None):
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
-        if event.event_type == "REACTION_REMOVE" or event.member.name == "stampy" \
+        if event.event_type == "REACTION_REMOVE" or event.member.id == stampy_id \
                 or event.emoji.name not in self.reaction_emoji_list:
             return  # ignore our own reacts, as well as reacts that have no associated command
 
@@ -72,6 +78,26 @@ class FaqModule(Module):
             self.increment_page_stats("Stats:" + answer_page, "ThumbsUp")
 
             await self.send_related_and_follow_up_questions(answer_page, event_channel)
+
+        elif event.emoji.name == self.reject_result_emoji_name:
+            answer_page = reaction_message.content.split("\n")[0]
+
+            self.increment_page_stats("Stats:" + answer_page, "ThumbsDown")
+            flagged_content_message = self.utils.wiki.get_page_content("MediaWiki:Stampy-flagged")
+            if flagged_content_message:
+                flagged_message = await event_channel.send(flagged_content_message)
+
+            feedback_channel = server.get_channel(self.feedback_channel_id)
+            await feedback_channel.send(
+                f"There was a question flagged as having issues over in channel <#{event_channel.id}>.\n" +
+                f"The exact message that was flagged was " +
+                f"https://discord.com/channels/{event.member.guild.id}/{event.channel_id}/{event.message_id}"
+            )
+            task = asyncio.create_task(self.return_to_questions_after_flag(answer_page, event_channel,
+                                                                           flagged_message.created_at, 900))
+            self.channels_waiting_to_return_to_questions[event_channel.id] = task
+            # TODO: if conversation with stampy starts up some other way (user asks stampy a question) we need to kill these
+            # TODO: use self.channels_...to_questions[channelid].cancel()
 
     def __str__(self):
         return "FAQ Module"
@@ -140,6 +166,24 @@ class FaqModule(Module):
             fol_q_text = fol_q_name["displaytitle"] or fol_q_name["fulltext"]
             sq_message = await event_channel.send("Related question: " + fol_q_text)
             await sq_message.add_reaction(self.select_message_emoji_name)
+
+    async def return_to_questions_after_flag(self, answer_page, event_channel, flag_timestamp, wait):
+        await asyncio.sleep(20) #wait)
+        # let the flag be resolved between the user and helpers, and only then continue
+        # the metric is that at least two messages have been sent, and no further messages have been sent for a while
+        earliest_message_timestamp = None
+        latest_message_timestamp = None
+        async for message in event_channel.history(limit=2):
+            earliest_message_timestamp = min(message.created_at, earliest_message_timestamp) if earliest_message_timestamp else message.created_at
+            latest_message_timestamp =  max(message.created_at, latest_message_timestamp) if latest_message_timestamp else message.created_at
+        if earliest_message_timestamp > flag_timestamp \
+                and latest_message_timestamp < datetime.datetime.utcnow() - datetime.timedelta(seconds=20): #wait):
+            await self.send_related_and_follow_up_questions(answer_page, event_channel)
+        else:
+            new_wait = min(2*wait, self.max_wait) # if no conversation has happened, or it is still ongoing wait
+            new_task = asyncio.create_task(self.return_to_questions_after_flag(answer_page, event_channel,
+                                                                               flag_timestamp, new_wait))
+            self.channels_waiting_to_return_to_questions[event_channel.id] = new_task
 
 
 def get_base_name(emoji):
