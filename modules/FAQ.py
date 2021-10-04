@@ -1,13 +1,6 @@
 import discord
-from utilities import Utilities
 from modules.module import Module, Response
 from config import stampy_id
-
-
-def cleanup_prefix(s):
-    return s.removeprefix("Follow-up question: ")\
-            .removeprefix("Related question: ")\
-            .removeprefix("Tagged term explained: ")
 
 
 class FaqModule(Module):
@@ -52,57 +45,33 @@ class FaqModule(Module):
 
         reaction_message = await event_channel.fetch_message(event.message_id)
 
-        if True not in [x.me for x in reaction_message.reactions]:
+        if not any(event.emoji.name == get_base_name(x.emoji) and x.me for x in reaction_message.reactions):
             return  # only care about reacts if we have explicitly marked that message as reactable
 
         # TODO: use the send that can have more than 4000 characters
-        if event.emoji.name == self.select_message_emoji_name:  # TODO: error checking please
-            question_text = cleanup_prefix(reaction_message.content)
-            canonical_question = self.utils.wiki.ask(f"[[{question_text}]]|?CanonicalAnswer")
-            canonical_answers = canonical_question["query"]["results"][question_text]["printouts"]["CanonicalAnswer"]
-            maxStamps = -1
-            answer_text = "No Canonical Response found for that question"
-            for ans in canonical_answers:
-                answer_response = self.utils.wiki.ask(f"[[{ans['fulltext']}]]|?Answer|?StampCount")["query"]["results"][ans['fulltext']]["printouts"]
-                if answer_response["StampCount"][0] > maxStamps:
-                    maxStamps = answer_response["StampCount"]
-                    answer_text = ans['fulltext'] + "\n" + answer_response["Answer"][0]
-            ans_message = await event_channel.send(answer_text)
-            await ans_message.add_reaction(self.approve_result_emoji_name)
-            await ans_message.add_reaction(self.reject_result_emoji_name)
+        if event.emoji.name == self.select_message_emoji_name:
+            question_text = reaction_message.content.removeprefix("Follow-up question: ") \
+                                                    .removeprefix("Related question: ")
+            try:
+                answer_title = self.utils.wiki.get_page_properties(question_text, "CanonicalAnswer")[0]['fulltext']
+                answer_response = self.utils.wiki.get_page_properties(answer_title, "Answer")[0]
+                answer_text = answer_title + "\n" + answer_response
 
-            self.increment_page_stats("Stats:" + ans['fulltext'], "ServedCount")
+                ans_message = await event_channel.send(
+                    answer_text)  # send_wrapper(event_channel, answer_text) #TODO: figure out how to link the message that gets reacted to with the first message with the page name
+                await ans_message.add_reaction(self.approve_result_emoji_name)
+                await ans_message.add_reaction(self.reject_result_emoji_name)
+
+                self.increment_page_stats("Stats:" + answer_title, "ServedCount")
+            except (IndexError, KeyError):
+                await event_channel.send("No Canonical Response found for that question")
+
         elif event.emoji.name == self.approve_result_base_name:
             answer_page = reaction_message.content.split("\n")[0]
 
             self.increment_page_stats("Stats:" + answer_page, "ThumbsUp")
 
-            # test_query = self.utils.wiki.ask(f"[[{answer_page}]]|?AnswerTo")["query"]["results"][answer_page]["printouts"]["AnswerTo"][0]["fulltext"]
-            question_query = self.utils.wiki.ask(f"[[{answer_page}]]|?RelatedQuestion|?FollowUpQuestion|?TaggedQuestion")["query"]["results"][answer_page]["printouts"]
-
-            for rel_q_name in question_query["RelatedQuestion"]:
-                rel_q_text = rel_q_name["displaytitle"] or rel_q_name["fulltext"]
-                sq_message = await event_channel.send("Related question: " + rel_q_text)
-                await sq_message.add_reaction(self.select_message_emoji_name)
-            for foll_q_name in question_query["FollowUpQuestion"]:
-                pass
-            for tagg_q_name in question_query["TaggedQuestion"]:
-                pass
-            # follow_up_questions =
-            """if reaction_message.reference:
-                if reaction_message.reference.resolved: # this can be a DeletedReferencedMessage. TODO: check that
-                    question_message = reaction_message.reference.resolved
-                else:
-                    # i believe it is theoretically possible for the above to not be there because of "laziness"
-                    # so we need to try to fetch it, but i did not find any cases where this happened
-                    question_message = await event_channel.fetch_message(reaction_message.reference.message_id)
-
-                print(question_message)
-                question_query = self.utils.wiki.ask(f"[[{question_message.content}]]|?CanonicalAnswer")"""
-            # TODO: we need to keep track of the page id for this to work
-            #
-            #
-            pass
+            await self.send_related_and_follow_up_questions(answer_page, event_channel)
 
     def __str__(self):
         return "FAQ Module"
@@ -123,32 +92,59 @@ class FaqModule(Module):
 
     async def send_intro(self, channel, author):
         stampy_intro = self.utils.wiki.get_page_content("MediaWiki:Stampy-intro")
-        await channel.send(stampy_intro.replace("$username", author))
+        if stampy_intro:
+            await channel.send(stampy_intro.replace("$username", author))
 
-        suggested_questions = self.utils.wiki.ask("[[Initial_questions]]|?SuggestedQuestion")
+        suggested_questions = self.utils.wiki.get_page_properties("Initial questions", "SuggestedQuestion")
 
-        try:
-            for q in suggested_questions["query"]["results"]["Initial questions"]["printouts"]["SuggestedQuestion"]:
-                sq_message = await channel.send(q["displaytitle"] or q["fulltext"])
-                await sq_message.add_reaction(self.select_message_emoji_name)
-            return True
-        except (KeyError, IndexError) as e:
-            await channel.send(
-                "Something has gone wrong in the fetching of Initial Questions, the @bot-dev team will come to your rescue shortly.\n"
-                + "When they do, show them this: \n" + e)
-            return False
+        if suggested_questions:
+            try:
+                for q in suggested_questions:
+                    sq_message = await channel.send(q["displaytitle"] or q["fulltext"])
+                    await sq_message.add_reaction(self.select_message_emoji_name)
+                return True
+            except (KeyError, IndexError) as e:
+                await channel.send(
+                    "Something has gone wrong in the fetching of Initial Questions, the @bot-dev team will come to your rescue shortly.\n"
+                    + "When they do, show them this: \n" + e)
+                return False
 
-    def increment_page_stats(self, stats_page_name, stat_name):
-        stats_served_count = self.utils.wiki.ask(f"[[{stats_page_name}]]|?{stat_name}")["query"]["results"][stats_page_name]["printouts"][stat_name][0]
+    def increment_page_stats(self, stats_page_name, stat_name, failIfStatNotFound=False):
+        """Increments the stat with the name `stat_name` on the page with name `stats_page_name`."""
+        stats_served_count = self.utils.wiki.get_page_properties(stats_page_name, stat_name)
+        if stats_served_count:
+            stat_count_incremented = stats_served_count[0]+1
+        else:
+            if failIfStatNotFound:
+                raise ValueError(f"Stat {stat_name} was not present on page {stats_page_name}." +
+                                 "If you wished to create the property, unset the failIfStatNotFound parameter")
+            else:
+                stat_count_incremented = 1
         body = {
             "action": "pfautoedit",
             "form": "Stats",
             "target": stats_page_name,
             "format": "json",
-            "query": f"stats[{stat_name.lower()}]={stats_served_count + 1}",
+            "query": f"Stats[{stat_name.lower()}]={stat_count_incremented}",
         }
         print("DEBUG:" + str(self.utils.wiki.post(body)))
 
-    async def test(self, message):
-        stampy_intro = self.utils.wiki.get_page("MediaWiki:Stampy-intro")
-        print(stampy_intro["query"]["pages"][0]["revisions"][0]["slots"]["main"]["content"])
+    async def send_related_and_follow_up_questions(self, answer_page, event_channel):
+        question_query = self.utils.wiki.get_page_properties(answer_page, "RelatedQuestion", "FollowUpQuestion")
+
+        for rel_q_name in question_query["RelatedQuestion"]:
+            rel_q_text = rel_q_name["displaytitle"] or rel_q_name["fulltext"]
+            sq_message = await event_channel.send("Related question: " + rel_q_text)
+            await sq_message.add_reaction(self.select_message_emoji_name)
+        for fol_q_name in question_query["FollowUpQuestion"]:
+            fol_q_text = fol_q_name["displaytitle"] or fol_q_name["fulltext"]
+            sq_message = await event_channel.send("Related question: " + fol_q_text)
+            await sq_message.add_reaction(self.select_message_emoji_name)
+
+
+def get_base_name(emoji):
+    """this is a necesary evil, we could use exclusively custom emotes to avoid having to use this"""
+    if isinstance(emoji, str):
+        return emoji
+    else:
+        return emoji.name
