@@ -114,6 +114,8 @@ class FaqModule(Module):
     def __str__(self):
         return "FAQ Module"
 
+    ## HELPER FUNCTIONS
+
     async def start_FAQ_channel(self, message):
         server = message.guild
         template_channel = server.get_channel(self.template_channel_id)
@@ -124,7 +126,7 @@ class FaqModule(Module):
         await new_channel.set_permissions(message.author, overwrite=discord.PermissionOverwrite(view_channel=True))
 
         if not await self.send_intro(new_channel, message.author.name):
-            return Response(text="", confidence=10)
+            return Response(text="Something went wrong in the creation of a personal FAQ Channel", confidence=10)
 
         return Response(text="DEBUG: done!", confidence=10)
 
