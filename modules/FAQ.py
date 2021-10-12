@@ -31,13 +31,9 @@ class FaqModule(Module):
         #    return Response(callback=self.send_first_questions, args=[message], confidence=10)
         elif message.content == "test something for me, stampy":
             return Response(callback=self.test, args=[message], confidence=10)
-        else:
-            print("didnt get the specific test message")
-
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
-        """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
-        Use this to allow modules to handle adding and removing reactions on messages"""
-        return Response()
+        elif message.content.endswith("?") and message.channel.name == \
+                "faq-for-" + message.author.name.lower().replace(" ", "-") + str(message.author.discriminator):
+            return Response(callback=self.look_up_question_from_user, args=[message], confidence=10)
 
     async def process_raw_reaction_event(self, event, client=None):
         """event is a discord.RawReactionActionEvent object
@@ -61,18 +57,7 @@ class FaqModule(Module):
             question_text = reaction_message.content.removeprefix("Follow-up question: ")\
                                                     .removeprefix("Related question: ")
             try:
-                answer_title = self.utils.wiki.get_page_properties(question_text, "CanonicalAnswer")[0]['fulltext']
-                answer_response = self.utils.wiki.get_page_properties(answer_title, "Answer")[0]
-                answer_text = answer_title + "\n" + answer_response
-
-                ans_messages = await self.utils.send_wrapper(event_channel, answer_text)
-                if ans_messages:
-                    if len(ans_messages) != 1:
-                        self.question_titles_for_large_answers[ans_messages[-1].id] = answer_title
-                    await ans_messages[-1].add_reaction(self.approve_result_emoji_name)
-                    await ans_messages[-1].add_reaction(self.reject_result_emoji_name)
-
-                self.increment_page_stats("Stats:" + answer_title, "ServedCount")
+                await self.serve_answer(event_channel, question_text)
             except (IndexError, KeyError):
                 await self.utils.send_wrapper(event_channel, "No Canonical Response found for that question")
 
@@ -82,8 +67,6 @@ class FaqModule(Module):
             else:
                 answer_page = reaction_message.content.split("\n")[0]
 
-            self.increment_page_stats("Stats:" + answer_page, "ThumbsUp")
-
             await self.send_related_and_follow_up_questions(answer_page, event_channel)
 
         elif event.emoji.name == self.reject_result_emoji_name:
@@ -92,29 +75,13 @@ class FaqModule(Module):
             else:
                 answer_page = reaction_message.content.split("\n")[0]
 
-            self.increment_page_stats("Stats:" + answer_page, "ThumbsDown")
-            flagged_content_message = self.utils.wiki.get_page_content("MediaWiki:Stampy-flagged")
-            if flagged_content_message:
-                flagged_message = await self.utils.send_wrapper(event_channel, flagged_content_message)
-
-            feedback_channel = server.get_channel(self.feedback_channel_id)
-            await self.utils.send_wrapper(
-                feedback_channel,
-                f"There was a question flagged as having issues over in channel <#{event_channel.id}>.\n" +
-                f"The exact message that was flagged was " +
-                f"https://discord.com/channels/{event.member.guild.id}/{event.channel_id}/{event.message_id}"
-
-            )
-            task = asyncio.create_task(self.return_to_questions_after_flag(answer_page, event_channel,
-                                                                           flagged_message[0].created_at, 900))
-            self.channels_waiting_to_return_to_questions[event_channel.id] = task
-            # TODO: if conversation with stampy starts up some other way (user asks stampy a question) we need to kill these
-            # TODO: use self.channels_...to_questions[channelid].cancel()
+            await self.alert_helpers_and_put_channel_in_feedback_mode(answer_page, event_channel, server,
+                    f"https://discord.com/channels/{event.member.guild.id}/{event.channel_id}/{event.message_id}")
 
     def __str__(self):
         return "FAQ Module"
 
-    ## HELPER FUNCTIONS
+    # WORKFLOW FUNCTIONS
 
     async def start_FAQ_channel(self, message):
         server = message.guild
@@ -152,13 +119,27 @@ class FaqModule(Module):
                 )
                 return False
 
-    def increment_page_stats(self, stats_page_name, stat_name, failIfStatNotFound=False):
+    async def serve_answer(self, channel, question_text):
+        answer_title = self.utils.wiki.get_page_properties(question_text, "CanonicalAnswer")[0]['fulltext']
+        answer_response = self.utils.wiki.get_page_properties(answer_title, "Answer")[0]
+        answer_text = answer_title + "\n" + answer_response
+
+        ans_messages = await self.utils.send_wrapper(channel, answer_text)
+        if ans_messages:
+            if len(ans_messages) != 1:
+                self.question_titles_for_large_answers[ans_messages[-1].id] = answer_title
+            await ans_messages[-1].add_reaction(self.approve_result_emoji_name)
+            await ans_messages[-1].add_reaction(self.reject_result_emoji_name)
+
+        self.increment_page_stats("Stats:" + answer_title, "ServedCount")
+
+    def increment_page_stats(self, stats_page_name, stat_name, fail_if_stat_not_found=False):
         """Increments the stat with the name `stat_name` on the page with name `stats_page_name`."""
         stats_served_count = self.utils.wiki.get_page_properties(stats_page_name, stat_name)
         if stats_served_count:
             stat_count_incremented = stats_served_count[0]+1
         else:
-            if failIfStatNotFound:
+            if fail_if_stat_not_found:
                 raise ValueError(f"Stat {stat_name} was not present on page {stats_page_name}." +
                                  "If you wished to create the property, unset the failIfStatNotFound parameter")
             else:
@@ -173,6 +154,8 @@ class FaqModule(Module):
         print("DEBUG:" + str(self.utils.wiki.post(body)))
 
     async def send_related_and_follow_up_questions(self, answer_page, event_channel):
+        self.increment_page_stats("Stats:" + answer_page, "ThumbsUp")
+
         question_query = self.utils.wiki.get_page_properties(answer_page, "RelatedQuestion", "FollowUpQuestion")
 
         if question_query:
@@ -192,24 +175,57 @@ class FaqModule(Module):
                                           "have any questions after reading that, feel free to ask them here and ill " +
                                           "do my best to help with answers to them.")
 
+    async def alert_helpers_and_put_channel_in_feedback_mode(self, answer_page, event_channel, server, link_to_message):
+        self.increment_page_stats("Stats:" + answer_page, "ThumbsDown")
+        flagged_content_message = self.utils.wiki.get_page_content("MediaWiki:Stampy-flagged")
+        if flagged_content_message:
+            flagged_message = await self.utils.send_wrapper(event_channel, flagged_content_message)
+
+            feedback_channel = server.get_channel(self.feedback_channel_id)
+            await self.utils.send_wrapper(
+                feedback_channel,
+                f"There was a question flagged as having issues over in channel <#{event_channel.id}>.\n" +
+                f"The exact message that was flagged was {link_to_message}"
+            )
+            task = asyncio.create_task(self.return_to_questions_after_flag(answer_page, event_channel,
+                                                                           flagged_message[0].created_at, 900))
+            self.channels_waiting_to_return_to_questions[event_channel.id] = task
+
+            # TODO: if conversation with stampy starts up some other way (user asks stampy a question) we need to kill these
+            # TODO: use self.channels_...to_questions[channelid].cancel()
+
     async def return_to_questions_after_flag(self, answer_page, event_channel, flag_timestamp, wait):
-        await asyncio.sleep(20) #wait)
+        await asyncio.sleep(wait)
         # let the flag be resolved between the user and helpers, and only then continue
         # the metric is that at least two messages have been sent, and no further messages have been sent for a while
         earliest_message_timestamp = None
         latest_message_timestamp = None
         async for message in event_channel.history(limit=2):
             earliest_message_timestamp = min(message.created_at, earliest_message_timestamp) if earliest_message_timestamp else message.created_at
-            latest_message_timestamp =  max(message.created_at, latest_message_timestamp) if latest_message_timestamp else message.created_at
+            latest_message_timestamp = max(message.created_at, latest_message_timestamp) if latest_message_timestamp else message.created_at
         if earliest_message_timestamp > flag_timestamp \
                 and latest_message_timestamp < datetime.datetime.utcnow() - datetime.timedelta(seconds=20): #wait):
             await self.send_related_and_follow_up_questions(answer_page, event_channel)
         else:
-            new_wait = min(2*wait, self.max_wait) # if no conversation has happened, or it is still ongoing wait
+            new_wait = min(2*wait, self.max_wait)  # if no conversation has happened, or it is still ongoing wait
             new_task = asyncio.create_task(self.return_to_questions_after_flag(answer_page, event_channel,
                                                                                flag_timestamp, new_wait))
             self.channels_waiting_to_return_to_questions[event_channel.id] = new_task
 
+    async def look_up_question_from_user(self, message):
+        direct_match_text = self.utils.wiki.get_page_content(message.content)
+        if direct_match_text:
+            await self.serve_answer(message.channel, message.content)
+            return Response(text="", confidence=10)
+
+        questions_matched_by_semanticsearch = []  # TODO: eventually connect this to something
+        if questions_matched_by_semanticsearch:
+            pass
+
+        return Response(callback=self.prompt_user_to_add_question_to_wiki, confidence=7)  # TODO: clear up confidences
+
+    async def prompt_user_to_add_question_to_wiki(self):
+        pass # TODO: implement
 
 def get_base_name(emoji):
     """this is a necesary evil, we could use exclusively custom emotes to avoid having to use this"""
