@@ -15,6 +15,7 @@ class FaqModule(Module):
     approve_result_emoji_name = f"<:{approve_result_base_name}:870032324279033896>"
     reject_result_emoji_name = "🚩"
     reaction_emoji_list = [select_message_emoji_name, approve_result_base_name, reject_result_emoji_name]
+    none_of_the_above_text = "None of the above (add this question to the wiki for team Stampy to answer)"
     max_wait = 3600
 
     channels_waiting_to_return_to_questions = {}
@@ -54,12 +55,13 @@ class FaqModule(Module):
             return  # only care about reacts if we have explicitly marked that message as reactable
 
         if event.emoji.name == self.select_message_emoji_name:
-            question_text = reaction_message.content.removeprefix("Follow-up question: ")\
-                                                    .removeprefix("Related question: ")
-            try:
+            if reaction_message.content == self.none_of_the_above_text:
+                await self.add_user_question_to_wiki(reaction_message)
+            else:
+                question_text = reaction_message.content.removeprefix("Follow-up question: ")\
+                                                        .removeprefix("Related question: ")
+
                 await self.serve_answer(event_channel, question_text)
-            except (IndexError, KeyError):
-                await self.utils.send_wrapper(event_channel, "No Canonical Response found for that question")
 
         elif event.emoji.name == self.approve_result_base_name:
             if event.message_id in self.question_titles_for_large_answers:
@@ -107,9 +109,7 @@ class FaqModule(Module):
         if suggested_questions:
             try:
                 for q in suggested_questions:
-                    sq_message = await self.utils.send_wrapper(channel, q["displaytitle"] or q["fulltext"])
-                    if sq_message:
-                        await sq_message[-1].add_reaction(self.select_message_emoji_name)
+                    await self.send_possible_question_and_react(channel, q["displaytitle"] or q["fulltext"])
                 return True
             except (KeyError, IndexError) as e:
                 await self.utils.send_wrapper(
@@ -120,38 +120,21 @@ class FaqModule(Module):
                 return False
 
     async def serve_answer(self, channel, question_text):
-        answer_title = self.utils.wiki.get_page_properties(question_text, "CanonicalAnswer")[0]['fulltext']
-        answer_response = self.utils.wiki.get_page_properties(answer_title, "Answer")[0]
-        answer_text = answer_title + "\n" + answer_response
+        answer_title = self.utils.wiki.get_page_properties(question_text, "CanonicalAnswer")
+        if answer_title and 'fulltext' in answer_title[0]:
+            answer_response = self.utils.wiki.get_page_properties(answer_title[0]['fulltext'], "Answer")[0]
+            answer_text = answer_title[0]['fulltext'] + "\n" + answer_response
 
-        ans_messages = await self.utils.send_wrapper(channel, answer_text)
-        if ans_messages:
-            if len(ans_messages) != 1:
-                self.question_titles_for_large_answers[ans_messages[-1].id] = answer_title
-            await ans_messages[-1].add_reaction(self.approve_result_emoji_name)
-            await ans_messages[-1].add_reaction(self.reject_result_emoji_name)
+            ans_messages = await self.utils.send_wrapper(channel, answer_text)
+            if ans_messages:
+                if len(ans_messages) != 1:
+                    self.question_titles_for_large_answers[ans_messages[-1].id] = answer_title[0]['fulltext']
+                await ans_messages[-1].add_reaction(self.approve_result_emoji_name)
+                await ans_messages[-1].add_reaction(self.reject_result_emoji_name)
 
-        self.increment_page_stats("Stats:" + answer_title, "ServedCount")
-
-    def increment_page_stats(self, stats_page_name, stat_name, fail_if_stat_not_found=False):
-        """Increments the stat with the name `stat_name` on the page with name `stats_page_name`."""
-        stats_served_count = self.utils.wiki.get_page_properties(stats_page_name, stat_name)
-        if stats_served_count:
-            stat_count_incremented = stats_served_count[0]+1
+            self.increment_page_stats("Stats:" + answer_title[0]['fulltext'], "ServedCount")
         else:
-            if fail_if_stat_not_found:
-                raise ValueError(f"Stat {stat_name} was not present on page {stats_page_name}." +
-                                 "If you wished to create the property, unset the failIfStatNotFound parameter")
-            else:
-                stat_count_incremented = 1
-        body = {
-            "action": "pfautoedit",
-            "form": "Stats",
-            "target": stats_page_name,
-            "format": "json",
-            "query": f"stats[{stat_name.lower()}]={stat_count_incremented}",
-        }
-        print("DEBUG:" + str(self.utils.wiki.post(body)))
+            await channel.send("No Canonical Response found for that question")
 
     async def send_related_and_follow_up_questions(self, answer_page, event_channel):
         self.increment_page_stats("Stats:" + answer_page, "ThumbsUp")
@@ -161,14 +144,10 @@ class FaqModule(Module):
         if question_query:
             for rel_q_name in question_query["RelatedQuestion"]:
                 rel_q_text = rel_q_name["displaytitle"] or rel_q_name["fulltext"]
-                sq_message = await self.utils.send_wrapper(event_channel, "Related question: " + rel_q_text)
-                if sq_message:
-                    await sq_message[-1].add_reaction(self.select_message_emoji_name)
+                await self.send_possible_question_and_react(event_channel, "Related question: " + rel_q_text)
             for fol_q_name in question_query["FollowUpQuestion"]:
                 fol_q_text = fol_q_name["displaytitle"] or fol_q_name["fulltext"]
-                sq_message = await self.utils.send_wrapper(event_channel, "Related question: " + fol_q_text)
-                if sq_message:
-                    await sq_message[-1].add_reaction(self.select_message_emoji_name)
+                await self.send_possible_question_and_react(event_channel, "Related question: " + fol_q_text)
         else:
             await self.utils.send_wrapper(event_channel, "Thanks for marking the answers as good, there are " +
                                           "unfortunately no related or follow up questions to that answer. If you " +
@@ -218,14 +197,54 @@ class FaqModule(Module):
             await self.serve_answer(message.channel, message.content)
             return Response(text="", confidence=10)
 
-        questions_matched_by_semanticsearch = []  # TODO: eventually connect this to something
-        if questions_matched_by_semanticsearch:
-            pass
+        questions_matched_by_semanticsearch = ["SemanticSearchPlaceholder1", "SemanticSearchPlaceholder2"]
+        # TODO: eventually connect this to something
+        for question_text in questions_matched_by_semanticsearch:
+            await self.send_possible_question_and_react(message.channel, question_text)
+        reply = await message.reply(self.none_of_the_above_text)
+        if reply:
+            await reply.add_reaction(self.select_message_emoji_name)
 
-        return Response(callback=self.prompt_user_to_add_question_to_wiki, confidence=7)  # TODO: clear up confidences
+        return Response(text="", confidence=10)
 
-    async def prompt_user_to_add_question_to_wiki(self):
-        pass # TODO: implement
+    async def add_user_question_to_wiki(self, none_message):
+        question_message = await none_message.channel.fetch_message(none_message.reference.message_id)
+        self.utils.wiki.edit(question_message.content, f"Question Asked by user {question_message.author.name} during "
+                             + "the course of an FAQ session")
+
+        wiki_page_link = f"https://stampy.ai/wiki/{question_message.content.replace(' ', '_').replace('?','%3F')}"
+        await self.utils.send_wrapper(
+            none_message.channel,
+            "Adding your question to the wiki. If you would like to elaborate on the question " +
+            f"you can head over to {wiki_page_link}.\nWhenever someone answers it, they will let you know"
+        )
+
+    # GENERAL FUNCTIONS
+
+    async def send_possible_question_and_react(self, channel, question_title):
+        sq_message = await self.utils.send_wrapper(channel, question_title)
+        if sq_message:
+            await sq_message[-1].add_reaction(self.select_message_emoji_name)
+
+    def increment_page_stats(self, stats_page_name, stat_name, fail_if_stat_not_found=False):
+        """Increments the stat with the name `stat_name` on the page with name `stats_page_name`."""
+        stats_served_count = self.utils.wiki.get_page_properties(stats_page_name, stat_name)
+        if stats_served_count:
+            stat_count_incremented = stats_served_count[0]+1
+        else:
+            if fail_if_stat_not_found:
+                raise ValueError(f"Stat {stat_name} was not present on page {stats_page_name}." +
+                                 "If you wished to create the property, unset the failIfStatNotFound parameter")
+            else:
+                stat_count_incremented = 1
+        body = {
+            "action": "pfautoedit",
+            "form": "Stats",
+            "target": stats_page_name,
+            "format": "json",
+            "query": f"stats[{stat_name.lower()}]={stat_count_incremented}",
+        }
+        print("DEBUG:" + str(self.utils.wiki.post(body)))
 
 def get_base_name(emoji):
     """this is a necesary evil, we could use exclusively custom emotes to avoid having to use this"""
