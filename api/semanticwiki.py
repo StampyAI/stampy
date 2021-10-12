@@ -137,13 +137,15 @@ class SemanticWiki(Persistence):
             try:
                 properties_string = "|?".join(properties)
                 return self.ask(f"[[{pagename}]]|?{properties_string}")["query"]["results"][pagename]["printouts"]
-            except (KeyError, IndexError):
+            except (KeyError, IndexError, TypeError):
                 return None
+                # Type error needs to be caught because "results" is an empty array, not an empty dict, when empty
         elif len(properties) == 1:
             try:
                 return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][pagename]["printouts"][properties[0]]
-            except (KeyError, IndexError):
+            except (KeyError, IndexError, TypeError):
                 return None
+                # Type error needs to be caught because "results" is an empty array, not an empty dict, when empty
         else:
             raise ValueError("get_page_properties requires at least one property as input")
 

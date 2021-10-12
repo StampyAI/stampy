@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+
 import discord
 from modules.module import Module, Response
 from config import stampy_id
@@ -17,6 +18,8 @@ class FaqModule(Module):
     max_wait = 3600
 
     channels_waiting_to_return_to_questions = {}
+
+    question_titles_for_large_answers = {}
 
     def process_message(self, message, client=None):
         if type(message.channel) == discord.DMChannel:
@@ -54,47 +57,56 @@ class FaqModule(Module):
         if not any(event.emoji.name == get_base_name(x.emoji) and x.me for x in reaction_message.reactions):
             return  # only care about reacts if we have explicitly marked that message as reactable
 
-        # TODO: use the send that can have more than 4000 characters
         if event.emoji.name == self.select_message_emoji_name:
-            question_text = reaction_message.content.removeprefix("Follow-up question: ") \
+            question_text = reaction_message.content.removeprefix("Follow-up question: ")\
                                                     .removeprefix("Related question: ")
             try:
                 answer_title = self.utils.wiki.get_page_properties(question_text, "CanonicalAnswer")[0]['fulltext']
                 answer_response = self.utils.wiki.get_page_properties(answer_title, "Answer")[0]
                 answer_text = answer_title + "\n" + answer_response
 
-                ans_message = await event_channel.send(
-                    answer_text)  # send_wrapper(event_channel, answer_text) #TODO: figure out how to link the message that gets reacted to with the first message with the page name
-                await ans_message.add_reaction(self.approve_result_emoji_name)
-                await ans_message.add_reaction(self.reject_result_emoji_name)
+                ans_messages = await self.utils.send_wrapper(event_channel, answer_text)
+                if ans_messages:
+                    if len(ans_messages) != 1:
+                        self.question_titles_for_large_answers[ans_messages[-1].id] = answer_title
+                    await ans_messages[-1].add_reaction(self.approve_result_emoji_name)
+                    await ans_messages[-1].add_reaction(self.reject_result_emoji_name)
 
                 self.increment_page_stats("Stats:" + answer_title, "ServedCount")
             except (IndexError, KeyError):
-                await event_channel.send("No Canonical Response found for that question")
+                await self.utils.send_wrapper(event_channel, "No Canonical Response found for that question")
 
         elif event.emoji.name == self.approve_result_base_name:
-            answer_page = reaction_message.content.split("\n")[0]
+            if event.message_id in self.question_titles_for_large_answers:
+                answer_page = self.question_titles_for_large_answers[event.message_id]
+            else:
+                answer_page = reaction_message.content.split("\n")[0]
 
             self.increment_page_stats("Stats:" + answer_page, "ThumbsUp")
 
             await self.send_related_and_follow_up_questions(answer_page, event_channel)
 
         elif event.emoji.name == self.reject_result_emoji_name:
-            answer_page = reaction_message.content.split("\n")[0]
+            if event.message_id in self.question_titles_for_large_answers:
+                answer_page = self.question_titles_for_large_answers[event.message_id]
+            else:
+                answer_page = reaction_message.content.split("\n")[0]
 
             self.increment_page_stats("Stats:" + answer_page, "ThumbsDown")
             flagged_content_message = self.utils.wiki.get_page_content("MediaWiki:Stampy-flagged")
             if flagged_content_message:
-                flagged_message = await event_channel.send(flagged_content_message)
+                flagged_message = await self.utils.send_wrapper(event_channel, flagged_content_message)
 
             feedback_channel = server.get_channel(self.feedback_channel_id)
-            await feedback_channel.send(
+            await self.utils.send_wrapper(
+                feedback_channel,
                 f"There was a question flagged as having issues over in channel <#{event_channel.id}>.\n" +
                 f"The exact message that was flagged was " +
                 f"https://discord.com/channels/{event.member.guild.id}/{event.channel_id}/{event.message_id}"
+
             )
             task = asyncio.create_task(self.return_to_questions_after_flag(answer_page, event_channel,
-                                                                           flagged_message.created_at, 900))
+                                                                           flagged_message[0].created_at, 900))
             self.channels_waiting_to_return_to_questions[event_channel.id] = task
             # TODO: if conversation with stampy starts up some other way (user asks stampy a question) we need to kill these
             # TODO: use self.channels_...to_questions[channelid].cancel()
@@ -119,20 +131,23 @@ class FaqModule(Module):
     async def send_intro(self, channel, author):
         stampy_intro = self.utils.wiki.get_page_content("MediaWiki:Stampy-intro")
         if stampy_intro:
-            await channel.send(stampy_intro.replace("$username", author))
+            await self.utils.send_wrapper(channel, stampy_intro.replace("$username", author))
 
         suggested_questions = self.utils.wiki.get_page_properties("Initial questions", "SuggestedQuestion")
 
         if suggested_questions:
             try:
                 for q in suggested_questions:
-                    sq_message = await channel.send(q["displaytitle"] or q["fulltext"])
-                    await sq_message.add_reaction(self.select_message_emoji_name)
+                    sq_message = await self.utils.send_wrapper(channel, q["displaytitle"] or q["fulltext"])
+                    if sq_message:
+                        await sq_message[-1].add_reaction(self.select_message_emoji_name)
                 return True
             except (KeyError, IndexError) as e:
-                await channel.send(
-                    "Something has gone wrong in the fetching of Initial Questions, the @bot-dev team will come to your rescue shortly.\n"
-                    + "When they do, show them this: \n" + e)
+                await self.utils.send_wrapper(
+                    channel,
+                    "Something has gone wrong in the fetching of Initial Questions, the @bot-dev team will come "
+                    + "to your rescue shortly.\nWhen they do, show them this: \n" + e
+                )
                 return False
 
     def increment_page_stats(self, stats_page_name, stat_name, failIfStatNotFound=False):
@@ -151,21 +166,29 @@ class FaqModule(Module):
             "form": "Stats",
             "target": stats_page_name,
             "format": "json",
-            "query": f"Stats[{stat_name.lower()}]={stat_count_incremented}",
+            "query": f"stats[{stat_name.lower()}]={stat_count_incremented}",
         }
         print("DEBUG:" + str(self.utils.wiki.post(body)))
 
     async def send_related_and_follow_up_questions(self, answer_page, event_channel):
         question_query = self.utils.wiki.get_page_properties(answer_page, "RelatedQuestion", "FollowUpQuestion")
 
-        for rel_q_name in question_query["RelatedQuestion"]:
-            rel_q_text = rel_q_name["displaytitle"] or rel_q_name["fulltext"]
-            sq_message = await event_channel.send("Related question: " + rel_q_text)
-            await sq_message.add_reaction(self.select_message_emoji_name)
-        for fol_q_name in question_query["FollowUpQuestion"]:
-            fol_q_text = fol_q_name["displaytitle"] or fol_q_name["fulltext"]
-            sq_message = await event_channel.send("Related question: " + fol_q_text)
-            await sq_message.add_reaction(self.select_message_emoji_name)
+        if question_query:
+            for rel_q_name in question_query["RelatedQuestion"]:
+                rel_q_text = rel_q_name["displaytitle"] or rel_q_name["fulltext"]
+                sq_message = await self.utils.send_wrapper(event_channel, "Related question: " + rel_q_text)
+                if sq_message:
+                    await sq_message[-1].add_reaction(self.select_message_emoji_name)
+            for fol_q_name in question_query["FollowUpQuestion"]:
+                fol_q_text = fol_q_name["displaytitle"] or fol_q_name["fulltext"]
+                sq_message = await self.utils.send_wrapper(event_channel, "Related question: " + fol_q_text)
+                if sq_message:
+                    await sq_message[-1].add_reaction(self.select_message_emoji_name)
+        else:
+            await self.utils.send_wrapper(event_channel, "Thanks for marking the answers as good, there are " +
+                                          "unfortunately no related or follow up questions to that answer. If you " +
+                                          "have any questions after reading that, feel free to ask them here and ill " +
+                                          "do my best to help with answers to them.")
 
     async def return_to_questions_after_flag(self, answer_page, event_channel, flag_timestamp, wait):
         await asyncio.sleep(20) #wait)

@@ -12,6 +12,7 @@ from api.semanticwiki import SemanticWiki
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
+import textwrap
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -112,6 +113,31 @@ class Utilities:
 
     def stampy_is_author(self, message):
         return message.author == self.client.user
+
+    @staticmethod
+    async def send_wrapper(channel, text, embed=None):
+        """sends a series of messages to the specified `channel`, so that together they compose the entirety of `text`
+        some modules might want to recieve an object of the message they just sent. For those cases a list of the
+        sent messages is returned. (where the first element is the first message sent)
+
+        If `text` contains more than 20000 characters, Stampy sends an error message to the `channel` instead.
+        In this case Stampy returns a list of exacltly one element, containing the error message
+
+        If an embed is provided, it will be sent with the last message in the chain
+
+        NOTE: if making this list turns out to be a significant time/space cost
+        we should offer another function just sends the messages and returns nothing
+        """
+        if len(text) > 20000:
+            return [await channel.send("I have a perfect response for this, but it is too large to fit in this margin")]
+        #
+        message_chain = []
+        split_text = textwrap.wrap(text, 2000, replace_whitespace=False, drop_whitespace=False)
+        for line in split_text[:-1]:
+            message_chain.append(await channel.send(line))
+        message_chain.append(await channel.send(split_text[-1], embed=embed))
+        return message_chain
+
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -445,20 +471,20 @@ def get_github_info():
 
 
 def get_running_user_info():
-    user_info = pwd.getpwuid(os.getuid())
-    message = (
-        "The last user to start my server was %(username)s."
-        + "\nThey used the %(shell)s shell."
-        + "\nMy Process ID is %(pid)s on this machine"
-    )
-    return message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
+    # user_info = pwd.getpwuid(os.getuid())
+    # message = (
+    #     "The last user to start my server was %(username)s."
+    #     + "\nThey used the %(shell)s shell."
+    #     + "\nMy Process ID is %(pid)s on this machine"
+    # )
+    return "does not work on windows"  # message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
 
 
 def get_memory_usage():
-    process = psutil.Process(os.getpid())
-    bytes_used = int(process.memory_info().rss) / 1000000
-    megabytes_string = f"{bytes_used:,.2f} MegaBytes"
-    return "I'm using %s bytes of memory" % megabytes_string
+    # process = psutil.Process(os.getpid())
+    # bytes_used = int(process.memory_info().rss) / 1000000
+    # megabytes_string = f"{bytes_used:,.2f} MegaBytes"
+    return "Does not work on Windows"  # "I'm using %s bytes of memory" % megabytes_string
 
 
 def get_question_id(message):
