@@ -183,7 +183,7 @@ class FaqModule(Module):
             earliest_message_timestamp = min(message.created_at, earliest_message_timestamp) if earliest_message_timestamp else message.created_at
             latest_message_timestamp = max(message.created_at, latest_message_timestamp) if latest_message_timestamp else message.created_at
         if earliest_message_timestamp > flag_timestamp \
-                and latest_message_timestamp < datetime.datetime.utcnow() - datetime.timedelta(seconds=20): #wait):
+                and latest_message_timestamp < datetime.datetime.utcnow() - datetime.timedelta(seconds=wait):
             await self.send_related_and_follow_up_questions(answer_page, event_channel)
         else:
             new_wait = min(2*wait, self.max_wait)  # if no conversation has happened, or it is still ongoing wait
@@ -245,6 +245,7 @@ class FaqModule(Module):
             "query": f"stats[{stat_name.lower()}]={stat_count_incremented}",
         }
         print("DEBUG:" + str(self.utils.wiki.post(body)))
+
 
 def get_base_name(emoji):
     """this is a necesary evil, we could use exclusively custom emotes to avoid having to use this"""
