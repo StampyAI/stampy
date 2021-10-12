@@ -20,7 +20,6 @@ subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
 rob_id = 181142785259208704
-stampy_id = "736241264856662038"
 plex_id = "756254556811165756"
 god_id = "0"
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
@@ -49,6 +48,11 @@ assert (
     ENVIRONMENT_TYPE in acceptable_environment_types
 ), f"ENVIRONMENT_TYPE {ENVIRONMENT_TYPE} is not in {acceptable_environment_types}"
 
+
+stampy_id = {
+    "production": 736241264856662038,
+    "development": 783124546097905695
+}[ENVIRONMENT_TYPE]
 rob_miles_youtube_channel_id = {
     "production": "UCLB7AzTwc6VFZrBsO2ucBMg",
     "development": "UCDvKrlpIXM0BGYLD2jjLGvg",
