@@ -104,10 +104,18 @@ class StampsModule(Module):
 
     def export_scores_csv(self):
         print(f"Logging scores to {stamp_scores_csv_file_path}")
-        with open(stamp_scores_csv_file_path, "w") as csv_file:
-            for user_id in self.utils.get_users():
-                score = self.get_user_stamps(user_id)
-                csv_file.write(f"{user_id},{score}\n")
+        csv_lines = []
+        for user_id in self.utils.get_users():
+            score = self.get_user_stamps(user_id)
+            name = self.utils.client.get_user(user_id)
+            if user_id and name:  # don't bother for id 0 or if the name is None
+                csv_lines.append(f"""{user_id},"{name}",{score}\n""")
+        try:
+            with open(stamp_scores_csv_file_path, "w") as csv_file:
+                csv_file.write("".join(csv_lines))
+        except Exception as e:
+            print("Unable to export scores to CSV:")
+            print(Exception, e)
 
     def print_all_scores(self):
         total_stamps = 0
