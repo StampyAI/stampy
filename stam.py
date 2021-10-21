@@ -19,6 +19,7 @@ from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
 from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
+from modules.wikisemanticsearch import WikiSemanticSearch
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -257,6 +258,7 @@ if __name__ == "__main__":
         "WikiUpdate": WikiUpdate(),
         "Atemporal": AtemporalModule(),
         "TestModule": TestModule(),
+        "WikiSemanticSearch": WikiSemanticSearch(),
     }
     modules = utils.modules_dict.values()
 
