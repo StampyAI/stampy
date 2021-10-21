@@ -1,6 +1,7 @@
 import re
 import discord
 from modules.module import Module, Response
+from config import rob_id
 
 
 class InviteManager(Module):
@@ -8,7 +9,7 @@ class InviteManager(Module):
         Module.__init__(self)
         self.re_request = re.compile(
             r"([pP]lease )?(([cC]an|[cC]ould) you )?(([Cc]reate|[mM]ake|[gG]ive|[gG]enerate) (me )?|"
-            "([Cc]an|[mM]ay) [iI] (get|have) )((an|a new|my) )?[Ii]nvite( link)?,?( please| pls)?"
+            "([Cc]an|[mM]ay) [iI] (get|have) )((an|a new|my|\d+) )?[Ii]nvites?( link)?s?,?( please| pls)?"
         )
         self.sorry_message = (
             "Sorry, you don't have the `can-invite` role.\nEither you recently "
@@ -36,11 +37,45 @@ class InviteManager(Module):
         return Response()
 
     async def post_invite(self, message):
-        """Generate and send an invite"""
+        """Generate and send one or more invites"""
         guild, invite_role = self.get_guild_and_invite_role()
-
         welcome = discord.utils.find(lambda c: c.name == "welcome", guild.channels)
         member = guild.get_member(message.author.id)
+
+        text = self.is_at_me(message)
+        m = re.search("\d+", text)  # if this is a request for multiple invites
+        if m:
+            if message.author.id != rob_id:
+                return Response(
+                    confidence=10,
+                    text="Sorry, you can only get 1 invite at a time",
+                    why=f"{message.author.name} asked for more than one invite, which isn't allowed",
+                )
+
+            count = int(m.group(0))
+            if count > 50:
+                return Response(
+                    confidence=10,
+                    text="Sorry, that's too many to ask for at once",
+                    why=f"{message.author.name} asked for {count} invites, which is too many",
+                )
+
+            return_string = "Here are your invites:"
+            for _ in range(count):
+                invite = await welcome.create_invite(
+                    max_uses=1,
+                    temporary=False,
+                    unique=True,
+                    reason="Requested by %s" % message.author.name,
+                )
+                return_string += "\n<%s>" % invite.url
+            return Response(
+                confidence=10,
+                text=return_string,
+                why=f"{message.author.name} asked for {count} invites, so I generated them",
+            )
+
+        # if we're here, only one invite was requested
         invite = await welcome.create_invite(
             max_uses=1,
             temporary=False,
