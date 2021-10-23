@@ -70,7 +70,7 @@ class GPT3Module(Module):
     def generate_chatlog_prompt(self, channel):
         users = set([])
         for message in self.message_logs[channel]:
-            if message.author.name != "Stampy":
+            if message.author.name != "stampy":
                 users.add(message.author.name)
         users_string = ", ".join(users)
         if len(users) > 1:
@@ -145,8 +145,8 @@ class GPT3Module(Module):
         if response["choices"]:
             choice = response["choices"][0]
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
-                print("GPT-3 Replied!:")
                 text = choice["text"].strip(". ")
+                print("GPT-3 Replied!:", text)
                 return Response(
                     confidence=10,
                     text=f"*{text}*",
