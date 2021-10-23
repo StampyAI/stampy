@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # j = json.load(open("3questions.json"))
     j = json.load(open("allcanonical.json"))
     for result in j["query"]["results"].values():
-        question_title = result["fulltext"]  # misleadingly named in the query result
+        question_title = result["fulltext"]  # this is the title, misleadingly named in the query result
         question_text = result["printouts"]["Question"][0][:max_question_chars]
         question_url = result["fullurl"]
 
@@ -18,6 +18,11 @@ if __name__ == "__main__":
         if question_text != question_title:
             question_full_text += f"\n\n{question_text}"
 
+        # We only get to store a single string with openai as 'metadata'.
+        # It would be fine to make this just the url to the question
+        # but we'll for sure want to store other things in future
+        # is it canonical? has it been replied to? etc.
+        # so we'll store a json string of a dict instead
         metadata = json.dumps({"url": question_url})
 
         # print(question_text, question_title)
@@ -34,6 +39,7 @@ if __name__ == "__main__":
 
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
+    # upload the jsonl 'file' to openai
     # response = openai.File.create(file=io.StringIO(openai_jsonl), purpose="search")  #
     # if response["status"] == "uploaded":
     #     file_id = response["id"]
