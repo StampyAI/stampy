@@ -37,9 +37,9 @@ class GPT3Module(Module):
             "Q: "
         )
         self.message_logs = {}  # one message log per channel
-        self.log_length_messages = 10  # don't store more than X messages back
-        self.log_messages_length_chars = 500  # crop messages longer than X chars
-        self.log_length_chars = 1500  # total log length shouldn't be longer than this
+        self.log_max_messages = 10  # don't store more than X messages back
+        self.log_max_chars = 1500  # total log length shouldn't be longer than this
+        self.log_message_max_chars = 500  # crop messages longer than X chars
 
     def process_message(self, message, client=None):
         self.message_log_append(message)
@@ -70,7 +70,7 @@ class GPT3Module(Module):
         self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
 
         self.message_logs[message.channel].append(message)
-        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_length_messages :]
+        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages :]
 
     def generate_chatlog_prompt(self, channel):
         users = set([])
@@ -98,15 +98,15 @@ class GPT3Module(Module):
             username = message.author.name
             text = message.clean_content
 
-            if len(text) > self.log_messages_length_chars:
+            if len(text) > self.log_message_max_chars:
                 text = (
-                    text[: self.log_messages_length_chars / 2]
+                    text[: self.log_message_max_chars / 2]
                     + "\n...\n"
-                    + text[-self.log_messages_length_chars / 2 :]
+                    + text[-self.log_message_max_chars / 2 :]
                 )
             chatline = f"{username}: {text}"
 
-            if len(chatlog) + len(chatline) > self.log_length_chars:
+            if len(chatlog) + len(chatline) > self.log_max_chars:
                 break
 
             chatlog = f"{chatline}\n{chatlog}"
@@ -133,7 +133,6 @@ class GPT3Module(Module):
         """Ask GPT-3 what Stampy would say next in the chat log"""
         
         engine = self.get_engine(message)
-
         prompt = self.generate_chatlog_prompt(message.channel)
 
         try:
@@ -168,7 +167,6 @@ class GPT3Module(Module):
         engine = self.get_engine(message)
 
         text = self.is_at_me(message)
-
         if text.endswith("?"):
             print("Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
@@ -209,5 +207,5 @@ class GPT3Module(Module):
             self.create_integration_test(
                 question="GPT3 api is only hit in production because it is expensive?",
                 expected_response=CONFUSED_RESPONSE,
-            )  # TODO write actual test for this once sentience is merged in
+            )  # TODO write actual test for this
         ]
