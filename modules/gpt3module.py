@@ -36,8 +36,15 @@ class GPT3Module(Module):
             "A: Unknown\n\n"
             "Q: "
         )
+        self.message_logs = {}  # one message log per channel
+        self.log_length_messages = 10  # don't store more than X messages back
+        self.log_messages_length_chars = 500  # crop messages longer than X chars
+        self.log_length_chars = 1500  # total log length shouldn't be longer than this
 
     def process_message(self, message, client=None):
+        self.message_log_append(message)
+        self.generate_chatlog_prompt(message.channel)
+
         if type(message.channel) == discord.DMChannel:
             if message.author.id != rob_id:
                 print(message.author.id, type(message.author.id))
@@ -58,6 +65,56 @@ class GPT3Module(Module):
         # This is either not at me, or not something we can handle
         return Response()
 
+    def message_log_append(self, message):
+        """Store the message in the log"""
+
+        # make sure we have a list in there for this channel
+        self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
+
+        self.message_logs[message.channel].append(message)
+        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_length_messages :]
+
+    def generate_chatlog_prompt(self, channel):
+        users = set([])
+        for message in self.message_logs[channel]:
+            if message.author.name != "Stampy":
+                users.add(message.author.name)
+        users_string = ", ".join(users)
+        if len(users) > 1:
+            users_string += ","
+
+        chatlog_string = self.generate_chatlog(channel)
+
+        prompt = (
+            f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
+            f"Stampy is helpful, intelligent, and sarcastic, and he loves stamps.\n\n"
+            f"{chatlog_string}Stampy: "
+        )
+
+        print(prompt)
+        return prompt
+
+    def generate_chatlog(self, channel):
+        chatlog = ""
+        for message in self.message_logs[channel][::-1]:
+            username = message.author.name
+            text = message.clean_content
+
+            if len(text) > self.log_messages_length_chars:
+                text = (
+                    text[: self.log_messages_length_chars / 2]
+                    + "\n...\n"
+                    + text[-self.log_messages_length_chars / 2 :]
+                )
+            chatline = f"{username}: {text}"
+
+            if len(chatlog) + len(chatline) > self.log_length_chars:
+                break
+
+            chatlog = f"{chatline}\n{chatlog}"
+
+        return chatlog
+
     async def gpt3_question(self, message, client=None):
         """Ask GPT-3 for an answer"""
 
@@ -71,7 +128,7 @@ class GPT3Module(Module):
         elif member and (bot_dev_role in member.roles):
             engine = "curie"
         else:
-            engine = "ada"
+            engine = "babbage"
 
         text = self.is_at_me(message)
 
