@@ -43,27 +43,22 @@ class GPT3Module(Module):
 
     def process_message(self, message, client=None):
         self.message_log_append(message)
-        self.generate_chatlog_prompt(message.channel)
 
         if type(message.channel) == discord.DMChannel:
             if message.author.id != rob_id:
                 print(message.author.id, type(message.author.id))
                 return Response()
 
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
+        text = self.is_at_me(message)
+        if not text:
+            return Response()
 
-            if text.endswith("?"):
-                # if it's a question, return we can answer with low confidence,
-                # so other modules will go first and API is called less
-                return Response(
-                    confidence=2, callback=self.gpt3_question, args=[message], kwargs={"client": client}
-                )
-            else:
-                print("No ? at end, no GPT-3")
-
-        # This is either not at me, or not something we can handle
-        return Response()
+        return Response(
+            confidence=2,
+            callback=self.gpt3_chat,
+            args=[message],
+            kwargs={}
+        )
 
     def process_message_from_stampy(self, message):
         self.message_log_append(message)
@@ -91,7 +86,7 @@ class GPT3Module(Module):
         prompt = (
             f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
             f"Stampy is helpful, intelligent, and sarcastic, and he loves stamps.\n\n"
-            f"{chatlog_string}Stampy: "
+            f"{chatlog_string}Stampy:"
         )
 
         print(prompt)
@@ -118,8 +113,8 @@ class GPT3Module(Module):
 
         return chatlog
 
-    async def gpt3_question(self, message, client=None):
-        """Ask GPT-3 for an answer"""
+    def get_engine(self, message):
+        """Pick the appropriate engine to respond to a message with"""
 
         guild, _ = self.get_guild_and_invite_role()
 
@@ -127,11 +122,50 @@ class GPT3Module(Module):
         member = guild.get_member(message.author.id)
 
         if message.author.id == rob_id:
-            engine = "davinci"
+            return "davinci"
         elif member and (bot_dev_role in member.roles):
-            engine = "curie"
+            return "curie"
         else:
-            engine = "babbage"
+            return "babbage"
+
+
+    async def gpt3_chat(self, message):
+        """Ask GPT-3 what Stampy would say next in the chat log"""
+        
+        engine = self.get_engine(message)
+
+        prompt = self.generate_chatlog_prompt(message.channel)
+
+        try:
+            response = openai.Completion.create(
+                engine=engine,
+                prompt=prompt,
+                temperature=0,
+                max_tokens=100,
+                top_p=1,
+                stop=["\n"],
+            )
+        except openai.error.AuthenticationError:
+            print("OpenAI Authentication Failed")
+            return Response()
+
+        if response["choices"]:
+            choice = response["choices"][0]
+            if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
+                print("GPT-3 Replied!:")
+                text = choice["text"].strip(". ")
+                return Response(
+                    confidence=10,
+                    text=f"*{text}*",
+                    why="GPT-3 made me say it!",
+                )
+
+        return Response()
+
+    async def gpt3_question(self, message, client=None):
+        """Ask GPT-3 for an answer"""
+
+        engine = self.get_engine(message)
 
         text = self.is_at_me(message)
 
@@ -167,7 +201,7 @@ class GPT3Module(Module):
         return Response()
 
     def __str__(self):
-        return "GPT-3 Questions Module"
+        return "GPT-3 Module"
 
     @property
     def test_cases(self):
