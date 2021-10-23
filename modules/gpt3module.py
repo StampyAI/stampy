@@ -65,6 +65,9 @@ class GPT3Module(Module):
         # This is either not at me, or not something we can handle
         return Response()
 
+    def process_message_from_stampy(self, message):
+        self.message_log_append(message)
+
     def message_log_append(self, message):
         """Store the message in the log"""
 
