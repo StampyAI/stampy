@@ -53,12 +53,7 @@ class GPT3Module(Module):
         if not text:
             return Response()
 
-        return Response(
-            confidence=2,
-            callback=self.gpt3_chat,
-            args=[message],
-            kwargs={}
-        )
+        return Response(confidence=2, callback=self.gpt3_chat, args=[message], kwargs={})
 
     def process_message_from_stampy(self, message):
         self.message_log_append(message)
@@ -86,7 +81,7 @@ class GPT3Module(Module):
         prompt = (
             f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
             f"Stampy is helpful, intelligent, and sarcastic, and he loves stamps.\n\n"
-            f"{chatlog_string}Stampy:"
+            f"{chatlog_string}stampy:"
         )
 
         print(prompt)
@@ -128,10 +123,9 @@ class GPT3Module(Module):
         else:
             return "babbage"
 
-
     async def gpt3_chat(self, message):
         """Ask GPT-3 what Stampy would say next in the chat log"""
-        
+
         engine = self.get_engine(message)
         prompt = self.generate_chatlog_prompt(message.channel)
 
