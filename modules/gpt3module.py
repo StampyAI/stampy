@@ -95,9 +95,9 @@ class GPT3Module(Module):
 
             if len(text) > self.log_message_max_chars:
                 text = (
-                    text[: self.log_message_max_chars / 2]
-                    + "\n...\n"
-                    + text[-self.log_message_max_chars / 2 :]
+                    text[: self.log_message_max_chars // 2]
+                    + " ... "
+                    + text[-self.log_message_max_chars // 2 :]
                 )
             chatline = f"{username}: {text}"
 
