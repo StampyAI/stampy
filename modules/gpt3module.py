@@ -49,8 +49,7 @@ class GPT3Module(Module):
                 print(message.author.id, type(message.author.id))
                 return Response()
 
-        text = self.is_at_me(message)
-        if not text:
+        if not self.is_at_me(message):
             return Response()
 
         return Response(confidence=2, callback=self.gpt3_chat, args=[message], kwargs={})
