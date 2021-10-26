@@ -139,6 +139,8 @@ class GPT3Module(Module):
                 max_tokens=100,
                 top_p=1,
                 stop=["\n"],
+                presence_penalty=0.5,
+                frequency_penalty=0.5
             )
         except openai.error.AuthenticationError:
             print("OpenAI Authentication Failed")
