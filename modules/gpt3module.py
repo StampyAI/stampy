@@ -92,6 +92,9 @@ class GPT3Module(Module):
             username = message.author.name
             text = message.clean_content
 
+            if username == "stampy":
+                text = text.strip("*")
+
             if len(text) > self.log_message_max_chars:
                 text = (
                     text[: self.log_message_max_chars // 2]
