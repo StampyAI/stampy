@@ -39,7 +39,7 @@ class GPT3Module(Module):
         self.message_logs = {}  # one message log per channel
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
-        self.log_message_max_chars = 500  # crop messages longer than X chars
+        self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
 
     def process_message(self, message, client=None):
         self.message_log_append(message)
