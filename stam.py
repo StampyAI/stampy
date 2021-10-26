@@ -71,6 +71,8 @@ async def on_message(message):
     if is_test_message(message.clean_content) and utils.test_mode:
         print("TESTING " + message.clean_content)
     elif message_author_is_stampy:
+        for module in modules:
+            module.process_message_from_stampy(message)
         return
 
     # utils.modules_dict["StampsModule"].calculate_stamps()

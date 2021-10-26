@@ -117,6 +117,13 @@ class Module(object):
         """
         return Response()
 
+    def process_message_from_stampy(self, message):
+        """By default, messages posted by stampy himself are not sent to modules' `process_message`
+        Use this method to do something whenever Stampy says anything
+        This method should not return anything, and should not try to send messages unless you really know what you're doing
+        """
+        pass
+
     async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
         """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
         Use this to allow modules to handle adding and removing reactions on messages"""

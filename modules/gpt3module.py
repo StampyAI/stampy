@@ -36,30 +36,79 @@ class GPT3Module(Module):
             "A: Unknown\n\n"
             "Q: "
         )
+        self.message_logs = {}  # one message log per channel
+        self.log_max_messages = 10  # don't store more than X messages back
+        self.log_max_chars = 1500  # total log length shouldn't be longer than this
+        self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
 
     def process_message(self, message, client=None):
+        self.message_log_append(message)
+
         if type(message.channel) == discord.DMChannel:
             if message.author.id != rob_id:
                 print(message.author.id, type(message.author.id))
                 return Response()
 
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
+        if not self.is_at_me(message):
+            return Response()
 
-            if text.endswith("?"):
-                # if it's a question, return we can answer with low confidence,
-                # so other modules will go first and API is called less
-                return Response(
-                    confidence=2, callback=self.gpt3_question, args=[message], kwargs={"client": client}
+        return Response(confidence=2, callback=self.gpt3_chat, args=[message], kwargs={})
+
+    def process_message_from_stampy(self, message):
+        self.message_log_append(message)
+
+    def message_log_append(self, message):
+        """Store the message in the log"""
+
+        # make sure we have a list in there for this channel
+        self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
+
+        self.message_logs[message.channel].append(message)
+        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages :]
+
+    def generate_chatlog_prompt(self, channel):
+        users = set([])
+        for message in self.message_logs[channel]:
+            if message.author.name != "stampy":
+                users.add(message.author.name)
+        users_string = ", ".join(users)
+        if len(users) > 1:
+            users_string += ","
+
+        chatlog_string = self.generate_chatlog(channel)
+
+        prompt = (
+            f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
+            f"Stampy is helpful, intelligent, and sarcastic, and he loves stamps.\n\n"
+            f"{chatlog_string}stampy:"
+        )
+
+        print(prompt)
+        return prompt
+
+    def generate_chatlog(self, channel):
+        chatlog = ""
+        for message in self.message_logs[channel][::-1]:
+            username = message.author.name
+            text = message.clean_content
+
+            if len(text) > self.log_message_max_chars:
+                text = (
+                    text[: self.log_message_max_chars // 2]
+                    + " ... "
+                    + text[-self.log_message_max_chars // 2 :]
                 )
-            else:
-                print("No ? at end, no GPT-3")
+            chatline = f"{username}: {text}"
 
-        # This is either not at me, or not something we can handle
-        return Response()
+            if len(chatlog) + len(chatline) > self.log_max_chars:
+                break
 
-    async def gpt3_question(self, message, client=None):
-        """Ask GPT-3 for an answer"""
+            chatlog = f"{chatline}\n{chatlog}"
+
+        return chatlog
+
+    def get_engine(self, message):
+        """Pick the appropriate engine to respond to a message with"""
 
         guild, _ = self.get_guild_and_invite_role()
 
@@ -67,14 +116,50 @@ class GPT3Module(Module):
         member = guild.get_member(message.author.id)
 
         if message.author.id == rob_id:
-            engine = "davinci"
+            return "davinci"
         elif member and (bot_dev_role in member.roles):
-            engine = "curie"
+            return "curie"
         else:
-            engine = "ada"
+            return "babbage"
+
+    async def gpt3_chat(self, message):
+        """Ask GPT-3 what Stampy would say next in the chat log"""
+
+        engine = self.get_engine(message)
+        prompt = self.generate_chatlog_prompt(message.channel)
+
+        try:
+            response = openai.Completion.create(
+                engine=engine,
+                prompt=prompt,
+                temperature=0,
+                max_tokens=100,
+                top_p=1,
+                stop=["\n"],
+            )
+        except openai.error.AuthenticationError:
+            print("OpenAI Authentication Failed")
+            return Response()
+
+        if response["choices"]:
+            choice = response["choices"][0]
+            if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
+                text = choice["text"].strip(". ")
+                print("GPT-3 Replied!:", text)
+                return Response(
+                    confidence=10,
+                    text=f"*{text}*",
+                    why="GPT-3 made me say it!",
+                )
+
+        return Response()
+
+    async def gpt3_question(self, message, client=None):
+        """Ask GPT-3 for an answer"""
+
+        engine = self.get_engine(message)
 
         text = self.is_at_me(message)
-
         if text.endswith("?"):
             print("Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
@@ -107,7 +192,7 @@ class GPT3Module(Module):
         return Response()
 
     def __str__(self):
-        return "GPT-3 Questions Module"
+        return "GPT-3 Module"
 
     @property
     def test_cases(self):
@@ -115,5 +200,5 @@ class GPT3Module(Module):
             self.create_integration_test(
                 question="GPT3 api is only hit in production because it is expensive?",
                 expected_response=CONFUSED_RESPONSE,
-            )  # TODO write actual test for this once sentience is merged in
+            )  # TODO write actual test for this
         ]
