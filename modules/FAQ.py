@@ -7,8 +7,8 @@ from config import stampy_id
 
 
 class FaqModule(Module):
-    template_channel_id = 876541727048077312
-    feedback_channel_id = 894314718251085845
+    template_channel_id = 893953387631099954  # testing server: 876541727048077312
+    feedback_channel_id = 898263183066820628  # testing server: 894314718251085845
     faq_user_channel_prefix = 'faq-for-'
     select_message_emoji_name = "👆"
     approve_result_base_name = "green_stamp"
@@ -28,10 +28,6 @@ class FaqModule(Module):
 
         if message.content == "Make me an FAQ channel, stampy":
             return Response(callback=self.start_FAQ_channel, args=[message], confidence=10)
-        # elif message.content == "Give me some questions, stampy":
-        #    return Response(callback=self.send_first_questions, args=[message], confidence=10)
-        elif message.content == "test something for me, stampy":
-            return Response(callback=self.test, args=[message], confidence=10)
         elif message.content.endswith("?") and message.channel.name == \
                 "faq-for-" + message.author.name.lower().replace(" ", "-") + str(message.author.discriminator):
             return Response(callback=self.look_up_question_from_user, args=[message], confidence=10)
@@ -88,8 +84,14 @@ class FaqModule(Module):
     async def start_FAQ_channel(self, message):
         server = message.guild
         template_channel = server.get_channel(self.template_channel_id)
-        author_with_discriminator = message.author.name + message.author.discriminator
-        new_channel = await template_channel.clone(name=self.faq_user_channel_prefix + author_with_discriminator)
+        author_with_discriminator = (message.author.name + message.author.discriminator).lower().replace(" ", "-")
+        new_channel_name = self.faq_user_channel_prefix + author_with_discriminator
+
+        old_channel = discord.utils.get(message.guild.channels, name=new_channel_name)
+        if old_channel:
+            return Response(text=f"An FAQ channel already exists for you, here it is: <#{old_channel.id}>", confidence=10)
+
+        new_channel = await template_channel.clone(name=new_channel_name)
 
         # give the user who just asked for a channel permissions to see that channel
         await new_channel.set_permissions(message.author, overwrite=discord.PermissionOverwrite(view_channel=True))
@@ -97,7 +99,7 @@ class FaqModule(Module):
         if not await self.send_intro(new_channel, message.author.name):
             return Response(text="Something went wrong in the creation of a personal FAQ Channel", confidence=10)
 
-        return Response(text="DEBUG: done!", confidence=10)
+        return Response(text=f"I would love to, here is your FAQ channel: <#{new_channel.id}>", confidence=10)
 
     async def send_intro(self, channel, author):
         stampy_intro = self.utils.wiki.get_page_content("MediaWiki:Stampy-intro")
@@ -109,7 +111,7 @@ class FaqModule(Module):
         if suggested_questions:
             try:
                 for q in suggested_questions:
-                    await self.send_possible_question_and_react(channel, q["displaytitle"] or q["fulltext"])
+                    await self.send_possible_question_and_react(channel, q["fulltext"]) # q["displaytitle"] or # TODO: figure out a way to show displaytitle without breaking things
                 return True
             except (KeyError, IndexError) as e:
                 await self.utils.send_wrapper(
@@ -141,12 +143,12 @@ class FaqModule(Module):
 
         question_query = self.utils.wiki.get_page_properties(answer_page, "RelatedQuestion", "FollowUpQuestion")
 
-        if question_query:
+        if question_query and (question_query["RelatedQuestion"] or question_query["FollowUpQuestion"]):
             for rel_q_name in question_query["RelatedQuestion"]:
-                rel_q_text = rel_q_name["displaytitle"] or rel_q_name["fulltext"]
+                rel_q_text = rel_q_name["fulltext"]  # rel_q_name["displaytitle"] or
                 await self.send_possible_question_and_react(event_channel, "Related question: " + rel_q_text)
             for fol_q_name in question_query["FollowUpQuestion"]:
-                fol_q_text = fol_q_name["displaytitle"] or fol_q_name["fulltext"]
+                fol_q_text = fol_q_name["fulltext"]  # fol_q_name["displaytitle"] or
                 await self.send_possible_question_and_react(event_channel, "Related question: " + fol_q_text)
         else:
             await self.utils.send_wrapper(event_channel, "Thanks for marking the answers as good, there are " +
