@@ -92,9 +92,6 @@ class GPT3Module(Module):
             username = message.author.name
             text = message.clean_content
 
-            if username == "stampy":
-                text = text.strip("*")
-
             if len(text) > self.log_message_max_chars:
                 text = (
                     text[: self.log_message_max_chars // 2]
@@ -139,8 +136,14 @@ class GPT3Module(Module):
                 max_tokens=100,
                 top_p=1,
                 stop=["\n"],
-                presence_penalty=0.5,
-                frequency_penalty=0.5
+                logit_bias={
+                    9: -100,  # "*"
+                    1174: -100,  # "**"
+                    8162: -100,  # "***"
+                    1635: -100,  # " *"
+                    12429: -100,  # " **"
+                    17202: -100,  # " ***"
+                },
             )
         except openai.error.AuthenticationError:
             print("OpenAI Authentication Failed")
