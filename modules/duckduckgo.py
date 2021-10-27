@@ -13,14 +13,14 @@ class DuckDuckGo(Module):
                     confidence=6,
                     callback=self.ask,
                     args=[text],
-                    why="It's a question, we might be able to answer it"
+                    why="It's a question, we might be able to answer it",
                 )
             else:
                 return Response(
                     confidence=2,
                     callback=self.ask,
                     args=[text],
-                    why="It's not a question but we might be able to look it up"
+                    why="It's not a question but we might be able to look it up",
                 )
         else:
             return Response()
@@ -45,9 +45,7 @@ class DuckDuckGo(Module):
             # print(json.dumps(j, sort_keys=True, indent=2))
             if j["Abstract"]:
                 answer = j["Abstract"]
-                return Response(
-                    confidence=7, text=answer, why="That's what DuckDuckGo suggested"
-                )
+                return Response(confidence=7, text=answer, why="That's what DuckDuckGo suggested")
             elif j["Type"] == "D":
                 answer = j["RelatedTopics"][0]["Text"]
                 if answer.endswith("...") and (". " in answer):

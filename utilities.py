@@ -1,7 +1,8 @@
 import os
 import re
+
 # Sadly some of us run windows...
-if not os.name == 'nt':
+if not os.name == "nt":
     import pwd
 import psutil
 import discord
