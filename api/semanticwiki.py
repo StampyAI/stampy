@@ -128,12 +128,16 @@ class SemanticWiki(Persistence):
         if len(properties) > 1:
             try:
                 properties_string = "|?".join(properties)
-                return self.ask(f"[[{pagename}]]|?{properties_string}")["query"]["results"][pagename]["printouts"]
+                return self.ask(f"[[{pagename}]]|?{properties_string}")["query"]["results"][pagename][
+                    "printouts"
+                ]
             except (KeyError, IndexError):
                 return None
         elif len(properties) == 1:
             try:
-                return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][pagename]["printouts"][properties[0]]
+                return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][pagename][
+                    "printouts"
+                ][properties[0]]
             except (KeyError, IndexError):
                 return None
         else:
