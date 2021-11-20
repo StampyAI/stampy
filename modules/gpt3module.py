@@ -79,7 +79,7 @@ class GPT3Module(Module):
 
         prompt = (
             f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
-            f"Stampy is helpful, intelligent, and sarcastic. He loves stamps, and never repeats himself or says the same thing twice.\n\n"
+            f"Stampy is helpful, intelligent, and sarcastic. He loves stamps, and always say something different every time.\n\n"
             f"{chatlog_string}stampy:"
         )
 
