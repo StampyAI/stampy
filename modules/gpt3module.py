@@ -3,6 +3,7 @@ import discord
 from modules.module import Module, Response
 from config import CONFUSED_RESPONSE
 from config import openai_api_key, rob_id
+from transformers import GPT2TokenizerFast
 
 openai.api_key = openai_api_key
 
@@ -40,6 +41,8 @@ class GPT3Module(Module):
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
         self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
+
+        self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
     def process_message(self, message, client=None):
         self.message_log_append(message)
@@ -107,6 +110,23 @@ class GPT3Module(Module):
 
         return chatlog
 
+    def get_forbidden_tokens(self, channel):
+        """Go through the chatlog and find the tokens that start each of stampy's own messages
+        This is so that we can tell GPT-3 not to use those tokens, to prevent repetition"""
+
+        forbidden_tokens = set([])
+
+        for message in self.message_logs[channel]:
+            if message.author.name == "stampy":
+                # we only need the first token, so just clip to ten chars
+                # the space is because we generate from "stampy:" so there's always a space at the start
+                text = " " + message.clean_content[:10].strip("*")
+                forbidden_token = self.tokenizer(text)["input_ids"][0]
+                forbidden_tokens.add(forbidden_token)
+                print(text, forbidden_token)
+
+        return forbidden_tokens
+
     def get_engine(self, message):
         """Pick the appropriate engine to respond to a message with"""
 
@@ -128,6 +148,19 @@ class GPT3Module(Module):
         engine = self.get_engine(message)
         prompt = self.generate_chatlog_prompt(message.channel)
 
+        forbidden_tokens = self.get_forbidden_tokens(message.channel)
+        print(forbidden_tokens)
+        logit_bias = {
+            9: -100,  # "*"
+            1174: -100,  # "**"
+            8162: -100,  # "***"
+            1635: -100,  # " *"
+            12429: -100,  # " **"
+            17202: -100,  # " ***"
+        }
+        for forbidden_token in forbidden_tokens:
+            logit_bias[forbidden_token] = -100
+
         try:
             response = openai.Completion.create(
                 engine=engine,
@@ -136,14 +169,7 @@ class GPT3Module(Module):
                 max_tokens=100,
                 top_p=1,
                 stop=["\n"],
-                logit_bias={
-                    9: -100,  # "*"
-                    1174: -100,  # "**"
-                    8162: -100,  # "***"
-                    1635: -100,  # " *"
-                    12429: -100,  # " **"
-                    17202: -100,  # " ***"
-                },
+                logit_bias=logit_bias,
             )
         except openai.error.AuthenticationError:
             print("OpenAI Authentication Failed")
