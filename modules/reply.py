@@ -71,7 +71,7 @@ class Reply(Module):
         """Return the number of stamps a reply needs in order to be posted"""
         return self.utils.get_total_votes() * comment_posting_threshold_factor
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
@@ -212,7 +212,7 @@ class Reply(Module):
         print("Message has no envelope emoji, it has not already replied to")
         return False
 
-    async def process_raw_reaction_event(self, event, client=None):
+    async def process_raw_reaction_event(self, event):
         emoji = getattr(event.emoji, "name", event.emoji)
 
         if emoji in ["stamp", "goldstamp"]:

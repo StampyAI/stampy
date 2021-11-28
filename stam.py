@@ -96,7 +96,7 @@ async def on_message(message):
     responses = [Response()]
     for module in modules:
         print(f"# Asking module: {module}")
-        response = module.process_message(message, utils.client)
+        response = module.process_message(message)
         if response:
             response.module = module  # tag it with the module it came from, for future reference
 

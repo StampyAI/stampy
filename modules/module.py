@@ -91,7 +91,7 @@ class Module(object):
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
@@ -125,12 +125,12 @@ class Module(object):
         """
         pass
 
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
+    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
         """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()
 
-    async def process_raw_reaction_event(self, event, client=None):
+    async def process_raw_reaction_event(self, event):
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()
