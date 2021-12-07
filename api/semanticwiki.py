@@ -265,7 +265,7 @@ class SemanticWiki(Persistence):
             else:
                 question["url"] = "No URL"
             if relevant_vals["Asker"]:
-                question["username"] = relevant_vals["Asker"][0]["fulltext"]
+                question["username"] = relevant_vals["Asker"][0]
             else:
                 question["username"] = "Unknown"
             if relevant_vals["Video"]:
