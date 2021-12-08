@@ -107,9 +107,12 @@ class StampsModule(Module):
         csv_lines = []
         for user_id in self.utils.get_users():
             score = self.get_user_stamps(user_id)
-            name = self.utils.client.get_user(user_id)
-            if user_id and name:  # don't bother for id 0 or if the name is None
-                csv_lines.append(f"""{user_id},"{name}",{score}\n""")
+            user = self.utils.client.get_user(user_id)
+            if user_id and user:  # don't bother for id 0 or if the user is None
+                csv_lines.append(f"""{user_id},"{user.name}",{user.discriminator},{score}\n""")
+        if not csv_lines:
+            print("No valid users to export to CSV?")
+            return
         try:
             with open(stamp_scores_csv_file_path, "w") as csv_file:
                 csv_file.write("".join(csv_lines))
