@@ -17,8 +17,10 @@ from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
+from modules.wikiUtilities import WikiUtilities
 from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
+from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -150,8 +152,14 @@ async def on_message(message):
                         )
                 print("Replying:", top_response.text)
                 # TODO: check to see if module is allowed to embed via a config?
-                if top_response.text or top_response.embed:
+                if top_response.embed:
                     await message.channel.send(top_response.text, embed=top_response.embed)
+                elif isinstance(top_response.text, str):
+                    # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
+                    await message.channel.send(top_response.text[:2000])
+                elif isinstance(top_response.text, Iterable):
+                    for chunk in top_response.text:
+                        await message.channel.send(chunk)
             print("########################################################")
             sys.stdout.flush()
             return
@@ -257,6 +265,7 @@ if __name__ == "__main__":
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
+        "WikiUtilities": WikiUtilities(),
         "Atemporal": AtemporalModule(),
         "TestModule": TestModule(),
     }
