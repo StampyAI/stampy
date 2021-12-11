@@ -3,7 +3,7 @@ import sys
 import inspect
 import discord
 import unicodedata
-from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question
+from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question, get_git_branch_info
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -61,7 +61,7 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id).send(f"I just (re)started {get_git_branch_info()}!")
 
 
 @utils.client.event
