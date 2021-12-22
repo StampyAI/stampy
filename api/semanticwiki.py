@@ -1,6 +1,7 @@
 import re
 import requests
 from api.persistence import Persistence
+from traceback import print_exc
 
 
 ###########################################################################
@@ -65,9 +66,11 @@ class SemanticWiki(Persistence):
         See https://www.semantic-mediawiki.org/wiki/Ask for info.
         If all you need is to extract a property from a page you have the title to, use get_page_properties"""
         body = {"action": "ask", "format": "json", "query": query, "api_version": "2"}
-        return self.post(body)
+        
+        # convert empty results from [] to {}, to always return consistent type
+        return self.post(body).get("query", {}).get("results") or {}
 
-    def edit(self, title, content):
+    def edit(self, title, content, summary=None):
         """available fields can be found here: https://www.mediawiki.org/wiki/API:Edit
         This edits the page of the given title with the new content
         If a page with name `title` does not already exists, one will be created.
@@ -79,6 +82,8 @@ class SemanticWiki(Persistence):
             "format": "json",
             "text": content,
         }
+        if summary:
+            body["summary"] = summary
         return self.post(body)
 
     def page_forms_auto_edit(self, title, form, parameter, value):
@@ -93,6 +98,18 @@ class SemanticWiki(Persistence):
             "target": title,
             "format": "json",
             "query": f"{form}[{parameter}]={value}",
+        }
+        return self.post(body)
+
+    def move(self, title:str, new_title:str, reason:str=""):
+        body = {
+            "action": "move",
+            "format": "json",
+            "token": self._token,
+            "from": title,
+            "to": new_title,
+            "reason": reason,
+            "movetalk": "1"
         }
         return self.post(body)
 
@@ -128,16 +145,12 @@ class SemanticWiki(Persistence):
         if len(properties) > 1:
             try:
                 properties_string = "|?".join(properties)
-                return self.ask(f"[[{pagename}]]|?{properties_string}")["query"]["results"][pagename][
-                    "printouts"
-                ]
+                return self.ask(f"[[{pagename}]]|?{properties_string}")[pagename]["printouts"]
             except (KeyError, IndexError):
                 return None
         elif len(properties) == 1:
             try:
-                return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][pagename][
-                    "printouts"
-                ][properties[0]]
+                return self.ask(f"[[{pagename}]]|?{properties[0]}")[pagename]["printouts"][properties[0]]
             except (KeyError, IndexError):
                 return None
         else:
@@ -252,13 +265,13 @@ class SemanticWiki(Persistence):
                 sort, order
             )
         )
-        response = self.ask(query)
+        results = self.ask(query)
 
         # url, username, title, text, replies, asked = None, None, None, None, None, None
         question = {}
-        if "query" in response and response["query"]["results"]:
-            question["question_title"] = list(response["query"]["results"].keys())[0]
-            relevant_vals = list(response["query"]["results"].values())[0]["printouts"]
+        if results:
+            question["question_title"] = list(results.keys())[0]
+            relevant_vals = list(results.values())[0]["printouts"]
 
             if relevant_vals["CommentURL"]:
                 question["url"] = relevant_vals["CommentURL"][0]
@@ -303,6 +316,117 @@ class SemanticWiki(Persistence):
 
     def get_question_count(self):
         query = "[[Meta:API Queries]]|?UnaskedQuestions"
-        response = self.ask(query)
+        results = self.ask(query)
 
-        return response["query"]["results"]["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
+        return results["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
+
+    @staticmethod
+    def new_title_with_id(old_title:str, new_title:str):
+        # e.g. "Balthazard's question on Video Title Unknown id:UgxRUOD Y9jV0N5F0v14AaABAg"
+        id_match = re.search(r" id:.+$", old_title)
+        if id_match:
+            return new_title + id_match.group(0)
+        
+        return new_title
+
+    def move_pages_generator(self, page:str=None, limit:int=None, offset:int=None, dry_run=True, skip_boring=False):
+        """Move wiki pages related to questions that have a modified title. Also update related fields.
+        https://stampy.ai/wiki/Property:PageNeedsMovingTo for more info
+        """
+        page = (page or '+').strip('\'"`')
+        limit = int(limit) if limit else 1
+        offset = int(offset) if offset else 0
+        skip = ' (skipping "Video Title Unknown)"' if skip_boring else ''
+        query = f"[[PageNeedsMovingTo::{page}]]|limit={limit}|offset={offset}"
+        results = self.ask(query)
+        if not results:
+            yield f"move_pages_generator: No results for `{query}`."
+            return
+        
+        if dry_run:
+            yield f"move_pages_generator: Dry run for `{query}`{skip}:"
+        else:
+            yield f"move_pages_generator: Started for `{query}`{skip}:\n"\
+                  f" *(write `s, stop` to tell stampy to stop)*"
+        
+        max_offset = len(results) + offset - 1
+        changes_were_made = False
+        for index, item in enumerate(results.values()):
+            page = item["fulltext"]
+            if skip_boring and 'Video Title Unknown' in page:
+                continue
+            
+            message = f"Page offset {index + offset}/{max_offset}: <{item['fullurl']}>\n"\
+                    f"```js\n"
+            try:
+                new_page = self.new_title_with_id(page, item['displaytitle'])
+                new_page_already_exists = \
+                    page == new_page or \
+                    "title" in self.get_page(new_page)["query"]["pages"][0].values()
+                if new_page_already_exists:
+                    message += f"  WARNING: new page already exists `{new_page}` => skipping```\n"
+                    yield message
+                    continue
+                
+                stats_page = f"Stats:{page}"
+                pages_to_load_contents = {
+                    page: 'PageNeedsMovingTo',
+                    stats_page: 'Stats:x',
+                }
+
+                answer_printouts = self.get_page_properties(page, 'AnsweredBy')
+                for item in answer_printouts:
+                    pages_to_load_contents[item["fulltext"]] = 'x|?AnsweredBy'
+                related_categories = [
+                    'NonCanonicallyAnsweredRelatedQuestion', 
+                    'RelatedQuestion', 
+                    'FollowUpQuestion',
+                    'DuplicateOf',
+                ]
+                for category in related_categories:
+                    related_pages = self.ask(f"[[{category}::{page}]]").keys()
+                    for p in related_pages:
+                        pages_to_load_contents[p] = f"{category}::x"
+
+                pages_to_iterate = self.get_page('|'.join(pages_to_load_contents.keys()))["query"]["pages"]
+                pages_to_move = []
+                pages_to_edit = []
+                for page_dict in pages_to_iterate:
+                    if not page_dict.get('pageid'):
+                        continue  # when Stats page doesn't exist
+                                    
+                    title = page_dict["title"]
+                    new_title = title
+                    if page in title:
+                        new_title = title.replace(page, new_page)
+                        pages_to_move.append((title, new_title))
+                    
+                    content = page_dict["revisions"][0]["slots"]["main"]["content"]
+                    if page in content:
+                        new_content = content.replace(page, new_page)
+                        pages_to_edit.append((title, new_title, new_content))
+                
+                # Move all pages first, then edit the content, so that Properties point to already existing pages
+                for title, new_title in pages_to_move:
+                    message += f"  - move `{title}` ({pages_to_load_contents.get(title, '?')})\n"\
+                               f"      to `{new_title}`\n"
+                    if not dry_run:
+                        self.move(title, new_title, reason="Stampy moving PageNeedsMovingTo")
+                        changes_were_made = True
+                
+                for title, new_title, new_content in pages_to_edit:
+                    message += f"  update `{new_title}` ({pages_to_load_contents.get(title, '?')})\n"
+                    if not dry_run:
+                        self.edit(new_title, new_content, summary="Stampy editing PageNeedsMovingTo")
+                        changes_were_made = True
+                
+                message += "```"
+                yield message
+            except Exception as e:
+                print_exc()
+                message += repr(e) + "```"
+                yield message
+        
+        done = "Done." if changes_were_made else "No changes made."
+        yield f"move_pages_generator: {done}" 
+        return
