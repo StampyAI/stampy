@@ -30,8 +30,6 @@ current version of stampy.
 6. Verify that your setup is working
     * Run conda activate stampy
     * Then run `python3 stam.py` from the base directory of the repository.
-      * Alternatively, if you prefer to restart stampy on any file save (and if you have NodeJS installed), you can run `npx nodemon stamp.py`.
-      
 If everything is working correctly you should be able to talk to
 stampy from the test discord server and see the messages in your terminal.
       
