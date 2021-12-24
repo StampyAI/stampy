@@ -31,10 +31,10 @@ We'll implement this by creating a new module, which we'll call the 'choose' mod
                 return "Choose Module"
         ```
 1. Implement the required functions from the `Module` parent class
-    - [`process_message(self, message)`](https://github.com/robertskmiles/stampy/blob/master/modules/module.py#L95)
+    - [`process_message(self, message, client=None)`](https://github.com/robertskmiles/stampy/blob/master/modules/module.py#L95)
         - This method takes a message and processes it, optionally returning a reply for Stampy to say, and an integer representing its confidence that the reply is good and should be posted. This method usually contains the core functionality of our module.
         - ```python
-            def process_message(self, message):
+            def process_message(self, message, client=None):
                 text = self.is_at_me(message)
                 if text and text.startswith("choose ") and " or " in text:
                     choices_string = text.partition(" ")[2].strip("?")
@@ -73,7 +73,7 @@ We'll implement this by creating a new module, which we'll call the 'choose' mod
         def __str__(self):
             return "Choose Module"
     
-        def process_message(self, message):
+        def process_message(self, message, client=None):
             text = self.is_at_me(message)
             if text and text.startswith("choose ") and " or " in text:
                 choices_string = text.partition(" ")[2].strip("?")

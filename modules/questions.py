@@ -30,7 +30,7 @@ class QQManager(Module):
             result = self.EMPTY_QUEUE_MESSAGE
         return result
 
-    def process_message(self, message):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
             if self.question_count_regex.match(text):

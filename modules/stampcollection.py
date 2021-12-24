@@ -177,14 +177,14 @@ class StampsModule(Module):
                                         )
         self.calculate_stamps()
 
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
+    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
         # guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
         emoji = getattr(reaction.emoji, "name", reaction.emoji)
         if emoji == "stamp":
             print("### STAMP AWARDED ###")
             print("%s,%s,%s,%s" % (reaction.message.id, emoji, user.id, reaction.message.audthor.id))
 
-    async def process_raw_reaction_event(self, event):
+    async def process_raw_reaction_event(self, event, client=None):
         event_type = event.event_type
         guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
         channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
@@ -217,7 +217,7 @@ class StampsModule(Module):
             # self.save_votesdict_to_json()
             print("Score after stamp:", self.get_user_stamps(to_id))
 
-    def process_message(self, message):
+    def process_message(self, message, client=None):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 

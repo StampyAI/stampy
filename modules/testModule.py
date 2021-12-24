@@ -102,7 +102,7 @@ class TestModule(Module):
         self.utils.message_prefix = ""
         return Response(confidence=10, text=test_message, why="this was a test")
 
-    def process_message(self, message):
+    def process_message(self, message, client=None):
         if not self.is_at_module(message):
             return Response()
         else:

@@ -19,7 +19,7 @@ class AtemporalModule(Module):
     def __str__(self):
         return "A module outside of time"
 
-    def process_message(self, message):
+    def process_message(self, message, client=None):
         text = message.clean_content
         likely_dates = find_dates(text)
         author = message.author.name

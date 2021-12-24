@@ -44,7 +44,7 @@ class GPT3Module(Module):
 
         self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
-    def process_message(self, message):
+    def process_message(self, message, client=None):
         self.message_log_append(message)
 
         if type(message.channel) == discord.DMChannel:
@@ -188,7 +188,7 @@ class GPT3Module(Module):
 
         return Response()
 
-    async def gpt3_question(self, message):
+    async def gpt3_question(self, message, client=None):
         """Ask GPT-3 for an answer"""
 
         engine = self.get_engine(message)

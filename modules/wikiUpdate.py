@@ -108,7 +108,7 @@ class WikiUpdate(Module):
 
         return f"{question_user}'s question on {video_titles[0]} id:{comment_id}"
 
-    def process_message(self, message):
+    def process_message(self, message, client=None):
         text = self.is_at_me(message)
         if not text:
             return Response(confidence=0, text="We were not directly addressed", module=self)
