@@ -19,3 +19,4 @@ dependencies:
     - python-dotenv
     - datefinder
     - transformers
+    - flask
