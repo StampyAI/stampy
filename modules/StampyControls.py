@@ -1,8 +1,8 @@
 import sys
 import discord
-from modules.module import Module, Response
-from config import rob_id, stampy_control_channel_names, TEST_RESPONSE_PREFIX
-from utilities import get_github_info, get_memory_usage, get_running_user_info, get_question_id
+from .module import Module, Response
+from ..config import rob_id, stampy_control_channel_names, TEST_RESPONSE_PREFIX
+from ..utilities import get_github_info, get_memory_usage, get_running_user_info, get_question_id
 
 
 class StampyControls(Module):

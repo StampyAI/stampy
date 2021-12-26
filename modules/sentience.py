@@ -1,5 +1,5 @@
-from config import CONFUSED_RESPONSE
-from modules.module import Module, Response
+from ..config import CONFUSED_RESPONSE
+from .module import Module, Response
 
 
 class Sentience(Module):

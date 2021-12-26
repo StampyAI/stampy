@@ -1,6 +1,6 @@
-from modules.module import Module, Response
+from .module import Module, Response
 import urllib
-from config import wolfram_token
+from ..config import wolfram_token
 
 
 class Wolfram(Module):

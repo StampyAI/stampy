@@ -1,4 +1,4 @@
-from modules.module import Module, Response
+from .module import Module, Response
 from datefinder import find_dates
 import pytz
 from datetime import datetime, timedelta, timezone
@@ -6,7 +6,7 @@ import discord
 import re
 
 
-class AtemporalModule(Module):
+class Atemporal(Module):
     def __init__(self):
         Module.__init__(self)
         self.re_iso8601 = re.compile(

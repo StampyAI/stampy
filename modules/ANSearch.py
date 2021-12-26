@@ -1,6 +1,6 @@
 import re
 import os
-from modules.module import Module, Response
+from .module import Module, Response
 import csv
 import requests
 from lxml import etree

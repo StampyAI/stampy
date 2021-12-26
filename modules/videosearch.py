@@ -1,7 +1,7 @@
 import re
 import os
-from modules.module import Module, Response
-from config import subs_dir
+from .module import Module, Response
+from ..config import subs_dir
 
 
 class VideoSearch(Module):

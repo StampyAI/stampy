@@ -16,7 +16,7 @@ def getenv(env_var, default=None):
 
 
 maximum_recursion_depth = 30
-subs_dir = "./database/subs"
+subs_dir = "./stampy/database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
 rob_id = 181142785259208704
@@ -78,4 +78,23 @@ stampy_control_channel_names = [
     "bot-dev",
     "talk-to-stampy",
     "robertskmiles",
+]
+
+#   [module_name, class_name],
+enabled_modules = [
+        ["StampyControls", "StampyControls"],
+        ["stampcollection", "StampsModule"],
+        ["questions", "QQManager"],
+        ["videosearch", "VideoSearch"],
+        ["ANSearch", "ANSearch"],
+        ["wolfram", "Wolfram"],
+        ["duckduckgo", "DuckDuckGo"],
+        ["reply", "Reply"],
+        ["invitemanager", "InviteManager"],
+        ["gpt3module", "GPT3Module"],
+        ["Factoids", "Factoids"],
+        ["sentience", "Sentience"],
+        ["wikiUpdate", "WikiUpdate"],
+        ["atemporal", "Atemporal"],
+        ["testModule", "TestModule"]
 ]

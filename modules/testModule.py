@@ -1,9 +1,9 @@
 import re
 from asyncio import sleep
-from utilities import get_question_id, is_test_response
-from modules.module import Module, Response
+from ..utilities import get_question_id, is_test_response
+from .module import Module, Response
 from jellyfish import jaro_winkler_similarity
-from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
+from ..config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
 
 
 class TestModule(Module):

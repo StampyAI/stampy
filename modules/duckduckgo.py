@@ -1,4 +1,4 @@
-from modules.module import Module, Response
+from .module import Module, Response
 import urllib
 import re
 import json

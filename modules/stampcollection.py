@@ -1,8 +1,8 @@
 import re
 import discord
 import numpy as np
-from modules.module import Module, Response
-from config import rob_id, god_id, stampy_id
+from .module import Module, Response
+from ..config import rob_id, god_id, stampy_id
 
 
 class StampsModule(Module):

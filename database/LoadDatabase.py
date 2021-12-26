@@ -1,5 +1,5 @@
 import json
-import utilities
+from .utilities import Utilities
 
 
 def drop_tables():
@@ -72,7 +72,7 @@ def load_votes(file):
     db.commit()
 
 
-util = utilities.Utilities.get_instance()
+util = Utilities.get_instance()
 db = util.db
 
 print(util.db.connected)

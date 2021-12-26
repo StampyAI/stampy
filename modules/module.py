@@ -1,9 +1,9 @@
 import re
 import discord
-from utilities import Utilities, get_question_id
+from ..utilities import Utilities, get_question_id
 from dataclasses import dataclass, field
 from typing import Callable, Optional
-from config import TEST_QUESTION_PREFIX
+from ..config import TEST_QUESTION_PREFIX
 
 
 @dataclass

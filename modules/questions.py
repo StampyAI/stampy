@@ -1,5 +1,5 @@
 import re
-from modules.module import Module, Response
+from .module import Module, Response
 
 
 class QQManager(Module):

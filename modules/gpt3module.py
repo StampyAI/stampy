@@ -1,8 +1,7 @@
 import openai
 import discord
-from modules.module import Module, Response
-from config import CONFUSED_RESPONSE
-from config import openai_api_key, rob_id
+from .module import Module, Response
+from ..config import CONFUSED_RESPONSE, openai_api_key, rob_id
 from transformers import GPT2TokenizerFast
 
 openai.api_key = openai_api_key

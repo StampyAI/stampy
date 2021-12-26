@@ -1,7 +1,7 @@
 import re
 import discord
-from modules.module import Module, Response
-from config import rob_id
+from .module import Module, Response
+from ..config import rob_id
 
 
 class InviteManager(Module):

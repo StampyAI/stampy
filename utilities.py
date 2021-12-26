@@ -8,12 +8,12 @@ import psutil
 import discord
 from git import Repo
 from time import time
-from database.database import Database
-from api.semanticwiki import SemanticWiki
+from .database.database import Database
+from .api.semanticwiki import SemanticWiki
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
-from config import (
+from .config import (
     youtube_api_version,
     youtube_api_service_name,
     rob_miles_youtube_channel_id,
@@ -24,6 +24,7 @@ from config import (
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
     wiki_config,
+    enabled_modules
 )
 
 
@@ -51,6 +52,7 @@ class Utilities:
     index = None
     scores = None
 
+    enabled_modules = enabled_modules
     modules_dict = {}
 
     @staticmethod

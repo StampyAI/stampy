@@ -1,5 +1,5 @@
-from modules.module import Module, Response
-from config import rob_id
+from .module import Module, Response
+from ..config import rob_id
 import random
 import sqlite3
 import re
@@ -22,7 +22,7 @@ def is_bot_dev(user):
 class Factoids(Module):
     def __init__(self):
         super().__init__()
-        dbpath = "factoids.db"
+        dbpath = "./stampy/factoids.db"
         self.db = self.FactoidDb(dbpath)
         self.who = "Someone"
         self.re_replace = re.compile(r".*?({{.+?}})")

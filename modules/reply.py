@@ -1,8 +1,8 @@
 import re
 import json
 import discord
-from modules.module import Module, Response
-from config import stampy_youtube_channel_id, youtube_testing_thread_url, comment_posting_threshold_factor
+from .module import Module, Response
+from ..config import stampy_youtube_channel_id, youtube_testing_thread_url, comment_posting_threshold_factor
 from datetime import datetime
 
 

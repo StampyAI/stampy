@@ -1,26 +1,13 @@
 import os
 import sys
+from importlib import import_module
 import inspect
 import discord
 import unicodedata
-from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question
-from modules.module import Response
-from modules.reply import Reply
-from modules.questions import QQManager
-from modules.wolfram import Wolfram
-from modules.duckduckgo import DuckDuckGo
-from modules.videosearch import VideoSearch
-from modules.ANSearch import ANSearch
-from modules.invitemanager import InviteManager
-from modules.stampcollection import StampsModule
-from modules.StampyControls import StampyControls
-from modules.gpt3module import GPT3Module
-from modules.Factoids import Factoids
-from modules.wikiUpdate import WikiUpdate
-from modules.atemporal import AtemporalModule
-from modules.testModule import TestModule
+from .utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question, enabled_modules
+from .modules.module import Response
 from datetime import datetime, timezone, timedelta
-from config import (
+from .config import (
     discord_token,
     database_path,
     prod_local_path,
@@ -28,7 +15,7 @@ from config import (
     bot_dev_channel_id,
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
-    acceptable_environment_types,
+    acceptable_environment_types
 )
 
 
@@ -39,9 +26,9 @@ if not os.path.exists(database_path):
 
 if ENVIRONMENT_TYPE == "production":
     sys.path.insert(0, prod_local_path)
-    import sentience
+    from .sentience import sentience
 elif ENVIRONMENT_TYPE == "development":
-    from modules.sentience import sentience
+    from .modules.sentience import sentience
 else:
     raise Exception(
         "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
@@ -243,23 +230,10 @@ async def on_raw_reaction_remove(payload):
 
 
 if __name__ == "__main__":
-    utils.modules_dict = {
-        "StampyControls": StampyControls(),
-        "StampsModule": StampsModule(),
-        "QQManager": QQManager(),
-        "VideoSearch": VideoSearch(),
-        "ANSearch": ANSearch(),
-        "Wolfram": Wolfram(),
-        "DuckDuckGo": DuckDuckGo(),
-        "Reply": Reply(),
-        "InviteManager": InviteManager(),
-        "GPT3Module": GPT3Module(),
-        "Factoids": Factoids(),
-        "Sentience": sentience,
-        "WikiUpdate": WikiUpdate(),
-        "Atemporal": AtemporalModule(),
-        "TestModule": TestModule(),
-    }
+
+    for module_name, class_name in enabled_modules:
+        utils.modules_dict[module_name] = getattr(import_module(f".modules.{module_name}","stampy"), class_name)()
+
     modules = utils.modules_dict.values()
 
     utils.client.run(discord_token)
