@@ -14,9 +14,7 @@ class SemanticWiki(Persistence):
         self._session = requests.Session()
 
         # Retrieve login token first
-        response = self.post(
-            {"action": "query", "meta": "tokens", "type": "login", "format": "json"}
-        )
+        response = self.post({"action": "query", "meta": "tokens", "type": "login", "format": "json"})
 
         # Now log in to the Stampy bot account with the provided login token
         body = {
@@ -110,9 +108,7 @@ class SemanticWiki(Persistence):
         If no such page exists (or there are other API errors) returns None"""
         content = self.get_page(title)
         try:
-            return content["query"]["pages"][0]["revisions"][0]["slots"]["main"][
-                "content"
-            ]
+            return content["query"]["pages"][0]["revisions"][0]["slots"]["main"]["content"]
         except (KeyError, IndexError):
             return None
 
@@ -132,22 +128,20 @@ class SemanticWiki(Persistence):
         if len(properties) > 1:
             try:
                 properties_string = "|?".join(properties)
-                return self.ask(f"[[{pagename}]]|?{properties_string}")["query"][
-                    "results"
-                ][pagename]["printouts"]
+                return self.ask(f"[[{pagename}]]|?{properties_string}")["query"]["results"][pagename][
+                    "printouts"
+                ]
             except (KeyError, IndexError):
                 return None
         elif len(properties) == 1:
             try:
-                return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][
-                    pagename
-                ]["printouts"][properties[0]]
+                return self.ask(f"[[{pagename}]]|?{properties[0]}")["query"]["results"][pagename][
+                    "printouts"
+                ][properties[0]]
             except (KeyError, IndexError):
                 return None
         else:
-            raise ValueError(
-                "get_page_properties requires at least one property as input"
-            )
+            raise ValueError("get_page_properties requires at least one property as input")
 
     ########################################
     # FUNCTIONS WITH VERY SPECIFIC USES
@@ -155,20 +149,10 @@ class SemanticWiki(Persistence):
     # most of them handle the saving and updating of questions and answers
     ########################################
 
-    def add_answer(
-        self,
-        answer_title,
-        answer_writer,
-        answer_users,
-        answer_time,
-        answer_text,
-        question_title,
-    ):
+    def add_answer(self, answer_title, answer_writer, answer_users, answer_time, answer_text, question_title):
         # add a answer, we need to figure out which question this is an answer to
         if not answer_title:
-            print(
-                "No title provided, need the answer title for the primary key of the article"
-            )
+            print("No title provided, need the answer title for the primary key of the article")
             return
         ftext = f"""Answer
                 |answer={answer_text}
@@ -204,9 +188,7 @@ class SemanticWiki(Persistence):
 
         # Split the url into the comment id and video url
         if not display_title:
-            print(
-                "No title provided, need the question title for the primary key of the article"
-            )
+            print("No title provided, need the question title for the primary key of the article")
             return
 
         comment_id = comment_url.split("&lc=")[1] if comment_url else ""
@@ -263,11 +245,12 @@ class SemanticWiki(Persistence):
         )
         return
 
-    def get_unasked_question(self, sort, order, origin):
-        query = "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::{0}]][[ForRob::!true]]|?Question|".format(
-            origin
-        ) + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
-            sort, order
+    def get_unasked_question(self, sort, order):
+        query = (
+            "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
+            + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
+                sort, order
+            )
         )
         response = self.ask(query)
 
@@ -282,7 +265,7 @@ class SemanticWiki(Persistence):
             else:
                 question["url"] = "No URL"
             if relevant_vals["Asker"]:
-                question["username"] = relevant_vals["Asker"][0]["fulltext"]
+                question["username"] = relevant_vals["Asker"][0]
             else:
                 question["username"] = "Unknown"
             if relevant_vals["Video"]:
@@ -301,27 +284,13 @@ class SemanticWiki(Persistence):
         return question
 
     def get_latest_question(self):
-        questions = self.get_unasked_question("AskDate", "desc", "Wiki")
-        if len(questions) > 0:
-            return questions
-        else:
-            return self.get_unasked_question("AskDate", "desc", "YouTube")
+        return self.get_unasked_question("AskDate", "desc")
 
     def get_random_question(self):
-        questions = self.get_unasked_question("AskDate", "rand", "Wiki")
-        if len(questions) > 0:
-            return questions
-        else:
-            return self.get_unasked_question("AskDate", "rand", "YouTube")
+        return self.get_unasked_question("AskDate", "rand")
 
     def get_top_question(self):
-        questions = self.get_unasked_question("Reviewed", "desc,desc", "Wiki")
-        if len(questions) > 0:
-            return questions
-        else:
-            return self.get_unasked_question(
-                "Reviewed,YouTubeLikes", "desc,desc", "YouTube"
-            )
+        return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
 
     def set_question_property(self, title, parameter, value):
         return self.page_forms_auto_edit(title, "Question", parameter, value)
@@ -336,6 +305,4 @@ class SemanticWiki(Persistence):
         query = "[[Meta:API Queries]]|?UnaskedQuestions"
         response = self.ask(query)
 
-        return response["query"]["results"]["Meta:API Queries"]["printouts"][
-            "UnaskedQuestions"
-        ][0]
+        return response["query"]["results"]["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]

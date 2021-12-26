@@ -1,4 +1,7 @@
 from flask import Flask
-spiderstam = Flask(__name__)
+app = Flask(__name__)
 
-import stampy.api.spiderstam
+from stampy.api import spiderstam
+
+
+
