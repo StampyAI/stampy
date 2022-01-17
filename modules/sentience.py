@@ -3,7 +3,7 @@ from modules.module import Module, Response
 
 
 class Sentience(Module):
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_me(message):
             return Response(confidence=0.0000001, text=CONFUSED_RESPONSE)
         else:

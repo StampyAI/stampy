@@ -171,7 +171,7 @@ class ANSearch(Module):
                 matches.append(r)
         return matches
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 

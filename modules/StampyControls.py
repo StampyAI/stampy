@@ -34,7 +34,7 @@ class StampyControls(Module):
         else:
             await message.channel.send(text)
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_module(message):
             routine_name = self.is_at_me(message).lower()
             routine = self.routines[routine_name]

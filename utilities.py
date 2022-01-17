@@ -445,6 +445,13 @@ def get_github_info():
     }
 
 
+def get_git_branch_info():
+    repo = Repo(".")
+    branch = repo.active_branch
+    name = repo.config_reader().get_value('user', 'name')
+    return f"from git branch `{branch}` by `{name}`"
+
+
 def get_running_user_info():
     user_info = pwd.getpwuid(os.getuid())
     message = (

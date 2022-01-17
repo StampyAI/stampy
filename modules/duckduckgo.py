@@ -5,7 +5,7 @@ import json
 
 
 class DuckDuckGo(Module):
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         text = self.is_at_me(message)
         if text:
             if text.endswith("?"):
