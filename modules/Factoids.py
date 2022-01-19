@@ -145,7 +145,7 @@ class Factoids(Module):
 
         return string
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         atme = False
         self.who = message.author.name
         self.people.add(self.who)
