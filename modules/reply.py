@@ -98,8 +98,7 @@ class Reply(Module):
         elif len(approvers) == 2:
             approver_string = " and ".join(approvers)
         else:
-            approvers[len(approvers) - 1] = "and " + approvers[-1]
-            approver_string = ", ".join(approvers)
+            approver_string = ", ".join(approvers[:-1]) + ', and ' + approvers[-1]
 
         # strip off stampy's name
         text = self.is_at_me(message)
