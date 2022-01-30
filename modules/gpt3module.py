@@ -136,11 +136,11 @@ class GPT3Module(Module):
         member = guild.get_member(message.author.id)
 
         if message.author.id == rob_id:
-            return "davinci"
+            return "text-davinci-001"
         elif member and (bot_dev_role in member.roles):
-            return "curie"
+            return "text-curie-001"
         else:
-            return "babbage"
+            return "text-babbage-001"
 
     async def gpt3_chat(self, message):
         """Ask GPT-3 what Stampy would say next in the chat log"""
@@ -168,7 +168,7 @@ class GPT3Module(Module):
                 temperature=0,
                 max_tokens=100,
                 top_p=1,
-                stop=["\n"],
+                # stop=["\n"],
                 logit_bias=logit_bias,
             )
         except openai.error.AuthenticationError:
@@ -178,7 +178,7 @@ class GPT3Module(Module):
         if response["choices"]:
             choice = response["choices"][0]
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
-                text = choice["text"].strip(". ")
+                text = choice["text"].strip(". \n")
                 print("GPT-3 Replied!:", text)
                 return Response(
                     confidence=10,
@@ -205,7 +205,7 @@ class GPT3Module(Module):
                     temperature=0,
                     max_tokens=100,
                     top_p=1,
-                    stop=["\n"],
+                    # stop=["\n"],
                 )
             except openai.error.AuthenticationError:
                 print("OpenAI Authentication Failed")
@@ -217,7 +217,7 @@ class GPT3Module(Module):
                     print("GPT-3 Replied!:")
                     return Response(
                         confidence=10,
-                        text="*" + choice["text"].strip(". ") + "*",
+                        text="*" + choice["text"].strip(". \n") + "*",
                         why="GPT-3 made me say it!",
                     )
 
