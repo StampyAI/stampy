@@ -178,7 +178,7 @@ class GPT3Module(Module):
         if response["choices"]:
             choice = response["choices"][0]
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
-                text = choice["text"].strip(". \n")
+                text = choice["text"].strip(". \n").split("\n")[0]
                 print("GPT-3 Replied!:", text)
                 return Response(
                     confidence=10,
