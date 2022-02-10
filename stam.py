@@ -257,6 +257,7 @@ if __name__ == "__main__":
         "StampsModule": StampsModule(),
         "QQManager": QQManager(),
         "VideoSearch": VideoSearch(),
+        "WikiSearch": WikiSearch(),
         "ANSearch": ANSearch(),
         "Wolfram": Wolfram(),
         "DuckDuckGo": DuckDuckGo(),
