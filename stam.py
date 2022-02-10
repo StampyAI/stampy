@@ -20,6 +20,7 @@ from modules.wikiUpdate import WikiUpdate
 from modules.wikiUtilities import WikiUtilities
 from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
+from modules.wikisearch import WikiSearch
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
 from config import (
