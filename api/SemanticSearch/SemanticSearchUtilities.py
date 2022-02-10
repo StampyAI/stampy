@@ -22,8 +22,8 @@ from progressbar import ProgressBar # NB! need to load it before init_logging is
 
 import requests
 import asyncio
-import aiodebug.log_slow_callbacks
-import aiodebug.monitor_loop_lag
+# import aiodebug.log_slow_callbacks
+# import aiodebug.monitor_loop_lag
 # from aiofile import aiofiles.open   # does not support flush method
 import aiofiles                       # supports flush method
 import aiofiles.os
@@ -36,7 +36,6 @@ import numpy as np
 # import pandas as pd
 
 from SemanticSearchLogger import get_now_str, init_colors, ansi_INTENSE, ansi_RED, ansi_GREEN, ansi_BLUE, ansi_CYAN, ansi_RESET
-
 
 
 
@@ -54,13 +53,19 @@ if is_dev_machine or debugging:   # TODO!! refactor to a separate function calle
   np.seterr(under=np_err_default["under"])
   # np.seterr(divide='raise')
 
-  aiodebug.log_slow_callbacks.enable(30 if is_dev_machine else 10)  # https://stackoverflow.com/questions/65704785/how-to-debug-a-stuck-asyncio-coroutine-in-python
-  # aiodebug.monitor_loop_lag.enable(statsd_client) # TODO!
+
+  if True:
+
+    import aiodebug.log_slow_callbacks
+    # import aiodebug.monitor_loop_lag
+
+    aiodebug.log_slow_callbacks.enable(30 if is_dev_machine else 10)  # https://stackoverflow.com/questions/65704785/how-to-debug-a-stuck-asyncio-coroutine-in-python
+    # aiodebug.monitor_loop_lag.enable(statsd_client) # TODO!
 
 #/ if is_dev_machine or debugging:
 
 
-if debugging:   # enable nested async calls so that async methods can be called from Immediate Window of Visual studio
+if False and debugging:   # enable nested async calls so that async methods can be called from Immediate Window of Visual studio    # disabled: it is not compatible with Stampy wiki async stuff
   import nest_asyncio
   nest_asyncio.apply()
 
