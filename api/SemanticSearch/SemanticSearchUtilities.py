@@ -54,7 +54,7 @@ if is_dev_machine or debugging:   # TODO!! refactor to a separate function calle
   # np.seterr(divide='raise')
 
 
-  if True:
+  if False:
 
     import aiodebug.log_slow_callbacks
     # import aiodebug.monitor_loop_lag
@@ -366,6 +366,8 @@ async def request_with_content_limit(url, is_post = False, data = None, timeout_
 
   with request:
 
+    # request.raw.decode_content = False # NB! decode_content=False since automatic compression was disabled
+
     assert(request.request.headers.get('Accept-Encoding') == "")
 
     request.raise_for_status()
@@ -374,8 +376,8 @@ async def request_with_content_limit(url, is_post = False, data = None, timeout_
       raise ValueError('Response is too large')
 
     # All decompression is handled in urllib3 in either case, no protection against a decompression bomb is included in that. - https://stackoverflow.com/questions/23514256/http-request-with-timeout-maximum-size-and-connection-pooling
-    # content = next(request.iter_content(content_limit + 1))
-    content = await loop.run_in_executor(None, functools.partial(request.raw.read, content_limit + 1, decode_content=False)) # NB! decode_content=False since automatic compression was disabled
+    # content = next(await async_request(request.iter_content, content_limit + 1))
+    content = await async_request(request.raw.read, content_limit + 1, decode_content=False) # NB! decode_content=False since automatic compression was disabled
 
     if len(content) > content_limit:
       raise ValueError('Response is too large')

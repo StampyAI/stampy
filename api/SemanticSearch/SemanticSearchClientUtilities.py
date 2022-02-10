@@ -29,7 +29,7 @@ import functools
 from configparser import ConfigParser
 
 
-from SemanticSearchUtilities import loop, debugging, is_dev_machine, safeprint, decompress_with_limit, request_with_content_limit, print_exception, match_beginning, compresslevel, transpose_lists
+from SemanticSearchUtilities import loop, debugging, is_dev_machine, safeprint, decompress_with_limit, request_with_content_limit, print_exception, match_beginning, compresslevel, transpose_lists, async_request
 
 
 
@@ -104,8 +104,10 @@ async def do_request(api_server_url: str, request, request_path, timeout_sec, re
   log_request(enable_log, request)
   request_json = encode_request(request)
 
-  # serialized_result = requests.post(api_server_url + request_path, data=request_json, timeout=timeout_sec).content
-  serialized_result = await request_with_content_limit(api_server_url + request_path, is_post=True, data=request_json, timeout_sec=timeout_sec, content_limit=decompression_limit)
+  # TODO!! use aiohttp 
+
+  serialized_result = requests.post(api_server_url + request_path, data=request_json, timeout=timeout_sec).content
+  # serialized_result = await request_with_content_limit(api_server_url + request_path, is_post=True, data=request_json, timeout_sec=timeout_sec, content_limit=decompression_limit)
 
   result = decode_result(serialized_result, use_json_response)      
   log_result(enable_log, result)
@@ -121,7 +123,8 @@ async def ping_server(api_server_url: str) -> bool:
 
     # TODO!! use aiohttp 
 
-    result = (await loop.run_in_executor(None, functools.partial(requests.get, api_server_url + "uptime", timeout=5))).content.decode("utf8", "ignore")
+    result = requests.get(api_server_url + "uptime", timeout=5).content.decode("utf8", "ignore")
+    # result = (await async_request(requests.get, api_server_url + "uptime", timeout=5)).content.decode("utf8", "ignore")
   
     return result.strip() == "success"
 

@@ -76,7 +76,7 @@ class WikiSearch(Module):
     #/ def __init__(self):
 
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
 
         if type(message.channel) == discord.DMChannel:
             if True: # or message.author.id != roland_id:
@@ -95,7 +95,7 @@ class WikiSearch(Module):
         # This is either not at me, or not something we can handle
         return Response()
 
-    #/ def process_message(self, message, client=None):
+    #/ def process_message(self, message):
 
 
     def list_relevant_wiki_pages(self, result_row_indexes, result_distances, result_faiss_scores):
