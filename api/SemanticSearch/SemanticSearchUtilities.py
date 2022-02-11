@@ -22,6 +22,7 @@ from progressbar import ProgressBar # NB! need to load it before init_logging is
 
 import requests
 import asyncio
+import aiohttp
 # import aiodebug.log_slow_callbacks
 # import aiodebug.monitor_loop_lag
 # from aiofile import aiofiles.open   # does not support flush method
@@ -349,63 +350,65 @@ async def request_with_content_limit(url, is_post = False, data = None, timeout_
 
   start_time = time.time()
 
-  # TODO!! use aiohttp 
 
-  if not is_post:
-    # As of requests release 2.3.0 the timeout applies to streaming requests too - https://stackoverflow.com/questions/22346158/python-requests-how-to-limit-received-size-transfer-rate-and-or-total-time
-    # disable compression by NGINX since we will compress and decompress manually using gzip in order to protect against decompression bombs
-    # NB! use empty string not None for Accept-Encoding: "*" Matches any content encoding not already listed in the header. This is the default value if the header is not present. It doesn't mean that any algorithm is supported; merely that no preference is expressed. - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
-    request = await async_request(requests.get, url, stream=True, timeout=timeout_sec, headers={'Accept-Encoding': ''})
-  else:
-    assert(data is not None)
-    # As of requests release 2.3.0 the timeout applies to streaming requests too - https://stackoverflow.com/questions/22346158/python-requests-how-to-limit-received-size-transfer-rate-and-or-total-time
-    # disable compression by NGINX since we will compress and decompress manually using gzip in order to protect against decompression bombs
-    # NB! use empty string not None for Accept-Encoding: "*" Matches any content encoding not already listed in the header. This is the default value if the header is not present. It doesn't mean that any algorithm is supported; merely that no preference is expressed. - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
-    request = await async_request(requests.post, url, data=data, stream=True, timeout=timeout_sec, headers={'Accept-Encoding': ''})
+  if content_limit is None:
+    content_limit = decompression_limit
 
 
-  with request:
+  timeout = aiohttp.ClientTimeout(total=timeout_sec) if timeout_sec is not None else aiohttp.helpers.sentinel
 
-    # request.raw.decode_content = False # NB! decode_content=False since automatic compression was disabled
+  # NB! auto_decompress=False since automatic compression was disabled
+  # no protection against a decompression bomb seems to be included in aiohttp.
+  async with aiohttp.ClientSession(timeout=timeout, headers={'Accept-Encoding': ''}, auto_decompress=False) as session:
 
-    assert(request.request.headers.get('Accept-Encoding') == "")
+    if not is_post:
+      # As of requests release 2.3.0 the timeout applies to streaming requests too - https://stackoverflow.com/questions/22346158/python-requests-how-to-limit-received-size-transfer-rate-and-or-total-time
+      # disable compression by NGINX since we will compress and decompress manually using gzip in order to protect against decompression bombs
+      # NB! use empty string not None for Accept-Encoding: "*" Matches any content encoding not already listed in the header. This is the default value if the header is not present. It doesn't mean that any algorithm is supported; merely that no preference is expressed. - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
+      # request = await async_request(requests.get, url, stream=True, timeout=timeout_sec, headers={'Accept-Encoding': ''})
 
-    request.raise_for_status()
+      request = await session.get(url)
 
-    if int(request.headers.get('Content-Length')) > content_limit:
-      raise ValueError('Response is too large')
+    else:
+      assert(data is not None)
+      # As of requests release 2.3.0 the timeout applies to streaming requests too - https://stackoverflow.com/questions/22346158/python-requests-how-to-limit-received-size-transfer-rate-and-or-total-time
+      # disable compression by NGINX since we will compress and decompress manually using gzip in order to protect against decompression bombs
+      # NB! use empty string not None for Accept-Encoding: "*" Matches any content encoding not already listed in the header. This is the default value if the header is not present. It doesn't mean that any algorithm is supported; merely that no preference is expressed. - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
+      # request = await async_request(requests.post, url, data=data, stream=True, timeout=timeout_sec, headers={'Accept-Encoding': ''})
 
-    # All decompression is handled in urllib3 in either case, no protection against a decompression bomb is included in that. - https://stackoverflow.com/questions/23514256/http-request-with-timeout-maximum-size-and-connection-pooling
-    # content = next(await async_request(request.iter_content, content_limit + 1))
-    content = await async_request(request.raw.read, content_limit + 1, decode_content=False) # NB! decode_content=False since automatic compression was disabled
-
-    if len(content) > content_limit:
-      raise ValueError('Response is too large')
-
-    # request.close()
-
-    return content
-
-  #/ with request:
+      request = await session.post(url, data=data)
 
 
-  #chunksize = 1024 * 1024
-  #size = 0
-  #data = []
-  #for chunk in request.iter_content(chunksize):
+    async with request:
 
-  #  if time.time() - start_time > timeout:
-  #    raise ValueError('Timeout reached')
+      # request.raw.decode_content = False # NB! decode_content=False since automatic compression was disabled
 
-  #  size += len(chunk)
-  #  data.append(chunk)
+      # assert(request.request.headers.get('Accept-Encoding') == "")
+      assert(request.request_info.headers.get('Accept-Encoding') == "")
 
-  #  if size > your_maximum:
-  #    raise ValueError('Response is too large')
+      request.raise_for_status()
 
-  ##/ for chunk in r.iter_content(1024 * 1024):
+      if int(request.headers.get('Content-Length')) > content_limit:
+        raise ValueError('Response is too large')
 
-  #return b''.join(data)
+
+      # All decompression is handled in urllib3 in either case, no protection against a decompression bomb is included in that. - https://stackoverflow.com/questions/23514256/http-request-with-timeout-maximum-size-and-connection-pooling
+      # content = next(await async_request(request.iter_content, content_limit + 1))
+      # content = await async_request(request.raw.read, content_limit + 1, decode_content=False) # NB! decode_content=False since automatic compression was disabled
+
+      content = await request.content.read(content_limit + 1)
+
+
+      if len(content) > content_limit:
+        raise ValueError('Response is too large')
+
+      # request.close()
+
+      return content
+
+    #/ with request:
+
+  #/ async with aiohttp.ClientSession() as session:
 
 #/ def request_with_content_limit(url, is_post = False, data = None, timeout = None, content_limit = None):
 

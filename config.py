@@ -1,7 +1,12 @@
 import os
-import dotenv
+import sys
 
-dotenv.load_dotenv()
+try:
+  if sys.version >= "3.7":
+    import dotenv  # not available for Python 3.6?
+    dotenv.load_dotenv()
+except Exception:
+  pass
 
 
 def getenv(env_var, default=None):

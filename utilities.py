@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 
 # Sadly some of us run windows...
@@ -6,11 +7,28 @@ if not os.name == "nt":
     import pwd
 import psutil
 import discord
-from git import Repo
+
+try:
+  if sys.version >= "3.7":
+    from git import Repo
+except Exception:
+  pass  # not working for Python 3.6 for some reason: ImportError: cannot import name 'SupportsIndex'
+
 from time import time
-from database.database import Database
+
+try:
+  if sys.version >= "3.7":
+    from database.database import Database
+except Exception:
+  pass  # not available for Python 3.6?
+
 from api.semanticwiki import SemanticWiki
 from datetime import datetime, timezone, timedelta
+
+if sys.version < "3.7":
+  from backports.datetime_fromisoformat import MonkeyPatch 
+  MonkeyPatch.patch_fromisoformat()
+
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
 from config import (
@@ -105,7 +123,13 @@ class Utilities:
                     print("YouTube API Key is not set")
 
             print("Trying to open db - " + self.DB_PATH)
-            self.db = Database(self.DB_PATH)
+
+            try:
+              if sys.version >= "3.7":
+                self.db = Database(self.DB_PATH)
+            except NameError:
+              pass
+
             intents = discord.Intents.default()
             intents.members = True
             self.client = discord.Client(intents=intents)

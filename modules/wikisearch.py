@@ -98,6 +98,15 @@ class WikiSearch(Module):
     #/ def process_message(self, message):
 
 
+    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
+        # TODO
+        return Response()
+
+    async def process_raw_reaction_event(self, event, client=None):
+        # TODO
+        return Response()
+
+
     def list_relevant_wiki_pages(self, result_row_indexes, result_distances, result_faiss_scores):
 
         reply = "Wiki semantic search module here."
