@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Author: Roland Pihlakas, 2021
+# Author: Roland Pihlakas, 2021 - 2022
 #
 # roland@simplify.ee
 #
@@ -17,6 +17,8 @@ import pickle
 import time
 import textwrap
 import shutil
+import re
+import codecs
 
 from progressbar import ProgressBar # NB! need to load it before init_logging is called else progress bars do not work properly for some reason
 
@@ -40,6 +42,10 @@ from SemanticSearchLogger import get_now_str, init_colors, ansi_INTENSE, ansi_RE
 
 
 
+decompression_limit = 1 * 1024 * 1024 * 1024     # TODO: tune, config file
+
+
+
 loop = asyncio.get_event_loop()
 
 
@@ -55,7 +61,7 @@ if is_dev_machine or debugging:   # TODO!! refactor to a separate function calle
   # np.seterr(divide='raise')
 
 
-  if False:
+  if True:
 
     import aiodebug.log_slow_callbacks
     # import aiodebug.monitor_loop_lag
@@ -265,7 +271,7 @@ def format_long_text(text, padding_len, newline_sufix):
 
 def init_logging(caller_filename = "", caller_name = "", log_dir = "logs", max_old_log_rename_tries = 10):
 
-  from Logger import Logger, rename_log_file_if_needed
+  from SemanticSearchLogger import Logger, rename_log_file_if_needed
 
 
   logfile_name_prefix = caller_filename + ("_" if caller_filename else "")
@@ -348,8 +354,6 @@ async def async_request(method, *args, **kwargs):
 # https://stackoverflow.com/questions/22346158/python-requests-how-to-limit-received-size-transfer-rate-and-or-total-time
 async def request_with_content_limit(url, is_post = False, data = None, timeout_sec = None, content_limit = None):
 
-  start_time = time.time()
-
 
   if content_limit is None:
     content_limit = decompression_limit
@@ -396,13 +400,18 @@ async def request_with_content_limit(url, is_post = False, data = None, timeout_
       # content = next(await async_request(request.iter_content, content_limit + 1))
       # content = await async_request(request.raw.read, content_limit + 1, decode_content=False) # NB! decode_content=False since automatic compression was disabled
 
-      content = await request.content.read(content_limit + 1)
+
+      # content = await request.content.read(content_limit + 1) # comment-out: sometimes await content.read() reads partial content - https://github.com/aio-libs/aiohttp/issues/3881
+      content = b""
+      async for chunk in request.content.iter_chunked(1024 * 1024):
+        content += chunk
+        if len(content) > content_limit:
+          break
 
 
       if len(content) > content_limit:
         raise ValueError('Response is too large')
 
-      # request.close()
 
       return content
 
@@ -503,6 +512,37 @@ async def save_file(filename, data, quiet = False, make_backup = False):
 #/ def save_file(filename, data):
 
 
+async def save_txt(filename, str, quiet = False, make_backup = False):
+
+  message_template = "file saving {} num of characters: {}"
+  message = message_template.format(filename, len(str))
+
+  with Timer(message, quiet):
+
+    fullfilename = os.path.join(data_dir, filename)
+
+    if (1 == 1):
+
+      async with aiofiles.open(fullfilename + ".tmp", 'wt', 1024 * 1024, encoding="utf-8") as afh:    # wt format automatically handles line breaks depending on the current OS type
+        await afh.write(codecs.BOM_UTF8.decode("utf-8"))
+        await afh.write(str)
+        await afh.flush()
+
+    else:   #/ if (1 == 0):
+
+      with open(fullfilename + ".tmp", 'wt', 1024 * 1024, encoding="utf-8") as fh:    # wt format automatically handles line breaks depending on the current OS type
+        # fh.write(codecs.BOM_UTF8 + str.encode("utf-8", "ignore"))
+        fh.write(codecs.BOM_UTF8.decode("utf-8"))
+        fh.write(str)
+        fh.flush()  # just in case
+
+    await rename_temp_file(fullfilename, make_backup)
+
+  #/ with Timer("file saving {}, num of all entries: {}".format(filename, len(cache))):
+
+#/ def save_txt(filename, data):
+
+
 def prod(factors):
 
     return reduce(operator.mul, factors, 1)
@@ -576,5 +616,44 @@ def split_list_to_chunks_of_size(lst, size):
   return [lst[offset : offset + size] for offset in range(0, len(lst), size)]
 
 #/ def split_list_to_chunks_of_size(lst, size):
+
+
+# https://stackoverflow.com/questions/7406102/create-sane-safe-filename-from-any-unsafe-string
+# device names, '.', and '..' are invalid filenames in Windows.
+device_names = set("CON,PRN,AUX,NUL,COM1,COM2,COM3,COM4," \
+                "COM5,COM6,COM7,COM8,COM9,LPT1,LPT2," \
+                "LPT3,LPT4,LPT5,LPT6,LPT7,LPT8,LPT9," \
+                "CONIN$,CONOUT$,..,.".split())
+
+def sanitise_filename(text, max_len=255, keep_ext=True, replace_device_names=True, check_filename_start_and_end=True):   # 255: # Maximum length of filename is 255 bytes in Windows and some *nix flavors.
+  
+  if keep_ext:
+    ext = os.path.splitext(text)[1]
+
+  filler = "_"
+
+  # remove excluded characters.
+  blacklist = set(chr(127) + r'<>:"/\|?*')   # 127 is unprintable, the rest are illegal in Windows.
+  keepcharacters = { chr(x) for x in range(32, 256) } - blacklist    # 0-32, 127 are unprintable
+  result = "".join([(chr if (chr.isalnum() or chr in keepcharacters) else filler) for chr in text])
+
+  if replace_device_names:
+    if result in device_names:
+      result = filler + result
+  #/ if replace_device_names:
+
+  # truncate long files while preserving the file extension.
+  if keep_ext:
+    result = result[:max_len - len(ext)] + ext
+  else:
+    result = result[:max_len]
+
+  if check_filename_start_and_end:
+    # Windows does not allow filenames to begin with " " or end with "." or " ".
+    result = re.sub(r"(^ |[. ]$)", filler, result)
+
+  return result
+
+#/ def sanitise_filename(text):
 
 

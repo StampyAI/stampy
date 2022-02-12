@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Author: Roland Pihlakas, 2021
+# Author: Roland Pihlakas, 2021 - 2022
 #
 # roland@simplify.ee
 #
@@ -29,12 +29,7 @@ import functools
 from configparser import ConfigParser
 
 
-from SemanticSearchUtilities import loop, debugging, is_dev_machine, safeprint, decompress_with_limit, request_with_content_limit, print_exception, match_beginning, compresslevel, transpose_lists
-
-
-
-
-decompression_limit = 1 * 1024 * 1024 * 1024     # TODO: tune, config file
+from SemanticSearchUtilities import loop, debugging, is_dev_machine, safeprint, decompress_with_limit, request_with_content_limit, print_exception, match_beginning, compresslevel, transpose_lists, decompression_limit
 
 
 

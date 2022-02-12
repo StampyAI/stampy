@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Author: Roland Pihlakas, 2021
+# Author: Roland Pihlakas, 2021 - 2022
 #
 # roland@simplify.ee
 #
