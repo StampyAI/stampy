@@ -189,7 +189,7 @@ class Factoids(Module):
             pf = self.prevFactoid[room]
             del self.prevFactoid[room]
             self.db.remove(*pf)
-            if room == "bot-dev":
+            if room == "stampy-dev":
                 result = "debug: %s\n" % str(pf)
             result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
                 self.who,
