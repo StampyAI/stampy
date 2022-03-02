@@ -470,7 +470,7 @@ def get_memory_usage():
     process = psutil.Process(os.getpid())
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
-    return "I'm using %s bytes of memory." % megabytes_string
+    return "I'm using %s of memory." % megabytes_string
 
 
 def get_question_id(message):
