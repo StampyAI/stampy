@@ -51,7 +51,7 @@ else:
 
 
 @utils.client.event
-async def on_ready():
+async def on_ready() -> None:
     print(f"{utils.client.user} has connected to Discord!")
     print("searching for a guild named '%s'" % utils.GUILD)
     print(utils.client.guilds)
@@ -67,7 +67,7 @@ async def on_ready():
 
 
 @utils.client.event
-async def on_message(message):
+async def on_message(message: discord.message.Message) -> None:
     # don't react to our own messages unless running test
     message_author_is_stampy = message.author == utils.client.user
     if is_test_message(message.clean_content) and utils.test_mode:
@@ -170,7 +170,7 @@ async def on_message(message):
 
 
 @utils.client.event
-async def on_socket_raw_receive(_):
+async def on_socket_raw_receive(_) -> None:
     """
     This event fires whenever basically anything at all happens.
     Anyone joining, leaving, sending anything, even typing and not sending...
@@ -228,7 +228,7 @@ async def on_socket_raw_receive(_):
 
 
 @utils.client.event
-async def on_raw_reaction_add(payload):
+async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:
     print("RAW REACTION ADD")
     if len(payload.emoji.name) == 1:
         # if this is an actual unicode emoji
@@ -242,7 +242,7 @@ async def on_raw_reaction_add(payload):
 
 
 @utils.client.event
-async def on_raw_reaction_remove(payload):
+async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:
     print("RAW REACTION REMOVE")
     print(payload)
 
