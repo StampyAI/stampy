@@ -1,7 +1,7 @@
 import sys
 import discord
 from modules.module import Module, Response
-from config import rob_id, stampy_control_channel_names, TEST_RESPONSE_PREFIX
+from config import rob_id, tayler_id, stampy_control_channel_names, TEST_RESPONSE_PREFIX
 from utilities import get_github_info, get_memory_usage, get_running_user_info, get_question_id
 
 
@@ -51,7 +51,7 @@ class StampyControls(Module):
     @staticmethod
     async def reboot(message):
         if hasattr(message.channel, "name") and message.channel.name in stampy_control_channel_names:
-            if message.author.id == rob_id:
+            if message.author.id == tayler_id:
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 exit()

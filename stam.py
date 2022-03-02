@@ -258,7 +258,7 @@ if __name__ == "__main__":
         "VideoSearch": VideoSearch(),
         "ANSearch": ANSearch(),
         "Wolfram": Wolfram(),
-        "DuckDuckGo": DuckDuckGo(),
+        # "DuckDuckGo": DuckDuckGo(),
         "Reply": Reply(),
         "InviteManager": InviteManager(),
         "GPT3Module": GPT3Module(),

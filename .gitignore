@@ -5,3 +5,4 @@ factoids.db
 .idea/*
 .env
 modules/choose.py
+venv/
