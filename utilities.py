@@ -453,13 +453,16 @@ def get_git_branch_info():
 
 
 def get_running_user_info():
-    user_info = pwd.getpwuid(os.getuid())
-    message = (
-        "The last user to start my server was %(username)s."
-        + "\nThey used the %(shell)s shell."
-        + "\nMy Process ID is %(pid)s on this machine"
-    )
-    return message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
+    if not os.name == "nt":
+        user_info = pwd.getpwuid(os.getuid())
+        message = (
+            "The last user to start my server was %(username)s."
+            + "\nThey used the %(shell)s shell."
+            + "\nMy Process ID is %(pid)s on this machine."
+        )
+        return message % {"username": user_info.pw_name, "shell": user_info.pw_shell, "pid": os.getpid()}
+    else:
+        return f"I am running on Windows.\nMy Process ID is {os.getpid()} on this machine."
 
 
 def get_memory_usage():
