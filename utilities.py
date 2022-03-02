@@ -432,9 +432,9 @@ class Utilities:
 
 def get_github_info():
     message = (
-        "\nThe latest commit was by %(actor)s"
-        + "\nThe commit message was '%(git_message)s'"
-        + "\nThis commit was written on %(date)s"
+        "\nThe latest commit was by %(actor)s."
+        + "\nThe commit message was '%(git_message)s'."
+        + "\nThis commit was written on %(date)s."
     )
     repo = Repo(".")
     master = repo.head.reference
@@ -453,20 +453,24 @@ def get_git_branch_info():
 
 
 def get_running_user_info():
-    user_info = pwd.getpwuid(os.getuid())
-    message = (
-        "The last user to start my server was %(username)s."
-        + "\nThey used the %(shell)s shell."
-        + "\nMy Process ID is %(pid)s on this machine"
-    )
-    return message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
+    if not os.name == "nt":
+        user_info = pwd.getpwuid(os.getuid())
+        user_name = user_info.pw_gecos.split(',')[0]
+        message = (
+            "The last user to start my server was %(username)s."
+            + "\nThey used the %(shell)s shell."
+            + "\nMy Process ID is %(pid)s on this machine."
+        )
+        return message % {"username": user_name, "shell": user_info.pw_shell, "pid": os.getpid()}
+    else:
+        return f"I'm running on Windows.\nMy Process ID is {os.getpid()} on this machine."
 
 
 def get_memory_usage():
     process = psutil.Process(os.getpid())
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
-    return "I'm using %s bytes of memory" % megabytes_string
+    return "I'm using %s bytes of memory." % megabytes_string
 
 
 def get_question_id(message):
