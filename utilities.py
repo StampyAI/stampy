@@ -463,7 +463,15 @@ def get_running_user_info():
         )
         return message % {"username": user_name, "shell": user_info.pw_shell, "pid": os.getpid()}
     else:
-        return f"I'm running on Windows.\nMy Process ID is {os.getpid()} on this machine."
+        # This should be replaced with a better test down the line.
+        shell = "Command Prompt (DOS)" if os.getenv('PROMPT') == '$P$G' else "PowerShell"
+        user_name = os.getlogin()
+        message = (
+            "The last user to start my server was %(username)s."
+            + "\nThey used the %(shell)s shell."
+            + "\nMy Process ID is %(pid)s on this machine."
+        )
+        return message % {"username": user_name, "shell": shell, "pid": os.getpid()}
 
 
 def get_memory_usage():
