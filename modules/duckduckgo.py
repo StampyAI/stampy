@@ -3,7 +3,6 @@ import urllib
 import re
 import json
 
-
 class DuckDuckGo(Module):
     def process_message(self, message):
         text = self.is_at_me(message)
@@ -28,6 +27,17 @@ class DuckDuckGo(Module):
     def __str__(self):
         return "DuckDuckGo"
 
+    def get_confidence(text, max_confidence):
+        """How confident should I be with this response string?"""
+        
+        # Some types of things we don't really care about
+        IRRELEVANT_WORDS = ["film", "movie", "tv", "song", "album", "band"]
+
+        if any(word in text for word in IRRELEVANT_WORDS):
+            return 1
+        else:
+            return max_confidence
+
     def ask(self, question):
         q = question.lower().strip().strip("?")
         q = re.sub(r"w(hat|ho)('s|'re| is| are| was| were) ?", "", q)
@@ -45,13 +55,20 @@ class DuckDuckGo(Module):
             # print(json.dumps(j, sort_keys=True, indent=2))
             if j["Abstract"]:
                 answer = j["Abstract"]
-                return Response(confidence=7, text=answer, why="That's what DuckDuckGo suggested")
+                return Response(
+                    confidence=self.get_confidence(answer, 7),
+                    text=answer,
+                    why="That's what DuckDuckGo suggested"
+                )
             elif j["Type"] == "D":
                 answer = j["RelatedTopics"][0]["Text"]
+
+                # If the response cuts off with ... then throw out the last sentence
                 if answer.endswith("...") and (". " in answer):
                     answer = ". ".join(answer.split(". ")[:-1])
+                
                 return Response(
-                    confidence=6,
+                    confidence=self.get_confidence(answer, 6),
                     text=answer,
                     why="That's what DuckDuckGo suggested",
                 )
