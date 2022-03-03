@@ -238,7 +238,7 @@ async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, utils.client)
+        await module.process_raw_reaction_event(payload)
 
 
 @utils.client.event
@@ -247,7 +247,7 @@ async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEv
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, utils.client)
+        await module.process_raw_reaction_event(payload)
 
 
 if __name__ == "__main__":
