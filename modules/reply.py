@@ -216,7 +216,7 @@ class Reply(Module):
 
         if emoji in ["stamp", "goldstamp"]:
             print("GUILD = ", self.utils.GUILD)
-            guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
+            guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
             channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)
             if self.is_at_me(message) and self.is_post_request(self.is_at_me(message)):
