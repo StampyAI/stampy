@@ -178,7 +178,6 @@ class StampsModule(Module):
         self.calculate_stamps()
 
     async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
-        # guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
         emoji = getattr(reaction.emoji, "name", reaction.emoji)
         if emoji == "stamp":
             print("### STAMP AWARDED ###")
@@ -186,7 +185,7 @@ class StampsModule(Module):
 
     async def process_raw_reaction_event(self, event):
         event_type = event.event_type
-        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
+        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
         channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
 
         if not channel:
