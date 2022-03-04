@@ -27,7 +27,7 @@ class DuckDuckGo(Module):
     def __str__(self):
         return "DuckDuckGo"
 
-    def get_confidence(text, max_confidence):
+    def get_confidence(self, text, max_confidence):
         """How confident should I be with this response string?"""
         
         # Some types of things we don't really care about
