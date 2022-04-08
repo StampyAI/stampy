@@ -241,6 +241,7 @@ class GPT3Module(Module):
                 top_p=1,
                 # stop=["\n"],
                 logit_bias=logit_bias,
+                user=str(message.author.id),
             )
         except openai.error.AuthenticationError:
             print("OpenAI Authentication Failed")
@@ -283,6 +284,7 @@ class GPT3Module(Module):
                     temperature=0,
                     max_tokens=100,
                     top_p=1,
+                    user=str(message.author.id),
                     # stop=["\n"],
                 )
             except openai.error.AuthenticationError:
