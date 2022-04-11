@@ -127,6 +127,70 @@ class GPT3Module(Module):
 
         return forbidden_tokens
 
+    def cf_risk_level(self, prompt):
+        """Ask the openai content filter if the prompt is risky
+        Returns:
+            0 - The text is safe.
+            1 - This text is sensitive.
+            2 - This text is unsafe.
+
+        See https://beta.openai.com/docs/engines/content-filter for details"""
+
+        try:
+            response = openai.Completion.create(
+                engine="content-filter-alpha",
+                prompt="<|endoftext|>" + prompt + "\n--\nLabel:",
+                temperature=0,
+                max_tokens=1,
+                top_p=0,
+                logprobs=10,
+            )
+        except openai.error.AuthenticationError:
+            print("OpenAI Authentication Failed")
+            return
+
+        output_label = response["choices"][0]["text"]
+
+        # This is the probability at which we evaluate that a "2" is likely real
+        # vs. should be discarded as a false positive
+        toxic_threshold = -0.355
+
+        if output_label == "2":
+            # If the model returns "2", return its confidence in 2 or other output-labels
+            logprobs = response["choices"][0]["logprobs"]["top_logprobs"][0]
+
+            # If the model is not sufficiently confident in "2",
+            # choose the most probable of "0" or "1"
+            # Guaranteed to have a confidence for 2 since this was the selected token.
+            if logprobs["2"] < toxic_threshold:
+                logprob_0 = logprobs.get("0", None)
+                logprob_1 = logprobs.get("1", None)
+
+                # If both "0" and "1" have probabilities, set the output label
+                # to whichever is most probable
+                if logprob_0 is not None and logprob_1 is not None:
+                    if logprob_0 >= logprob_1:
+                        output_label = "0"
+                    else:
+                        output_label = "1"
+                # If only one of them is found, set output label to that one
+                elif logprob_0 is not None:
+                    output_label = "0"
+                elif logprob_1 is not None:
+                    output_label = "1"
+
+                # If neither "0" or "1" are available, stick with "2"
+                # by leaving output_label unchanged.
+
+        # if the most probable token is none of "0", "1", or "2"
+        # this should be set as unsafe
+        if output_label not in ["0", "1", "2"]:
+            output_label = "2"
+
+        print(f"Prompt is risk level {output_label}")
+
+        return int(output_label)
+
     def get_engine(self, message):
         """Pick the appropriate engine to respond to a message with"""
 
@@ -147,6 +211,13 @@ class GPT3Module(Module):
 
         engine = self.get_engine(message)
         prompt = self.generate_chatlog_prompt(message.channel)
+
+        if self.cf_risk_level(prompt) > 1:
+            return Response(
+                confidence=0,
+                text="",
+                why=f"GPT-3's content filter thought the prompt was risky",
+            )
 
         forbidden_tokens = self.get_forbidden_tokens(message.channel)
         print(forbidden_tokens)
@@ -170,6 +241,7 @@ class GPT3Module(Module):
                 top_p=1,
                 # stop=["\n"],
                 logit_bias=logit_bias,
+                user=str(message.author.id),
             )
         except openai.error.AuthenticationError:
             print("OpenAI Authentication Failed")
@@ -198,6 +270,13 @@ class GPT3Module(Module):
             print("Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
 
+            if self.cf_risk_level(prompt) > 1:
+                return Response(
+                    confidence=0,
+                    text="",
+                    why=f"GPT-3's content filter thought the prompt was risky",
+                )
+
             try:
                 response = openai.Completion.create(
                     engine=engine,
@@ -205,6 +284,7 @@ class GPT3Module(Module):
                     temperature=0,
                     max_tokens=100,
                     top_p=1,
+                    user=str(message.author.id),
                     # stop=["\n"],
                 )
             except openai.error.AuthenticationError:
