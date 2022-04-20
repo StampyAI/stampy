@@ -275,27 +275,34 @@ class Utilities:
             text = text[:1500] + " [truncated]"
         text_quoted = "> " + "\n> ".join(text.split("\n"))
 
-        if "title" in comment:
-            report = (
-                "YouTube user {0} asked this question, on the video {1}!:\n"
-                + "{2}\n"
-                + "Is it an interesting question? Maybe we can answer it!\n"
-                + "{3}"
-            ).format(comment["username"], comment["title"], text_quoted, comment["url"])
+        # This might be better if moved to be handled by get_random_question directly.
+        if comment["source"] == "Youtube":
+            if "title" in comment:
+                report = (
+                    "YouTube user {0} asked this question, on the video {1}!:\n"
+                    + "{2}\n"
+                    + "Is it an interesting question? Maybe we can answer it!\n"
+                    + "{3}"
+                ).format(comment["username"], comment["title"], text_quoted, comment["url"])
 
-        else:
-            # TODO: What about questions that aren't from videos?
-            report = (
-                "YouTube user {0} asked this question, on the video {1}!:\n"
-                + "{2}\n"
-                + "Is it an interesting question? Maybe we can answer it!\n"
-                + "{3}"
-            ).format(
-                comment["username"],
-                self.get_title(comment["url"])[1],
-                text_quoted,
-                comment["url"],
-            )
+            else:
+                # TODO: not sure if there are any cases where this branch is met, this is left here until confirmed
+                report = (
+                    "YouTube user {0} asked this question, on the video {1}!:\n"
+                    + "{2}\n"
+                    + "Is it an interesting question? Maybe we can answer it!\n"
+                    + "{3}"
+                ).format(
+                    comment["username"],
+                    self.get_title(comment["url"])[1],
+                    text_quoted,
+                    comment["url"],
+                )
+        elif comment["source"] == "Wiki":
+            report = "Wiki User {0} asked this question.\n{1}\n".format(comment["username"], comment["question_title"])
+            if comment["text"]:
+                report += text_quoted
+            report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
 
         print("==========================")
         print(report)

@@ -1,3 +1,4 @@
+import random
 import re
 import requests
 from api.persistence import Persistence
@@ -258,7 +259,39 @@ class SemanticWiki(Persistence):
         )
         return
 
-    def get_unasked_question(self, sort, order):
+    def get_unasked_question(self, sort, order, wiki_question_bias=0.5):
+        if random.random() <= wiki_question_bias:
+            return self.get_unasked_wiki_question(sort, order)
+        else:
+            return self.get_unasked_youtube_question(sort, order)
+
+    def get_unasked_wiki_question(self, sort, order):
+        query = (
+                "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
+                + "?asker|?AskDate|?AskedOnDiscord|sort=AskedOnDiscord,{0}|limit=1|order=asc,{1}".format(sort, order)
+        )
+        results = self.ask(query)
+
+        question = {}
+        if results:
+            question["source"] = "Wiki"
+
+            question["question_title"] = list(results.keys())[0]
+            all_vals = list(results.values())[0]
+            relevant_vals = all_vals["printouts"]
+            question["url"] = all_vals["fullurl"]
+
+            if relevant_vals["Question"] and relevant_vals["Question"][0] != question["question_title"]:
+                question["text"] = relevant_vals["Question"][0]
+            else:
+                question["text"] = ""
+            if relevant_vals["Asker"]:
+                question["username"] = relevant_vals["Asker"][0]
+            else:
+                question["username"] = "Unknown"
+        return question
+
+    def get_unasked_youtube_question(self, sort, order):
         query = (
             "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
             + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
@@ -270,6 +303,8 @@ class SemanticWiki(Persistence):
         # url, username, title, text, replies, asked = None, None, None, None, None, None
         question = {}
         if results:
+            question["source"] = "Youtube"
+
             question["question_title"] = list(results.keys())[0]
             relevant_vals = list(results.values())[0]["printouts"]
 
@@ -300,7 +335,7 @@ class SemanticWiki(Persistence):
         return self.get_unasked_question("AskDate", "desc")
 
     def get_random_question(self):
-        return self.get_unasked_question("AskDate", "rand")
+        return self.get_unasked_question("AskDate", "rand", wiki_question_bias=-1)
 
     def get_top_question(self):
         return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")

@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 import discord
 import re
 
-
 class AtemporalModule(Module):
     def __init__(self):
         Module.__init__(self)
