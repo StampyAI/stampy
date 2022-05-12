@@ -141,6 +141,16 @@ class Module(object):
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()
 
+    async def tick(self):
+        """This function will be called all the time, whenever anything happens on the discord.
+        Use it for things that need to happen regularly, but RATE LIMIT IT!
+        ALWAYS call self.utils.rate_limit() first thing in the function, so it doesn't happen too much.
+        For example:
+
+        if self.utils.rate_limit("check youtube API", seconds=30):
+            return"""
+        pass
+
     def __str__(self):
         return "Base Module"
 
