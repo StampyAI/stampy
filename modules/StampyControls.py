@@ -19,6 +19,7 @@ class StampyControls(Module):
             "reboot": self.reboot,
             "resetinviteroles": self.resetinviteroles,
             "stats": self.get_stampy_stats,
+            "add member role to everyone": self.add_member_role,
         }
 
     def is_at_module(self, message):
@@ -34,7 +35,7 @@ class StampyControls(Module):
         else:
             await message.channel.send(text)
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_module(message):
             routine_name = self.is_at_me(message).lower()
             routine = self.routines[routine_name]
@@ -50,7 +51,8 @@ class StampyControls(Module):
     @staticmethod
     async def reboot(message):
         if hasattr(message.channel, "name") and message.channel.name in stampy_control_channel_names:
-            if message.author.id == rob_id:
+            asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+            if asked_by_admin:
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 exit()
@@ -88,6 +90,55 @@ class StampyControls(Module):
             why="%s asked me to reset roles, which" % message.author.name,
             text="[Invite Roles Reset for %s users]" % reset_users_count,
         )
+        
+    async def add_member_role(self, message):
+        guild = message.guild
+        member_role = discord.utils.get(guild.roles, name="member")
+        if not member_role:
+            return Response(
+                confidence=10,
+                why=f"{message.author.name} asked to add member role",
+                text="this server doesn't have a member role yet"
+            )
+        asked_by_mod = discord.utils.get(message.author.roles, name="mod")
+        if not asked_by_mod:
+            return Response(
+                confidence=10,
+                why=f"{message.author.name} asked to add member role",
+                text=f"naughty <@{message.author.id}>, you are not a mod :face_with_raised_eyebrow:"
+            )
+        
+        members = list(filter(lambda m: member_role not in m.roles, guild.members))
+        if not members:
+            return Response(
+                confidence=10,
+                why=f"{message.author.name} asked to add member role",
+                text=f"but everybody is a member already :shrug:"
+            )
+        len_members = len(members)
+        await self.send_control_message(
+            message, f'[adding member role to {len_members} users, this might take a moment...]')
+        
+        done = []
+        i = 0
+        for member in members:
+            await member.add_roles(member_role)
+            done.append(member.name)
+            i += 1
+            if i % 20 == 0:
+                await self.send_control_message(
+                    message, f'[... new members {i}/{len_members}: {", ".join(done)} ...]')
+                done = []
+        if done:
+            await self.send_control_message(
+                message, f'[... new members {i}/{len_members}: {", ".join(done)}]')
+        
+        return Response(
+            confidence=10,
+            why=f"{message.author.name} asked to add member role",
+            text="[... done adding member role]"
+        )
+        
 
     def create_stampy_stats_message(self):
         git_message = get_github_info()

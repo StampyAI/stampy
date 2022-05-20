@@ -4,7 +4,7 @@ from config import wolfram_token
 
 
 class Wolfram(Module):
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         text = self.is_at_me(message)
         if text:
             if text.endswith("?"):
@@ -12,14 +12,14 @@ class Wolfram(Module):
                     confidence=5,
                     callback=self.ask,
                     args=[text],
-                    why="It's a question, we might be able to answer it"
+                    why="It's a question, we might be able to answer it",
                 )
             else:
                 return Response(
                     confidence=1,
                     callback=self.ask,
                     args=[text],
-                    why="It's not a question but we might be able to look it up"
+                    why="It's not a question but we might be able to look it up",
                 )
         else:
             return Response()
@@ -37,9 +37,7 @@ class Wolfram(Module):
             )
             answer = urllib.request.urlopen(url).read().decode("utf-8")
             if "olfram" not in answer:
-                return Response(
-                    confidence=8, text=answer, why="That's what Wolfram Alpha suggested"
-                )
+                return Response(confidence=8, text=answer, why="That's what Wolfram Alpha suggested")
         except Exception as e:
             print("Wolfram failed with error:", str(e))
         return Response()

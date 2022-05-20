@@ -71,7 +71,7 @@ class Reply(Module):
         """Return the number of stamps a reply needs in order to be posted"""
         return self.utils.get_total_votes() * comment_posting_threshold_factor
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
@@ -98,8 +98,7 @@ class Reply(Module):
         elif len(approvers) == 2:
             approver_string = " and ".join(approvers)
         else:
-            approvers[len(approvers) - 1] = "and " + approvers[-1]
-            approver_string = ", ".join(approvers)
+            approver_string = ", ".join(approvers[:-1]) + ', and ' + approvers[-1]
 
         # strip off stampy's name
         text = self.is_at_me(message)
@@ -156,7 +155,12 @@ class Reply(Module):
         answer_time = datetime.now()  # How should this be formated?
 
         self.utils.wiki.add_answer(
-            answer_title, approvers, answer_time, reply_message, question_display_title + " id:" + comment_id
+            answer_title,
+            message.author.display_name,
+            approvers,
+            answer_time,
+            reply_message,
+            question_display_title + " id:" + comment_id,
         )
         ##
 
@@ -207,12 +211,12 @@ class Reply(Module):
         print("Message has no envelope emoji, it has not already replied to")
         return False
 
-    async def process_raw_reaction_event(self, event, client=None):
+    async def process_raw_reaction_event(self, event):
         emoji = getattr(event.emoji, "name", event.emoji)
 
         if emoji in ["stamp", "goldstamp"]:
             print("GUILD = ", self.utils.GUILD)
-            guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
+            guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
             channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)
             if self.is_at_me(message) and self.is_post_request(self.is_at_me(message)):

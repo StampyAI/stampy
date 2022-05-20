@@ -145,7 +145,7 @@ class Factoids(Module):
 
         return string
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         atme = False
         self.who = message.author.name
         self.people.add(self.who)
@@ -189,7 +189,7 @@ class Factoids(Module):
             pf = self.prevFactoid[room]
             del self.prevFactoid[room]
             self.db.remove(*pf)
-            if room == "bot-dev":
+            if room == "stampy-dev":
                 result = "debug: %s\n" % str(pf)
             result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
                 self.who,

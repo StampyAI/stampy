@@ -17,3 +17,5 @@ dependencies:
     - openai
     - psutil
     - python-dotenv
+    - datefinder
+    - transformers

@@ -156,7 +156,7 @@ async def on_ready():
 
                 answer_title = answer_users[0] + "'s Answer to " + question_title
 
-                utils.wiki.add_answer(answer_title, answer_users, answer_time, answer_text, question_title)"""
+                utils.wiki.add_answer(answer_title, answer_writer, answer_users, answer_time, answer_text, question_title)"""
 
 
 def extract_question(text):

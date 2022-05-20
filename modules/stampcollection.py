@@ -1,7 +1,6 @@
 import re
 import discord
 import numpy as np
-from config import admin_usernames
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path
@@ -198,16 +197,15 @@ class StampsModule(Module):
                                         )
         self.calculate_stamps()
 
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
-        # guild = discord.utils.find(lambda g: g.name == guildname, client.guilds)
+    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
         emoji = getattr(reaction.emoji, "name", reaction.emoji)
         if emoji == "stamp":
             print("### STAMP AWARDED ###")
             print("%s,%s,%s,%s" % (reaction.message.id, emoji, user.id, reaction.message.audthor.id))
 
-    async def process_raw_reaction_event(self, event, client=None):
+    async def process_raw_reaction_event(self, event):
         event_type = event.event_type
-        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, client.guilds)
+        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
         channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
 
         if not channel:
@@ -238,7 +236,7 @@ class StampsModule(Module):
             # self.save_votesdict_to_json()
             print("Score after stamp:", self.get_user_stamps(to_id))
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
@@ -257,10 +255,6 @@ class StampsModule(Module):
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
         return Response()
-
-    @staticmethod
-    def user_is_admin(username):
-        return username in admin_usernames
 
     async def reloadallstamps(self, message):
         print("FULL STAMP HISTORY RESET BAYBEEEEEE")

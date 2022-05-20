@@ -2,7 +2,7 @@ import re
 import discord
 from utilities import Utilities, get_question_id
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from typing import Callable, Iterable, Optional, Union
 from config import TEST_QUESTION_PREFIX
 
 
@@ -23,6 +23,12 @@ class Response:
     This means "This module suggests Stampy give the user a link to a google search for 'AIXI',
     but only with confidence 2/10, because that's a weak response"
     If no other module responds with confidence 2 or more, Stampy will give the google link response.
+
+    If a module needs to respond with multiple Discord messages (e.g. for messages over 2000 characters
+    that need manual splitting, or for asynchronous operations over multiple items like wiki edits), it
+    can use a list, a generator, or another iterable:
+
+        Response(text=["a", "b", "c"], confidence=9)
 
     Another module may spot that "What is AIXI?" is a question it may be able to actually answer well,
     but it doesn't know without slow/expensive operations that we don't want to do if we don't have to,
@@ -65,10 +71,9 @@ class Response:
     a good response is, and how slow/expensive the callback function is.
     """
 
+    embed: discord.Embed = None
     confidence: float = 0.0
-
-    text: str = ""
-
+    text: Union[str, Iterable[str]] = ""
     callback: Optional[Callable] = None
     args: list = field(default_factory=list)
     kwargs: dict = field(default_factory=dict)
@@ -92,7 +97,7 @@ class Module(object):
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
@@ -119,12 +124,19 @@ class Module(object):
         """
         return Response()
 
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD", client=None):
+    def process_message_from_stampy(self, message):
+        """By default, messages posted by stampy himself are not sent to modules' `process_message`
+        Use this method to do something whenever Stampy says anything
+        This method should not return anything, and should not try to send messages unless you really know what you're doing
+        """
+        pass
+
+    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
         """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()
 
-    async def process_raw_reaction_event(self, event, client=None):
+    async def process_raw_reaction_event(self, event):
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()

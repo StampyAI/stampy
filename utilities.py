@@ -1,6 +1,9 @@
 import os
 import re
-import pwd
+
+# Sadly some of us run windows...
+if not os.name == "nt":
+    import pwd
 import psutil
 import discord
 from git import Repo
@@ -429,9 +432,9 @@ class Utilities:
 
 def get_github_info():
     message = (
-        "\nThe latest commit was by %(actor)s"
-        + "\nThe commit message was '%(git_message)s'"
-        + "\nThis commit was written on %(date)s"
+        "\nThe latest commit was by %(actor)s."
+        + "\nThe commit message was '%(git_message)s'."
+        + "\nThis commit was written on %(date)s."
     )
     repo = Repo(".")
     master = repo.head.reference
@@ -442,21 +445,40 @@ def get_github_info():
     }
 
 
+def get_git_branch_info():
+    repo = Repo(".")
+    branch = repo.active_branch
+    name = repo.config_reader().get_value('user', 'name')
+    return f"from git branch `{branch}` by `{name}`"
+
+
 def get_running_user_info():
-    user_info = pwd.getpwuid(os.getuid())
-    message = (
-        "The last user to start my server was %(username)s."
-        + "\nThey used the %(shell)s shell."
-        + "\nMy Process ID is %(pid)s on this machine"
-    )
-    return message % {"username": user_info.pw_gecos, "shell": user_info.pw_shell, "pid": os.getpid()}
+    if not os.name == "nt":
+        user_info = pwd.getpwuid(os.getuid())
+        user_name = user_info.pw_gecos.split(',')[0]
+        message = (
+            "The last user to start my server was %(username)s."
+            + "\nThey used the %(shell)s shell."
+            + "\nMy Process ID is %(pid)s on this machine."
+        )
+        return message % {"username": user_name, "shell": user_info.pw_shell, "pid": os.getpid()}
+    else:
+        # This should be replaced with a better test down the line.
+        shell = "Command Prompt (DOS)" if os.getenv('PROMPT') == '$P$G' else "PowerShell"
+        user_name = os.getlogin()
+        message = (
+            "The last user to start my server was %(username)s."
+            + "\nThey used the %(shell)s shell."
+            + "\nMy Process ID is %(pid)s on this machine."
+        )
+        return message % {"username": user_name, "shell": shell, "pid": os.getpid()}
 
 
 def get_memory_usage():
     process = psutil.Process(os.getpid())
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
-    return "I'm using %s bytes of memory" % megabytes_string
+    return "I'm using %s of memory." % megabytes_string
 
 
 def get_question_id(message):

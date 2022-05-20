@@ -16,7 +16,7 @@ To explain how to implement a new Stampy feature, let's work through an example:
 We'll implement this by creating a new module, which we'll call the 'choose' module. Here's how you'd do that!
 
 1. Create a card on the [trello](https://trello.com/b/LBmYgkes/stampy) in the "Ideas" List, that describes the module that you are planning to make.
-1. Message the [`#bot-dev` channel on Discord](https://discord.com/channels/677546901339504640/758062805810282526) with the card, to get feedback and buy-in for your potential module. If the general idea seems well liked, move the card into the "Doing" lane and add your name to the card.
+1. Message the [`#stampy-dev` channel on Discord](https://discord.com/channels/677546901339504640/758062805810282526) with the card, to get feedback and buy-in for your potential module. If the general idea seems well liked, move the card into the "Doing" lane and add your name to the card.
 1. Create a new branch named similarly to your module. `$ git checkout -b choose-module`
 1. Create a new file named after your module inside of [the `modules` folder](https://github.com/robertskmiles/stampy/tree/master/modules). `$ <editor of your choice> choose.py`
 1. Inside of `choose.py`, create a child class of the `Module` class
@@ -31,10 +31,10 @@ We'll implement this by creating a new module, which we'll call the 'choose' mod
                 return "Choose Module"
         ```
 1. Implement the required functions from the `Module` parent class
-    - [`process_message(self, message, client=None)`](https://github.com/robertskmiles/stampy/blob/master/modules/module.py#L95)
+    - [`process_message(self, message)`](https://github.com/robertskmiles/stampy/blob/master/modules/module.py#L95)
         - This method takes a message and processes it, optionally returning a reply for Stampy to say, and an integer representing its confidence that the reply is good and should be posted. This method usually contains the core functionality of our module.
         - ```python
-            def process_message(self, message, client=None):
+            def process_message(self, message):
                 text = self.is_at_me(message)
                 if text and text.startswith("choose ") and " or " in text:
                     choices_string = text.partition(" ")[2].strip("?")
@@ -73,7 +73,7 @@ We'll implement this by creating a new module, which we'll call the 'choose' mod
         def __str__(self):
             return "Choose Module"
     
-        def process_message(self, message, client=None):
+        def process_message(self, message):
             text = self.is_at_me(message)
             if text and text.startswith("choose ") and " or " in text:
                 choices_string = text.partition(" ")[2].strip("?")

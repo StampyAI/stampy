@@ -67,14 +67,13 @@ stamp_scores_csv_file_path = {
 
 admin_usernames = ["robertskmiles", "sudonym"]
 
-
 discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
 youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
 wiki_password = getenv("WIKI_BOT_PASSWORD")
 openai_api_key = getenv("OPENAI_API_KEY", default="null")
-wolfram_token = getenv("WOLFRAM_TOKEN")
+wolfram_token = getenv("WOLFRAM_TOKEN", default="null")
 
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 
@@ -83,6 +82,8 @@ stampy_control_channel_names = [
     "test",
     "bot-dev-priv",
     "bot-dev",
+    "stampy-dev-priv",
+    "stampy-dev",
     "talk-to-stampy",
     "robertskmiles",
 ]

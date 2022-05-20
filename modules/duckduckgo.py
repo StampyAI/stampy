@@ -3,9 +3,8 @@ import urllib
 import re
 import json
 
-
 class DuckDuckGo(Module):
-    def process_message(self, message, client=None):
+    def process_message(self, message):
         text = self.is_at_me(message)
         if text:
             if text.endswith("?"):
@@ -13,20 +12,31 @@ class DuckDuckGo(Module):
                     confidence=6,
                     callback=self.ask,
                     args=[text],
-                    why="It's a question, we might be able to answer it"
+                    why="It's a question, we might be able to answer it",
                 )
             else:
                 return Response(
                     confidence=2,
                     callback=self.ask,
                     args=[text],
-                    why="It's not a question but we might be able to look it up"
+                    why="It's not a question but we might be able to look it up",
                 )
         else:
             return Response()
 
     def __str__(self):
         return "DuckDuckGo"
+
+    def get_confidence(self, text, max_confidence):
+        """How confident should I be with this response string?"""
+        
+        # Some types of things we don't really care about
+        IRRELEVANT_WORDS = ["film", "movie", "tv", "song", "album", "band"]
+
+        if any(word in text for word in IRRELEVANT_WORDS):
+            return 1
+        else:
+            return max_confidence
 
     def ask(self, question):
         q = question.lower().strip().strip("?")
@@ -46,14 +56,19 @@ class DuckDuckGo(Module):
             if j["Abstract"]:
                 answer = j["Abstract"]
                 return Response(
-                    confidence=7, text=answer, why="That's what DuckDuckGo suggested"
+                    confidence=self.get_confidence(answer, 7),
+                    text=answer,
+                    why="That's what DuckDuckGo suggested"
                 )
             elif j["Type"] == "D":
                 answer = j["RelatedTopics"][0]["Text"]
+
+                # If the response cuts off with ... then throw out the last sentence
                 if answer.endswith("...") and (". " in answer):
                     answer = ". ".join(answer.split(". ")[:-1])
+                
                 return Response(
-                    confidence=6,
+                    confidence=self.get_confidence(answer, 6),
                     text=answer,
                     why="That's what DuckDuckGo suggested",
                 )

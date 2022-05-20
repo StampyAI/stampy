@@ -3,7 +3,7 @@ import sys
 import inspect
 import discord
 import unicodedata
-from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question
+from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question, get_git_branch_info
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -17,7 +17,10 @@ from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
+from modules.wikiUtilities import WikiUtilities
+from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
+from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
 from config import (
     discord_token,
@@ -48,7 +51,7 @@ else:
 
 
 @utils.client.event
-async def on_ready():
+async def on_ready() -> None:
     print(f"{utils.client.user} has connected to Discord!")
     print("searching for a guild named '%s'" % utils.GUILD)
     print(utils.client.guilds)
@@ -60,16 +63,18 @@ async def on_ready():
 
     members = "\n - ".join([member.name for member in guild.members])
     print(f"Guild Members:\n - {members}")
-    await utils.client.get_channel(bot_dev_channel_id).send("I just (re)started!")
+    await utils.client.get_channel(bot_dev_channel_id).send(f"I just (re)started {get_git_branch_info()}!")
 
 
 @utils.client.event
-async def on_message(message):
+async def on_message(message: discord.message.Message) -> None:
     # don't react to our own messages unless running test
     message_author_is_stampy = message.author == utils.client.user
     if is_test_message(message.clean_content) and utils.test_mode:
         print("TESTING " + message.clean_content)
     elif message_author_is_stampy:
+        for module in modules:
+            module.process_message_from_stampy(message)
         return
 
     # utils.modules_dict["StampsModule"].calculate_stamps()
@@ -93,7 +98,7 @@ async def on_message(message):
     responses = [Response()]
     for module in modules:
         print(f"# Asking module: {module}")
-        response = module.process_message(message, utils.client)
+        response = module.process_message(message)
         if response:
             response.module = module  # tag it with the module it came from, for future reference
 
@@ -137,7 +142,7 @@ async def on_message(message):
             new_response.module = top_response.module
             responses.append(new_response)
         else:
-            if top_response.text:
+            if top_response:
                 if utils.test_mode:
                     if is_test_response(message.clean_content):
                         return  # must return after process message is called so that response can be evaluated
@@ -146,7 +151,15 @@ async def on_message(message):
                             TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
                         )
                 print("Replying:", top_response.text)
-                await message.channel.send(top_response.text)
+                # TODO: check to see if module is allowed to embed via a config?
+                if top_response.embed:
+                    await message.channel.send(top_response.text, embed=top_response.embed)
+                elif isinstance(top_response.text, str):
+                    # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
+                    await message.channel.send(top_response.text[:2000])
+                elif isinstance(top_response.text, Iterable):
+                    for chunk in top_response.text:
+                        await message.channel.send(chunk)
             print("########################################################")
             sys.stdout.flush()
             return
@@ -157,7 +170,7 @@ async def on_message(message):
 
 
 @utils.client.event
-async def on_socket_raw_receive(_):
+async def on_socket_raw_receive(_) -> None:
     """
     This event fires whenever basically anything at all happens.
     Anyone joining, leaving, sending anything, even typing and not sending...
@@ -215,7 +228,7 @@ async def on_socket_raw_receive(_):
 
 
 @utils.client.event
-async def on_raw_reaction_add(payload):
+async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:
     print("RAW REACTION ADD")
     if len(payload.emoji.name) == 1:
         # if this is an actual unicode emoji
@@ -225,16 +238,16 @@ async def on_raw_reaction_add(payload):
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, utils.client)
+        await module.process_raw_reaction_event(payload)
 
 
 @utils.client.event
-async def on_raw_reaction_remove(payload):
+async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:
     print("RAW REACTION REMOVE")
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, utils.client)
+        await module.process_raw_reaction_event(payload)
 
 
 if __name__ == "__main__":
@@ -252,6 +265,8 @@ if __name__ == "__main__":
         "Factoids": Factoids(),
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
+        "WikiUtilities": WikiUtilities(),
+        "Atemporal": AtemporalModule(),
         "TestModule": TestModule(),
     }
     modules = utils.modules_dict.values()
