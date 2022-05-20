@@ -3,6 +3,7 @@ import discord
 import numpy as np
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
+from config import stamp_scores_csv_file_path
 
 
 class StampsModule(Module):
@@ -85,6 +86,7 @@ class StampsModule(Module):
 
         self.utils.scores = list(np.linalg.solve(users_matrix, user_count_matrix))
 
+        self.export_scores_csv()
         # self.print_all_scores()
 
     # done
@@ -98,6 +100,24 @@ class StampsModule(Module):
             stamps = self.get_user_stamps(user_id)
             message += str(name) + ": \t" + str(stamps) + "\n"
         return message
+
+    def export_scores_csv(self):
+        print(f"Logging scores to {stamp_scores_csv_file_path}")
+        csv_lines = []
+        for user_id in self.utils.get_users():
+            score = self.get_user_stamps(user_id)
+            user = self.utils.client.get_user(user_id)
+            if user_id and user:  # don't bother for id 0 or if the user is None
+                csv_lines.append(f"""{user_id},"{user.name}",{user.discriminator},{score}\n""")
+        if not csv_lines:
+            print("No valid users to export to CSV?")
+            return
+        try:
+            with open(stamp_scores_csv_file_path, "w") as csv_file:
+                csv_file.write("".join(csv_lines))
+        except Exception as e:
+            print("Unable to export scores to CSV:")
+            print(Exception, e)
 
     def print_all_scores(self):
         total_stamps = 0
@@ -115,7 +135,7 @@ class StampsModule(Module):
 
     def get_user_stamps(self, user):
         index = self.utils.index_dammit(user)
-        print("get_user_stamps for %s, index=%s" % (user, index))
+        # print("get_user_stamps for %s, index=%s" % (user, index))
         if index:
             stamps = self.utils.scores[index] * self.total_votes
             # print(stamps, self.utils.scores[index], self.total_votes)
