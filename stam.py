@@ -20,6 +20,7 @@ from modules.wikiUpdate import WikiUpdate
 from modules.wikiUtilities import WikiUtilities
 from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
+from modules.gpt3semanticsearch import GPT3SemanticSearch
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
 from config import (
@@ -267,6 +268,7 @@ if __name__ == "__main__":
         "WikiUpdate": WikiUpdate(),
         "WikiUtilities": WikiUtilities(),
         "Atemporal": AtemporalModule(),
+        "GPT3SemanticSearch": GPT3SemanticSearch(),
         "TestModule": TestModule(),
     }
     modules = utils.modules_dict.values()
