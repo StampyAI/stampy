@@ -2,6 +2,7 @@ __pycache__
 watoken
 database/topost.json
 factoids.db
+database/stampy.db
 .idea/*
 .env
 modules/choose.py
