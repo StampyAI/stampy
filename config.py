@@ -80,8 +80,8 @@ wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "p
 
 stampy_control_channel_names = [
     "test",
-    "bot-dev-priv",
-    "bot-dev",
+    "stampy-dev-priv",
+    "stampy-dev",
     "stampy-dev-priv",
     "stampy-dev",
     "talk-to-stampy",
