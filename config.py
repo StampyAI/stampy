@@ -82,8 +82,6 @@ stampy_control_channel_names = [
     "test",
     "stampy-dev-priv",
     "stampy-dev",
-    "stampy-dev-priv",
-    "stampy-dev",
     "talk-to-stampy",
     "robertskmiles",
 ]
