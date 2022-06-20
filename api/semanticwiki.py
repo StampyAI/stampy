@@ -335,7 +335,7 @@ class SemanticWiki(Persistence):
         return self.get_unasked_question("AskDate", "desc")
 
     def get_random_question(self):
-        return self.get_unasked_question("AskDate", "rand", wiki_question_bias=-1)
+        return self.get_unasked_question("AskDate", "rand")
 
     def get_top_question(self):
         return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
