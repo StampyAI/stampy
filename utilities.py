@@ -72,6 +72,9 @@ class Utilities:
             self.start_time = time()
             self.test_mode = False
 
+            # dict to keep last timestamps in
+            self.last_timestamp = {}
+
             # when was the most recent comment we saw posted?
             self.latest_comment_timestamp = datetime.now(timezone.utc)
 
@@ -81,9 +84,6 @@ class Utilities:
             # how many seconds should we wait before we can hit YT API again
             # this the start value. It doubles every time we don't find anything new
             self.youtube_cooldown = timedelta(seconds=60)
-
-            # timestamp of when we last ran the tick function
-            self.last_timestamp = datetime.now(timezone.utc)
 
             # timestamp of last time we asked a youtube question
             self.last_question_asked_timestamp = datetime.now(timezone.utc)
@@ -110,6 +110,35 @@ class Utilities:
             intents.members = True
             self.client = discord.Client(intents=intents)
             self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
+
+    def rate_limit(self, timer_name, **kwargs):
+        """Should I rate-limit? i.e. Has it been less than this length of time since the last time
+        this function was called using the same `timer_name`?
+        Used in a function like Module.tick() to make sure it doesn't run too often.
+        For example, adding this at the top of a function that checks the youtube API:
+
+        if utils.rate_limit("check youtube API", seconds=30):
+            return
+
+        will cause the function to return early if it's been less than 30 seconds since it was last called.
+        The keyword arguments are passed on to the timedelta object,
+        so you can use 'seconds=', 'minutes=', 'hours=' etc, or combinations of them
+        Note that this is all reset when Stampy reboots
+        """
+        tick_cooldown = timedelta(**kwargs)
+        now = datetime.now(timezone.utc)
+
+        # if there's no timestamp stored for that name, store now and don't rate limit
+        if not timer_name in self.last_timestamp:
+            self.last_timestamp[timer_name] = now
+            return False
+
+        # if it's been long enough, update the timestamp and don't rate limit
+        if (now - self.last_timestamp[timer_name]) > tick_cooldown:
+            self.last_timestamp[timer_name] = now
+            return False
+        else:  # it hasn't been long enough, rate limit
+            return True
 
     def stampy_is_author(self, message):
         return message.author == self.client.user
