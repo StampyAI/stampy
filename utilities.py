@@ -332,6 +332,9 @@ class Utilities:
             if comment["text"]:
                 report += text_quoted
             report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
+        else:
+            report = "I am being told to post a question which I cant parse properly, i am very sorry"
+
 
         print("==========================")
         print(report)
