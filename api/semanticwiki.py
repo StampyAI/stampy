@@ -1,8 +1,15 @@
 import random
 import re
+from enum import Enum
+
 import requests
 from api.persistence import Persistence
 from traceback import print_exc
+
+
+class QuestionSource(Enum):
+    YOUTUBE = 1
+    WIKI = 2
 
 
 ###########################################################################
@@ -276,7 +283,7 @@ class SemanticWiki(Persistence):
 
         question = {}
         if results:
-            question["source"] = "Wiki"
+            question["source"] = QuestionSource.WIKI
 
             question["question_title"] = list(results.keys())[0]
             all_vals = list(results.values())[0]
@@ -305,7 +312,7 @@ class SemanticWiki(Persistence):
         # url, username, title, text, replies, asked = None, None, None, None, None, None
         question = {}
         if results:
-            question["source"] = "Youtube"
+            question["source"] = QuestionSource.YOUTUBE
 
             question["question_title"] = list(results.keys())[0]
             relevant_vals = list(results.values())[0]["printouts"]

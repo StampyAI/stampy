@@ -5,6 +5,8 @@ from modules.module import Module, Response
 from config import stampy_youtube_channel_id, youtube_testing_thread_url, comment_posting_threshold_factor
 from datetime import datetime
 
+from stampy.api.semanticwiki import QuestionSource
+
 
 class Reply(Module):
     POST_MESSAGE = "Ok, I'll post this when it has more than %s stamp points"
@@ -115,7 +117,7 @@ class Reply(Module):
             question_url = reference_text.split("\n")[-1].strip("<> \n")
 
             if "youtube.com" in question_url:
-                source = "Youtube"
+                source = QuestionSource.YOUTUBE
 
                 match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
                 if match:
@@ -131,7 +133,7 @@ class Reply(Module):
 
                 question_title = f"""{question_user}'s question on {video_titles[0]} id:{comment_id}"""
             elif "stampy.ai/wiki" in question_url:
-                source = "Wiki"
+                source = QuestionSource.WIKI
 
                 split_ref = reference_text.split("\n", 3)
                 if len(split_ref) < 3:
@@ -169,7 +171,7 @@ class Reply(Module):
             question_title,
         )
 
-        if source == "Youtube":
+        if source == QuestionSource.YOUTUBE:
             question_id = re.match(r".*lc=([^&]+)", question_url).group(1)
             self.post_reply(reply_message, question_id)
 
