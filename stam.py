@@ -182,16 +182,16 @@ async def on_socket_raw_receive(_) -> None:
     # keep the log file fresh
     sys.stdout.flush()
 
-    # never fire more than once a second
-    tick_cooldown = timedelta(seconds=1)
-    now = datetime.now(timezone.utc)
+    # give all the modules a chance to do things
+    for module in modules:
+        await module.tick()
 
-    if (now - utils.last_timestamp) > tick_cooldown:
-        print("|", end="")
-        utils.last_timestamp = now
-    else:
-        print(".", end="")
+    # never fire more than once a second
+    if utils.rate_limit("on_socket_raw_receive", seconds=1):
         return
+
+    # this is needed for later checks, which should all be replaced with rate_limit calls (TODO)
+    now = datetime.now(timezone.utc)
 
     # check for new youtube comments
     new_comments = utils.check_for_new_youtube_comments()
@@ -238,7 +238,7 @@ async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, utils.client)
+        await module.process_raw_reaction_event(payload)
 
 
 @utils.client.event
@@ -247,7 +247,7 @@ async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEv
     print(payload)
 
     for module in modules:
-        await module.process_raw_reaction_event(payload, utils.client)
+        await module.process_raw_reaction_event(payload)
 
 
 if __name__ == "__main__":
