@@ -9,7 +9,7 @@ import discord
 from git import Repo
 from time import time
 from database.database import Database
-from api.semanticwiki import SemanticWiki
+from api.semanticwiki import SemanticWiki, QuestionSource
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
@@ -305,7 +305,7 @@ class Utilities:
         text_quoted = "> " + "\n> ".join(text.split("\n"))
 
         # This might be better if moved to be handled by get_random_question directly.
-        if comment["source"] == "Youtube":
+        if comment["source"] == QuestionSource.YOUTUBE:
             if "title" in comment:
                 report = (
                     "YouTube user {0} asked this question, on the video {1}!:\n"
@@ -327,7 +327,7 @@ class Utilities:
                     text_quoted,
                     comment["url"],
                 )
-        elif comment["source"] == "Wiki":
+        elif comment["source"] == QuestionSource.WIKI:
             report = "Wiki User {0} asked this question.\n{1}\n".format(comment["username"], comment["question_title"])
             if comment["text"]:
                 report += text_quoted
