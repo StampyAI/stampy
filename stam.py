@@ -275,5 +275,3 @@ if __name__ == "__main__":
     modules = utils.modules_dict.values()
 
     utils.client.run(discord_token)
-
-stampy_response("Stampy is online!")
