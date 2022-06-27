@@ -5,18 +5,32 @@ import discord
 
 class DiscordUser(ServiceUser):
     
-    def __init__(self, name: str, display_name: str, id: int):
-        super().__init__(name, display_name, id)
+    def __init__(self, user: discord.abc.User):
+        super().__init__(user.name, user.display_name, user.id)
+        self._user = user
+        self.parse_discord_roles(user.roles)
+        self.discriminator = user.discriminator
+        self.full_name = f"{self.name}#{self.discriminator}"
 
-    def parse_discord_roles(roles: List[discord.Role]) -> None:
+
+    def parse_discord_roles(self, roles: List[discord.Role]) -> None:
         for role in roles:
             self.roles.append(ServiceRoles(role.name, role.id))
 
 
 class DiscordChannel(ServiceChannel):
 
-    def __init__(self, name: str, id: int, server: Optional[ServiceServer]):
-        super().__init__(name, id, server)
+    def __init__(self, channel: discord.abc.Messageable,
+                 server: Optional[ServiceServer]):
+        self._channel = channel
+        if not isinstance(channel, discord.DMChannel):
+            name = channel.name
+        else:
+            name = None
+        super().__init__(name, channel.id, server)
+
+        # Bring over functions
+        self.send = channel.send
 
     @property
     def guild(self) -> ServiceServer:
@@ -30,22 +44,18 @@ class DiscordMessage(ServiceMessage):
 
     def __init__(self, msg: discord.message.Message):
         self._message = msg
-        a = msg.author
-        author = DiscordUser(a.name, a.display_name, a.id)
-        author.parse_discord_roles(a.roles)
+        author = DiscordUser(msg.author)
         if msg.guild:
             guild = ServiceServer(msg.guild.name, msg.guild.id)
         else:
             guild = None
-        if not isinstance(msg.channel, discord.DMChannel):
-            c_name = msg.channel.name
-        else:
-            c_name = None
-        channel = DiscordChannel(c_name, msg.channel.id, guild)
-        service = serviceutils.Services.DISCORD
-        super(msg.id, msg.content, author, channel, service)
+        channel = DiscordChannel(msg.channel, guild)
+        service = Services.DISCORD
+
+        super().__init__(msg.id, msg.content, author, channel, service)
         self.clean_content = msg.clean_content
         self._parse_discord_mentions(msg.mentions)
+        self.reference = msg.reference
 
     def _parse_discord_mentions(self, mentions: List[discord.abc.User]):
         for user in mentions:
