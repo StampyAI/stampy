@@ -9,7 +9,7 @@ import discord
 from git import Repo
 from time import time
 from database.database import Database
-from api.semanticwiki import SemanticWiki
+from api.semanticwiki import SemanticWiki, QuestionSource
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build as get_youtube_api
@@ -282,17 +282,17 @@ class Utilities:
 
         return new_comments
 
-    def get_question(self, order_type="TOP"):
+    def get_question(self, order_type="TOP", wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
         if order_type == "RANDOM":
-            comment = self.wiki.get_random_question()
+            comment = self.wiki.get_random_question(wiki_question_bias=wiki_question_bias)
         elif order_type == "TOP":
-            comment = self.wiki.get_top_question()
+            comment = self.wiki.get_top_question(wiki_question_bias=wiki_question_bias)
         else:
-            comment = self.wiki.get_latest_question()
+            comment = self.wiki.get_latest_question(wiki_question_bias=wiki_question_bias)
 
         if not comment:
             return None
@@ -304,27 +304,37 @@ class Utilities:
             text = text[:1500] + " [truncated]"
         text_quoted = "> " + "\n> ".join(text.split("\n"))
 
-        if "title" in comment:
-            report = (
-                "YouTube user {0} asked this question, on the video {1}!:\n"
-                + "{2}\n"
-                + "Is it an interesting question? Maybe we can answer it!\n"
-                + "{3}"
-            ).format(comment["username"], comment["title"], text_quoted, comment["url"])
+        # This might be better if moved to be handled by get_random_question directly.
+        if comment["source"] == QuestionSource.YOUTUBE:
+            if "title" in comment:
+                report = (
+                    "YouTube user {0} asked this question, on the video {1}!:\n"
+                    + "{2}\n"
+                    + "Is it an interesting question? Maybe we can answer it!\n"
+                    + "{3}"
+                ).format(comment["username"], comment["title"], text_quoted, comment["url"])
 
+            else:
+                # TODO: not sure if there are any cases where this branch is met, this is left here until confirmed
+                report = (
+                    "YouTube user {0} asked this question, on the video {1}!:\n"
+                    + "{2}\n"
+                    + "Is it an interesting question? Maybe we can answer it!\n"
+                    + "{3}"
+                ).format(
+                    comment["username"],
+                    self.get_title(comment["url"])[1],
+                    text_quoted,
+                    comment["url"],
+                )
+        elif comment["source"] == QuestionSource.WIKI:
+            report = "Wiki User {0} asked this question.\n{1}\n".format(comment["username"], comment["question_title"])
+            if comment["text"]:
+                report += text_quoted
+            report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
         else:
-            # TODO: What about questions that aren't from videos?
-            report = (
-                "YouTube user {0} asked this question, on the video {1}!:\n"
-                + "{2}\n"
-                + "Is it an interesting question? Maybe we can answer it!\n"
-                + "{3}"
-            ).format(
-                comment["username"],
-                self.get_title(comment["url"])[1],
-                text_quoted,
-                comment["url"],
-            )
+            report = "I am being told to post a question which I cant parse properly, i am very sorry"
+
 
         print("==========================")
         print(report)

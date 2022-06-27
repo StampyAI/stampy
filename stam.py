@@ -18,7 +18,6 @@ from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
 from modules.wikiUtilities import WikiUtilities
-from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
@@ -266,7 +265,6 @@ if __name__ == "__main__":
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
         "WikiUtilities": WikiUtilities(),
-        "Atemporal": AtemporalModule(),
         "TestModule": TestModule(),
     }
     modules = utils.modules_dict.values()
