@@ -15,10 +15,12 @@ class SMAuthor:
 
 
 class ServiceMessage:
-    def __init__(self, content: str, author: str, channel: str):
+    def __init__(self, content: str, author: str, channel: str,
+                 service: Services):
         self.content = content
         self.author = SMAuthor(author)
         self.channel = SMChannel(author, channel)
+        self.service = service
         self.clean_content = content.lower()
         self.service = service
         self.created_at = datetime.now(timezone.utc)
