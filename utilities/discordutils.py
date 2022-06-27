@@ -1,4 +1,4 @@
-from serviceutils import *
+from utilities.serviceutils import *
 from typing import List
 import discord
 
