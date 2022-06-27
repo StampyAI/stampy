@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 class Services(Enum):
     DISCORD = "discord"
@@ -22,6 +22,22 @@ class ServiceUser:
         self.roles: List[ServiceRoles] = []
 
 
+class ServiceServer:
+    def __init__(self, name: str, id: int):
+        self.name = name
+        self.id = id
+
+
+class ServiceChannel:
+    def __init__(self, name: str, id: int, server: Optional[ServiceServer]):
+        self.id = id
+        self.name = name
+        self.server = server
+
+    def __repr__(self):
+        return f"ServiceChannel({self.id})"
+
+
 class ServiceMessage:
     def __init__(self, id: int, content: str, author: ServiceUser,
                  channel: ServiceChannel, service: Services):
@@ -37,19 +53,3 @@ class ServiceMessage:
 
     def __repr__(self):
         return f"ServiceMessage({self.content})"
-
-
-class ServiceServer:
-    def __init__(self, name: str, id: int):
-        self.name = name
-        self.id = id
-
-
-class ServiceChannel:
-    def __init__(self, name: str, id: int, server: Optional[ServiceServer]):
-        self.id = id
-        self.name = name
-        self.server = server
-
-    def __repr__(self):
-        return f"ServiceChannel({self.id})"

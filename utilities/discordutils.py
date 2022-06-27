@@ -8,7 +8,7 @@ class DiscordUser(ServiceUser):
     def __init__(self, name: str, display_name: str, id: int):
         super().__init__(name, display_name, id)
 
-    def parse_discord_roles(roles: List[discord.Roles]) -> None:
+    def parse_discord_roles(roles: List[discord.Role]) -> None:
         for role in roles:
             self.roles.append(ServiceRoles(role.name, role.id))
 
@@ -26,7 +26,7 @@ class DiscordChannel(ServiceChannel):
         return self.server
 
 
-class DiscordMessage(ServiceMessage)
+class DiscordMessage(ServiceMessage):
 
     def __init__(self, msg: discord.message.Message):
         self._message = msg
