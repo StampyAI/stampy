@@ -3,7 +3,14 @@ import sys
 import inspect
 import discord
 import unicodedata
-from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question, get_git_branch_info
+from utilities import (
+    Utilities,
+    get_question_id,
+    is_test_response,
+    is_test_message,
+    is_test_question,
+    get_git_branch_info,
+)
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -75,8 +82,6 @@ async def on_message(message: discord.message.Message) -> None:
         for module in modules:
             module.process_message_from_stampy(message)
         return
-
-    # utils.modules_dict["StampsModule"].calculate_stamps()
 
     print("########################################################")
     print(datetime.now().isoformat(sep=" "))
