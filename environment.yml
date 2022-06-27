@@ -7,15 +7,14 @@ dependencies:
   - pip
   - sqlite
   - pip:
-    - lxml
-    - black
-    - discord-py
-    - gitpython
-    - google-api-python-client
-    - google-auth-oauthlib
-    - jellyfish
-    - openai
-    - psutil
-    - python-dotenv
-    - datefinder
-    - transformers
+      - lxml
+      - black
+      - discord-py
+      - gitpython
+      - google-api-python-client
+      - google-auth-oauthlib
+      - jellyfish
+      - openai
+      - psutil
+      - python-dotenv
+      - transformers
