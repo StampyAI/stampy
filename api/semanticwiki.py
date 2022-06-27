@@ -1,13 +1,23 @@
+import random
 import re
+from enum import Enum
+
 import requests
 from api.persistence import Persistence
 from traceback import print_exc
+
+
+class QuestionSource(Enum):
+    YOUTUBE = 1
+    WIKI = 2
 
 
 ###########################################################################
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
 class SemanticWiki(Persistence):
+    default_wiki_question_percent_bias = 0.5
+
     def __init__(self, uri, user, api_key):
         super().__init__(uri, user, api_key)
         # Should we just log in on init? Or separate it out?
@@ -258,7 +268,39 @@ class SemanticWiki(Persistence):
         )
         return
 
-    def get_unasked_question(self, sort, order):
+    def get_unasked_question(self, sort, order, wiki_question_bias=default_wiki_question_percent_bias):
+        if random.random() <= wiki_question_bias:
+            return self.get_unasked_wiki_question(sort, order)
+        else:
+            return self.get_unasked_youtube_question(sort, order)
+
+    def get_unasked_wiki_question(self, sort, order):
+        query = (
+                "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
+                + "?asker|?AskDate|?AskedOnDiscord|sort=AskedOnDiscord,{0}|limit=1|order=asc,{1}".format(sort, order)
+        )
+        results = self.ask(query)
+
+        question = {}
+        if results:
+            question["source"] = QuestionSource.WIKI
+
+            question["question_title"] = list(results.keys())[0]
+            all_vals = list(results.values())[0]
+            relevant_vals = all_vals["printouts"]
+            question["url"] = all_vals["fullurl"]
+
+            if relevant_vals["Question"] and relevant_vals["Question"][0] != question["question_title"]:
+                question["text"] = relevant_vals["Question"][0]
+            else:
+                question["text"] = ""
+            if relevant_vals["Asker"]:
+                question["username"] = relevant_vals["Asker"][0]
+            else:
+                question["username"] = "Unknown"
+        return question
+
+    def get_unasked_youtube_question(self, sort, order):
         query = (
             "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
             + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
@@ -270,6 +312,8 @@ class SemanticWiki(Persistence):
         # url, username, title, text, replies, asked = None, None, None, None, None, None
         question = {}
         if results:
+            question["source"] = QuestionSource.YOUTUBE
+
             question["question_title"] = list(results.keys())[0]
             relevant_vals = list(results.values())[0]["printouts"]
 
@@ -296,14 +340,14 @@ class SemanticWiki(Persistence):
 
         return question
 
-    def get_latest_question(self):
-        return self.get_unasked_question("AskDate", "desc")
+    def get_latest_question(self, wiki_question_bias=default_wiki_question_percent_bias):
+        return self.get_unasked_question("AskDate", "desc", wiki_question_bias=wiki_question_bias)
 
-    def get_random_question(self):
-        return self.get_unasked_question("AskDate", "rand")
+    def get_random_question(self, wiki_question_bias=default_wiki_question_percent_bias):
+        return self.get_unasked_question("AskDate", "rand", wiki_question_bias=wiki_question_bias)
 
-    def get_top_question(self):
-        return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
+    def get_top_question(self, wiki_question_bias=default_wiki_question_percent_bias):
+        return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc", wiki_question_bias=wiki_question_bias)
 
     def set_question_property(self, title, parameter, value):
         return self.page_forms_auto_edit(title, "Question", parameter, value)
