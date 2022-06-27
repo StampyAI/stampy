@@ -5,6 +5,8 @@ from modules.module import Module, Response
 from config import stampy_youtube_channel_id, youtube_testing_thread_url, comment_posting_threshold_factor
 from datetime import datetime
 
+from stampy.api.semanticwiki import QuestionSource
+
 
 class Reply(Module):
     POST_MESSAGE = "Ok, I'll post this when it has more than %s stamp points"
@@ -98,7 +100,7 @@ class Reply(Module):
         elif len(approvers) == 2:
             approver_string = " and ".join(approvers)
         else:
-            approver_string = ", ".join(approvers[:-1]) + ', and ' + approvers[-1]
+            approver_string = ", ".join(approvers[:-1]) + ", and " + approvers[-1]
 
         # strip off stampy's name
         text = self.is_at_me(message)
@@ -113,58 +115,62 @@ class Reply(Module):
             reference = await message.channel.fetch_message(message.reference.message_id)
             reference_text = reference.clean_content
             question_url = reference_text.split("\n")[-1].strip("<> \n")
-            if "youtube.com" not in question_url:
-                return "I'm confused about what YouTube comment to reply to..."
+
+            if "youtube.com" in question_url:
+                source = QuestionSource.YOUTUBE
+
+                match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
+                if match:
+                    question_user = match.group(1)  # YouTube user (.*) asked this question
+                else:
+                    question_user = "Unknown User"
+                ####
+                video_url, comment_id = question_url.split("&lc=")
+                video_titles = self.utils.get_title(video_url)
+                if not video_titles:
+                    # this should actually only happen in dev
+                    video_titles = ["Video Title Unknown", "Video Title Unknown"]
+
+                question_title = f"""{question_user}'s question on {video_titles[0]} id:{comment_id}"""
+            elif "stampy.ai/wiki" in question_url:
+                source = QuestionSource.WIKI
+
+                split_ref = reference_text.split("\n", 3)
+                if len(split_ref) < 3:
+                    return "I cannot understand the message you are trying to answer"
+                question_title = split_ref[1]
+            else:
+                return "I'm confused about what to reply to... "
         else:
-            reference_text = None
-            if not self.utils.latest_question_posted:
-                report = (
+            if self.utils.latest_question_posted:
+                source = self.utils.latest_question_posted["source"]
+                question_url = self.utils.latest_question_posted["url"]
+                question_title = self.utils.latest_question_posted["question_title"]
+            else:
+
+                return (
                     "I don't remember the URL of the last question I posted here,"
-                    " so I've probably been restarted since that happened. I'll just"
-                    " post to the dummy thread instead...\n\n"
+                    " so I've probably been restarted since that happened.\n"
+                    "Please directly reply to the question you are trying to answer\n\n"
                 )
-                # use the dummy thread
-                self.utils.latest_question_posted = {"url": youtube_testing_thread_url}
 
-            question_url = self.utils.latest_question_posted["url"]
-
-        question_id = re.match(r".*lc=([^&]+)", question_url).group(1)
+        if question_title:
+            answer_title = f"""{message.author.display_name}'s Answer to {question_title}"""
 
         quoted_reply_message = "> " + reply_message.replace("\n", "\n> ")
         report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (
             quoted_reply_message,
             question_url,
         )
-
-        # save the question to the wiki as well
-        question_user = "Unknown User"
-        if reference_text:
-            match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
-            if match:
-                question_user = match.group(1)  # YouTube user (.*) asked this question
-
-        video_url, comment_id = question_url.split("&lc=")
-        video_titles = self.utils.get_title(video_url)
-        if not video_titles:
-            # this should actually only happen in dev
-            video_titles = ["Video Title Unknown", "Video Title Unknown"]
-
-        question_display_title = f"""{question_user}'s question on {video_titles[0]}"""
-        answer_title = f"""{message.author.display_name}'s Answer to {question_display_title}"""
-
-        answer_time = datetime.now()  # How should this be formated?
+        answer_time = datetime.now()
 
         self.utils.wiki.add_answer(
-            answer_title,
-            message.author.display_name,
-            approvers,
-            answer_time,
-            reply_message,
-            question_display_title + " id:" + comment_id,
+            answer_title, message.author.display_name, approvers, answer_time, reply_message, question_title,
         )
-        ##
 
-        self.post_reply(reply_message, question_id)
+        if source == QuestionSource.YOUTUBE:
+            question_id = re.match(r".*lc=([^&]+)", question_url).group(1)
+            self.post_reply(reply_message, question_id)
 
         return report
 

@@ -164,11 +164,7 @@ class StampsModule(Module):
 
             for channel in guild.channels:
                 print(
-                    "#### Considering",
-                    channel.type,
-                    type(channel.type),
-                    channel.name,
-                    "####",
+                    "#### Considering", channel.type, type(channel.type), channel.name, "####",
                 )
                 if channel.type == discord.ChannelType.text:
                     print("#### Logging", channel.name, "####")
@@ -189,11 +185,7 @@ class StampsModule(Module):
                                         print(string)
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type,
-                                            user.id,
-                                            message.author.id,
-                                            False,
-                                            False,
+                                            reaction_type, user.id, message.author.id, False, False,
                                         )
         self.calculate_stamps()
 
@@ -261,11 +253,7 @@ class StampsModule(Module):
         await message.channel.send("Doing full stamp history reset, could take a while")
         self.reset_stamps()
         await self.load_votes_from_history()
-        return Response(
-            confidence=10,
-            text=self.STAMPS_RESET_MESSAGE,
-            why="robertskmiles reset the stamp history",
-        )
+        return Response(confidence=10, text=self.STAMPS_RESET_MESSAGE, why="robertskmiles reset the stamp history",)
 
     @property
     def test_cases(self):
@@ -274,7 +262,5 @@ class StampsModule(Module):
                 question="how many stamps am I worth?",
                 expected_regex=r"^You're worth ?[+-]?\d+(?:\.\d+)? stamps to me$",
             ),
-            self.create_integration_test(
-                question="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE
-            ),
+            self.create_integration_test(question="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE),
         ]

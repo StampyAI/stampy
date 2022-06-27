@@ -156,11 +156,7 @@ class Module(object):
 
     @staticmethod
     def create_integration_test(
-        question="",
-        expected_response="",
-        expected_regex=None,
-        test_wait_time=0.5,
-        minimum_allowed_similarity=1.0,
+        question="", expected_response="", expected_regex=None, test_wait_time=0.5, minimum_allowed_similarity=1.0,
     ):
         return {
             "question": question,

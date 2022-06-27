@@ -49,21 +49,18 @@ assert (
     ENVIRONMENT_TYPE in acceptable_environment_types
 ), f"ENVIRONMENT_TYPE {ENVIRONMENT_TYPE} is not in {acceptable_environment_types}"
 
-rob_miles_youtube_channel_id = {
-    "production": "UCLB7AzTwc6VFZrBsO2ucBMg",
-    "development": "UCDvKrlpIXM0BGYLD2jjLGvg",
-}[ENVIRONMENT_TYPE]
-stampy_youtube_channel_id = {
-    "production": "UCFDiTXRowzFvh81VOsnf5wg",
-    "development": "DvKrlpIXM0BGYLD2jjLGvg",
-}[ENVIRONMENT_TYPE]
+rob_miles_youtube_channel_id = {"production": "UCLB7AzTwc6VFZrBsO2ucBMg", "development": "UCDvKrlpIXM0BGYLD2jjLGvg",}[
+    ENVIRONMENT_TYPE
+]
+stampy_youtube_channel_id = {"production": "UCFDiTXRowzFvh81VOsnf5wg", "development": "DvKrlpIXM0BGYLD2jjLGvg",}[
+    ENVIRONMENT_TYPE
+]
 
 bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
 
-stamp_scores_csv_file_path = {
-    "production": "/var/www/html/stamps-export.csv",
-    "development": "stamps-export.csv",
-}[ENVIRONMENT_TYPE]
+stamp_scores_csv_file_path = {"production": "/var/www/html/stamps-export.csv", "development": "stamps-export.csv",}[
+    ENVIRONMENT_TYPE
+]
 
 admin_usernames = ["robertskmiles", "sudonym"]
 
@@ -80,8 +77,6 @@ wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "p
 
 stampy_control_channel_names = [
     "test",
-    "bot-dev-priv",
-    "bot-dev",
     "stampy-dev-priv",
     "stampy-dev",
     "talk-to-stampy",

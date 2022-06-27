@@ -3,7 +3,14 @@ import sys
 import inspect
 import discord
 import unicodedata
-from utilities import Utilities, get_question_id, is_test_response, is_test_message, is_test_question, get_git_branch_info
+from utilities import (
+    Utilities,
+    get_question_id,
+    is_test_response,
+    is_test_message,
+    is_test_question,
+    get_git_branch_info,
+)
 from modules.module import Response
 from modules.reply import Reply
 from modules.questions import QQManager
@@ -18,7 +25,6 @@ from modules.gpt3module import GPT3Module
 from modules.Factoids import Factoids
 from modules.wikiUpdate import WikiUpdate
 from modules.wikiUtilities import WikiUtilities
-from modules.atemporal import AtemporalModule
 from modules.testModule import TestModule
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
@@ -45,9 +51,7 @@ if ENVIRONMENT_TYPE == "production":
 elif ENVIRONMENT_TYPE == "development":
     from modules.sentience import sentience
 else:
-    raise Exception(
-        "Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types
-    )
+    raise Exception("Please set the ENVIRONMENT_TYPE environment variable to %s or %s" % acceptable_environment_types)
 
 
 @utils.client.event
@@ -118,13 +122,8 @@ async def on_message(message: discord.message.Message) -> None:
             if response.callback:
                 args_string = ", ".join([a.__repr__() for a in response.args])
                 if response.kwargs:
-                    args_string += ", " + ", ".join(
-                        [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
-                    )
-                print(
-                    f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
-                    f"{args_string})`"
-                )
+                    args_string += ", " + ", ".join([f"{k}={v.__repr__()}" for k, v in response.kwargs.items()])
+                print(f"  {response.confidence}: {response.module}: `{response.callback.__name__}(" f"{args_string})`")
             else:
                 print(f'  {response.confidence}: {response.module}: "{response.text}"')
                 if response.why:
@@ -266,7 +265,6 @@ if __name__ == "__main__":
         "Sentience": sentience,
         "WikiUpdate": WikiUpdate(),
         "WikiUtilities": WikiUtilities(),
-        "Atemporal": AtemporalModule(),
         "TestModule": TestModule(),
     }
     modules = utils.modules_dict.values()

@@ -25,7 +25,7 @@ repository: `cd stampy`
 python kernel with all the dependencies required to run the
 current version of stampy.
 5. Set Environment Variables
-    * Get `.env` file contents from #bot-dev-priv on discord
+    * Get `.env` file contents from #stampy-dev-priv on discord
     * Put `.env` into the root of the stampy repository so [dotenv](https://pypi.org/project/python-dotenv/) can find it
 6. Verify that your setup is working
     * Run `conda activate stampy`
