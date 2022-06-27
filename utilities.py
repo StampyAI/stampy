@@ -282,17 +282,17 @@ class Utilities:
 
         return new_comments
 
-    def get_question(self, order_type="TOP"):
+    def get_question(self, order_type="TOP", wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
         if order_type == "RANDOM":
-            comment = self.wiki.get_random_question()
+            comment = self.wiki.get_random_question(wiki_question_bias=wiki_question_bias)
         elif order_type == "TOP":
-            comment = self.wiki.get_top_question()
+            comment = self.wiki.get_top_question(wiki_question_bias=wiki_question_bias)
         else:
-            comment = self.wiki.get_latest_question()
+            comment = self.wiki.get_latest_question(wiki_question_bias=wiki_question_bias)
 
         if not comment:
             return None

@@ -9,6 +9,8 @@ from traceback import print_exc
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
 class SemanticWiki(Persistence):
+    default_wiki_question_percent_bias = 0.5
+
     def __init__(self, uri, user, api_key):
         super().__init__(uri, user, api_key)
         # Should we just log in on init? Or separate it out?
@@ -259,7 +261,7 @@ class SemanticWiki(Persistence):
         )
         return
 
-    def get_unasked_question(self, sort, order, wiki_question_bias=0.5):
+    def get_unasked_question(self, sort, order, wiki_question_bias=default_wiki_question_percent_bias):
         if random.random() <= wiki_question_bias:
             return self.get_unasked_wiki_question(sort, order)
         else:
@@ -331,14 +333,14 @@ class SemanticWiki(Persistence):
 
         return question
 
-    def get_latest_question(self):
-        return self.get_unasked_question("AskDate", "desc")
+    def get_latest_question(self, wiki_question_bias=default_wiki_question_percent_bias):
+        return self.get_unasked_question("AskDate", "desc", wiki_question_bias=wiki_question_bias)
 
-    def get_random_question(self):
-        return self.get_unasked_question("AskDate", "rand")
+    def get_random_question(self, wiki_question_bias=default_wiki_question_percent_bias):
+        return self.get_unasked_question("AskDate", "rand", wiki_question_bias=wiki_question_bias)
 
-    def get_top_question(self):
-        return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc")
+    def get_top_question(self, wiki_question_bias=default_wiki_question_percent_bias):
+        return self.get_unasked_question("Reviewed,YouTubeLikes", "desc,desc", wiki_question_bias=wiki_question_bias)
 
     def set_question_property(self, title, parameter, value):
         return self.page_forms_auto_edit(title, "Question", parameter, value)
