@@ -1,7 +1,7 @@
 import re
 from modules.module import Module, Response
 
-from stampy.api.semanticwiki import SemanticWiki
+from api.semanticwiki import SemanticWiki
 
 
 class QQManager(Module):
