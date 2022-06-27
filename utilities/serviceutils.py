@@ -1,47 +1,55 @@
 from datetime import datetime, timezone
 from enum import Enum
+from typing import List
 
 class Services(Enum):
     DISCORD = "discord"
     CLI = "cli"
 
 
-class SMAuthor:
-    def __init__(self, name: str):
+class ServiceRoles():
+
+    def __init__(self, name: str, id: int):
         self.name = name
-        self.id = name
-        self.display_name = name
-        self.roles = []
+        self.id = id
+
+
+class ServiceUser:
+    def __init__(self, name: str, display_name: str, id: int):
+        self.name = name
+        self.id: int = int
+        self.display_name = display_name
+        self.roles: List[ServiceRoles] = []
 
 
 class ServiceMessage:
-    def __init__(self, content: str, author: str, channel: str,
-                 service: Services):
+    def __init__(self, id: int, content: str, author: ServiceUser,
+                 channel: ServiceChannel, service: Services):
         self.content = content
-        self.author = SMAuthor(author)
-        self.channel = SMChannel(author, channel)
+        self.author = author
+        self.channel = channel
         self.service = service
         self.clean_content = content.lower()
         self.service = service
         self.created_at = datetime.now(timezone.utc)
-        self.id = author
+        self.id = id
         self.mentions = []
 
     def __repr__(self):
         return f"ServiceMessage({self.content})"
 
 
-class SMGuild:
-    def __init__(self, name: str):
-        self.id = name
-
-
-class SMChannel:
-    def __init__(self, author_name: str, name: str):
-        self.id = name
+class ServiceServer:
+    def __init__(self, name: str, id: int):
         self.name = name
-        self.guild = SMGuild(name)
-        self.recipient = SMAuthor(author_name)
+        self.id = id
+
+
+class ServiceChannel:
+    def __init__(self, name: str, id: int, server: Optional[ServiceServer]):
+        self.id = id
+        self.name = name
+        self.server = server
 
     def __repr__(self):
-        return f"SMChannel({self.id})"
+        return f"ServiceChannel({self.id})"
