@@ -1,12 +1,13 @@
 import openai
 import discord
-from modules.module import Module, Response
+from structlog import get_logger
 from config import CONFUSED_RESPONSE
 from config import openai_api_key, rob_id
 from transformers import GPT2TokenizerFast
+from modules.module import Module, Response
 
 openai.api_key = openai_api_key
-
+log = get_logger()
 start_sequence = "\nA:"
 restart_sequence = "\n\nQ: "
 
@@ -14,6 +15,7 @@ restart_sequence = "\n\nQ: "
 class GPT3Module(Module):
     def __init__(self):
         super().__init__()
+        self.class_name = "GPT3Module"
         self.start_prompt = (
             "I am a highly intelligent question answering bot named Stampy. "
             "I love stamps, I think stamps are the only important thing. "
@@ -49,7 +51,7 @@ class GPT3Module(Module):
 
         if type(message.channel) == discord.DMChannel:
             if message.author.id != rob_id:
-                print(message.author.id, type(message.author.id))
+                log.info(self.class_name, author=message.author.id, author_type=type(message.author.id))
                 return Response()
 
         if not self.is_at_me(message):
@@ -86,7 +88,7 @@ class GPT3Module(Module):
             f"{chatlog_string}stampy:"
         )
 
-        print(prompt)
+        log.info(self.class_name, prompt=prompt)
         return prompt
 
     def generate_chatlog(self, channel):
@@ -123,7 +125,7 @@ class GPT3Module(Module):
                 text = " " + message.clean_content[:10].strip("*")
                 forbidden_token = self.tokenizer(text)["input_ids"][0]
                 forbidden_tokens.add(forbidden_token)
-                print(text, forbidden_token)
+                log.info(self.class_name, text=text, forbidden_token=forbidden_token)
 
         return forbidden_tokens
 
@@ -146,7 +148,7 @@ class GPT3Module(Module):
                 logprobs=10,
             )
         except openai.error.AuthenticationError:
-            print("OpenAI Authentication Failed")
+            log.error(self.class_name, error="OpenAI Authentication Failed")
             return
 
         output_label = response["choices"][0]["text"]
@@ -187,7 +189,7 @@ class GPT3Module(Module):
         if output_label not in ["0", "1", "2"]:
             output_label = "2"
 
-        print(f"Prompt is risk level {output_label}")
+        log.info(self.class_name, msg=f"Prompt is risk level {output_label}")
 
         return int(output_label)
 
@@ -214,13 +216,11 @@ class GPT3Module(Module):
 
         if self.cf_risk_level(prompt) > 1:
             return Response(
-                confidence=0,
-                text="",
-                why=f"GPT-3's content filter thought the prompt was risky",
+                confidence=0, text="", why=f"GPT-3's content filter thought the prompt was risky",
             )
 
         forbidden_tokens = self.get_forbidden_tokens(message.channel)
-        print(forbidden_tokens)
+        log.info(self.class_name, forbidden_tokens=forbidden_tokens)
         logit_bias = {
             9: -100,  # "*"
             1174: -100,  # "**"
@@ -244,19 +244,15 @@ class GPT3Module(Module):
                 user=str(message.author.id),
             )
         except openai.error.AuthenticationError:
-            print("OpenAI Authentication Failed")
+            log.error(self.class_name, error="OpenAI Authentication Failed")
             return Response()
 
         if response["choices"]:
             choice = response["choices"][0]
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
                 text = choice["text"].strip(". \n").split("\n")[0]
-                print("GPT-3 Replied!:", text)
-                return Response(
-                    confidence=10,
-                    text=f"*{text}*",
-                    why="GPT-3 made me say it!",
-                )
+                log.info(self.class_name, gpt_response=text)
+                return Response(confidence=10, text=f"*{text}*", why="GPT-3 made me say it!",)
 
         return Response()
 
@@ -267,14 +263,12 @@ class GPT3Module(Module):
 
         text = self.is_at_me(message)
         if text.endswith("?"):
-            print("Asking GPT-3")
+            log.info(self.class_name, status="Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
 
             if self.cf_risk_level(prompt) > 1:
                 return Response(
-                    confidence=0,
-                    text="",
-                    why=f"GPT-3's content filter thought the prompt was risky",
+                    confidence=0, text="", why=f"GPT-3's content filter thought the prompt was risky",
                 )
 
             try:
@@ -288,13 +282,13 @@ class GPT3Module(Module):
                     # stop=["\n"],
                 )
             except openai.error.AuthenticationError:
-                print("OpenAI Authentication Failed")
+                log.error(self.class_name, error="OpenAI Authentication Failed")
                 return Response()
 
             if response["choices"]:
                 choice = response["choices"][0]
                 if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
-                    print("GPT-3 Replied!:")
+                    log.info(self.class_name, status="Asking GPT-3")
                     return Response(
                         confidence=10,
                         text="*" + choice["text"].strip(". \n") + "*",
@@ -302,7 +296,7 @@ class GPT3Module(Module):
                     )
 
         # if we haven't returned yet
-        print("GPT-3 failed:")
+        log.error(self.class_name, error="GPT-3 didn't make me say anything")
         return Response()
 
     def __str__(self):
