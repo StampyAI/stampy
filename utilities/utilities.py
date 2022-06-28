@@ -52,6 +52,7 @@ class Utilities:
     scores = None
 
     modules_dict = {}
+    service_modules_dict = {}
 
     @staticmethod
     def get_instance():
