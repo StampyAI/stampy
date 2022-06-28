@@ -1,12 +1,15 @@
 import sqlite3
+from structlog import get_logger
 
 ###########################################################################
 #   SQLite Database Wrapper
 ###########################################################################
+log = get_logger()
 
 
 class Database:
     def __init__(self, name=None):
+        self.class_name = self.__class__.__name__
         self.connected = False
         self.conn = None
         self.cursor = None
@@ -15,14 +18,14 @@ class Database:
             self.open(name)
 
     def open(self, name):
-        print("Connecting to database: " + name)
+        log.info(self.class_name, status="Connecting to database: " + name)
         try:
             self.conn = sqlite3.connect(name)
             self.cursor = self.conn.cursor()
             self.connected = True
 
         except sqlite3.Error as e:
-            print("Error connecting to database!", e)
+            log.error(self.class_name, error="Error connecting to database!", exception=e)
 
     def close(self):
         if self.conn:
