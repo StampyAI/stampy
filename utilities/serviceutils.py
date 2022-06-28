@@ -17,7 +17,7 @@ class ServiceRoles():
 class ServiceUser:
     def __init__(self, name: str, display_name: str, id: int):
         self.name = name
-        self.id: int = int
+        self.id = id
         self.display_name = display_name
         self.roles: List[ServiceRoles] = []
 

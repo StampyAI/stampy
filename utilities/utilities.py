@@ -52,6 +52,7 @@ class Utilities:
     scores = None
 
     modules_dict = {}
+    service_modules_dict = {}
 
     @staticmethod
     def get_instance():
@@ -141,7 +142,7 @@ class Utilities:
             return True
 
     def stampy_is_author(self, message):
-        return message.author == self.client.user
+        return message.author.id == self.client.user.id
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
