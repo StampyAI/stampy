@@ -1,9 +1,6 @@
 import re
-from structlog import get_logger
 from api.semanticwiki import SemanticWiki
 from modules.module import Module, Response
-
-log = get_logger()
 
 
 class QQManager(Module):
@@ -81,7 +78,7 @@ class QQManager(Module):
         if self.utils.test_mode:
             return Response(confidence=9, text=self.EMPTY_QUEUE_MESSAGE, why="test")
         result = self.utils.get_question(wiki_question_bias=wiki_question_bias)
-        log.info("QQManager", post_question_result=result, message_author=message.author.name)
+        self.log.info("QQManager", post_question_result=result, message_author=message.author.name)
         if result:
             return Response(
                 confidence=10, text=result, why="%s asked for a question to answer" % message.author.name

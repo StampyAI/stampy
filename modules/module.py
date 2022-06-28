@@ -6,8 +6,6 @@ from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
 from typing import Callable, Iterable, Optional, Union
 
-log = get_logger()
-
 
 @dataclass
 class Response:
@@ -95,6 +93,7 @@ class Module(object):
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.class_name = "Base Module"
+        self.log = get_logger()
 
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,

@@ -1,14 +1,11 @@
-from structlog import get_logger
 from config import CONFUSED_RESPONSE
 from modules.module import Module, Response
-
-log = get_logger()
 
 
 class Sentience(Module):
     def process_message(self, message):
         if self.is_at_me(message):
-            log.info("Sentience", msg="Confused Response Sent")
+            self.log.info("Sentience", msg="Confused Response Sent")
             return Response(confidence=0.0000001, text=CONFUSED_RESPONSE)
         else:
             return Response()

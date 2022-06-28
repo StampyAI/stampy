@@ -2,12 +2,9 @@ import re
 import json
 import discord
 from datetime import datetime
-from structlog import get_logger
 from api.semanticwiki import QuestionSource
 from modules.module import Module, Response
 from config import stampy_youtube_channel_id, comment_posting_threshold_factor
-
-log = get_logger()
 
 
 class Reply(Module):
@@ -22,7 +19,7 @@ class Reply(Module):
 
     def is_post_request(self, text):
         """Is this message asking us to post a reply?"""
-        log.info(self.class_name, text=text)
+        self.log.info(self.class_name, text=text)
         if text:
             return text.lower().endswith("post this") or text.lower().endswith("send this")
         else:
@@ -68,7 +65,7 @@ class Reply(Module):
         with open("database/topost.json", "w") as post_file:
             json.dump(responses_to_post, post_file, indent="\t")
 
-        log.info(self.class_name, msg=("dummy, posting %s to %s" % (text, question_id)))
+        self.log.info(self.class_name, msg=("dummy, posting %s to %s" % (text, question_id)))
 
     def comment_posting_threshold(self):
         """Return the number of stamps a reply needs in order to be posted"""
@@ -79,7 +76,7 @@ class Reply(Module):
             text = self.is_at_me(message)
 
             if self.is_post_request(text):
-                log.info(self.class_name, msg="this is a posting request")
+                self.log.info(self.class_name, msg="this is a posting request")
 
                 return Response(
                     confidence=9,
@@ -180,13 +177,13 @@ class Reply(Module):
     async def evaluate_message_stamps(self, message):
         """Return the total stamp value of all the stamps on this message, and a list of who approved it"""
         total = 0
-        log.info(self.class_name, status="Evaluating message")
+        self.log.info(self.class_name, status="Evaluating message")
 
         approvers = []
 
         reactions = message.reactions
         if reactions:
-            log.info(self.class_name, reactions=reactions)
+            self.log.info(self.class_name, reactions=reactions)
             for reaction in reactions:
                 reaction_type = getattr(reaction.emoji, "name", "")
                 if reaction_type in ["stamp", "goldstamp"]:
@@ -195,33 +192,33 @@ class Reply(Module):
                         approvers.append(user)
                         stampvalue = self.utils.modules_dict["StampsModule"].get_user_stamps(user)
                         total += stampvalue
-                        log.info(self.class_name, from_user=user, user_id=user.id, stampvalue=stampvalue)
+                        self.log.info(self.class_name, from_user=user, user_id=user.id, stampvalue=stampvalue)
 
         return total, approvers
 
     def has_been_replied_to(self, message):
         reactions = message.reactions
-        log.info(self.class_name, status="Testing if question has already been replied to")
-        log.info(self.class_name, message_reactions=reactions)
+        self.log.info(self.class_name, status="Testing if question has already been replied to")
+        self.log.info(self.class_name, message_reactions=reactions)
         if reactions:
             for reaction in reactions:
                 react_type = getattr(reaction.emoji, "name", reaction.emoji)
-                log.info(self.class_name, reaction_type=react_type)
+                self.log.info(self.class_name, reaction_type=react_type)
                 if react_type in ["📨", ":incoming_envelope:"]:
-                    log.info(self.class_name, msg="Message has envelope emoji, it's already replied to")
+                    self.log.info(self.class_name, msg="Message has envelope emoji, it's already replied to")
                     return True
                 elif react_type in ["🚫", ":no_entry_sign:"]:
-                    log.info(self.class_name, msg="Message has no entry sign, it's vetoed")
+                    self.log.info(self.class_name, msg="Message has no entry sign, it's vetoed")
                     return True
 
-        log.info(self.class_name, msg="Message has no envelope emoji, it has not already replied to")
+        self.log.info(self.class_name, msg="Message has no envelope emoji, it has not already replied to")
         return False
 
     async def process_raw_reaction_event(self, event):
         emoji = getattr(event.emoji, "name", event.emoji)
 
         if emoji in ["stamp", "goldstamp"]:
-            log.info(self.class_name, guild=self.utils.GUILD)
+            self.log.info(self.class_name, guild=self.utils.GUILD)
             guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
             channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)

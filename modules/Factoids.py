@@ -2,10 +2,7 @@ import re
 import random
 import sqlite3
 from config import rob_id
-from structlog import get_logger
 from modules.module import Module, Response
-
-log = get_logger()
 
 
 def randbool(p):
@@ -159,7 +156,7 @@ class Factoids(Module):
         except AttributeError:  # no channel name, it's a DM
             DM = True
             atme = True  # DMs are always addressed to you
-            log.info(self.class_name, msg="At me because DM")
+            self.log.info(self.class_name, msg="At me because DM")
             room = message.channel.recipient.id
 
         text = message.clean_content
@@ -179,7 +176,7 @@ class Factoids(Module):
             query = m.group("query")
             query = re.sub(r"\bmy\b", f"{self.who}'s", query)
             query = re.sub(r"\bme\b", self.who, query)
-            log.info(self.class_name, query=query)
+            self.log.info(self.class_name, query=query)
 
             if not factoids:
                 key = query
@@ -255,7 +252,7 @@ class Factoids(Module):
 
                     result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
                     why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
-                    log.info(
+                    self.log.info(
                         self.class_name,
                         msg="adding factoid %s : %s" % (key, value),
                         author=message.author.id,

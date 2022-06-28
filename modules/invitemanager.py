@@ -1,10 +1,7 @@
 import re
 import discord
 from config import rob_id
-from structlog import get_logger
 from modules.module import Module, Response
-
-log = get_logger()
 
 
 class InviteManager(Module):
@@ -80,7 +77,7 @@ class InviteManager(Module):
         invite = await welcome.create_invite(
             max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
         )
-        log.info(self.class_name, msg="Generated invite", member=member.name, invite=invite)
+        self.log.info(self.class_name, msg="Generated invite", member=member.name, invite=invite)
 
         # remove the invite role so they only get one
         await member.remove_roles(invite_role)

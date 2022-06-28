@@ -1,11 +1,7 @@
 import re
 import json
 import urllib
-from structlog import get_logger
 from modules.module import Module, Response
-
-
-log = get_logger()
 
 
 class DuckDuckGo(Module):
@@ -56,8 +52,8 @@ class DuckDuckGo(Module):
             data = urllib.request.urlopen(url).read()
             j = json.loads(data)
 
-            log.info("DuckDuckGo", query=q, url=url)
-            log.debug("DuckDuckGo", data=json.dumps(j, sort_keys=True, indent=2))
+            self.log.info("DuckDuckGo", query=q, url=url)
+            self.log.debug("DuckDuckGo", data=json.dumps(j, sort_keys=True, indent=2))
 
             if j["Abstract"]:
                 answer = j["Abstract"]
@@ -79,6 +75,6 @@ class DuckDuckGo(Module):
                     why="That's what DuckDuckGo suggested",
                 )
         except Exception as e:
-            log.error("DuckDuckGo", error=e)
+            self.log.error("DuckDuckGo", error=e)
 
         return Response()
