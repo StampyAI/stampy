@@ -94,9 +94,7 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -205,8 +203,7 @@ class Utilities:
         else:
 
             print(
-                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
-                end="",
+                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)), end="",
             )
             return None
 
@@ -282,7 +279,9 @@ class Utilities:
 
         return new_comments
 
-    def get_question(self, order_type="TOP", wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias):
+    def get_question(
+        self, order_type="TOP", wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias
+    ):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
@@ -321,20 +320,16 @@ class Utilities:
                     + "{2}\n"
                     + "Is it an interesting question? Maybe we can answer it!\n"
                     + "{3}"
-                ).format(
-                    comment["username"],
-                    self.get_title(comment["url"])[1],
-                    text_quoted,
-                    comment["url"],
-                )
+                ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
         elif comment["source"] == QuestionSource.WIKI:
-            report = "Wiki User {0} asked this question.\n{1}\n".format(comment["username"], comment["question_title"])
+            report = "Wiki User {0} asked this question.\n{1}\n".format(
+                comment["username"], comment["question_title"]
+            )
             if comment["text"]:
                 report += text_quoted
             report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
         else:
             report = "I am being told to post a question which I cant parse properly, i am very sorry"
-
 
         print("==========================")
         print(report)
@@ -428,10 +423,7 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(
-            comment["username"],
-            video_titles[0],
-        )
+        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
 
         return self.wiki.add_question(
             display_title,
@@ -487,14 +479,14 @@ def get_github_info():
 def get_git_branch_info():
     repo = Repo(".")
     branch = repo.active_branch
-    name = repo.config_reader().get_value('user', 'name')
+    name = repo.config_reader().get_value("user", "name")
     return f"from git branch `{branch}` by `{name}`"
 
 
 def get_running_user_info():
     if not os.name == "nt":
         user_info = pwd.getpwuid(os.getuid())
-        user_name = user_info.pw_gecos.split(',')[0]
+        user_name = user_info.pw_gecos.split(",")[0]
         message = (
             "The last user to start my server was %(username)s."
             + "\nThey used the %(shell)s shell."
@@ -503,7 +495,7 @@ def get_running_user_info():
         return message % {"username": user_name, "shell": user_info.pw_shell, "pid": os.getpid()}
     else:
         # This should be replaced with a better test down the line.
-        shell = "Command Prompt (DOS)" if os.getenv('PROMPT') == '$P$G' else "PowerShell"
+        shell = "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
         user_name = os.getlogin()
         message = (
             "The last user to start my server was %(username)s."

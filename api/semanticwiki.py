@@ -418,7 +418,7 @@ class SemanticWiki(Persistence):
         if dry_run:
             yield f"move_pages_generator: Dry run for `{query}`{skip}:"
         else:
-            yield f"move_pages_generator: Started for `{query}`{skip}:\n" f" *(write `s, stop` to tell stampy to stop)*"
+            yield f"move_pages_generator: Started for `{query}`{skip}:\n *(write `s, stop` to tell stampy to stop)*"
 
         max_offset = len(results) + offset - 1
         changes_were_made = False

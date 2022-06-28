@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 
+
 class Services(Enum):
     DISCORD = "discord"
     CLI = "cli"
@@ -15,8 +16,7 @@ class SMAuthor:
 
 
 class ServiceMessage:
-    def __init__(self, content: str, author: str, channel: str,
-                 service: Services):
+    def __init__(self, content: str, author: str, channel: str, service: Services):
         self.content = content
         self.author = SMAuthor(author)
         self.channel = SMChannel(author, channel)
