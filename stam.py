@@ -83,6 +83,10 @@ async def on_message(message: discord.message.Message) -> None:
             module.process_message_from_stampy(message)
         return
 
+    # This is mostly working but it's commented out for now.
+    # from utilities.discordutils import DiscordMessage
+    # message = DiscordMessage(message)
+
     print("########################################################")
     print(datetime.now().isoformat(sep=" "))
     if hasattr(message.channel, "name"):
