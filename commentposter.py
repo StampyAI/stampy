@@ -7,8 +7,10 @@ from utilities import Utilities
 import google_auth_oauthlib.flow as google_auth
 from googleapiclient.discovery import build as get_youtube_api
 from itertools import cycle
+from structlog import get_logger
 
 spinner = cycle("\\|/-")
+log = get_logger()
 
 
 class CommentPoster(object):
@@ -19,6 +21,7 @@ class CommentPoster(object):
         scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"]
         api_service_name = "youtube"
         api_version = "v3"
+        self.class_name = self.__class__.__name__
 
         # Get credentials and create an API client
         flow = google_auth.InstalledAppFlow.from_client_secrets_file(os.getenv("CLIENT_SECRET_PATH"), scopes)
@@ -31,11 +34,10 @@ class CommentPoster(object):
         try:
             response = request.execute()
         except googleapiclient.errors.HttpError as e:
-            print(e)
+            log.error(self.class_name, error=e)
             return
 
-        print(response)
-        print(type(response))
+        log.info(self.class_name, response_msg=response, response_type=type(response))
         return response
 
     def run(self):
@@ -48,8 +50,7 @@ class CommentPoster(object):
                     responses_to_post = []
 
             if responses_to_post:
-                print("responses_to_post:", responses_to_post)
-                print(".", end="")
+                log.info(self.class_name, responses_to_post=responses_to_post)
             else:
                 print("\b" + next(spinner), end="")
                 sys.stdout.flush()
