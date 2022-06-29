@@ -10,6 +10,7 @@ dependencies:
       - lxml
       - black
       - discord-py
+      - flask
       - gitpython
       - google-api-python-client
       - google-auth-oauthlib
