@@ -17,6 +17,7 @@ from modules.sentience import Sentience
 from collections.abc import Iterable
 from test.discord_mocks import MockMessage
 from config import maximum_recursion_depth
+from structlog import get_logger
 
 modules_dict = {
     "StampyControls": StampyControls(),
@@ -35,6 +36,8 @@ modules_dict = {
     "TestModule": TestModule(),
 }
 modules = list(modules_dict.values())
+log_type = "stam.py"
+log = get_logger()
 
 
 def stampy_response(text, author, channel):
@@ -45,19 +48,17 @@ def stampy_response(text, author, channel):
     responses = [Response()]
 
     for module in modules:
-        print(f"# Asking module: {module}")
+        log.info(log_type, msg=f"# Asking module: {module}")
         response = module.process_message(message)
         if response:
             response.module = module  # tag it with the module it came from, for future reference
             if response.callback:  # break ties between callbacks and text in favour of text
                 response.confidence -= 0.001
             responses.append(response)
-    print("#####################################")
 
     for i in range(maximum_recursion_depth):  # don't hang if infinite regress
         responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
         # print some debug
-        print("Responses:")
         for response in responses:
             if response.callback:
                 args_string = ", ".join([a.__repr__() for a in response.args])
@@ -65,27 +66,27 @@ def stampy_response(text, author, channel):
                     args_string += ", " + ", ".join(
                         [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
                     )
-                print(
-                    f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
-                    f"{args_string})`"
+                log.info(
+                    log_type,
+                    msg=f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
+                    f"{args_string})`",
                 )
             else:
-                print(f'  {response.confidence}: {response.module}: "{response.text}"')
+                log.info(log_type, msg=f'  {response.confidence}: {response.module}: "{response.text}"')
                 if response.why:
-                    print(f'       (because "{response.why}")')
+                    log.info(log_type, msg=f'       (because "{response.why}")')
 
         top_response = responses.pop(0)
 
         if top_response.callback:
-            print("Top response is a callback. Calling it")
+            log.info(log_type, msg="Top response is a callback. Calling it")
             new_response = top_response.callback(*top_response.args, **top_response.kwargs)
             new_response.module = top_response.module
             responses.append(new_response)
         else:
             if top_response:
-                print("Replying:", top_response.text)
+                log.info(log_type, msg="Replying:" + top_response.text)
                 if isinstance(top_response.text, Iterable):
                     top_response.text = "".join(top_response.text)
                 return top_response
-            print("########################################################")
             sys.stdout.flush()

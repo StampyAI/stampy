@@ -1,9 +1,10 @@
 import re
 import discord
-from utilities import Utilities, get_question_id
-from dataclasses import dataclass, field
-from typing import Callable, Iterable, Optional, Union
+from structlog import get_logger
 from config import TEST_QUESTION_PREFIX
+from dataclasses import dataclass, field
+from utilities import Utilities, get_question_id
+from typing import Callable, Iterable, Optional, Union
 
 
 @dataclass
@@ -91,6 +92,8 @@ class Module(object):
 
     def __init__(self):
         self.utils = Utilities.get_instance()
+        self.class_name = "BaseModule"
+        self.log = get_logger()
 
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,
@@ -210,7 +213,7 @@ class Module(object):
 
         if Utilities.get_instance().client.user in message.mentions:
             # regular mentions are already covered above, this covers the case that someone reply @'s Stampy
-            print("X At me because of mention")
+            log.info(self.class_name, msg="Classified as 'at stampy' because of mention")
             at_me = True
 
         if at_me:

@@ -1,5 +1,5 @@
-import asyncio
 import sys
+import asyncio
 import inspect
 import discord
 import threading
@@ -12,6 +12,7 @@ from utilities import (
     is_test_question,
     get_git_branch_info,
 )
+from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
@@ -21,6 +22,9 @@ from config import (
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
 )
+
+log = get_logger()
+class_name = "DiscordHandler"
 
 
 class DiscordHandler:
@@ -34,17 +38,20 @@ class DiscordHandler:
 
         @self.utils.client.event
         async def on_ready() -> None:
-            print(f"{self.utils.client.user} has connected to Discord!")
-            print("searching for a guild named '%s'" % self.utils.GUILD)
-            print(self.utils.client.guilds)
+            log.info(
+                class_name,
+                status=f"{self.utils.client.user} has connected to Discord!",
+                searching_for_guild=self.utils.GUILD,
+                guilds=self.utils.client.guilds,
+            )
             guild = discord.utils.get(self.utils.client.guilds, name=self.utils.GUILD)
             if guild is None:
                 raise Exception("Guild Not Found : '%s'" % self.utils.GUILD)
 
-            print("found a guild named '%s' with id '%s'" % (guild.name, guild.id))
+            log.info(class_name, msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id))
 
-            members = "\n - ".join([member.name for member in guild.members])
-            print(f"Guild Members:\n - {members}")
+            members = "\n - " + "\n - ".join([member.name for member in guild.members])
+            log.info(class_name, guild_members=members)
             await self.utils.client.get_channel(bot_dev_channel_id).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
@@ -54,7 +61,7 @@ class DiscordHandler:
             # don't react to our own messages unless running test
             message_author_is_stampy = message.author == self.utils.client.user
             if is_test_message(message.clean_content) and self.utils.test_mode:
-                print("TESTING " + message.clean_content)
+                log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
             elif message_author_is_stampy:
                 for module in self.modules:
                     module.process_message_from_stampy(message)
@@ -64,26 +71,32 @@ class DiscordHandler:
             # from utilities.discordutils import DiscordMessage
             # message = DiscordMessage(message)
 
-            print("########################################################")
-            print("DISCORD MESSAGE")
-            print(datetime.now().isoformat(sep=" "))
+            message_is_dm = True
+            message_reference = None
             if hasattr(message.channel, "name"):
-                print(f"Message: id={message.id} in '{message.channel.name}' (id={message.channel.id})")
-            else:
-                print(f"DM: id={message.id}")
-            print(f"from {message.author.name}#{message.author.discriminator} (id={message.author.id})")
+                message_is_dm = False
             if message.reference:
-                print("In reply to:", message.reference)
-            print(f"    {message.content}")
-            print("#####################################")
+                message_reference = message.reference
+            log.info(
+                class_name,
+                message_id=message.id,
+                message_channel_name=message.channel.name,
+                message_author_name=message.author.name,
+                message_author_discriminator=message.author.discriminator,
+                message_author_id=message.author.id,
+                message_channel_id=message.channel.id,
+                message_is_dm=message_is_dm,
+                message_reference=message_reference,
+                message_content=message.content,
+            )
 
             if hasattr(message.channel, "name") and message.channel.name == "general":
-                print("the latest general discord channel message was not from stampy")
+                log.info(class_name, msg="the latest general discord channel message was not from stampy")
                 self.utils.last_message_was_youtube_question = False
 
             responses = [Response()]
             for module in self.modules:
-                print(f"# Asking module: {module}")
+                log.info(class_name, msg=f"# Asking module: {module}")
                 response = module.process_message(message)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
@@ -93,33 +106,32 @@ class DiscordHandler:
 
                     responses.append(response)
 
-            print("#####################################")
-
             for i in range(maximum_recursion_depth):  # don't hang if infinite regress
                 responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
-
-                # print some debug
-                print("Responses:")
                 for response in responses:
+                    args_string = ""
+
                     if response.callback:
                         args_string = ", ".join([a.__repr__() for a in response.args])
                         if response.kwargs:
                             args_string += ", " + ", ".join(
                                 [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
                             )
-                        print(
-                            f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
-                            f"{args_string})`"
-                        )
-                    else:
-                        print(f'  {response.confidence}: {response.module}: "{response.text}"')
-                        if response.why:
-                            print(f'       (because "{response.why}")')
+                    log.info(
+                        class_name,
+                        response_module=response.module,
+                        response_confidence=response.confidence,
+                        response_is_callback=bool(response.callback),
+                        response_callback=response.callback,
+                        response_args=args_string,
+                        response_text=response.text,
+                        response_reasons=response.why,
+                    )
 
                 top_response = responses.pop(0)
 
                 if top_response.callback:
-                    print("Top response is a callback. Calling it")
+                    log.info(class_name, msg="Top response is a callback. Calling it")
                     if inspect.iscoroutinefunction(top_response.callback):
                         new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
                     else:
@@ -139,7 +151,7 @@ class DiscordHandler:
                                     + ": "
                                     + top_response.text
                                 )
-                        print("Replying:", top_response.text)
+                        log.info(class_name, top_response=top_response.text)
                         # TODO: check to see if module is allowed to embed via a config?
                         if top_response.embed:
                             await message.channel.send(top_response.text, embed=top_response.embed)
@@ -149,7 +161,6 @@ class DiscordHandler:
                         elif isinstance(top_response.text, Iterable):
                             for chunk in top_response.text:
                                 await message.channel.send(chunk)
-                    print("########################################################")
                     sys.stdout.flush()
                     return
 
@@ -213,33 +224,38 @@ class DiscordHandler:
                     else:
                         # wait the full time again
                         self.utils.last_question_asked_timestamp = now
-                        print(
-                            "Not asking question: previous post in the channel was a question stampy asked."
+                        log.info(
+                            class_name,
+                            msg="Not asking question: previous post in the channel was a question stampy asked.",
                         )
                 else:
                     remaining_cooldown = str(
                         question_ask_cooldown - (now - self.utils.last_question_asked_timestamp)
                     )
-                    print("%s Questions in queue, waiting %s to post" % (question_count, remaining_cooldown))
+                    log.info(
+                        class_name,
+                        msg="%s Questions in queue, waiting %s to post"
+                        % (question_count, remaining_cooldown),
+                    )
                     return
 
         @self.utils.client.event
         async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:
-            print("RAW REACTION ADD")
+            log.info(class_name, msg="RAW REACTION ADD")
             if len(payload.emoji.name) == 1:
                 # if this is an actual unicode emoji
-                print(unicodedata.name(payload.emoji.name))
+                log.info(class_name, emoji=unicodedata.name(payload.emoji.name))
             else:
-                print(payload.emoji.name.upper())
-            print(payload)
+                log.info(class_name, emoji=payload.emoji.name.upper())
+            log.info(class_name, payload=payload)
 
             for module in self.modules:
                 await module.process_raw_reaction_event(payload)
 
         @self.utils.client.event
         async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:
-            print("RAW REACTION REMOVE")
-            print(payload)
+            log.info(class_name, msg="RAW REACTION REMOVE")
+            log.info(class_name, payload=payload)
 
             for module in self.modules:
                 await module.process_raw_reaction_event(payload)

@@ -15,6 +15,7 @@ class StampyControls(Module):
 
     def __init__(self):
         super().__init__()
+        self.class_name = "StampyControls"
         self.routines = {
             "reboot": self.reboot,
             "resetinviteroles": self.resetinviteroles,
@@ -65,18 +66,22 @@ class StampyControls(Module):
 
     async def resetinviteroles(self, message):
         if self.utils.test_mode:
-            print("Stampy is in test mode, not updating invite roles")
+            self.log.warning(self.class_name, msg="Stampy is in test mode, not updating invite roles")
             return Response(
                 confidence=10,
                 why="%s asked me to reset roles, which" % message.author.name,
                 text=self.RESET_INVITES_MESSAGE,
             )
-        print("[resetting can-invite roles]")
+        self.log.info(self.class_name, msg="[resetting can-invite roles]")
         await self.send_control_message(message, self.RESET_INVITES_MESSAGE)
         guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
-        print(self.utils.GUILD, guild)
+        self.log.info(
+            self.class_name,
+            utility_guild=self.utils.GUILD,
+            discord_guild=guild,
+            discord_guild_member_count=len(guild.members),
+        )
         role = discord.utils.get(guild.roles, name="can-invite")
-        print("there are", len(guild.members), "members")
         reset_users_count = 0
         if not self.utils.test_mode:
             for member in guild.members:

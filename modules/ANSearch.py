@@ -1,11 +1,10 @@
 import re
-import os
-from modules.module import Module, Response
-import csv
-import requests
-from lxml import etree
 import zipfile
+import requests
 from io import BytesIO
+from lxml import etree
+from structlog import get_logger
+from modules.module import Module, Response
 
 spreadsheet_url = (
     "https://docs.google.com/spreadsheets/d/1PwWbWZ6FPqAgZWOoOcXM8N_tUCuxpEyMbN1NYYC02aM/export?format=zip"
@@ -19,6 +18,7 @@ class ANSearch(Module):
 
     def __init__(self):
         super().__init__()
+        self.class_name = self.__class__.__name__
         noun_regex = r"""([Pp]aper|[Aa]rticle|([Bb]log)? ?[Pp]ost|[Nn]ewsletter)s?"""
         self.re_search = re.compile(
             r"""((([Ww]hich|[Ww]hat) """
@@ -96,10 +96,7 @@ class ANSearch(Module):
                         if match_object:
                             item.title = match_object["title"].decode("utf-8") or ""
                             item.url = match_object["url"].decode("utf-8") or ""
-                        else:  # no markdown link either...
-                            # print("What is even happening here")
-                            # print(etree.tostring(row[3]))
-                            # print(etree.tostring(row))
+                        else:
                             continue
 
                     item.authors = (
@@ -135,15 +132,12 @@ class ANSearch(Module):
     def sort_by_relevance(self, items, search_string, reverse=False):
         # TODO: Semantic search or something else less braindead
         keywords = self.extract_keywords(search_string)
-        print('Keywords:, "%s"' % keywords)
+        self.log.info(self.class_name, keywords=keywords)
 
         for item in items:
             item.score = 0
             for keyword in keywords:
                 keyword = keyword.lower()
-                # print(item.title.lower())
-                # print(item.title.lower().count(keyword))
-                # print((len(item.title) + 1))
 
                 item.score += 1.0 * item.title.lower().count(keyword) / (len(item.title) + 1)
                 item.score += 1.0 * item.authors.lower().count(keyword) / (len(item.authors) + 1)
@@ -156,7 +150,7 @@ class ANSearch(Module):
 
     def search(self, query):
         result = self.sort_by_relevance(self.items, query, reverse=True)
-        print("Search Result:", result[:5])
+        self.log.info(self.class_name, search_results=result[:5])
 
         best_score = result[0].score
         if best_score == 0:
@@ -166,7 +160,7 @@ class ANSearch(Module):
 
         for r in result[1:10]:
             if r.score > 0:
-                print(r)
+                self.log.info(self.class_name, search_r_score=r)
             if r.score > (best_score * 0.2):
                 matches.append(r)
         return matches
@@ -201,10 +195,10 @@ class ANSearch(Module):
         return reply
 
     async def process_search_request(self, query):
-        print('Newsletter Query is:, "%s"' % query)
+        self.log.info(self.class_name, newsletter_querry=query)
         result = self.search(query)
         if result:
-            print("Result:", result)
+            self.log.info(self.class_name, newsletter_querry_result=result)
             return Response(
                 confidence=10,
                 text=self.list_relevant_items(result),
@@ -224,4 +218,5 @@ class ANSearch(Module):
 if __name__ == "__main__":
     module = ANSearch()
     module.load_items()
-    print(module.items[0])
+    log = get_logger()
+    log.info(module.class_name, an_search_items=module.items[0])

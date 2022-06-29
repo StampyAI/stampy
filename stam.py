@@ -1,10 +1,7 @@
 import os
 import sys
 import threading
-import time
-from utilities import (
-    Utilities,
-)
+from utilities import Utilities
 from modules.reply import Reply
 from modules.questions import QQManager
 from modules.wolfram import Wolfram
@@ -21,13 +18,16 @@ from modules.wikiUtilities import WikiUtilities
 from modules.testModule import TestModule
 from servicemodules.discord import DiscordHandler
 from servicemodules.slack import SlackHandler
+from structlog import get_logger
 from config import (
-    discord_token,
     database_path,
     prod_local_path,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
 )
+
+log_type = "stam.py"
+log = get_logger()
 
 
 if __name__ == "__main__":
@@ -44,8 +44,8 @@ if __name__ == "__main__":
     else:
         raise Exception(
             "Please set the ENVIRONMENT_TYPE environment variable "
-            + f"to {applicable_envirnoment_types[0]} or "
-            + f"{applicable_enviroment_types[1]}"
+            + f"to {acceptable_environment_types[0]} or "
+            + f"{acceptable_environment_types[1]}"
         )
 
     utils.modules_dict = {
@@ -71,11 +71,11 @@ if __name__ == "__main__":
     e = threading.Event()
     utils.stop = e
     for module in utils.service_modules_dict:
-        print(f"Starting {module}")
+        log.info(log_type, msg=f"Starting {module}")
         service_threads.append(utils.service_modules_dict[module].start(e))
-        print(f"{module} Started!")
+        log.info(log_type, msg=f"{module} Started!")
 
     for thread in service_threads:
         if thread.is_alive():
             thread.join()
-    print("Stopping Stampy...")
+    log.info(log_type, msg="Stopping Stampy...")

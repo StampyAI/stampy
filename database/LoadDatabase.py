@@ -1,5 +1,10 @@
+import os
 import json
 import utilities
+from structlog import get_logger
+
+log = get_logger()
+script_name = os.path.basename(__file__)
 
 
 def drop_tables():
@@ -32,7 +37,7 @@ def load_questions(file):
         username = question["username"]
         title = question["title"]
         text = question["text"]
-        print("Inserting question: {0}".format(url))
+        log.info(script_name, msg="Inserting question: {0}".format(url))
         db.query(
             "INSERT INTO questions VALUES (?,?,?,?,?,?,?);", (url, username, title, text, False, False, None),
         )
@@ -49,7 +54,7 @@ def load_users(file):
     for i in users:
         user = users[i]
         vote_count = user["votecount"]
-        print("Loading user vote for " + i)
+        log.info(script_name, msg="Loading user vote for " + i)
         db.query("INSERT INTO users VALUES (?,?)", (i, vote_count))
 
     db.commit()
@@ -65,7 +70,10 @@ def load_votes(file):
         user = users[i]
         votes = user["votes"]
         for vote in votes:
-            print("adding vote for user: {0} votedFor: {1} count: {2}".format(i, vote, votes[vote]))
+            log.info(
+                script_name,
+                msg="adding vote for user: {0} votedFor: {1} count: {2}".format(i, vote, votes[vote]),
+            )
 
             db.query("INSERT INTO uservotes VALUES (?,?,?)", (i, vote, votes[vote]))
 
@@ -75,4 +83,4 @@ def load_votes(file):
 util = utilities.Utilities.get_instance()
 db = util.db
 
-print(util.db.connected)
+log.info(script_name, msg=util.db.connected)

@@ -10,6 +10,7 @@ class WikiUpdate(Module):
 
     def __init__(self):
         Module.__init__(self)
+        self.class_name = "WikiUpdate"
 
         tag_this_as_regex = (
             r"(([Tt]ag|[Mm]ark) (that|this)( question| comment)?( as)?|"
@@ -25,10 +26,7 @@ class WikiUpdate(Module):
                 "re": re.compile(tag_this_as_regex + r"(n'?t| '?not) (a )?question'?"),
                 "args": ["notquestion", "Yes"],
             },
-            "For Rob": {
-                "re": re.compile(tag_this_as_regex + r" '?for ?rob'?"),
-                "args": ["forrob", "Yes"],
-            },
+            "For Rob": {"re": re.compile(tag_this_as_regex + r" '?for ?rob'?"), "args": ["forrob", "Yes"],},
             "Rejected": {
                 "re": re.compile(tag_this_as_regex + r" '?rejected'?|reject (that|this)"),
                 "args": ["reviewed", "0"],
@@ -86,10 +84,7 @@ class WikiUpdate(Module):
 
             question_user = "Unknown User"
             if reference_text:
-                match = re.match(
-                    r"YouTube user (.*?)( just)? asked (a|this) question",
-                    reference_text,
-                )
+                match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text,)
                 if not match:
                     return None
                 question_user = match.group(1)  # YouTube user (.*) asked this question
@@ -126,7 +121,6 @@ class WikiUpdate(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="mark this question as rejected",
-                expected_response=self.UNCLEAR_REQUEST_MESSAGE,
+                question="mark this question as rejected", expected_response=self.UNCLEAR_REQUEST_MESSAGE,
             )  # TODO create more meaningful test here
         ]

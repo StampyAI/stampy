@@ -21,6 +21,7 @@ class TestModule(Module):
 
     def __init__(self):
         super().__init__()
+        self.class_name = self.__str__()
         self.sent_test = []
 
     def is_at_module(self, message):
@@ -38,7 +39,7 @@ class TestModule(Module):
         question_id = 0
         for module_name, module in self.utils.modules_dict.items():
             try:
-                print("testing module %s" % str(module_name))
+                self.log.info(self.class_name, msg="testing module %s" % str(module_name))
                 for test in module.test_cases:
                     test_message = str(TEST_QUESTION_PREFIX + str(question_id) + ": ") + test["question"]
                     test.update({"question": test_message})
@@ -108,15 +109,16 @@ class TestModule(Module):
         else:
             if is_test_response(message.clean_content):
                 response_id = get_question_id(message)
-                print(message.clean_content, response_id, self.is_at_me(message))
+                self.log.info(
+                    self.class_name,
+                    clean_content=message.clean_content,
+                    response_id=response_id,
+                    is_at_me=self.is_at_me(message),
+                )
                 self.sent_test[response_id].update(
                     {"received_response": self.clean_test_prefixes(message, TEST_RESPONSE_PREFIX)}
                 )
-                return Response(
-                    confidence=8,
-                    text=test_response_message,
-                    why="this was a test",
-                )
+                return Response(confidence=8, text=test_response_message, why="this was a test",)
             elif self.utils.test_mode:
                 return Response(
                     confidence=9, text=self.TEST_MODE_RESPONSE_MESSAGE, why="Test already running"
