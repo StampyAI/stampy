@@ -22,6 +22,6 @@ import_all_modules()
 
 # USAGE:
 # with this, any file can call "import modules" and all of the modules in this folder will be imported
-# once all modules are imported, you can use "Module.__subclasses__()" to get a list of all modules.
+# once all modules are imported, you can use "modules.Module.__subclasses__()" to get a list of all modules.
 
 
