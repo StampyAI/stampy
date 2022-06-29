@@ -245,7 +245,14 @@ class DiscordHandler:
                 await module.process_raw_reaction_event(payload)
 
     def start(self, event: threading.Event) -> threading.Timer:
-        t = threading.Timer(1, self.utils.client.run, args=[discord_token])
+        try:
+            # This line is deprecated in 3.10, but doesn't work otherwise.
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        loop.create_task(self.utils.client.start(discord_token))
+        t = threading.Thread(target=loop.run_forever)
         t.name = "Discord Thread"
         t.start()
         return t
