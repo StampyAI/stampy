@@ -91,7 +91,7 @@ class SlackHandler:
                     response_module=response.module,
                     response_confidence=response.confidence,
                     response_is_callback=bool(response.callback),
-                    response_callback=response.callback.__name__,
+                    response_callback=response.callback,
                     response_args=args_string,
                     response_text=response.text,
                     response_reasons=response.why,
