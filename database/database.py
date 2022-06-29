@@ -1,5 +1,6 @@
-import sqlite3
 from structlog import get_logger
+from threading import Lock
+import sqlite3
 
 ###########################################################################
 #   SQLite Database Wrapper
@@ -13,6 +14,7 @@ class Database:
         self.connected = False
         self.conn = None
         self.cursor = None
+        self.lock = Lock()
 
         if name:
             self.open(name)
@@ -35,11 +37,17 @@ class Database:
             self.conn.close()
 
     def __enter__(self):
-        return self
+        try:
+            self.lock.acquire()
+            self.open()
+            return self
+        except sqlite3.Error:
+            self.lock.release()
+            raise
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.connected = False
         self.close()
+        self.lock.release()
 
     def get(self, table, columns, limit=None):
         query = "SELECT {0} from {1}".format(columns, table)
