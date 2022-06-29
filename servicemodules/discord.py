@@ -1,4 +1,5 @@
 import sys
+import asyncio
 import inspect
 import discord
 import threading
@@ -49,7 +50,7 @@ class DiscordHandler:
 
             log.info(class_name, msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id))
 
-            members = "\n - ".join([member.name for member in guild.members])
+            members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(class_name, guild_members=members)
             await self.utils.client.get_channel(bot_dev_channel_id).send(
                 f"I just (re)started {get_git_branch_info()}!"
@@ -109,6 +110,7 @@ class DiscordHandler:
                 responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
                 for response in responses:
                     args_string = ""
+
                     if response.callback:
                         args_string = ", ".join([a.__repr__() for a in response.args])
                         if response.kwargs:
@@ -120,7 +122,7 @@ class DiscordHandler:
                         response_module=response.module,
                         response_confidence=response.confidence,
                         response_is_callback=bool(response.callback),
-                        response_callback=response.callback.__name__,
+                        response_callback=response.callback,
                         response_args=args_string,
                         response_text=response.text,
                         response_reasons=response.why,

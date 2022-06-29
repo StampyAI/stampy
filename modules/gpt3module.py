@@ -151,7 +151,7 @@ class GPT3Module(Module):
             )
         except openai.error.AuthenticationError:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
-            return
+            return 2
 
         output_label = response["choices"][0]["text"]
 

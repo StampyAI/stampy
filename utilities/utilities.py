@@ -105,7 +105,7 @@ class Utilities:
                 else:
                     log.info(self.class_name, msg="YouTube API Key is not set")
 
-            log.info(self.class_name, msg="Trying to open db - " + self.DB_PATH)
+            log.info(self.class_name, status="Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
             intents = discord.Intents.default()
             intents.members = True
@@ -208,7 +208,6 @@ class Utilities:
             log.info(
                 self.class_name,
                 msg="YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
-                end="",
             )
             return None
 

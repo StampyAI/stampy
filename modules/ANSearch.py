@@ -97,9 +97,6 @@ class ANSearch(Module):
                             item.title = match_object["title"].decode("utf-8") or ""
                             item.url = match_object["url"].decode("utf-8") or ""
                         else:
-                            self.log.debug(self.class_name, msg="What is even happening here")
-                            self.log.debug(self.class_name, msg=etree.tostring(row[3]))
-                            self.log.debug(self.class_name, msg=etree.tostring(row))
                             continue
 
                     item.authors = (
@@ -141,9 +138,6 @@ class ANSearch(Module):
             item.score = 0
             for keyword in keywords:
                 keyword = keyword.lower()
-                self.log.debug(self.class_name, title=item.title.lower())
-                self.log.debug(self.class_name, msg=item.title.lower().count(keyword))
-                self.log.debug(self.class_name, num_titles=(len(item.title) + 1))
 
                 item.score += 1.0 * item.title.lower().count(keyword) / (len(item.title) + 1)
                 item.score += 1.0 * item.authors.lower().count(keyword) / (len(item.authors) + 1)
