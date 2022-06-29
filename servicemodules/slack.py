@@ -27,9 +27,6 @@ class SlackHandler:
             client.send_socket_mode_response(response)
 
             if req.payload["event"]["type"] == "message" and req.payload["event"].get("subtype") is None:
-                # import json
-                # with open("output.json", "w") as f:
-                #     f.write(json.dumps(req.payload))
                 self.on_message(SlackMessage(req.payload["event"]))
 
                 """
