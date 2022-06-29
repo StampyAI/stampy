@@ -17,5 +17,4 @@ jobs:
           activate-environment: stampy
           environment-file: environment.yml
           auto-activate-base: false
-      - name: Run tests with pytest
-        run: python -m unittest
+        run: python3 -m unittest
