@@ -12,6 +12,10 @@ from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from slack_sdk.web import WebClient
+from structlog import get_logger
+
+log = get_logger()
+class_name = "SlackHandler"
 
 
 class SlackHandler:
@@ -41,58 +45,62 @@ class SlackHandler:
         from_stampy = self.slackutils.stampy_is_author(message)
 
         if is_test_message(message.content) and self.utils.test_mode:
-            print("TESTING" + message.content)
+            log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
         elif from_stampy:
             for module in self.modules:
                 module.process_message_from_stampy(message)
             return
 
-        print("#######################################################")
-        print("SLACK MESSAGE")
-        print(datetime.now().isoformat(sep=" "))
+        message_is_dm = True
         if message.channel.channel_type != "im":  # If not a DM.
-            print(f"Message: id={message.id} in '{message.channel.name}' (id={message.channel.id})")
-        else:
-            print(f"DM: id={message.id}")
-        print(f"from {message.author.name} (id={message.author.id})")
-        print(f"    {message.content}")
-        print("####################################")
+            message_is_dm = False
+        log.info(
+            class_name,
+            message_id=message.id,
+            message_channel_name=message.channel.name,
+            message_author_name=message.author.name,
+            message_author_id=message.author.id,
+            message_channel_id=message.channel.id,
+            message_is_dm=message_is_dm,
+            message_content=message.content,
+        )
 
         responses = [Response()]
         for module in self.modules:
-            print(f"# Asking module: {module}")
+            log.info(class_name, msg=f"# Asking module: {module}")
             response = module.process_message(message)
             if response:
                 response.module = module
                 if response.callback:
                     response.confidence -= 0.001
                 responses.append(response)
-        print("####################################")
 
         for i in range(maximum_recursion_depth):
             responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
 
-            print("Responses:")
             for response in responses:
+                args_string = ""
                 if response.callback:
                     args_string = ", ".join([a.__repr__() for a in response.args])
                     if response.kwargs:
                         args_string += ", " + ", ".join(
                             [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
                         )
-                    print(
-                        f"  {response.confidence}: {response.module}: `{response.callback.__name__}("
-                        f"{args_string})`"
-                    )
-                else:
-                    print(f'  {response.confidence}: {response.module}: "{response.text}"')
-                    if response.why:
-                        print(f'       (because "{response.why}")')
+                log.info(
+                    class_name,
+                    response_module=response.module,
+                    response_confidence=response.confidence,
+                    response_is_callback=bool(response.callback),
+                    response_callback=response.callback.__name__,
+                    response_args=args_string,
+                    response_text=response.text,
+                    response_reasons=response.why,
+                )
 
             top_response = responses.pop(0)
 
             if top_response.callback:
-                print("top response is a callback.  Calling it")
+                log.info(class_name, msg="top response is a callback.  Calling it")
                 if inspect.iscoroutinefunction(top_response.callback):
                     new_response = asyncio.run(
                         top_response.callback(*top_response.args, **top_response.kwargs)
@@ -115,13 +123,12 @@ class SlackHandler:
                                 + ": "
                                 + top_response.text
                             )
-                    print("Replying:", top_response.text)
+                    log.info(class_name, top_response=top_response.text)
                     if isinstance(top_response.text, str):
                         asyncio.run(message.channel.send(top_response.text))
                     elif isinstance(top_response.text, Iterable):
                         for chunk in top_response.text:
                             asyncio.run(message.channel.send(chunk))
-                print("#######################################################")
                 sys.stdout.flush()
                 return
         # If we get here we've hit maximum_recursion_depth.
@@ -156,5 +163,5 @@ class SlackHandler:
         if slack_app_token != "null" and slack_bot_token != "null":
             t.start()
         else:
-            print("Skipping Slack since our token's aren't configured!")
+            log.info(class_name, msg="Skipping Slack since our token's aren't configured!")
         return t

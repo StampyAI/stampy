@@ -107,7 +107,6 @@ class SlackChannel(ServiceChannel):
 class SlackMessage(ServiceMessage):
     def __init__(self, msg):
         self._message = msg
-        author = SlackUser(msg["user"])
         server = SlackTeam(msg["team"])
         channel = SlackChannel(msg["channel"], msg["channel_type"], server)
         service = Services.SLACK
@@ -117,4 +116,4 @@ class SlackMessage(ServiceMessage):
             id = msg["ts"]  # The Timestamp honestly serves as an ID sometimes.
         else:
             id = msg["client_msg_id"]
-        super().__init__(str(id), msg["text"], author, channel, service)
+        super().__init__(str(id), msg["text"], SlackUser(msg["user"]), channel, service)

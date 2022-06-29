@@ -60,7 +60,7 @@ class DiscordHandler:
             # don't react to our own messages unless running test
             message_author_is_stampy = message.author == self.utils.client.user
             if is_test_message(message.clean_content) and self.utils.test_mode:
-                log.info(class_name, message_content=message.clean_content)
+                log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
             elif message_author_is_stampy:
                 for module in self.modules:
                     module.process_message_from_stampy(message)

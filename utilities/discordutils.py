@@ -54,4 +54,4 @@ class DiscordMessage(ServiceMessage):
 
     def _parse_discord_mentions(self, mentions: List[discord.abc.User]):
         for user in mentions:
-            self.mentions.append(DiscordUser(user.name, user.display_name, str(user.id)))
+            self.mentions.append(DiscordUser(user))

@@ -1,10 +1,7 @@
 import os
 import sys
 import threading
-import time
-from utilities import (
-    Utilities,
-)
+from utilities import Utilities
 from modules.reply import Reply
 from modules.questions import QQManager
 from modules.wolfram import Wolfram
@@ -22,7 +19,6 @@ from modules.testModule import TestModule
 from servicemodules.discord import DiscordHandler
 from servicemodules.slack import SlackHandler
 from config import (
-    discord_token,
     database_path,
     prod_local_path,
     ENVIRONMENT_TYPE,
@@ -44,8 +40,8 @@ if __name__ == "__main__":
     else:
         raise Exception(
             "Please set the ENVIRONMENT_TYPE environment variable "
-            + f"to {applicable_envirnoment_types[0]} or "
-            + f"{applicable_enviroment_types[1]}"
+            + f"to {acceptable_environment_types[0]} or "
+            + f"{acceptable_environment_types[1]}"
         )
 
     utils.modules_dict = {
