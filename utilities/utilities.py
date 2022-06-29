@@ -1,9 +1,6 @@
 import os
+import pwd
 import re
-
-# Sadly some of us run windows...
-if not os.name == "nt":
-    import pwd
 import psutil
 import discord
 from git import Repo
@@ -12,6 +9,7 @@ from database.database import Database
 from api.semanticwiki import SemanticWiki, QuestionSource
 from datetime import datetime, timezone, timedelta
 from googleapiclient.errors import HttpError
+from structlog import get_logger
 from googleapiclient.discovery import build as get_youtube_api
 from config import (
     youtube_api_version,
@@ -25,6 +23,8 @@ from config import (
     TEST_QUESTION_PREFIX,
     wiki_config,
 )
+
+log = get_logger()
 
 
 class Utilities:
@@ -66,6 +66,7 @@ class Utilities:
             raise Exception("This class is a singleton!")
         else:
             Utilities.__instance = self
+            self.class_name = self.__class__.__name__
             self.TOKEN = discord_token
             self.GUILD = discord_guild
             self.YOUTUBE_API_KEY = youtube_api_key
@@ -96,17 +97,15 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
-                    print("YouTube API Key is set but not correct")
+                    log.info(self.class_name, msg="YouTube API Key is set but not correct")
                 else:
-                    print("YouTube API Key is not set")
+                    log.info(self.class_name, msg="YouTube API Key is not set")
 
-            print("Trying to open db - " + self.DB_PATH)
+            log.info(self.class_name, status="Trying to open db - " + self.DB_PATH)
             self.db = Database(self.DB_PATH)
             intents = discord.Intents.default()
             intents.members = True
@@ -202,18 +201,18 @@ class Utilities:
         now = datetime.now(timezone.utc)
 
         if (now - self.last_check_timestamp) > self.youtube_cooldown:
-            print("Hitting YT API")
+            log.info(self.class_name, msg="Hitting YT API")
             self.last_check_timestamp = now
         else:
 
-            print(
-                "YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
-                end="",
+            log.info(
+                self.class_name,
+                msg="YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
             )
             return None
 
         if self.youtube is None:
-            print("WARNING: YouTube API Key is invalid or not set")
+            log.info(self.class_name, msg="WARNING: YouTube API Key is invalid or not set")
             self.youtube_cooldown = self.youtube_cooldown * 10
             return []
 
@@ -225,8 +224,8 @@ class Utilities:
         items = response.get("items", None)
         if not items:
             # something broke, slow way down
-            print("YT comment checking broke. I got this response:")
-            print(response)
+            log.info(self.class_name, msg="YT comment checking broke. I got this response:")
+            log.info(self.class_name, response=response)
             self.youtube_cooldown = self.youtube_cooldown * 10
             return None
 
@@ -248,7 +247,9 @@ class Utilities:
             if published_timestamp > newest_timestamp:
                 newest_timestamp = published_timestamp
 
-        print("Got %s items, most recent published at %s" % (len(items), newest_timestamp))
+        log.info(
+            self.class_name, msg="Got %s items, most recent published at %s" % (len(items), newest_timestamp)
+        )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
@@ -275,12 +276,15 @@ class Utilities:
 
             new_comments.append(comment)
 
-        print("Got %d new comments since last check" % len(new_comments))
+        log.info(self.class_name, msg="Got %d new comments since last check" % len(new_comments))
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
             self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
-            print("No new comments, increasing cooldown timer to %s" % self.youtube_cooldown)
+            log.info(
+                self.class_name,
+                msg="No new comments, increasing cooldown timer to %s" % self.youtube_cooldown,
+            )
 
         return new_comments
 
@@ -325,12 +329,7 @@ class Utilities:
                     + "{2}\n"
                     + "Is it an interesting question? Maybe we can answer it!\n"
                     + "{3}"
-                ).format(
-                    comment["username"],
-                    self.get_title(comment["url"])[1],
-                    text_quoted,
-                    comment["url"],
-                )
+                ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
         elif comment["source"] == QuestionSource.WIKI:
             report = "Wiki User {0} asked this question.\n{1}\n".format(
                 comment["username"], comment["question_title"]
@@ -340,10 +339,7 @@ class Utilities:
             report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
         else:
             report = "I am being told to post a question which I cant parse properly, i am very sorry"
-
-        print("==========================")
-        print(report)
-        print("==========================")
+        log.info(self.class_name, youtube_question_report=report)
 
         # reset the question waiting timer
         self.last_question_asked_timestamp = datetime.now(timezone.utc)
@@ -379,8 +375,7 @@ class Utilities:
 
         # maybe we got given a User or Member object that has an ID?
         uid = getattr(user, "id", None)
-        print(uid)
-        print(self.index)
+        log.info(self.class_name, function_name="index_dammit", uuid=uid, index=self.index)
         if uid:
             return self.index_dammit(uid)
 
@@ -433,10 +428,7 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(
-            comment["username"],
-            video_titles[0],
-        )
+        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
 
         return self.wiki.add_question(
             display_title,

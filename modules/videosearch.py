@@ -13,6 +13,7 @@ class VideoSearch(Module):
 
     def __init__(self):
         super().__init__()
+        self.class_name = "VideoSearch"
         self.re_search = re.compile(
             r"""((([Ww]hich|[Ww]hat) vid(eo)? (is|was) (it|that))|
 ?([Ii]n )?([Ww]hich|[Ww]hat)('?s| is| was| are| were)? ?(it|that|the|they|those)? ?vid(eo)?s? ?(where|in which|which)?|
@@ -98,7 +99,7 @@ class VideoSearch(Module):
 
     def sort_by_relevance(self, videos, search_string, reverse=False):
         keywords = self.extract_keywords(search_string)
-        print('Video Keywords:, "%s"' % keywords)
+        self.log.info(self.class_name, video_keywords=keywords)
 
         for video in videos:
             video.score = 0
@@ -111,7 +112,7 @@ class VideoSearch(Module):
 
     def search(self, query):
         result = self.sort_by_relevance(self.videos, query, reverse=True)
-        print("Search Result:", result)
+        self.log.info(self.class_name, search_result=result)
 
         best_score = result[0].score
         if best_score == 0:
@@ -119,11 +120,13 @@ class VideoSearch(Module):
 
         matches = [result[0]]
 
-        for r in result[1:10]:
-            if r.score > 0:
-                print(r)
-            if r.score > (best_score / 2.0):
-                matches.append(r)
+        for video in result[1:10]:
+            if video.score > 0:
+                self.log.info(
+                    self.class_name, search_result_title=video.title, search_result_score=video.score
+                )
+            if video.score > (best_score / 2.0):
+                matches.append(video)
         return matches
 
     def process_message(self, message):
@@ -153,10 +156,10 @@ class VideoSearch(Module):
         return reply
 
     async def process_search_request(self, query):
-        print('Video Query is:, "%s"' % query)
+        self.log.info(self.class_name, operation="process_search_request", video_query=query)
         result = self.search(query)
         if result:
-            print("Result:", result)
+            self.log.info(self.class_name, operation="process_search_request", search_resutl=result)
             return Response(
                 confidence=10,
                 text=self.list_relevant_videos(result),
@@ -178,7 +181,6 @@ class VideoSearch(Module):
                 expected_regex="Superintelligence Mod for Civilization V+",
             ),
             self.create_integration_test(
-                question="which video is trash?",
-                expected_response=self.NOT_FOUND_MESSAGE,
+                question="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
             ),
         ]

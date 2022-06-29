@@ -1,9 +1,16 @@
-from modules.module import Module, Response
 import urllib
 from config import wolfram_token
+from modules.module import Module, Response
 
 
 class Wolfram(Module):
+    def __init__(self):
+        super().__init__()
+        self.class_name = "Wolfram"
+
+    def __str__(self):
+        return "Wolfram Alpha"
+
     def process_message(self, message):
         text = self.is_at_me(message)
         if text:
@@ -24,22 +31,16 @@ class Wolfram(Module):
         else:
             return Response()
 
-    def __str__(self):
-        return "Wolfram Alpha"
-
     def ask(self, question):
         try:
-            print('asking Wolfram API: "%s"' % question)
+            self.log.info(self.class_name, wolfram_alpha_question=question)
             question_escaped = urllib.parse.quote_plus(question.strip())
-            url = "http://api.wolframalpha.com/v1/result?appid=%s&i=%s" % (
-                wolfram_token,
-                question_escaped,
-            )
+            url = "http://api.wolframalpha.com/v1/result?appid=%s&i=%s" % (wolfram_token, question_escaped,)
             answer = urllib.request.urlopen(url).read().decode("utf-8")
             if "olfram" not in answer:
                 return Response(confidence=8, text=answer, why="That's what Wolfram Alpha suggested")
         except Exception as e:
-            print("Wolfram failed with error:", str(e))
+            self.log.error(self.class_name, msg="Wolfram failed with error:", error=e)
         return Response()
 
         # @property

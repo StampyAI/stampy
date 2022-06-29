@@ -1,11 +1,10 @@
 import re
 import json
 import discord
-from modules.module import Module, Response
-from config import stampy_youtube_channel_id, youtube_testing_thread_url, comment_posting_threshold_factor
 from datetime import datetime
-
 from api.semanticwiki import QuestionSource
+from modules.module import Module, Response
+from config import stampy_youtube_channel_id, comment_posting_threshold_factor
 
 
 class Reply(Module):
@@ -16,11 +15,11 @@ class Reply(Module):
 
     def __init__(self):
         Module.__init__(self)
+        self.class_name = "Reply Module"
 
-    @staticmethod
-    def is_post_request(text):
+    def is_post_request(self, text):
         """Is this message asking us to post a reply?"""
-        print(text)
+        self.log.info(self.class_name, text=text)
         if text:
             return text.lower().endswith("post this") or text.lower().endswith("send this")
         else:
@@ -45,8 +44,7 @@ class Reply(Module):
 
         return reply_message
 
-    @staticmethod
-    def post_reply(text, question_id):
+    def post_reply(self, text, question_id):
         """Actually post the reply to YouTube. Currently this involves a horrible hack"""
 
         # first build the dictionary that will be passed to youtube.comments().insert as the 'body' arg
@@ -67,7 +65,7 @@ class Reply(Module):
         with open("database/topost.json", "w") as post_file:
             json.dump(responses_to_post, post_file, indent="\t")
 
-        print("dummy, posting %s to %s" % (text, question_id))
+        self.log.info(self.class_name, msg=("dummy, posting %s to %s" % (text, question_id)))
 
     def comment_posting_threshold(self):
         """Return the number of stamps a reply needs in order to be posted"""
@@ -78,7 +76,7 @@ class Reply(Module):
             text = self.is_at_me(message)
 
             if self.is_post_request(text):
-                print("this is a posting request")
+                self.log.info(self.class_name, msg="this is a posting request")
 
                 return Response(
                     confidence=9,
@@ -100,7 +98,7 @@ class Reply(Module):
         elif len(approvers) == 2:
             approver_string = " and ".join(approvers)
         else:
-            approver_string = ", ".join(approvers[:-1]) + ', and ' + approvers[-1]
+            approver_string = ", ".join(approvers[:-1]) + ", and " + approvers[-1]
 
         # strip off stampy's name
         text = self.is_at_me(message)
@@ -148,12 +146,16 @@ class Reply(Module):
                 question_title = self.utils.latest_question_posted["question_title"]
             else:
 
-                return "I don't remember the URL of the last question I posted here,"\
-                    " so I've probably been restarted since that happened.\n"\
+                return (
+                    "I don't remember the URL of the last question I posted here,"
+                    " so I've probably been restarted since that happened.\n"
                     "Please directly reply to the question you are trying to answer\n\n"
+                )
 
         if question_title:
             answer_title = f"""{message.author.display_name}'s Answer to {question_title}"""
+        else:
+            answer_title = f"""{message.author.display_name}'s Answer"""
 
         quoted_reply_message = "> " + reply_message.replace("\n", "\n> ")
         report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (
@@ -163,12 +165,7 @@ class Reply(Module):
         answer_time = datetime.now()
 
         self.utils.wiki.add_answer(
-            answer_title,
-            message.author.display_name,
-            approvers,
-            answer_time,
-            reply_message,
-            question_title,
+            answer_title, message.author.display_name, approvers, answer_time, reply_message, question_title,
         )
 
         if source == QuestionSource.YOUTUBE:
@@ -180,51 +177,48 @@ class Reply(Module):
     async def evaluate_message_stamps(self, message):
         """Return the total stamp value of all the stamps on this message, and a list of who approved it"""
         total = 0
-        print("Evaluating message")
+        self.log.info(self.class_name, status="Evaluating message")
 
         approvers = []
 
         reactions = message.reactions
         if reactions:
-            print(reactions)
+            self.log.info(self.class_name, reactions=reactions)
             for reaction in reactions:
                 reaction_type = getattr(reaction.emoji, "name", "")
                 if reaction_type in ["stamp", "goldstamp"]:
-                    print("STAMP")
                     users = await reaction.users().flatten()
                     for user in users:
                         approvers.append(user)
-                        print("  From", user.id, user)
                         stampvalue = self.utils.modules_dict["StampsModule"].get_user_stamps(user)
                         total += stampvalue
-                        print("  Worth", stampvalue)
+                        self.log.info(self.class_name, from_user=user, user_id=user.id, stampvalue=stampvalue)
 
         return total, approvers
 
-    @staticmethod
-    def has_been_replied_to(message):
+    def has_been_replied_to(self, message):
         reactions = message.reactions
-        print("Testing if question has already been replied to")
-        print("The message has these reactions:", reactions)
+        self.log.info(self.class_name, status="Testing if question has already been replied to")
+        self.log.info(self.class_name, message_reactions=reactions)
         if reactions:
             for reaction in reactions:
-                reacttype = getattr(reaction.emoji, "name", reaction.emoji)
-                print(reacttype)
-                if reacttype in ["📨", ":incoming_envelope:"]:
-                    print("Message has envelope emoji, it's already replied to")
+                react_type = getattr(reaction.emoji, "name", reaction.emoji)
+                self.log.info(self.class_name, reaction_type=react_type)
+                if react_type in ["📨", ":incoming_envelope:"]:
+                    self.log.info(self.class_name, msg="Message has envelope emoji, it's already replied to")
                     return True
-                elif reacttype in ["🚫", ":no_entry_sign:"]:
-                    print("Message has no entry sign, it's vetoed")
+                elif react_type in ["🚫", ":no_entry_sign:"]:
+                    self.log.info(self.class_name, msg="Message has no entry sign, it's vetoed")
                     return True
 
-        print("Message has no envelope emoji, it has not already replied to")
+        self.log.info(self.class_name, msg="Message has no envelope emoji, it has not already replied to")
         return False
 
     async def process_raw_reaction_event(self, event):
         emoji = getattr(event.emoji, "name", event.emoji)
 
         if emoji in ["stamp", "goldstamp"]:
-            print("GUILD = ", self.utils.GUILD)
+            self.log.info(self.class_name, guild=self.utils.GUILD)
             guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
             channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)

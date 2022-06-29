@@ -1,9 +1,9 @@
-from api.semanticwiki import SemanticWiki
-from utilities import utils
-from collections import Counter
-import re
+from utilities.utilities import Utilities
+from structlog import get_logger
 
-
+log = get_logger()
+utils = Utilities.get_instance()
+log_type = "get_all_wiki_pages"
 answer_query_result = utils.wiki.post(
     {
         "action": "ask",
@@ -13,22 +13,18 @@ answer_query_result = utils.wiki.post(
     }
 )
 
-print("ANSWERS:")
 for k, v in answer_query_result["query"]["results"].items():
-    print(k)
-    # print(v)
+    log.info("get_all_wiki_pages", answer_query_result_key=k)
     if not v["printouts"]["AnswerTo"] or not "fulltext" in v["printouts"]["AnswerTo"][0]:
-        print("page answerto was already broken")
+        log.info(log_type, msg="page answer to was already broken")
         continue
 
     new_question_title = v["printouts"]["AnswerTo"][0]["fulltext"].replace("=", ":")
 
     if new_question_title == v["printouts"]["AnswerTo"][0]["fulltext"]:
-        print(k, end=" was already changed\n")
+        log.info(log_type, answer_query_result_key=k, msg="key was already changed")
         continue
 
-    # print(new_question_title)
-    # print(v.keys())
     utils.wiki.post(
         {
             "action": "pfautoedit",
@@ -40,7 +36,6 @@ for k, v in answer_query_result["query"]["results"].items():
     )
 
 
-print("QUESTIONS:")
 query_result = utils.wiki.post(
     {
         "action": "ask",
@@ -57,30 +52,28 @@ l = len(query_result["query"]["results"].keys())
 
 
 for k, v in query_result["query"]["results"].items():
-    print(k)
-    # print(v)
+    log.info(log_type, question_query_result_key=k)
     i += 1
     if i % 25 == 0:
-        print("PROGRESS: [" + str(i) + "/" + str(l) + "]")
+        log.info(log_type, msg="PROGRESS: [" + str(i) + "/" + str(l) + "]")
 
     new_title = k.replace("=", ":")
 
     if new_title.replace("_", " ") in query_result["query"]["results"]:
-        print(k, end=" was already moved\n")
+        log.info(log_type, answer_query_result_key=k, msg="key was already changed")
         continue
 
-    print(
-        utils.wiki.post(
-            {
-                "action": "move",
-                "from": k,
-                "to": new_title,
-                "format": "json",
-                "noredirect": "1",
-                "token": utils.wiki._token,
-            }
-        )
+    post_result = utils.wiki.post(
+        {
+            "action": "move",
+            "from": k,
+            "to": new_title,
+            "format": "json",
+            "noredirect": "1",
+            "token": utils.wiki._token,
+        }
     )
+    log.info(log_type, wiki_post_result=post_result)
 
 
 """

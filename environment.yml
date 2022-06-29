@@ -18,4 +18,5 @@ dependencies:
       - psutil
       - python-dotenv
       - slack-sdk
+      - structlog
       - transformers

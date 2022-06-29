@@ -1,8 +1,8 @@
-from modules.module import Module, Response
-from config import rob_id
+import re
 import random
 import sqlite3
-import re
+from config import rob_id
+from modules.module import Module, Response
 
 
 def randbool(p):
@@ -22,6 +22,7 @@ def is_bot_dev(user):
 class Factoids(Module):
     def __init__(self):
         super().__init__()
+        self.class_name = "Factoids"
         dbpath = "factoids.db"
         self.db = self.FactoidDb(dbpath)
         self.who = "Someone"
@@ -78,8 +79,7 @@ class Factoids(Module):
             # con.text_factory = str
             c = con.cursor()
             c.execute(
-                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """,
-                (key, verb, value),
+                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """, (key, verb, value),
             )
             con.commit()
             c.close()
@@ -90,8 +90,7 @@ class Factoids(Module):
             # con.text_factory = str
             c = con.cursor()
             c.execute(
-                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""",
-                (key,),
+                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""", (key,),
             )
 
             vals = c.fetchall()
@@ -157,7 +156,7 @@ class Factoids(Module):
         except AttributeError:  # no channel name, it's a DM
             DM = True
             atme = True  # DMs are always addressed to you
-            print("At me because DM")
+            self.log.info(self.class_name, msg="At me because DM")
             room = message.channel.recipient.id
 
         text = message.clean_content
@@ -177,7 +176,7 @@ class Factoids(Module):
             query = m.group("query")
             query = re.sub(r"\bmy\b", f"{self.who}'s", query)
             query = re.sub(r"\bme\b", self.who, query)
-            print(query)
+            self.log.info(self.class_name, query=query)
 
             if not factoids:
                 key = query
@@ -191,18 +190,8 @@ class Factoids(Module):
             self.db.remove(*pf)
             if room == "stampy-dev":
                 result = "debug: %s\n" % str(pf)
-            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
-                self.who,
-                pf[0],
-                pf[3],
-                pf[1],
-            )
-            why = """%s told me to forget that "%s" %s "%s"\n""" % (
-                self.who,
-                pf[0],
-                pf[3],
-                pf[1],
-            )
+            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
+            why = """%s told me to forget that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
             return Response(confidence=10, text=result, why=why)
 
         # if the text is a valid factoid, maybe reply
@@ -216,11 +205,7 @@ class Factoids(Module):
             else:
                 result = "%s %s %s" % (re.sub(f"{self.who}'s", "your", key), verb, value)
 
-            why = '%s said the factoid "%s" so I said "%s"' % (
-                self.who,
-                key,
-                rawvalue,
-            )
+            why = '%s said the factoid "%s" so I said "%s"' % (self.who, key, rawvalue,)
             self.prevFactoid[room] = (key, rawvalue, by, verb)  # key, value, verb
             if atme:
                 return Response(confidence=9, text=result, why=why)
@@ -265,19 +250,14 @@ class Factoids(Module):
                         if verb == "am":
                             verb = "is"
 
-                    result = """Ok %s, remembering that "%s" %s "%s" """ % (
-                        self.who,
-                        key,
-                        verb,
-                        value,
+                    result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
+                    why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
+                    self.log.info(
+                        self.class_name,
+                        msg="adding factoid %s : %s" % (key, value),
+                        author=message.author.id,
+                        verb=verb,
                     )
-                    why = "%s told me to remember that '%s' %s '%s'" % (
-                        self.who,
-                        key,
-                        verb,
-                        value,
-                    )
-                    print("adding factoid %s %s %s %s" % (key, value, message.author.id, verb))
                     self.db.add(key, value, message.author.id, verb)
                     self.prevFactoid[room] = (key, value, message.author.id, verb)
                     return Response(confidence=10, text=result, why=why)
@@ -294,10 +274,7 @@ class Factoids(Module):
                     result += "\n<%s> '%s' by %s" % value
                 if len(values) > count:
                     result += "\n and %s more" % (len(values) - count)
-                why = "%s asked me to list the values for the factoid '%s'" % (
-                    self.who,
-                    fact,
-                )
+                why = "%s asked me to list the values for the factoid '%s'" % (self.who, fact,)
                 return Response(confidence=10, text=result, why=why)
 
         # This is either not at me, or not something we can handle
@@ -313,10 +290,7 @@ class Factoids(Module):
                 question="remember chriscanal is the person who wrote this test",
                 expected_response='Ok stampy, remembering that "chriscanal" is "the person who wrote this test"',
             ),
-            self.create_integration_test(
-                question="list chriscanal",
-                expected_regex="values for factoid+",
-            ),
+            self.create_integration_test(question="list chriscanal", expected_regex="values for factoid+",),
             self.create_integration_test(
                 question="forget that",
                 expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',

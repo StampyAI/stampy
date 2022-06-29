@@ -1,12 +1,13 @@
 import re
 import discord
-from modules.module import Module, Response
 from config import rob_id
+from modules.module import Module, Response
 
 
 class InviteManager(Module):
     def __init__(self):
         Module.__init__(self)
+        self.class_name = "InviteManager"
         self.re_request = re.compile(
             r"([pP]lease )?(([cC]an|[cC]ould) you )?(([Cc]reate|[mM]ake|[gG]ive|[gG]enerate) (me )?|"
             "([Cc]an|[mM]ay) [iI] (get|have) )((an|a new|my|\d+) )?[Ii]nvites?( link)?s?,?( please| pls)?"
@@ -63,10 +64,7 @@ class InviteManager(Module):
             return_string = "Here are your invites:"
             for _ in range(count):
                 invite = await welcome.create_invite(
-                    max_uses=1,
-                    temporary=False,
-                    unique=True,
-                    reason="Requested by %s" % message.author.name,
+                    max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
                 )
                 return_string += "\n<%s>" % invite.url
             return Response(
@@ -77,12 +75,9 @@ class InviteManager(Module):
 
         # if we're here, only one invite was requested
         invite = await welcome.create_invite(
-            max_uses=1,
-            temporary=False,
-            unique=True,
-            reason="Requested by %s" % message.author.name,
+            max_uses=1, temporary=False, unique=True, reason="Requested by %s" % message.author.name,
         )
-        print("Generated invite for", member.name, invite)
+        self.log.info(self.class_name, msg="Generated invite", member=member.name, invite=invite)
 
         # remove the invite role so they only get one
         await member.remove_roles(invite_role)

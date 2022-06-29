@@ -6,8 +6,10 @@ import csv
 import sqlite3
 import re
 from config import discord_token, ENVIRONMENT_TYPE
+from structlog import get_logger
 
-
+log = get_logger()
+log_type = "load_wiki"
 ###########################################################################
 #  This is a temporary helper file to load the questions from SQL lite into the wiki
 #  It also can scrape the Discord to get replies to questions, and add those as well.
@@ -86,7 +88,7 @@ if ENVIRONMENT_TYPE == "development":
 async def on_ready():
     guild = discord.utils.find(lambda g: g.name == utils.GUILD, client.guilds)
     # TODO: Make sure this goes to General in production
-    print(utils.GUILD)
+    log.info(log_type, guild=utils.GUILD)
     general = discord.utils.find(lambda c: c.name == channel_name, guild.channels)
     async for message in general.history(limit=max_history):
         if message.author.name == client.user.name.lower():
@@ -125,9 +127,9 @@ async def on_ready():
                         reply_count=comment["reply_count"],
                     )
                 else:
-                    print("Question " + question_title + " was already in the wiki")
+                    log.info(log_type, msg="Question " + question_title + " was already in the wiki")
 
-    print("Done with on_ready()")
+    log.info(log_type, msg="Done with on_ready()")
 
     #
 
@@ -165,8 +167,6 @@ def extract_question(text):
     question_message = ""
     question_user = ""
     for line in lines:
-        # pull out the quote syntax "> " and a user if there is one
-        # print(line)
         # TODO: Is this right? The reply module one didn't work, should likely fix?
         match = re.match(r".*> (.*)", line)
         if match:
@@ -185,8 +185,6 @@ def extract_reply(text):
     url = ""
     users = ""
     for line in lines:
-        # pull out the quote syntax "> " and a user if there is one
-        # print(line)
         # TODO: Is this right? The reply module one didn't work, should likely fix?
         match = re.match(r".*> (.*)", line)
         if match:

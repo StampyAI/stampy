@@ -1,9 +1,12 @@
-from modules.module import Module, Response
-import urllib
 import re
 import json
+import urllib
+from modules.module import Module, Response
+
 
 class DuckDuckGo(Module):
+    IRRELEVANT_WORDS = ["film", "movie", "tv", "song", "album", "band"]
+
     def process_message(self, message):
         text = self.is_at_me(message)
         if text:
@@ -29,11 +32,10 @@ class DuckDuckGo(Module):
 
     def get_confidence(self, text, max_confidence):
         """How confident should I be with this response string?"""
-        
-        # Some types of things we don't really care about
-        IRRELEVANT_WORDS = ["film", "movie", "tv", "song", "album", "band"]
 
-        if any(word in text for word in IRRELEVANT_WORDS):
+        # Some types of things we don't really care about
+
+        if any(word in text for word in self.IRRELEVANT_WORDS):
             return 1
         else:
             return max_confidence
@@ -50,15 +52,15 @@ class DuckDuckGo(Module):
             data = urllib.request.urlopen(url).read()
             j = json.loads(data)
 
-            print('asking DuckDuckGo: "%s"' % q)
-            print(url)
-            # print(json.dumps(j, sort_keys=True, indent=2))
+            self.log.info("DuckDuckGo", query=q, url=url)
+            self.log.debug("DuckDuckGo", data=json.dumps(j, sort_keys=True, indent=2))
+
             if j["Abstract"]:
                 answer = j["Abstract"]
                 return Response(
                     confidence=self.get_confidence(answer, 7),
                     text=answer,
-                    why="That's what DuckDuckGo suggested"
+                    why="That's what DuckDuckGo suggested",
                 )
             elif j["Type"] == "D":
                 answer = j["RelatedTopics"][0]["Text"]
@@ -66,22 +68,13 @@ class DuckDuckGo(Module):
                 # If the response cuts off with ... then throw out the last sentence
                 if answer.endswith("...") and (". " in answer):
                     answer = ". ".join(answer.split(". ")[:-1])
-                
+
                 return Response(
                     confidence=self.get_confidence(answer, 6),
                     text=answer,
                     why="That's what DuckDuckGo suggested",
                 )
         except Exception as e:
-            print("DuckDuckGo failed with error:", str(e))
+            self.log.error("DuckDuckGo", error=e)
 
         return Response()
-
-        # @property
-        # def test_cases(self):
-        #     return [
-        #         self.create_integration_test(
-        #             question="If I asked you what 2+2 was and you answered incorrectly what would you have said?",
-        #             expected_response=CONFUSED_RESPONSE,
-        #         )
-        #     ]
