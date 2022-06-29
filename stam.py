@@ -3,11 +3,11 @@ import sys
 import threading
 from utilities import Utilities
 from modules.reply import Reply
-from modules.questions import QQManager
+from modules.questions import QuestionQueManager
 from modules.wolfram import Wolfram
 from modules.duckduckgo import DuckDuckGo
 from modules.videosearch import VideoSearch
-from modules.ANSearch import ANSearch
+from modules.AlignmentNewsletterSearch import AlignmentNewsletterSearch
 from modules.invitemanager import InviteManager
 from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
@@ -51,9 +51,9 @@ if __name__ == "__main__":
     utils.modules_dict = {
         "StampyControls": StampyControls(),
         "StampsModule": StampsModule(),
-        "QQManager": QQManager(),
+        "QQManager": QuestionQueManager(),
         "VideoSearch": VideoSearch(),
-        "ANSearch": ANSearch(),
+        "ANSearch": AlignmentNewsletterSearch(),
         "Wolfram": Wolfram(),
         "DuckDuckGo": DuckDuckGo(),
         "Reply": Reply(),

@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
 from typing import Callable, Iterable, Optional, Union
 
+log = get_logger()
+
 
 @dataclass
 class Response:

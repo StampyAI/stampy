@@ -22,7 +22,7 @@ def is_bot_dev(user):
 class Factoids(Module):
     def __init__(self):
         super().__init__()
-        self.class_name = "Factoids"
+        self.class_name = self.__class__.__name__
         dbpath = "factoids.db"
         self.db = self.FactoidDb(dbpath)
         self.who = "Someone"
