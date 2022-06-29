@@ -23,8 +23,7 @@ from config import (
 )
 
 
-class DiscordHandler():
-
+class DiscordHandler:
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.modules = self.utils.modules_dict.values()
@@ -32,6 +31,7 @@ class DiscordHandler():
         All Discord Functions need to be under another function in order to
         use self.
         """
+
         @self.utils.client.event
         async def on_ready() -> None:
             print(f"{self.utils.client.user} has connected to Discord!")
@@ -45,7 +45,9 @@ class DiscordHandler():
 
             members = "\n - ".join([member.name for member in guild.members])
             print(f"Guild Members:\n - {members}")
-            await self.utils.client.get_channel(bot_dev_channel_id).send(f"I just (re)started {get_git_branch_info()}!")
+            await self.utils.client.get_channel(bot_dev_channel_id).send(
+                f"I just (re)started {get_git_branch_info()}!"
+            )
 
         @self.utils.client.event
         async def on_message(message: discord.message.Message) -> None:
@@ -132,7 +134,10 @@ class DiscordHandler():
                                 return  # must return after process message is called so that response can be evaluated
                             if is_test_question(message.clean_content):
                                 top_response.text = (
-                                    TEST_RESPONSE_PREFIX + str(get_question_id(message)) + ": " + top_response.text
+                                    TEST_RESPONSE_PREFIX
+                                    + str(get_question_id(message))
+                                    + ": "
+                                    + top_response.text
                                 )
                         print("Replying:", top_response.text)
                         # TODO: check to see if module is allowed to embed via a config?
@@ -199,16 +204,22 @@ class DiscordHandler():
                         self.utils.last_question_asked_timestamp = now
                         # this actually gets the question and sets it to asked, then sends the report
                         report = self.utils.get_question(order_type="LATEST")
-                        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
+                        guild = discord.utils.find(
+                            lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
+                        )
                         general = discord.utils.find(lambda c: c.name == "general", guild.channels)
                         await general.send(report)
                         self.utils.last_message_was_youtube_question = True
                     else:
                         # wait the full time again
                         self.utils.last_question_asked_timestamp = now
-                        print("Not asking question: previous post in the channel was a question stampy asked.")
+                        print(
+                            "Not asking question: previous post in the channel was a question stampy asked."
+                        )
                 else:
-                    remaining_cooldown = str(question_ask_cooldown - (now - self.utils.last_question_asked_timestamp))
+                    remaining_cooldown = str(
+                        question_ask_cooldown - (now - self.utils.last_question_asked_timestamp)
+                    )
                     print("%s Questions in queue, waiting %s to post" % (question_count, remaining_cooldown))
                     return
 

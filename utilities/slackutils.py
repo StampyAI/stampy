@@ -1,11 +1,5 @@
 from functools import cache
-from utilities.serviceutils import (
-    ServiceUser,
-    ServiceServer,
-    ServiceChannel,
-    ServiceMessage,
-    Services
-)
+from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage, Services
 from typing import Any
 
 
@@ -35,12 +29,10 @@ utils = SlackUtilities.get_instance()
 # Making Lookup API calls
 # Making them a cache as most slack API calls are limited to 20 per minute
 
+
 @cache
 def lookup_user(id: str) -> tuple[str, str, bool]:
-    user = utils.client.web_client.api_call(
-        api_method="users.info",
-        params={"user": id}
-    )
+    user = utils.client.web_client.api_call(api_method="users.info", params={"user": id})
     if user["ok"]:
         username = user["user"]["name"]
         display_name = user["user"]["profile"]["display_name_normalized"]
@@ -55,10 +47,7 @@ def lookup_user(id: str) -> tuple[str, str, bool]:
 
 @cache
 def lookup_team(id: str) -> str:
-    team = utils.client.web_client.api_call(
-        api_method="team.info",
-        params={"team": id}
-    )
+    team = utils.client.web_client.api_call(api_method="team.info", params={"team": id})
     if team["ok"]:
         name = team["team"]["name"]
     else:
@@ -72,22 +61,18 @@ def lookup_team(id: str) -> str:
 @cache
 def lookup_channels(server_id: str) -> dict[str, Any]:
     channels = utils.client.web_client.api_call(
-        api_method="conversations.list",
-        params={"team_id": server_id}
+        api_method="conversations.list", params={"team_id": server_id}
     )
     return channels
 
 
 @cache
 def lookup_channel(id: str) -> str:
-    channel = utils.client.web_client.api_call(
-        api_method="conversations.info",
-        params={"channel": id}
-    )
+    channel = utils.client.web_client.api_call(api_method="conversations.info", params={"channel": id})
     if not channel["ok"]:
         return "Unknown Channel"
     if channel["is_im"]:
-        user = lookup_user(channel['user'])[0]
+        user = lookup_user(channel["user"])[0]
         return f"DM with {user} (ID: {channel['user']})"
     elif "name" not in channel["channel"]:
         return "Unknown Channel"
@@ -95,7 +80,6 @@ def lookup_channel(id: str) -> str:
 
 
 class SlackUser(ServiceUser):
-
     def __init__(self, id: str):
         name, display_name, is_bot = lookup_user(id)
         super().__init__(name, display_name, id)
@@ -103,14 +87,12 @@ class SlackUser(ServiceUser):
 
 
 class SlackTeam(ServiceServer):
-
     def __init__(self, server_id: str):
         name = lookup_team(server_id)
         super().__init__(name, server_id)
 
 
 class SlackChannel(ServiceChannel):
-
     def __init__(self, channel_id: str, channel_type: str, server: SlackTeam):
         name = lookup_channel(channel_id)
         super().__init__(name, channel_id, server)
@@ -118,13 +100,11 @@ class SlackChannel(ServiceChannel):
 
     async def send(self, data: str):
         utils.client.web_client.api_call(
-            api_method="chat.postMessage",
-            params={"channel": self.id, "text": data}
+            api_method="chat.postMessage", params={"channel": self.id, "text": data}
         )
 
 
 class SlackMessage(ServiceMessage):
-
     def __init__(self, msg):
         self._message = msg
         author = SlackUser(msg["user"])
@@ -137,5 +117,4 @@ class SlackMessage(ServiceMessage):
             id = msg["ts"]  # The Timestamp honestly serves as an ID sometimes.
         else:
             id = msg["client_msg_id"]
-        super().__init__(str(id),
-                         msg["text"], author, channel, service)
+        super().__init__(str(id), msg["text"], author, channel, service)

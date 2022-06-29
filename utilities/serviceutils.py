@@ -9,8 +9,7 @@ class Services(Enum):
     SLACK = "slack"
 
 
-class ServiceRoles():
-
+class ServiceRoles:
     def __init__(self, name: str, id: str):
         self.name = name
         self.id = id
@@ -44,8 +43,9 @@ class ServiceChannel:
 
 
 class ServiceMessage:
-    def __init__(self, id: str, content: str, author: ServiceUser,
-                 channel: ServiceChannel, service: Services):
+    def __init__(
+        self, id: str, content: str, author: ServiceUser, channel: ServiceChannel, service: Services
+    ):
         self.content = content
         self.author = author
         self.channel = channel
