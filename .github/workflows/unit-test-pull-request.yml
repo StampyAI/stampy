@@ -17,4 +17,8 @@ jobs:
           activate-environment: stampy
           environment-file: environment.yml
           auto-activate-base: false
-        run: python3 -m unittest
+      - name: Run tests with pytest
+        run: |
+        conda info
+        conda list
+        python3 -m unittest
