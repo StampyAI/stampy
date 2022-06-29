@@ -92,7 +92,7 @@ class Module(object):
 
     def __init__(self):
         self.utils = Utilities.get_instance()
-        self.class_name = "Base Module"
+        self.class_name = "BaseModule"
         self.log = get_logger()
 
     """Informal Interface specification for modules

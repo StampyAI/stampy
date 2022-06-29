@@ -1,9 +1,16 @@
-from modules.module import Module, Response
 import urllib
 from config import wolfram_token
+from modules.module import Module, Response
 
 
 class Wolfram(Module):
+    def __init__(self):
+        super().__init__()
+        self.class_name = "Wolfram"
+
+    def __str__(self):
+        return "Wolfram Alpha"
+
     def process_message(self, message):
         text = self.is_at_me(message)
         if text:
@@ -23,13 +30,6 @@ class Wolfram(Module):
                 )
         else:
             return Response()
-
-    def __str__(self):
-        return "Wolfram Alpha"
-
-    @property
-    def class_name(self):
-        return "Wolfram"
 
     def ask(self, question):
         try:

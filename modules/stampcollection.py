@@ -16,7 +16,7 @@ class StampsModule(Module):
 
     def __init__(self):
         Module.__init__(self)
-        self.class_name = StampsModule.__str__()
+        self.class_name = "StampsModule"
         self.red_stamp_value = 1
         self.gold_stamp_value = self.red_stamp_value * 5
         self.user_karma = 1.0
