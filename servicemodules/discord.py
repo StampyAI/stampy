@@ -1,6 +1,8 @@
+import asyncio
 import sys
 import inspect
 import discord
+import threading
 import unicodedata
 from utilities import (
     Utilities,
@@ -63,6 +65,7 @@ class DiscordHandler:
             # message = DiscordMessage(message)
 
             print("########################################################")
+            print("DISCORD MESSAGE")
             print(datetime.now().isoformat(sep=" "))
             if hasattr(message.channel, "name"):
                 print(f"Message: id={message.id} in '{message.channel.name}' (id={message.channel.id})")
@@ -152,7 +155,7 @@ class DiscordHandler:
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
-            message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
+            await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
 
         @self.utils.client.event
         async def on_socket_raw_receive(_) -> None:
@@ -163,6 +166,9 @@ class DiscordHandler:
             for things the bot needs to do regularly. Yes this is hacky.
             Rate limit these things, because this function might be firing a lot
             """
+            # die if needed
+            if self.utils.stop.is_set():
+                exit()
 
             # keep the log file fresh
             sys.stdout.flush()
@@ -238,5 +244,8 @@ class DiscordHandler:
             for module in self.modules:
                 await module.process_raw_reaction_event(payload)
 
-    def start(self):
-        self.utils.client.run(discord_token)
+    def start(self, event: threading.Event) -> threading.Timer:
+        t = threading.Timer(1, self.utils.client.run, args=[discord_token])
+        t.name = "Discord Thread"
+        t.start()
+        return t

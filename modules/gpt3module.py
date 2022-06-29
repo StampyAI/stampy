@@ -4,10 +4,14 @@ from config import CONFUSED_RESPONSE
 from config import openai_api_key, rob_id
 from transformers import GPT2TokenizerFast
 from modules.module import Module, Response
+from utilities.serviceutils import Services
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
 restart_sequence = "\n\nQ: "
+
+default_italics_mark = "*"
+slack_italics_mark = "_"
 
 
 class GPT3Module(Module):
@@ -250,7 +254,16 @@ class GPT3Module(Module):
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
                 text = choice["text"].strip(". \n").split("\n")[0]
                 self.log.info(self.class_name, gpt_response=text)
-                return Response(confidence=10, text=f"*{text}*", why="GPT-3 made me say it!",)
+                # Once we migrate to the Message superclass for discord we can
+                # delete this check.
+                if hasattr(message, "service"):
+                    if message.service == Services.SLACK:
+                        im = slack_italics_mark
+                    else:
+                        im = default_italics_mark
+                else:
+                    im = default_italics_mark
+                return Response(confidence=10, text=f"{im}{text}{im}", why="GPT-3 made me say it!",)
 
         return Response()
 

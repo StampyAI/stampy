@@ -32,6 +32,7 @@ class Utilities:
     db = None
     discord = None
     client = None
+    stop = None
 
     TOKEN = None
     GUILD = None

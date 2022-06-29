@@ -6,16 +6,17 @@ from enum import Enum
 class Services(Enum):
     DISCORD = "discord"
     CLI = "cli"
+    SLACK = "slack"
 
 
 class ServiceRoles:
-    def __init__(self, name: str, id: int):
+    def __init__(self, name: str, id: str):
         self.name = name
         self.id = id
 
 
 class ServiceUser:
-    def __init__(self, name: str, display_name: str, id: int):
+    def __init__(self, name: str, display_name: str, id: str):
         self.name = name
         self.id = id
         self.display_name = display_name
@@ -23,13 +24,13 @@ class ServiceUser:
 
 
 class ServiceServer:
-    def __init__(self, name: str, id: int):
+    def __init__(self, name: str, id: str):
         self.name = name
         self.id = id
 
 
 class ServiceChannel:
-    def __init__(self, name: str, id: int, server: Optional[ServiceServer]):
+    def __init__(self, name: str, id: str, server: Optional[ServiceServer]):
         self.id = id
         self.name = name
         self.server = server
@@ -37,10 +38,13 @@ class ServiceChannel:
     def __repr__(self):
         return f"ServiceChannel({self.id})"
 
+    async def send(self, content):
+        raise NotImplementedError()
+
 
 class ServiceMessage:
     def __init__(
-        self, id: int, content: str, author: ServiceUser, channel: ServiceChannel, service: Services
+        self, id: str, content: str, author: ServiceUser, channel: ServiceChannel, service: Services
     ):
         self.content = content
         self.author = author
