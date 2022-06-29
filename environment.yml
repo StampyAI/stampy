@@ -17,4 +17,5 @@ dependencies:
       - openai
       - psutil
       - python-dotenv
+      - slack-sdk
       - transformers

@@ -74,6 +74,9 @@ database_path = getenv("DATABASE_PATH")
 wiki_password = getenv("WIKI_BOT_PASSWORD")
 openai_api_key = getenv("OPENAI_API_KEY", default="null")
 wolfram_token = getenv("WOLFRAM_TOKEN", default="null")
+# These defaults are just to not break production until slack is set up.
+slack_app_token = getenv("SLACK_APP_TOKEN", default="null")
+slack_bot_token = getenv("SLACK_BOT_TOKEN", default="null")
 
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 
