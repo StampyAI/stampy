@@ -6,7 +6,7 @@ import discord
 class DiscordUser(ServiceUser):
     
     def __init__(self, user: discord.abc.User):
-        super().__init__(user.name, user.display_name, user.id)
+        super().__init__(user.name, user.display_name, str(user.id))
         self._user = user
         self.parse_discord_roles(user.roles)
         self.discriminator = user.discriminator
@@ -15,7 +15,7 @@ class DiscordUser(ServiceUser):
 
     def parse_discord_roles(self, roles: List[discord.Role]) -> None:
         for role in roles:
-            self.roles.append(ServiceRoles(role.name, role.id))
+            self.roles.append(ServiceRoles(role.name, str(role.id)))
 
 
 class DiscordChannel(ServiceChannel):
@@ -27,7 +27,7 @@ class DiscordChannel(ServiceChannel):
             name = channel.name
         else:
             name = None
-        super().__init__(name, channel.id, server)
+        super().__init__(name, str(channel.id), server)
 
         # Bring over functions
         self.send = channel.send
@@ -46,13 +46,13 @@ class DiscordMessage(ServiceMessage):
         self._message = msg
         author = DiscordUser(msg.author)
         if msg.guild:
-            guild = ServiceServer(msg.guild.name, msg.guild.id)
+            guild = ServiceServer(msg.guild.name, str(msg.guild.id))
         else:
             guild = None
         channel = DiscordChannel(msg.channel, guild)
         service = Services.DISCORD
 
-        super().__init__(msg.id, msg.content, author, channel, service)
+        super().__init__(str(msg.id), msg.content, author, channel, service)
         self.clean_content = msg.clean_content
         self._parse_discord_mentions(msg.mentions)
         self.reference = msg.reference
@@ -60,4 +60,4 @@ class DiscordMessage(ServiceMessage):
     def _parse_discord_mentions(self, mentions: List[discord.abc.User]):
         for user in mentions:
             self.mentions.append(DiscordUser(user.name, user.display_name,
-                                             user.id))
+                                             str(user.id)))
