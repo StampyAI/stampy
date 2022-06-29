@@ -19,6 +19,6 @@ jobs:
           auto-activate-base: false
       - name: Run tests with pytest
         run: |
-        conda info
-        conda list
-        python3 -m unittest
+          conda info
+          conda list
+          python3 -m unittest
