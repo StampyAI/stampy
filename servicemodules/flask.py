@@ -43,12 +43,16 @@ class FlaskHandler(threading.Thread):
 
         Keys are currently defined in utilities.flaskutils
         """
-        content = (
-            request.form.get("content") + " s"
-        )  # This plus s should make it always trigger the is_at_me functions.
-        key = request.form.get("key")
-        modules = json.loads(request.form.get("modules", json.dumps(list(self.modules.keys()))))
-        message = {"content": content, "key": key, "modules": modules}
+        if request.is_json:
+            message = request.get_json()
+            message["content"] += " s"  # This plus s should make it always trigger the is_at_me functions.
+        else:
+            content = (
+                request.form.get("content") + " s"
+            )  # This plus s should make it always trigger the is_at_me functions.
+            key = request.form.get("key")
+            modules = json.loads(request.form.get("modules", json.dumps(list(self.modules.keys()))))
+            message = {"content": content, "key": key, "modules": modules}
         response = self.on_message(FlaskMessage(message))
         log.debug(class_name, response=response, type=type(response))
         return response
