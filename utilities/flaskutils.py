@@ -38,3 +38,4 @@ class FlaskMessage(ServiceMessage):
         server = FlaskServer(msg["key"])
         id = str(time.time())
         super().__init__(id, msg["content"], FlaskUser(), FlaskChannel(server), server)
+        self.modules = msg["modules"]
