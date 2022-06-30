@@ -18,6 +18,7 @@ from modules.wikiUtilities import WikiUtilities
 from modules.testModule import TestModule
 from servicemodules.discord import DiscordHandler
 from servicemodules.slack import SlackHandler
+from servicemodules.flask import FlaskHandler
 from structlog import get_logger
 from config import (
     database_path,
@@ -65,7 +66,11 @@ if __name__ == "__main__":
         "WikiUtilities": WikiUtilities(),
         "TestModule": TestModule(),
     }
-    utils.service_modules_dict = {"Discord": DiscordHandler(), "Slack": SlackHandler()}
+    utils.service_modules_dict = {
+        "Discord": DiscordHandler(),
+        "Slack": SlackHandler(),
+        "Flask": FlaskHandler(),
+    }
 
     service_threads = []
     e = threading.Event()
@@ -76,6 +81,6 @@ if __name__ == "__main__":
         log.info(log_type, msg=f"{module} Started!")
 
     for thread in service_threads:
-        if thread.is_alive():
+        if thread.is_alive() and not thread.isDaemon():
             thread.join()
     log.info(log_type, msg="Stopping Stampy...")

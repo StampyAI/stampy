@@ -5,7 +5,7 @@ from enum import Enum
 
 class Services(Enum):
     DISCORD = "discord"
-    CLI = "cli"
+    FLASK = "flask"
     SLACK = "slack"
 
 
