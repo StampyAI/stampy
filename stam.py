@@ -3,6 +3,7 @@ import sys
 import threading
 from servicemodules.discord import DiscordHandler
 from servicemodules.slack import SlackHandler
+from servicemodules.flask import FlaskHandler
 from utilities import Utilities
 from structlog import get_logger
 from modules.module import Module
@@ -54,7 +55,11 @@ if __name__ == "__main__":
 
     utils.modules_dict = get_stampy_modules()
 
-    utils.service_modules_dict = {"Discord": DiscordHandler(), "Slack": SlackHandler()}
+    utils.service_modules_dict = {
+        "Discord": DiscordHandler(),
+        "Slack": SlackHandler(),
+        "Flask": FlaskHandler(),
+    }
 
     service_threads = []
     e = threading.Event()
@@ -65,6 +70,6 @@ if __name__ == "__main__":
         log.info(log_type, msg=f"{module} Started!")
 
     for thread in service_threads:
-        if thread.is_alive():
+        if thread.is_alive() and not thread.isDaemon():
             thread.join()
     log.info(log_type, msg="Stopping Stampy...")

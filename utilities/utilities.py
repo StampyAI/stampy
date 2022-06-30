@@ -4,6 +4,7 @@ import os
 if not os.name == "nt":
     import pwd
 import re
+import random
 import psutil
 import discord
 from git import Repo
@@ -77,6 +78,7 @@ class Utilities:
             self.youtube = None
             self.start_time = time()
             self.test_mode = False
+            self.people = set("stampy")
 
             # dict to keep last timestamps in
             self.last_timestamp = {}
@@ -543,3 +545,10 @@ def is_test_question(text):
 
 def is_test_message(text):
     return is_test_response(text) or is_test_question(text)
+
+
+def randbool(p):
+    if random.random() < p:
+        return True
+    else:
+        return False

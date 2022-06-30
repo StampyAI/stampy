@@ -1,6 +1,7 @@
 import re
 from asyncio import sleep
 from utilities import get_question_id, is_test_response
+from utilities.serviceutils import Services
 from modules.module import Module, Response
 from jellyfish import jaro_winkler_similarity
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
@@ -15,6 +16,7 @@ class TestModule(Module):
     TEST_MODE_RESPONSE_MESSAGE = (
         "I am running my integration test right now and I cannot handle your request until I am finished"
     )
+    SUPPORTED_SERVICES = [Services.DISCORD, Services.SLACK]
 
     def __str__(self):
         return "TestModule"
@@ -25,6 +27,9 @@ class TestModule(Module):
         self.sent_test = []
 
     def is_at_module(self, message):
+        if hasattr(message, "service"):
+            if message.service not in self.SUPPORTED_SERVICES:
+                return False
         return any([(phrase in message.clean_content) for phrase in self.TEST_PHRASES])
 
     @staticmethod
