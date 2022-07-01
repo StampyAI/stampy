@@ -40,8 +40,8 @@ def kill_thread(event: threading.Event, thread: threading.Thread):
 
 
 class FlaskUser(ServiceUser):
-    def __init__(self):
-        id = str(time.time())
+    def __init__(self, key: str):
+        id = str(key)
         super().__init__("User", "User", id)
 
 
@@ -63,5 +63,5 @@ class FlaskMessage(ServiceMessage):
         server = FlaskServer(msg["key"])
         id = str(time.time())
         service = Services.FLASK
-        super().__init__(id, msg["content"], FlaskUser(), FlaskChannel(server), service)
+        super().__init__(id, msg["content"], FlaskUser(msg["key"]), FlaskChannel(server), service)
         self.modules = msg["modules"]
