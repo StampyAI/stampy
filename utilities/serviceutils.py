@@ -124,6 +124,7 @@ class ServiceMessage:
         self.id = id
         self.mentions: list[ServiceUser] = []
         self.reference: Optional[ServiceMessage] = None
+        self.is_dm = False
 
     def __repr__(self):
         return f"ServiceMessage({self.content})"

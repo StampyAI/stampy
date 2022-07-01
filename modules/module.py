@@ -211,8 +211,7 @@ class Module(object):
             text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
             at_me = True
 
-        # TODO: Add Other Service Support
-        if type(message.channel) == discord.DMChannel:
+        if message.is_dm:
             # DMs are always at you
             at_me = True
 

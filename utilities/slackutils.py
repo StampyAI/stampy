@@ -135,6 +135,8 @@ class SlackMessage(ServiceMessage):
         self._parse_mentions()
         self.clean_content = self.clean_content.replace("<!here>", "@here")
         self.clean_content = self.clean_content.replace("<!channel>", "@channel")
+        if channel.id[0] == "D":
+            self.is_dm == True
 
     def _parse_mentions(self):
         for block in self._message["blocks"]:

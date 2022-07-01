@@ -60,6 +60,8 @@ class DiscordMessage(ServiceMessage):
         self.clean_content = msg.clean_content.replace("\u200b", "")
         self._parse_discord_mentions(msg.mentions)
         self.reference = msg.reference
+        if guild is None:
+            self.is_dm = True
 
     def _parse_discord_mentions(self, mentions: list[discord.abc.User]):
         for user in mentions:
