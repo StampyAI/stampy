@@ -3,7 +3,7 @@ from api.semanticwiki import SemanticWiki
 from modules.module import Module, Response
 
 
-class QuestionQueManager(Module):
+class QuestionQueueManager(Module):
     """Module to manage commands about the question queue"""
 
     EMPTY_QUEUE_MESSAGE = "There are no questions in the queue"
