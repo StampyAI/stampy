@@ -110,7 +110,7 @@ class StampsModule(Module):
             if user_id and user:  # don't bother for id 0 or if the user is None
                 csv_lines.append(f"""{user_id},"{user.name}",{user.discriminator},{score}\n""")
         if not csv_lines:
-            self.log.info(self.class_name, csv_error="No valid users to export to CSV?")
+            self.log.error(self.class_name, csv_error="No valid users to export to CSV?")
             return
         try:
             with open(stamp_scores_csv_file_path, "w") as csv_file:

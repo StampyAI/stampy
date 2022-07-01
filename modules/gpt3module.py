@@ -152,6 +152,9 @@ class GPT3Module(Module):
         except openai.error.AuthenticationError:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
             return 2
+        except openai.error.RateLimitError:
+            self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+            return 2
 
         output_label = response["choices"][0]["text"]
 
@@ -248,6 +251,9 @@ class GPT3Module(Module):
         except openai.error.AuthenticationError:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
             return Response()
+        except openai.error.RateLimitError:
+            self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+            return Response(why="Rate Limit Exceeded")
 
         if response["choices"]:
             choice = response["choices"][0]
@@ -295,6 +301,9 @@ class GPT3Module(Module):
             except openai.error.AuthenticationError:
                 self.log.error(self.class_name, error="OpenAI Authentication Failed")
                 return Response()
+            except openai.error.RateLimitError:
+                self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+                return Response(why="Rate Limit Exceeded")
 
             if response["choices"]:
                 choice = response["choices"][0]

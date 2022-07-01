@@ -68,7 +68,7 @@ class WikiUtilities(Module):
         return [
             self.create_integration_test(
                 question="what questions need moving, matching 'What is superintelligence?'?",
-                expected_response="No results for `[[PageNeedsMovingTo::What is superintelligence?'?]]|limit=1|offset=0`.",
+                expected_response="move_pages_generator: No results for `[[PageNeedsMovingTo::What is superintelligence?]]|limit=1|offset=0`.",
                 # TODO: more tests, we probably need to mock wiki API to be able to run tests on stable data
             ),
         ]
