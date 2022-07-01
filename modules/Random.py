@@ -55,8 +55,8 @@ class Random(Module):
 
         elif (atme or randbool(0.5)) and " or " in text and len(text.split()) < 20:
             options = [option.strip() for option in re.split(" or |,", text.strip("?")) if option.strip()]
-            try:  # reflecct with ELIZA if available
-                result = self.utils.modules_dict["ELIZA"].reflect(random.choice(options))
+            try:  # reflect with ELIZA if available
+                result = self.utils.modules_dict["Eliza"].reflect(random.choice(options))
                 replacements = [
                     ("were it", "it was"),
                     ("are it", "it is"),
