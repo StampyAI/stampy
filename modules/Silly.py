@@ -199,11 +199,7 @@ class Silly(Module):
         match = re.search(r"^dude,? where'?s (my|your) ([^?]+)\??", text.lower())
         if match:
             thing = match.group(2)
-            return Response(
-                confidence=4,
-                text=f"Where's your {thing}, dude?",
-                why="Dude!",
-            )
+            return Response(confidence=4, text=f"Where's your {thing}, dude?", why="Dude!",)
 
         # CMake
         # TODO make this a regex factoid when they exist
