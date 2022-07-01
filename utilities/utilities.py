@@ -155,7 +155,16 @@ class Utilities:
         url_arr = comment_url.split("&lc=")
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.comments().list(part="snippet", parentId=reply_id)
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
         items = response.get("items")
         reply = {}
         for item in items:
@@ -179,7 +188,16 @@ class Utilities:
         video_url = url_arr[0]
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
         items = response.get("items")
         comment = {"video_url": video_url}
         if items:
