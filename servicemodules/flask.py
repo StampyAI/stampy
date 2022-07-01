@@ -15,6 +15,7 @@ from utilities import (
 from utilities.flaskutils import FlaskMessage, FlaskUtilities
 import asyncio
 import inspect
+import json
 import sys
 import threading
 
@@ -30,7 +31,7 @@ class FlaskHandler(threading.Thread):
         self.utils = Utilities.get_instance()
         self.flaskutils = FlaskUtilities.get_instance()
         self.service_utils = self.flaskutils
-        self.modules = self.utils.modules_dict.values()
+        self.modules = self.utils.modules_dict
 
     def process_event(self) -> FlaskResponse:
         """
@@ -38,20 +39,28 @@ class FlaskHandler(threading.Thread):
 
         {
             "content": str,
-            "key": str
+            "key": str,
+            "modules": list[str]
         }
 
         Keys are currently defined in utilities.flaskutils
         """
-        log.debug(class_name, threads=threading.enumerate())
-        content = (
-            request.form.get("content") + " s"
-        )  # This plus s should make it always trigger the is_at_me functions.
-        key = request.form.get("key")
-        message = {"content": content, "key": key}
+        if request.is_json:
+            message = request.get_json()
+            message["content"] += " s"  # This plus s should make it always trigger the is_at_me functions.
+        else:
+            content = (
+                request.form.get("content") + " s"
+            )  # This plus s should make it always trigger the is_at_me functions.
+            key = request.form.get("key")
+            modules = json.loads(request.form.get("modules", json.dumps(list(self.modules.keys()))))
+            message = {"content": content, "key": key, "modules": modules}
         response = self.on_message(FlaskMessage(message))
         log.debug(class_name, response=response, type=type(response))
         return response
+
+    def process_list_modules(self) -> FlaskResponse:
+        return FlaskResponse(json.dumps(list(self.modules.keys())))
 
     def on_message(self, message) -> FlaskResponse:
 
@@ -69,7 +78,11 @@ class FlaskHandler(threading.Thread):
         )
 
         responses = [Response()]
-        for module in self.modules:
+        for key in self.modules:
+            if message.modules and key not in message.modules:
+                log.info(class_name, msg=f"# Skipping module: {key}")
+                continue  # Skip this module if it's not requested.
+            module = self.modules[key]
             log.info(class_name, msg=f"# Asking module: {module}")
             response = module.process_message(message)
             if response:
@@ -125,6 +138,8 @@ class FlaskHandler(threading.Thread):
                         ret = FlaskResponse(builder, 200)
                     else:
                         ret = FlaskResponse("I don't have anything to say about that.", 200)
+                else:
+                    ret = FlaskResponse("I don't have anything to say about that.", 200)
                 sys.stdout.flush()
                 return ret
         # If we get here we've hit maximum_recursion_depth.
@@ -132,6 +147,7 @@ class FlaskHandler(threading.Thread):
 
     def run(self):
         app.add_url_rule("/", view_func=self.process_event, methods=["POST"])
+        app.add_url_rule("/list_modules", view_func=self.process_list_modules, methods=["GET"])
         app.run(port=2300)
 
     def stop(self):
