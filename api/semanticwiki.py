@@ -16,7 +16,7 @@ class QuestionSource(Enum):
 #   Lightweight wrapper to the Semantic wiki API calls we need to store questions/answers there
 ###########################################################################
 class SemanticWiki(Persistence):
-    default_wiki_question_percent_bias = 0.5
+    default_wiki_question_percent_bias = 1  # until we want to switch focus all by default questions will be all wiki
 
     def __init__(self, uri, user, api_key):
         super().__init__(uri, user, api_key)
