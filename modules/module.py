@@ -5,7 +5,6 @@ from config import TEST_QUESTION_PREFIX
 from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
 from utilities.utilities import is_stampy_mentioned, stampy_is_author
-from utilities.slackutils import SlackUtilities
 from utilities.serviceutils import ServiceRole
 from typing import Callable, Iterable, Optional, Union
 
@@ -95,7 +94,6 @@ class Module(object):
 
     def __init__(self):
         self.utils = Utilities.get_instance()
-        self.slackutils = SlackUtilities.get_instance()
         self.class_name = "BaseModule"
         self.log = get_logger()
 
@@ -226,5 +224,4 @@ class Module(object):
     def get_guild_and_invite_role(self):
         guild = self.utils.client.guilds[0]
         invite_role = discord.utils.get(guild.roles, name="can-invite")
-        # invite_role = ServiceRole(role.name, str(role.id))
         return guild, invite_role

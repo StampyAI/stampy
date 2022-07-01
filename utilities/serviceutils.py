@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional
 from enum import Enum
 
 
@@ -37,7 +37,7 @@ class ServiceUser:
         self.name = name
         self.id = id
         self.display_name = display_name
-        self.roles: List[ServiceRole] = []
+        self.roles: list[ServiceRole] = []
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
@@ -122,7 +122,7 @@ class ServiceMessage:
         self.service = service
         self.created_at = datetime.now(timezone.utc)
         self.id = id
-        self.mentions: List[ServiceUser] = []
+        self.mentions: list[ServiceUser] = []
         self.reference: Optional[ServiceMessage] = None
 
     def __repr__(self):
