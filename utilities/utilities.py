@@ -30,6 +30,8 @@ if not os.name == "nt":
     import pwd
 
 
+import json
+
 log = get_logger()
 
 
@@ -171,7 +173,16 @@ class Utilities:
         url_arr = comment_url.split("&lc=")
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.comments().list(part="snippet", parentId=reply_id)
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
         items = response.get("items")
         reply = {}
         for item in items:
@@ -195,7 +206,16 @@ class Utilities:
         video_url = url_arr[0]
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
         items = response.get("items")
         comment = {"video_url": video_url}
         if items:
@@ -224,31 +244,40 @@ class Utilities:
         now = datetime.now(timezone.utc)
 
         if (now - self.last_check_timestamp) > self.youtube_cooldown:
-            log.info(self.class_name, msg="Hitting YT API")
+            log.info(f"{self.class_name}: YouTube", msg="Hitting YT API")
             self.last_check_timestamp = now
         else:
 
             log.info(
-                self.class_name,
+                f"{self.class_name}: YouTube",
                 msg="YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
             )
             return None
 
         if self.youtube is None:
-            log.info(self.class_name, msg="WARNING: YouTube API Key is invalid or not set")
+            log.info(f"{self.class_name}: YouTube", msg="WARNING: YouTube API Key is invalid or not set")
             self.youtube_cooldown = self.youtube_cooldown * 10
             return []
 
         request = self.youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
         )
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
 
         items = response.get("items", None)
         if not items:
             # something broke, slow way down
-            log.info(self.class_name, msg="YT comment checking broke. I got this response:")
-            log.info(self.class_name, response=response)
+            log.info(f"{self.class_name}: YouTube", msg="YT comment checking broke. I got this response:")
+            log.info(f"{self.class_name}: YouTube", response=response)
             self.youtube_cooldown = self.youtube_cooldown * 10
             return None
 
@@ -271,7 +300,8 @@ class Utilities:
                 newest_timestamp = published_timestamp
 
         log.info(
-            self.class_name, msg="Got %s items, most recent published at %s" % (len(items), newest_timestamp)
+            f"{self.class_name}: YouTube",
+            msg="Got %s items, most recent published at %s" % (len(items), newest_timestamp),
         )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
@@ -299,13 +329,15 @@ class Utilities:
 
             new_comments.append(comment)
 
-        log.info(self.class_name, msg="Got %d new comments since last check" % len(new_comments))
+        log.info(
+            f"{self.class_name}: YouTube", msg="Got %d new comments since last check" % len(new_comments)
+        )
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
             self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
             log.info(
-                self.class_name,
+                f"{self.class_name}: YouTube",
                 msg="No new comments, increasing cooldown timer to %s" % self.youtube_cooldown,
             )
 
@@ -367,7 +399,7 @@ class Utilities:
             report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
         else:
             report = "I am being told to post a question which I cant parse properly, i am very sorry"
-        log.info(self.class_name, youtube_question_report=report)
+        log.info(f"{self.class_name}: YouTube", youtube_question_report=report)
 
         # reset the question waiting timer
         self.last_question_asked_timestamp = datetime.now(timezone.utc)
