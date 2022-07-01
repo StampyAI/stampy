@@ -12,10 +12,12 @@ from utilities import (
     is_test_question,
     get_git_branch_info,
 )
+from utilities.discordutils import DiscordMessage, DiscordUser
 from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
+from typing import Generator
 from config import (
     discord_token,
     bot_dev_channel_id,
@@ -30,6 +32,7 @@ class_name = "DiscordHandler"
 class DiscordHandler:
     def __init__(self):
         self.utils = Utilities.get_instance()
+        self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
         """
         All Discord Functions need to be under another function in order to
@@ -60,16 +63,14 @@ class DiscordHandler:
         async def on_message(message: discord.message.Message) -> None:
             # don't react to our own messages unless running test
             message_author_is_stampy = message.author == self.utils.client.user
+
+            message = DiscordMessage(message)
             if is_test_message(message.clean_content) and self.utils.test_mode:
                 log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
             elif message_author_is_stampy:
                 for module in self.modules:
                     module.process_message_from_stampy(message)
                 return
-
-            # This is mostly working but it's commented out for now.
-            # from utilities.discordutils import DiscordMessage
-            # message = DiscordMessage(message)
 
             message_is_dm = True
             message_reference = None
@@ -124,7 +125,9 @@ class DiscordHandler:
                         response_is_callback=bool(response.callback),
                         response_callback=response.callback,
                         response_args=args_string,
-                        response_text=response.text,
+                        response_text=(
+                            response.text if not isinstance(response.text, Generator) else "[Generator]"
+                        ),
                         response_reasons=response.why,
                     )
 
@@ -149,7 +152,11 @@ class DiscordHandler:
                                     TEST_RESPONSE_PREFIX
                                     + str(get_question_id(message))
                                     + ": "
-                                    + top_response.text
+                                    + (
+                                        top_response.text
+                                        if not isinstance(top_response.text, Generator)
+                                        else "".join(list(top_response.text))
+                                    )
                                 )
                         log.info(class_name, top_response=top_response.text)
                         # TODO: check to see if module is allowed to embed via a config?

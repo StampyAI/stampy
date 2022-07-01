@@ -9,6 +9,31 @@ server_keys = {
 }
 
 
+class FlaskUtilities:
+    __instance = None
+
+    @staticmethod
+    def get_instance():
+        if FlaskUtilities.__instance is None:
+            FlaskUtilities()
+        return FlaskUtilities.__instance
+
+    def __init__(self):
+        if FlaskUtilities.__instance is not None:
+            raise Exception("this class is a singleton!")
+        else:
+            FlaskUtilities.__instance = self
+
+    def stampy_is_author(self, message: "FlaskMessage") -> bool:
+        return False  # Flask doesn't process Stampy's messages so it's always False
+
+    def is_stampy(self, user: "FlaskUser") -> bool:
+        return False  # Flask doesn't process Stampy's messages so it's always False
+
+    def is_stampy_mentioned(self, message: "FlaskMessage") -> bool:
+        return True  # Flask only process messages meant for stampy so assume True
+
+
 def kill_thread(event: threading.Event, thread: threading.Thread):
     event.wait()
     thread.stop()
@@ -17,7 +42,7 @@ def kill_thread(event: threading.Event, thread: threading.Thread):
 class FlaskUser(ServiceUser):
     def __init__(self):
         id = str(time.time())
-        super().__init__(id, id, id)
+        super().__init__("User", "User", id)
 
 
 class FlaskServer(ServiceServer):
