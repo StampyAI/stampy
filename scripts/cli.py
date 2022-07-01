@@ -9,6 +9,11 @@ try:
     json_mode = False
     while True:
         data = input("> ")
+        if data == ":help":
+            print(":list_modules")
+            print(":select_modules")
+            print(":toggle_json")
+            print(":help")
         if data == ":list_modules":
             r = requests.get("http://127.0.0.1:2300/list_modules")
             print(f"{r.text}")
