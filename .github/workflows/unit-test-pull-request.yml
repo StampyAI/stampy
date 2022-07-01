@@ -8,6 +8,11 @@ on:
       - '*'
 env:
   ENVIRONMENT_TYPE: 'development'
+  DISCORD_TOKEN: 'testing'
+  DISCORD_GUILD: 'testing'
+  YOUTUBE_API_KEY: 'testing'
+  DATABASE_PATH: './database/stampy.db'
+  WIKI_BOT_PASSWORD: 'testing'
 jobs:
   build:
     runs-on: ubuntu-latest
