@@ -12,7 +12,7 @@ from utilities import (
     is_test_response,
     get_question_id,
 )
-from utilities.flaskutils import FlaskMessage
+from utilities.flaskutils import FlaskMessage, FlaskUtilities
 import asyncio
 import inspect
 import json
@@ -29,6 +29,8 @@ class FlaskHandler(threading.Thread):
     def __init__(self):
         super().__init__(name="Flask Handler", daemon=True)
         self.utils = Utilities.get_instance()
+        self.flaskutils = FlaskUtilities.get_instance()
+        self.service_utils = self.flaskutils
         self.modules = self.utils.modules_dict
 
     def process_event(self) -> FlaskResponse:
@@ -146,10 +148,9 @@ class FlaskHandler(threading.Thread):
     def run(self):
         app.add_url_rule("/", view_func=self.process_event, methods=["POST"])
         app.add_url_rule("/list_modules", view_func=self.process_list_modules, methods=["GET"])
-        app.run(port=2300)
+        app.run(host="0.0.0.0", port=2300)
 
     def stop(self):
-        print("Trying to die!")
         exit()
         raise SystemExit
 

@@ -2,6 +2,7 @@ import re
 import discord
 from config import rob_id
 from modules.module import Module, Response
+from utilities.serviceutils import Services
 
 
 class InviteManager(Module):
@@ -18,13 +19,16 @@ class InviteManager(Module):
         )
 
     def process_message(self, message):
+        if message.service != Services.DISCORD:
+            return Response()
         guild, invite_role = self.get_guild_and_invite_role()
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
             m = re.match(self.re_request, text)
             if m:
-                member = guild.get_member(message.author.id)
+                member = guild.get_member(int(message.author.id))
+                self.log.debug(self.class_name, member=member, author=message.author.id)
                 if invite_role in member.roles:
                     return Response(confidence=10, callback=self.post_invite, args=[message])
                 else:

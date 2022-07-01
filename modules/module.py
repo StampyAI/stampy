@@ -1,10 +1,16 @@
 import re
+import random
 import discord
 from structlog import get_logger
 from config import TEST_QUESTION_PREFIX
 from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
+from utilities.utilities import is_stampy_mentioned, stampy_is_author
+from utilities.serviceutils import ServiceRole
 from typing import Callable, Iterable, Optional, Union
+from utilities.serviceutils import ServiceMessage
+
+log = get_logger()
 
 
 @dataclass
@@ -94,13 +100,14 @@ class Module(object):
         self.utils = Utilities.get_instance()
         self.class_name = "BaseModule"
         self.log = get_logger()
+        self.re_replace = re.compile(r".*?({{.+?}})")
 
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    def process_message(self, message):
+    def process_message(self, message: ServiceMessage):
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
@@ -191,14 +198,11 @@ class Module(object):
         """
         text = message.clean_content
         if self.utils.test_mode:
-            if self.utils.stampy_is_author(message):
+            if stampy_is_author(message):
                 if TEST_QUESTION_PREFIX in message.clean_content:
                     text = "stampy " + self.clean_test_prefixes(message, TEST_QUESTION_PREFIX)
-        at_me = False
+        at_me = is_stampy_mentioned(message)
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
-        text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text)
-        if subs:
-            at_me = True
 
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
@@ -207,13 +211,14 @@ class Module(object):
             text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
             at_me = True
 
+        # TODO: Add Other Service Support
         if type(message.channel) == discord.DMChannel:
             # DMs are always at you
             at_me = True
 
         if Utilities.get_instance().client.user in message.mentions:
             # regular mentions are already covered above, this covers the case that someone reply @'s Stampy
-            log.info(self.class_name, msg="Classified as 'at stampy' because of mention")
+            self.log.info(self.class_name, msg="Classified as 'at stampy' because of mention")
             at_me = True
 
         if at_me:
@@ -225,3 +230,30 @@ class Module(object):
         guild = self.utils.client.guilds[0]
         invite_role = discord.utils.get(guild.roles, name="can-invite")
         return guild, invite_role
+
+    def dereference(self, string, who):
+        """Dereference any template variables given in {{double curly brackets}}"""
+
+        countdown = 30  # don't carry out more than this many lookups total. No infinite recursions
+        while countdown >= 0:
+            countdown -= 1
+
+            # first handle the dummy/custom factoids
+            string = string.replace("{{$who}}", who)  # who triggered this response?
+
+            # $someone is a random person from the chat
+            # only make 1 replace per iteration, so a message can have more than one person chosen
+            string = string.replace("{{$someone}}", random.choice(list(self.utils.people)), 1)
+
+            if not self.re_replace.match(string):  # If there are no more {{}} to sub, break out
+                break
+
+            tag = self.re_replace.match(string).group(1)
+            key = tag[2:-2]  # strip the surrounding {{}}
+            try:
+                verb, value, by = self.db.getrandom(key)
+                string = string.replace(tag, value, 1)
+            except Exception:
+                string = string.replace(tag, "{notfound:%s}" % key, 1)
+
+        return string

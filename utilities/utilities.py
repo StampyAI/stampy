@@ -4,16 +4,13 @@ import os
 if not os.name == "nt":
     import pwd
 import re
+import random
 import psutil
 import discord
 from git import Repo
 from time import time
 from database.database import Database
 from api.semanticwiki import SemanticWiki, QuestionSource
-from datetime import datetime, timezone, timedelta
-from googleapiclient.errors import HttpError
-from structlog import get_logger
-from googleapiclient.discovery import build as get_youtube_api
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -26,6 +23,24 @@ from config import (
     TEST_QUESTION_PREFIX,
     wiki_config,
 )
+from database.database import Database
+from datetime import datetime, timezone, timedelta
+from git import Repo
+from googleapiclient.discovery import build as get_youtube_api
+from googleapiclient.errors import HttpError
+from structlog import get_logger
+from time import time
+from utilities.discordutils import DiscordMessage, DiscordUser
+from utilities.serviceutils import ServiceMessage, ServiceUser
+import discord
+import json
+import os
+import psutil
+import re
+
+# Sadly some of us run windows...
+if not os.name == "nt":
+    import pwd
 
 log = get_logger()
 
@@ -35,6 +50,7 @@ class Utilities:
     db = None
     discord = None
     client = None
+    discord_user = None
     stop = None
 
     TOKEN = None
@@ -77,6 +93,7 @@ class Utilities:
             self.youtube = None
             self.start_time = time()
             self.test_mode = False
+            self.people = set("stampy")
 
             # dict to keep last timestamps in
             self.last_timestamp = {}
@@ -100,9 +117,7 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -146,14 +161,37 @@ class Utilities:
         else:  # it hasn't been long enough, rate limit
             return True
 
-    def stampy_is_author(self, message):
-        return message.author.id == self.client.user.id
+    def stampy_is_author(self, message: DiscordMessage) -> bool:
+        return self.is_stampy(message.author)
+
+    def is_stampy(self, user: DiscordUser) -> bool:
+        if self.discord_user:
+            return user == self.discord_user
+        if user.id == str(self.client.user.id):
+            self.discord_user = user
+            return True
+        return False
+
+    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
+        for user in message.mentions:
+            if self.is_stampy(user):
+                return True
+        return False
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.comments().list(part="snippet", parentId=reply_id)
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
         items = response.get("items")
         reply = {}
         for item in items:
@@ -177,7 +215,16 @@ class Utilities:
         video_url = url_arr[0]
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
         items = response.get("items")
         comment = {"video_url": video_url}
         if items:
@@ -206,31 +253,40 @@ class Utilities:
         now = datetime.now(timezone.utc)
 
         if (now - self.last_check_timestamp) > self.youtube_cooldown:
-            log.info(self.class_name, msg="Hitting YT API")
+            log.info(f"{self.class_name}: YouTube", msg="Hitting YT API")
             self.last_check_timestamp = now
         else:
 
             log.info(
-                self.class_name,
+                f"{self.class_name}: YouTube",
                 msg="YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
             )
             return None
 
         if self.youtube is None:
-            log.info(self.class_name, msg="WARNING: YouTube API Key is invalid or not set")
+            log.info(f"{self.class_name}: YouTube", msg="WARNING: YouTube API Key is invalid or not set")
             self.youtube_cooldown = self.youtube_cooldown * 10
             return []
 
         request = self.youtube.commentThreads().list(
             part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
         )
-        response = request.execute()
+        try:
+            response = request.execute()
+        except HttpError as err:
+            if err.resp.get("content-type", "").startswith("application/json"):
+                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                if message:
+                    log.error(f"{self.class_name}: YouTube", error=message)
+                    return
+            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            return
 
         items = response.get("items", None)
         if not items:
             # something broke, slow way down
-            log.info(self.class_name, msg="YT comment checking broke. I got this response:")
-            log.info(self.class_name, response=response)
+            log.info(f"{self.class_name}: YouTube", msg="YT comment checking broke. I got this response:")
+            log.info(f"{self.class_name}: YouTube", response=response)
             self.youtube_cooldown = self.youtube_cooldown * 10
             return None
 
@@ -253,7 +309,8 @@ class Utilities:
                 newest_timestamp = published_timestamp
 
         log.info(
-            self.class_name, msg="Got %s items, most recent published at %s" % (len(items), newest_timestamp)
+            f"{self.class_name}: YouTube",
+            msg="Got %s items, most recent published at %s" % (len(items), newest_timestamp),
         )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
@@ -281,13 +338,15 @@ class Utilities:
 
             new_comments.append(comment)
 
-        log.info(self.class_name, msg="Got %d new comments since last check" % len(new_comments))
+        log.info(
+            f"{self.class_name}: YouTube", msg="Got %d new comments since last check" % len(new_comments)
+        )
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
             self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
             log.info(
-                self.class_name,
+                f"{self.class_name}: YouTube",
                 msg="No new comments, increasing cooldown timer to %s" % self.youtube_cooldown,
             )
 
@@ -334,12 +393,7 @@ class Utilities:
                     + "{2}\n"
                     + "Is it an interesting question? Maybe we can answer it!\n"
                     + "{3}"
-                ).format(
-                    comment["username"],
-                    self.get_title(comment["url"])[1],
-                    text_quoted,
-                    comment["url"],
-                )
+                ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
         elif comment["source"] == QuestionSource.WIKI:
             report = "Wiki User {0} asked this question.\n{1}\n".format(
                 comment["username"], comment["question_title"]
@@ -349,7 +403,7 @@ class Utilities:
             report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
         else:
             report = "I am being told to post a question which I cant parse properly, i am very sorry"
-        log.info(self.class_name, youtube_question_report=report)
+        log.info(f"{self.class_name}: YouTube", youtube_question_report=report)
 
         # reset the question waiting timer
         self.last_question_asked_timestamp = datetime.now(timezone.utc)
@@ -438,10 +492,7 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(
-            comment["username"],
-            video_titles[0],
-        )
+        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
 
         return self.wiki.add_question(
             display_title,
@@ -553,3 +604,19 @@ def is_test_question(text):
 
 def is_test_message(text):
     return is_test_response(text) or is_test_question(text)
+
+def randbool(p):
+    if random.random() < p:
+        return True
+    else:
+        return False
+
+
+def is_stampy_mentioned(message: ServiceMessage) -> bool:
+    utils = Utilities.get_instance()
+    return utils.service_modules_dict[message.service].service_utils.is_stampy_mentioned(message)
+
+
+def stampy_is_author(message: ServiceMessage) -> bool:
+    utils = Utilities.get_instance()
+    return utils.service_modules_dict[message.service].service_utils.stampy_is_author(message)

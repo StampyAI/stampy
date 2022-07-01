@@ -1,10 +1,9 @@
 from unittest import TestCase
 from utilities import Utilities
-from api.semanticwiki import SemanticWiki
-from modules.questions import QQManager
+from modules.questions import QuestionQueManager
 from stand_alone_stampy import stampy_response
 
-q = QQManager()
+q = QuestionQueManager()
 
 
 class Test(TestCase):
