@@ -22,7 +22,7 @@ def is_bot_dev(user):
 class Factoids(Module):
     def __init__(self):
         super().__init__()
-        self.class_name = "Factoids"
+        self.class_name = self.__class__.__name__
         dbpath = "factoids.db"
         self.db = self.FactoidDb(dbpath)
         self.who = "Someone"
@@ -31,7 +31,6 @@ class Factoids(Module):
 
         # dict of room ids to factoid: (text, value, verb) tuples
         self.prevFactoid = {}
-        self.people = set()  # list of names of people we've seen
 
     class FactoidDb:
         """Class to handle the factoid sqlite database"""
@@ -112,42 +111,10 @@ class Factoids(Module):
             con.close()
             return val
 
-    def dereference(self, string):
-        """Dereference any factoid names given in {{double curly brackets}}"""
-
-        countdown = 30  # don't carry out more than this many lookups total. No infinite recursions
-        while countdown >= 0:
-            countdown -= 1
-
-            # first handle the dummy/custom factoids
-            string = string.replace("{{$who}}", self.who)  # who triggered this response?
-            # string = string.replace("{{$whoFirstname}}", whoFirstname)
-            # string = string.replace("{{$whoLastname}}", whoLastname)
-            # string = string.replace("{{$whoFullname}}", whoFullname)
-            # string = string.replace("{{$whoInitials}}", whoInitials)
-            # string = string.replace("{{$whoEmail}}", whoEmail)
-
-            # $someone is a random person from the chat
-            # only make 1 replace per iteration, so a message can have more than one person chosen
-            string = string.replace("{{$someone}}", random.choice(list(self.people)), 1)
-
-            if not self.re_replace.match(string):  # If there are no more {{}} to sub, break out
-                break
-
-            tag = self.re_replace.match(string).group(1)
-            key = tag[2:-2]  # strip the surrounding {{}}
-            try:
-                verb, value, by = self.db.getrandom(key)
-                string = string.replace(tag, value, 1)
-            except Exception:
-                string = string.replace(tag, "{notfound:%s}" % key, 1)
-
-        return string
-
     def process_message(self, message):
         atme = False
         self.who = message.author.name
-        self.people.add(self.who)
+        self.utils.people.add(self.who)
         result = ""
 
         try:

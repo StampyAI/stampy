@@ -1,3 +1,15 @@
+import os
+
+# Sadly some of us run windows...
+if not os.name == "nt":
+    import pwd
+import re
+import random
+import psutil
+import discord
+from git import Repo
+from time import time
+from database.database import Database
 from api.semanticwiki import SemanticWiki, QuestionSource
 from config import (
     youtube_api_version,
@@ -21,6 +33,7 @@ from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage, ServiceUser
 import discord
+import json
 import os
 import psutil
 import re
@@ -28,9 +41,6 @@ import re
 # Sadly some of us run windows...
 if not os.name == "nt":
     import pwd
-
-
-import json
 
 log = get_logger()
 
@@ -83,6 +93,7 @@ class Utilities:
             self.youtube = None
             self.start_time = time()
             self.test_mode = False
+            self.people = set("stampy")
 
             # dict to keep last timestamps in
             self.last_timestamp = {}
@@ -106,9 +117,7 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -384,12 +393,7 @@ class Utilities:
                     + "{2}\n"
                     + "Is it an interesting question? Maybe we can answer it!\n"
                     + "{3}"
-                ).format(
-                    comment["username"],
-                    self.get_title(comment["url"])[1],
-                    text_quoted,
-                    comment["url"],
-                )
+                ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
         elif comment["source"] == QuestionSource.WIKI:
             report = "Wiki User {0} asked this question.\n{1}\n".format(
                 comment["username"], comment["question_title"]
@@ -488,10 +492,7 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(
-            comment["username"],
-            video_titles[0],
-        )
+        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
 
         return self.wiki.add_question(
             display_title,
@@ -603,6 +604,12 @@ def is_test_question(text):
 
 def is_test_message(text):
     return is_test_response(text) or is_test_question(text)
+
+def randbool(p):
+    if random.random() < p:
+        return True
+    else:
+        return False
 
 
 def is_stampy_mentioned(message: ServiceMessage) -> bool:

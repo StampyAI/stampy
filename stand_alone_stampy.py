@@ -1,11 +1,11 @@
 import sys
 from modules.module import Response
 from modules.reply import Reply
-from modules.questions import QQManager
+from modules.questions import QuestionQueManager
 from modules.wolfram import Wolfram
 from modules.duckduckgo import DuckDuckGo
 from modules.videosearch import VideoSearch
-from modules.ANSearch import ANSearch
+from modules.AlignmentNewsletterSearch import AlignmentNewsletterSearch
 from modules.stampcollection import StampsModule
 from modules.StampyControls import StampyControls
 from modules.gpt3module import GPT3Module
@@ -22,9 +22,9 @@ from structlog import get_logger
 modules_dict = {
     "StampyControls": StampyControls(),
     "StampsModule": StampsModule(),
-    "QQManager": QQManager(),
+    "QQManager": QuestionQueManager(),
     "VideoSearch": VideoSearch(),
-    "ANSearch": ANSearch(),
+    "ANSearch": AlignmentNewsletterSearch(),
     "Wolfram": Wolfram(),
     "DuckDuckGo": DuckDuckGo(),
     "Reply": Reply(),
