@@ -1,5 +1,12 @@
-from utilities.serviceutils import *
-from typing import List
+from utilities.serviceutils import (
+    ServiceChannel,
+    ServiceMessage,
+    ServiceRole,
+    Services,
+    ServiceServer,
+    ServiceUser,
+)
+from typing import Optional
 import discord
 
 
@@ -7,13 +14,14 @@ class DiscordUser(ServiceUser):
     def __init__(self, user: discord.abc.User):
         super().__init__(user.name, user.display_name, str(user.id))
         self._user = user
-        self.parse_discord_roles(user.roles)
+        if hasattr(user, "roles"):
+            self.parse_discord_roles(user.roles)
         self.discriminator = user.discriminator
         self.full_name = f"{self.name}#{self.discriminator}"
 
-    def parse_discord_roles(self, roles: List[discord.Role]) -> None:
+    def parse_discord_roles(self, roles: list[discord.Role]) -> None:
         for role in roles:
-            self.roles.append(ServiceRoles(role.name, str(role.id)))
+            self.roles.append(ServiceRole(role.name, str(role.id)))
 
 
 class DiscordChannel(ServiceChannel):
@@ -49,9 +57,10 @@ class DiscordMessage(ServiceMessage):
 
         super().__init__(str(msg.id), msg.content, author, channel, service)
         self.clean_content = msg.clean_content
+        self.clean_content = msg.clean_content.replace("\u200b", "")
         self._parse_discord_mentions(msg.mentions)
         self.reference = msg.reference
 
-    def _parse_discord_mentions(self, mentions: List[discord.abc.User]):
+    def _parse_discord_mentions(self, mentions: list[discord.abc.User]):
         for user in mentions:
             self.mentions.append(DiscordUser(user))

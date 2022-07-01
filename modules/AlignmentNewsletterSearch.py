@@ -11,7 +11,7 @@ spreadsheet_url = (
 )
 
 
-class ANSearch(Module):
+class AlignmentNewsletterSearch(Module):
     """
     A module that searches the Alignment Newsletter for relevant papers/articles etc.
     """
@@ -216,7 +216,7 @@ class ANSearch(Module):
 
 
 if __name__ == "__main__":
-    module = ANSearch()
+    module = AlignmentNewsletterSearch()
     module.load_items()
     log = get_logger()
     log.info(module.class_name, an_search_items=module.items[0])

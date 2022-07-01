@@ -21,6 +21,3 @@ class Sentience(Module):
                 expected_response=CONFUSED_RESPONSE,
             )
         ]
-
-
-sentience = Sentience()

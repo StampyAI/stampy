@@ -1,5 +1,6 @@
-import sqlite3
 from structlog import get_logger
+from threading import RLock
+import sqlite3
 
 ###########################################################################
 #   SQLite Database Wrapper
@@ -13,56 +14,79 @@ class Database:
         self.connected = False
         self.conn = None
         self.cursor = None
+        self.name = name
+        self.lock = RLock()
 
+    def open(self):
+        name = self.name
         if name:
-            self.open(name)
-
-    def open(self, name):
-        log.info(self.class_name, status="Connecting to database: " + name)
-        try:
-            self.conn = sqlite3.connect(name)
-            self.cursor = self.conn.cursor()
-            self.connected = True
-
-        except sqlite3.Error as e:
-            log.error(self.class_name, error="Error connecting to database!", exception=e)
+            log.info(self.class_name, status="Connecting to database: " + name)
+            try:
+                self.conn = sqlite3.connect(name)
+                self.cursor = self.conn.cursor()
+                self.connected = True
+                return
+            except sqlite3.Error as e:
+                log.error(self.class_name, error="Error connecting to database!", exception=e)
+        log.error(self.class_name, error="Database not specified! Cannot open!")
 
     def close(self):
         if self.conn:
-            self.connected = False
             self.conn.commit()
             self.cursor.close()
             self.conn.close()
+        self.connected = False
+        self.lock.release()
+
+    def try_open(self):
+        self.lock.acquire()
+        while not self.connected:
+            self.open()
 
     def __enter__(self):
-        return self
+        try:
+            self.try_open()
+            return self
+        except sqlite3.Error:
+            self.close()
+            raise
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.connected = False
         self.close()
 
     def get(self, table, columns, limit=None):
+        self.try_open()
         query = "SELECT {0} from {1}".format(columns, table)
         # Limit goes at the end...
         if limit is not None:
             query += " LIMIT {0}".format(limit)
         query += ";"
         self.cursor.execute(query)
+        data = self.cursor.fetchall()
+        self.close()
 
-        return self.cursor.fetchall()
+        return data
 
     def get_last(self, table, columns):
         return self.get(table, columns, limit=1)[0]
 
     def query(self, sql, args=None):
+        self.try_open()
         if args:
             self.cursor.execute(sql, args)
         else:
             self.cursor.execute(sql)
-        return self.cursor.fetchall()
+        data = self.cursor.fetchall()
+        self.close()
+
+        return data
 
     def commit(self):
-        self.conn.commit()
+        """
+        This now commits with every query so this function is not necessary.
+        Changed to pass to not break existing code.
+        """
+        pass
 
 
 """

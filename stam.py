@@ -1,26 +1,12 @@
 import os
 import sys
 import threading
-from utilities import Utilities
-from modules.reply import Reply
-from modules.questions import QQManager
-from modules.wolfram import Wolfram
-from modules.duckduckgo import DuckDuckGo
-from modules.videosearch import VideoSearch
-from modules.ANSearch import ANSearch
-from modules.invitemanager import InviteManager
-from modules.stampcollection import StampsModule
-from modules.StampyControls import StampyControls
-from modules.gpt3module import GPT3Module
-from modules.Factoids import Factoids
-from modules.Silly import Silly
-from modules.Random import Random
-from modules.wikiUpdate import WikiUpdate
-from modules.wikiUtilities import WikiUtilities
-from modules.testModule import TestModule
 from servicemodules.discord import DiscordHandler
 from servicemodules.slack import SlackHandler
+from servicemodules.flask import FlaskHandler
+from utilities import Utilities
 from structlog import get_logger
+from modules.module import Module
 from config import (
     database_path,
     prod_local_path,
@@ -30,6 +16,22 @@ from config import (
 
 log_type = "stam.py"
 log = get_logger()
+
+
+def get_stampy_modules():
+    stampy_modules = {}
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
+    for file_title in [f[:-3] for f in os.listdir(path) if f.endswith(".py") and f != "__init__.py"]:
+        log.info("import", filename=file_title)
+        mod = __import__(".".join(["modules", file_title]), fromlist=[file_title])
+        log.info("import", module_name=mod)
+        for attribute in dir(mod):
+            cls = getattr(mod, attribute)
+            if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
+                log.info("import Module Found", module_name=attribute)
+                stampy_modules[cls.__name__] = cls()
+    log.info("LOADED MODULES", modules=sorted(stampy_modules.keys()))
+    return stampy_modules
 
 
 if __name__ == "__main__":
@@ -42,7 +44,8 @@ if __name__ == "__main__":
         sys.path.insert(0, prod_local_path)
         import sentience
     elif ENVIRONMENT_TYPE == "development":
-        from modules.sentience import sentience
+        pass
+        # from modules.sentience import sentience
     else:
         raise Exception(
             "Please set the ENVIRONMENT_TYPE environment variable "
@@ -50,26 +53,13 @@ if __name__ == "__main__":
             + f"{acceptable_environment_types[1]}"
         )
 
-    utils.modules_dict = {
-        "StampyControls": StampyControls(),
-        "StampsModule": StampsModule(),
-        "QQManager": QQManager(),
-        "VideoSearch": VideoSearch(),
-        "ANSearch": ANSearch(),
-        "Wolfram": Wolfram(),
-        "DuckDuckGo": DuckDuckGo(),
-        "Reply": Reply(),
-        "InviteManager": InviteManager(),
-        "GPT3Module": GPT3Module(),
-        "Factoids": Factoids(),
-        "Silly": Silly(),
-        "Random": Random(),
-        # "Sentience": sentience,
-        "WikiUpdate": WikiUpdate(),
-        "WikiUtilities": WikiUtilities(),
-        "TestModule": TestModule(),
+    utils.modules_dict = get_stampy_modules()
+
+    utils.service_modules_dict = {
+        Services.DISCORD: DiscordHandler(),
+        Services.SLACK: SlackHandler(),
+        Services.FLASK: FlaskHandler(),
     }
-    utils.service_modules_dict = {"Discord": DiscordHandler(), "Slack": SlackHandler()}
 
     service_threads = []
     e = threading.Event()
@@ -80,6 +70,6 @@ if __name__ == "__main__":
         log.info(log_type, msg=f"{module} Started!")
 
     for thread in service_threads:
-        if thread.is_alive():
+        if thread.is_alive() and not thread.daemon:
             thread.join()
     log.info(log_type, msg="Stopping Stampy...")
