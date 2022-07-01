@@ -56,7 +56,7 @@ class TestModule(Module):
                 self.sent_test.append(
                     self.create_integration_test(
                         question="Developers didn't write test for %s" % str(module),
-                        expected_response="NEVER RECEIVED A RESPONSE"
+                        expected_response="NEVER RECEIVED A RESPONSE",
                     )
                 )
                 question_id += 1
@@ -79,9 +79,7 @@ class TestModule(Module):
                 else:
                     question["results"] = "FAILED"
             else:
-                text_similarity = jaro_winkler_similarity(
-                    question["expected_response"], received_response
-                )
+                text_similarity = jaro_winkler_similarity(question["expected_response"], received_response)
                 if text_similarity >= question["minimum_allowed_similarity"]:
                     correct_count += 1
                     question["results"] = "PASSED"
