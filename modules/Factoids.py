@@ -163,7 +163,7 @@ class Factoids(Module):
         elif factoids and (atme or randbool(0.3)):
             verb, rawvalue, by = random.choice(factoids)
 
-            value = self.dereference(rawvalue)
+            value = self.dereference(rawvalue, message.author.name)
 
             if verb == "reply":
                 result = value
