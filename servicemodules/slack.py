@@ -22,6 +22,7 @@ class SlackHandler:
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.slackutils = SlackUtilities.get_instance()
+        self.service_utils = self.slackutils
         self.modules = self.utils.modules_dict.values()
 
     def process_event(self, client: SocketModeClient, req: SocketModeRequest) -> None:

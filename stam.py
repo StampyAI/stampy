@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 from utilities import Utilities
+from utilities.serviceutils import Services
 from modules.reply import Reply
 from modules.questions import QQManager
 from modules.wolfram import Wolfram
@@ -67,9 +68,9 @@ if __name__ == "__main__":
         "TestModule": TestModule(),
     }
     utils.service_modules_dict = {
-        "Discord": DiscordHandler(),
-        "Slack": SlackHandler(),
-        "Flask": FlaskHandler(),
+        Services.DISCORD: DiscordHandler(),
+        Services.SLACK: SlackHandler(),
+        Services.FLASK: FlaskHandler(),
     }
 
     service_threads = []
@@ -81,6 +82,6 @@ if __name__ == "__main__":
         log.info(log_type, msg=f"{module} Started!")
 
     for thread in service_threads:
-        if thread.is_alive() and not thread.isDaemon():
+        if thread.is_alive() and not thread.daemon:
             thread.join()
     log.info(log_type, msg="Stopping Stampy...")

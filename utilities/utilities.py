@@ -1,19 +1,4 @@
-import os
-
-# Sadly some of us run windows...
-if not os.name == "nt":
-    import pwd
-import re
-import psutil
-import discord
-from git import Repo
-from time import time
-from database.database import Database
 from api.semanticwiki import SemanticWiki, QuestionSource
-from datetime import datetime, timezone, timedelta
-from googleapiclient.errors import HttpError
-from structlog import get_logger
-from googleapiclient.discovery import build as get_youtube_api
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -26,6 +11,24 @@ from config import (
     TEST_QUESTION_PREFIX,
     wiki_config,
 )
+from database.database import Database
+from datetime import datetime, timezone, timedelta
+from git import Repo
+from googleapiclient.discovery import build as get_youtube_api
+from googleapiclient.errors import HttpError
+from structlog import get_logger
+from time import time
+from utilities.discordutils import DiscordMessage, DiscordUser
+from utilities.serviceutils import ServiceMessage, ServiceUser
+import discord
+import os
+import psutil
+import re
+
+# Sadly some of us run windows...
+if not os.name == "nt":
+    import pwd
+
 
 log = get_logger()
 
@@ -35,6 +38,7 @@ class Utilities:
     db = None
     discord = None
     client = None
+    discord_user = None
     stop = None
 
     TOKEN = None
@@ -146,8 +150,22 @@ class Utilities:
         else:  # it hasn't been long enough, rate limit
             return True
 
-    def stampy_is_author(self, message):
-        return message.author.id == self.client.user.id
+    def stampy_is_author(self, message: DiscordMessage) -> bool:
+        return self.is_stampy(message.author)
+
+    def is_stampy(self, user: DiscordUser) -> bool:
+        if self.discord_user:
+            return user == self.discord_user
+        if user.id == str(self.client.user.id):
+            self.discord_user = user
+            return True
+        return False
+
+    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
+        for user in message.mentions:
+            if is_stampy(user):
+                return True
+        return False
 
     def get_youtube_comment_replies(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -553,3 +571,13 @@ def is_test_question(text):
 
 def is_test_message(text):
     return is_test_response(text) or is_test_question(text)
+
+
+def is_stampy_mentioned(message: ServiceMessage) -> bool:
+    utils = Utilities.get_instance()
+    return utils.service_modules_dict[message.service].service_utils.is_stampy_mentioned(message)
+
+
+def stampy_is_author(message: ServiceMessage) -> bool:
+    utils = Utilities.get_instance()
+    return utils.service_modules_dict[message.service].service_utils.stampy_is_author(message)

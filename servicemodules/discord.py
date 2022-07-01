@@ -12,6 +12,7 @@ from utilities import (
     is_test_question,
     get_git_branch_info,
 )
+from utilities.discordutils import DiscordMessage, DiscordUser
 from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
@@ -30,6 +31,7 @@ class_name = "DiscordHandler"
 class DiscordHandler:
     def __init__(self):
         self.utils = Utilities.get_instance()
+        self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
         """
         All Discord Functions need to be under another function in order to
@@ -60,16 +62,14 @@ class DiscordHandler:
         async def on_message(message: discord.message.Message) -> None:
             # don't react to our own messages unless running test
             message_author_is_stampy = message.author == self.utils.client.user
+
+            message = DiscordMessage(message)
             if is_test_message(message.clean_content) and self.utils.test_mode:
                 log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
             elif message_author_is_stampy:
                 for module in self.modules:
                     module.process_message_from_stampy(message)
                 return
-
-            # This is mostly working but it's commented out for now.
-            # from utilities.discordutils import DiscordMessage
-            # message = DiscordMessage(message)
 
             message_is_dm = True
             message_reference = None
@@ -145,12 +145,21 @@ class DiscordHandler:
                             if is_test_response(message.clean_content):
                                 return  # must return after process message is called so that response can be evaluated
                             if is_test_question(message.clean_content):
-                                top_response.text = (
-                                    TEST_RESPONSE_PREFIX
-                                    + str(get_question_id(message))
-                                    + ": "
-                                    + top_response.text
-                                )
+                                try:
+                                    top_response.text = (
+                                        TEST_RESPONSE_PREFIX
+                                        + str(get_question_id(message))
+                                        + ": "
+                                        + top_response.text
+                                    )
+                                except:
+                                    log.error(
+                                        class_name,
+                                        trp=TEST_RESPONSE_PREFIX,
+                                        question_id=get_question_id(message),
+                                        text=top_response.text,
+                                        embed=top_response.embed,
+                                    )
                         log.info(class_name, top_response=top_response.text)
                         # TODO: check to see if module is allowed to embed via a config?
                         if top_response.embed:

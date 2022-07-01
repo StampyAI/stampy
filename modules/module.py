@@ -4,6 +4,9 @@ from structlog import get_logger
 from config import TEST_QUESTION_PREFIX
 from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
+from utilities.utilities import is_stampy_mentioned, stampy_is_author
+from utilities.slackutils import SlackUtilities
+from utilities.serviceutils import ServiceRole
 from typing import Callable, Iterable, Optional, Union
 
 
@@ -92,6 +95,7 @@ class Module(object):
 
     def __init__(self):
         self.utils = Utilities.get_instance()
+        self.slackutils = SlackUtilities.get_instance()
         self.class_name = "BaseModule"
         self.log = get_logger()
 
@@ -191,14 +195,11 @@ class Module(object):
         """
         text = message.clean_content
         if self.utils.test_mode:
-            if self.utils.stampy_is_author(message):
+            if stampy_is_author(message):
                 if TEST_QUESTION_PREFIX in message.clean_content:
                     text = "stampy " + self.clean_test_prefixes(message, TEST_QUESTION_PREFIX)
-        at_me = False
+        at_me = is_stampy_mentioned(message)
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
-        text, subs = re.subn("<@!?736241264856662038>|<@&737709107066306611>", "Stampy", text)
-        if subs:
-            at_me = True
 
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
@@ -207,13 +208,14 @@ class Module(object):
             text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
             at_me = True
 
+        # TODO: Add Other Service Support
         if type(message.channel) == discord.DMChannel:
             # DMs are always at you
             at_me = True
 
         if Utilities.get_instance().client.user in message.mentions:
             # regular mentions are already covered above, this covers the case that someone reply @'s Stampy
-            log.info(self.class_name, msg="Classified as 'at stampy' because of mention")
+            self.log.info(self.class_name, msg="Classified as 'at stampy' because of mention")
             at_me = True
 
         if at_me:
@@ -224,4 +226,5 @@ class Module(object):
     def get_guild_and_invite_role(self):
         guild = self.utils.client.guilds[0]
         invite_role = discord.utils.get(guild.roles, name="can-invite")
+        # invite_role = ServiceRole(role.name, str(role.id))
         return guild, invite_role

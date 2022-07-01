@@ -6,6 +6,7 @@ from typing import Any
 class SlackUtilities:
     __instance = None
     client = None
+    user = None
 
     @staticmethod
     def get_instance():
@@ -19,8 +20,22 @@ class SlackUtilities:
         else:
             SlackUtilities.__instance = self
 
-    def stampy_is_author(self, message):
-        return "stampy" in message.author.name and message.author.is_bot
+    def stampy_is_author(self, message: "SlackMessage") -> bool:
+        return self.is_stampy(message.author)
+
+    def is_stampy(self, user: "SlackUser") -> bool:
+        if self.user:
+            return user == self.user
+        if "stampy" in user.name and user.is_bot:
+            self.user = user
+            return True
+        return False
+
+    def is_stampy_mentioned(self, message: "SlackMessage") -> bool:
+        for user in message.mentions:
+            if self.is_stampy(user):
+                return True
+        return False
 
 
 utils = SlackUtilities.get_instance()
@@ -117,3 +132,13 @@ class SlackMessage(ServiceMessage):
         else:
             id = msg["client_msg_id"]
         super().__init__(str(id), msg["text"], SlackUser(msg["user"]), channel, service)
+        self._parse_mentions()
+
+    def _parse_mentions(self):
+        for block in self._message["blocks"]:
+            if block["type"] == "rich_text":
+                for section in block["elements"]:
+                    if section["type"] == "rich_text_section":
+                        for elm in section["elements"]:
+                            if elm["type"] == "user":
+                                self.mentions.append(SlackUser(elm["user_id"]))

@@ -12,7 +12,7 @@ from utilities import (
     is_test_response,
     get_question_id,
 )
-from utilities.flaskutils import FlaskMessage
+from utilities.flaskutils import FlaskMessage, FlaskUtilities
 import asyncio
 import inspect
 import sys
@@ -28,6 +28,8 @@ class FlaskHandler(threading.Thread):
     def __init__(self):
         super().__init__(name="Flask Handler", daemon=True)
         self.utils = Utilities.get_instance()
+        self.flaskutils = FlaskUtilities.get_instance()
+        self.service_utils = self.flaskutils
         self.modules = self.utils.modules_dict.values()
 
     def process_event(self) -> FlaskResponse:
