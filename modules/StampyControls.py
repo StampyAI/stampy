@@ -3,6 +3,7 @@ import discord
 from modules.module import Module, Response
 from config import stampy_control_channel_names, TEST_RESPONSE_PREFIX
 from utilities import Utilities, get_github_info, get_memory_usage, get_running_user_info, get_question_id
+from utilities.serviceutils import Services
 
 
 class StampyControls(Module):
@@ -98,7 +99,9 @@ class StampyControls(Module):
         )
 
     async def add_member_role(self, message):
-        guild = message.guild
+        if message.service != Services.DISCORD:
+            return Response(confidence=10, text="This feature is only available on Discord")
+        guild = message._message.guild
         member_role = discord.utils.get(guild.roles, name="member")
         if not member_role:
             return Response(
