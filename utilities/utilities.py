@@ -163,7 +163,7 @@ class Utilities:
 
     def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
         for user in message.mentions:
-            if is_stampy(user):
+            if self.is_stampy(user):
                 return True
         return False
 

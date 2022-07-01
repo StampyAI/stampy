@@ -118,11 +118,12 @@ class ServiceMessage:
         self.author = author
         self.channel = channel
         self.service = service
-        self.clean_content = content.lower()
+        self.clean_content = content
         self.service = service
         self.created_at = datetime.now(timezone.utc)
         self.id = id
         self.mentions: List[ServiceUser] = []
+        self.reference: Optional[ServiceMessage] = None
 
     def __repr__(self):
         return f"ServiceMessage({self.content})"

@@ -133,6 +133,8 @@ class SlackMessage(ServiceMessage):
             id = msg["client_msg_id"]
         super().__init__(str(id), msg["text"], SlackUser(msg["user"]), channel, service)
         self._parse_mentions()
+        self.clean_content = self.clean_content.replace("<!here>", "@here")
+        self.clean_content = self.clean_content.replace("<!channel>", "@channel")
 
     def _parse_mentions(self):
         for block in self._message["blocks"]:
@@ -141,4 +143,11 @@ class SlackMessage(ServiceMessage):
                     if section["type"] == "rich_text_section":
                         for elm in section["elements"]:
                             if elm["type"] == "user":
-                                self.mentions.append(SlackUser(elm["user_id"]))
+                                user = SlackUser(elm["user_id"])
+                                self.mentions.append(user)
+                                name = ""
+                                if user.display_name:
+                                    name = f"@{user.display_name}"
+                                elif user.name:
+                                    name = f"@{user.name}"
+                                self.clean_content = self.clean_content.replace(f'<@{elm["user_id"]}>', name)

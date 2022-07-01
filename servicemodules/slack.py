@@ -13,6 +13,7 @@ from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from slack_sdk.web import WebClient
 from structlog import get_logger
+from typing import Generator
 
 log = get_logger()
 class_name = "SlackHandler"
@@ -94,7 +95,9 @@ class SlackHandler:
                     response_is_callback=bool(response.callback),
                     response_callback=response.callback,
                     response_args=args_string,
-                    response_text=response.text,
+                    response_text=(
+                        response.text if not isinstance(response.text, Generator) else "[Generator]"
+                    ),
                     response_reasons=response.why,
                 )
 
@@ -117,12 +120,15 @@ class SlackHandler:
                         if is_test_response(message.content):
                             return
                         if is_test_question(message.content):
-                            assert isinstance(top_response.text, str)
                             top_response.text = (
                                 TEST_RESPONSE_PREFIX
                                 + str(get_question_id(message))
                                 + ": "
-                                + top_response.text
+                                + (
+                                    top_response.text
+                                    if not isinstance(top_response.text, Generator)
+                                    else "".join(list(top_response.text))
+                                )
                             )
                     log.info(class_name, top_response=top_response.text)
                     if isinstance(top_response.text, str):

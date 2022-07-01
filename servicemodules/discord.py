@@ -17,6 +17,7 @@ from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
+from typing import Generator
 from config import (
     discord_token,
     bot_dev_channel_id,
@@ -124,7 +125,9 @@ class DiscordHandler:
                         response_is_callback=bool(response.callback),
                         response_callback=response.callback,
                         response_args=args_string,
-                        response_text=response.text,
+                        response_text=(
+                            response.text if not isinstance(response.text, Generator) else "[Generator]"
+                        ),
                         response_reasons=response.why,
                     )
 
@@ -145,21 +148,16 @@ class DiscordHandler:
                             if is_test_response(message.clean_content):
                                 return  # must return after process message is called so that response can be evaluated
                             if is_test_question(message.clean_content):
-                                try:
-                                    top_response.text = (
-                                        TEST_RESPONSE_PREFIX
-                                        + str(get_question_id(message))
-                                        + ": "
-                                        + top_response.text
+                                top_response.text = (
+                                    TEST_RESPONSE_PREFIX
+                                    + str(get_question_id(message))
+                                    + ": "
+                                    + (
+                                        top_response.text
+                                        if not isinstance(top_response.text, Generator)
+                                        else "".join(list(top_response.text))
                                     )
-                                except:
-                                    log.error(
-                                        class_name,
-                                        trp=TEST_RESPONSE_PREFIX,
-                                        question_id=get_question_id(message),
-                                        text=top_response.text,
-                                        embed=top_response.embed,
-                                    )
+                                )
                         log.info(class_name, top_response=top_response.text)
                         # TODO: check to see if module is allowed to embed via a config?
                         if top_response.embed:

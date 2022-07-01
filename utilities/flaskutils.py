@@ -42,7 +42,7 @@ def kill_thread(event: threading.Event, thread: threading.Thread):
 class FlaskUser(ServiceUser):
     def __init__(self):
         id = str(time.time())
-        super().__init__(id, id, id)
+        super().__init__("User", "User", id)
 
 
 class FlaskServer(ServiceServer):

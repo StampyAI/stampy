@@ -56,7 +56,7 @@ class TestModule(Module):
                 self.sent_test.append(
                     self.create_integration_test(
                         question="Developers didn't write test for %s" % str(module),
-                        expected_response="FAILED - NO TEST WRITTEN FOR %s MODULE" % str(module),
+                        expected_response="NEVER RECEIVED A RESPONSE"
                     )
                 )
                 question_id += 1
@@ -64,22 +64,23 @@ class TestModule(Module):
     def evaluate_test(self):
         correct_count = 0
         for question in self.sent_test:
+            received_response = question["received_response"].strip()  # Getting random whitespace errors
             if question["expected_regex"]:
                 question["expected_response"] = "REGULAR EXPRESSION: " + question["expected_regex"]
-                if re.search(question["expected_regex"], question["received_response"]):
+                if re.search(question["expected_regex"], received_response):
                     correct_count += 1
                     question["results"] = "PASSED"
                 else:
                     question["results"] = "FAILED"
             elif question["minimum_allowed_similarity"] == 1.0:
-                if question["expected_response"] == question["received_response"]:
+                if question["expected_response"] == received_response:
                     correct_count += 1
                     question["results"] = "PASSED"
                 else:
                     question["results"] = "FAILED"
             else:
                 text_similarity = jaro_winkler_similarity(
-                    question["expected_response"], question["received_response"]
+                    question["expected_response"], received_response
                 )
                 if text_similarity >= question["minimum_allowed_similarity"]:
                     correct_count += 1
@@ -93,7 +94,7 @@ class TestModule(Module):
         await self.send_test_questions(message)
         await sleep(3)  # Wait for test messages to go to discord and back to server
         score = self.evaluate_test()
-        test_message = "The percent of test passed is %.2f%%" % (score * 100)
+        test_message = "The percentage of tests passed is %.2f%%" % (score * 100)
         self.utils.test_mode = False
         for question_number, question in enumerate(self.sent_test):
             test_status_message = (

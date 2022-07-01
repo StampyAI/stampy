@@ -57,6 +57,7 @@ class DiscordMessage(ServiceMessage):
 
         super().__init__(str(msg.id), msg.content, author, channel, service)
         self.clean_content = msg.clean_content
+        self.clean_content = msg.clean_content.replace("\u200b", "")
         self._parse_discord_mentions(msg.mentions)
         self.reference = msg.reference
 
