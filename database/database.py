@@ -20,7 +20,6 @@ class Database:
     def open(self):
         name = self.name
         if name:
-            log.info(self.class_name, status="Connecting to database: " + name)
             try:
                 self.conn = sqlite3.connect(name)
                 self.cursor = self.conn.cursor()
