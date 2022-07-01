@@ -65,7 +65,7 @@ class Random(Module):
                     ("will me", "I will"),
                     ("are you", "you are"),
                     ("will you", "you will"),
-                    ("should you", "you should")
+                    ("should you", "you should"),
                 ]
                 for old, new in replacements:
                     result = result.replace(old, new)

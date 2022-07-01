@@ -1,5 +1,7 @@
 from unittest import TestCase
-from utilities.serviceutils import ServiceMessage, ServiceUser
+from utilities.serviceutils import ServiceMessage, ServiceUser, Services
+from utilities import Utilities
+from servicemodules.discord import DiscordHandler
 from modules.Eliza import Eliza
 
 
@@ -7,8 +9,9 @@ class TestEliza(TestCase):
     def setUp(self):
         self.eliza = Eliza()
         self.create_mock_message = lambda author, text: ServiceMessage(
-            "2", text, ServiceUser(author, author, "123"), "channel_name", "discord"
+            "2", text, ServiceUser(author, author, "123"), "channel_name", Services.DISCORD
         )
+        Utilities.get_instance().service_modules_dict[Services.DISCORD] = DiscordHandler()
 
     def test_init(self):
         self.assertEqual(self.eliza.class_name, "Eliza")
