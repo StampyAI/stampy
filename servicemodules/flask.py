@@ -151,7 +151,6 @@ class FlaskHandler(threading.Thread):
         app.run(host="0.0.0.0", port=2300)
 
     def stop(self):
-        print("Trying to die!")
         exit()
         raise SystemExit
 
