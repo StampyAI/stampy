@@ -37,4 +37,6 @@ class FlaskMessage(ServiceMessage):
         self._message = msg
         server = FlaskServer(msg["key"])
         id = str(time.time())
-        super().__init__(id, msg["content"], FlaskUser(), FlaskChannel(server), server)
+        service = Services.FLASK
+        super().__init__(id, msg["content"], FlaskUser(), FlaskChannel(server), service)
+        self.modules = msg["modules"]
