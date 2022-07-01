@@ -6,7 +6,13 @@ on:
   pull_request:
     branches:
       - '*'
-
+env:
+  ENVIRONMENT_TYPE: 'development'
+  DISCORD_TOKEN: 'testing'
+  DISCORD_GUILD: 'testing'
+  YOUTUBE_API_KEY: 'testing'
+  DATABASE_PATH: './database/stampy.db'
+  WIKI_BOT_PASSWORD: 'testing'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,8 +23,6 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install dependencies
-        with:
-          ENVIRONMENT_TYPE: 'development'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
