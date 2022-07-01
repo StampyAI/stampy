@@ -5,6 +5,7 @@ from datetime import datetime
 from api.semanticwiki import QuestionSource
 from modules.module import Module, Response
 from config import stampy_youtube_channel_id, comment_posting_threshold_factor
+from utils.discordutils import DiscordMessage
 
 
 class Reply(Module):
@@ -222,7 +223,7 @@ class Reply(Module):
             guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
             channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)
-            if self.is_at_me(message) and self.is_post_request(self.is_at_me(message)):
+            if self.is_at_me(DiscordMessage(message)) and self.is_post_request(self.is_at_me(DiscordMessage(message))):
 
                 if self.has_been_replied_to(message):
                     return
