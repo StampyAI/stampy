@@ -446,6 +446,10 @@ class Utilities:
 
         # maybe we got given a User or Member object that has an ID?
         uid = getattr(user, "id", None)
+        try:
+            uid = int(uid)
+        except ValueError:
+            pass
         log.info(self.class_name, function_name="index_dammit", uuid=uid, index=self.index)
         if uid:
             return self.index_dammit(uid)

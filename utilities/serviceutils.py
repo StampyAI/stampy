@@ -56,6 +56,9 @@ class ServiceUser:
         """
         return hash(self.id) >> 22
 
+    def __str__(self):
+        return str(self.id)
+
 
 class ServiceServer:
     def __init__(self, name: str, id: str):
