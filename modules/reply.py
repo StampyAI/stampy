@@ -5,7 +5,7 @@ from datetime import datetime
 from api.semanticwiki import QuestionSource
 from modules.module import Module, Response
 from config import stampy_youtube_channel_id, comment_posting_threshold_factor
-from utils.discordutils import DiscordMessage
+from utilities.discordutils import DiscordMessage
 
 
 class Reply(Module):
