@@ -99,7 +99,7 @@ class GPT3Module(Module):
 
         prompt = (
             f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
-            f"Stampy is helpful, intelligent, and sarcastic. He loves stamps, and always say something different every time.\n\n"
+            f"Stampy is helpful, intelligent, and sarcastic. He loves stamps, and always says something different every time.\n\n"
             f"{chatlog_string}stampy:"
         )
 
@@ -273,13 +273,8 @@ class GPT3Module(Module):
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
                 text = choice["text"].strip(". \n").split("\n")[0]
                 self.log.info(self.class_name, gpt_response=text)
-                # Once we migrate to the Message superclass for discord we can
-                # delete this check.
-                if hasattr(message, "service"):
-                    if message.service == Services.SLACK:
-                        im = slack_italics_mark
-                    else:
-                        im = default_italics_mark
+                if message.service == Services.SLACK:
+                    im = slack_italics_mark
                 else:
                     im = default_italics_mark
                 return Response(confidence=10, text=f"{im}{text}{im}", why="GPT-3 made me say it!",)
