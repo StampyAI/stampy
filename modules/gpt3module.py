@@ -1,10 +1,9 @@
+from config import CONFUSED_RESPONSE, openai_channels, openai_api_key, rob_id
+from modules.module import Module, Response
+from transformers import GPT2TokenizerFast
+from utilities.serviceutils import Services, ServiceMessage
 import openai
 import discord
-from config import CONFUSED_RESPONSE
-from config import openai_api_key, rob_id
-from transformers import GPT2TokenizerFast
-from modules.module import Module, Response
-from utilities.serviceutils import Services
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -45,19 +44,33 @@ class GPT3Module(Module):
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
         self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
+        self.allowed_channels: dict[Services, list[str]] = {}
+        for channel, service in openai_channels:
+            if service not in self.allowed_channels:
+                self.allowed_channels[service] = [channel]
+            else:
+                self.allowed_channels[service].append(channel)
 
         self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
-    def process_message(self, message):
+    def is_channel_allowed(self, message: ServiceMessage) -> bool:
+        if message.service not in self.allowed_channels:
+            return False
+        return message.channel.name in self.allowed_channels[message.service]
+
+    def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
 
-        if type(message.channel) == discord.DMChannel:
+        if message.is_dm:
             if message.author.id != rob_id:
                 self.log.info(self.class_name, author=message.author.id, author_type=type(message.author.id))
                 return Response()
 
         if not self.is_at_me(message):
             return Response()
+
+        if not self.is_channel_allowed(message):
+            return Response(confidence=-1, why=f"GPT-3 not allowed in the channel {message.channel.name} on {str(message.service)}.")
 
         return Response(confidence=2, callback=self.gpt3_chat, args=[message], kwargs={})
 

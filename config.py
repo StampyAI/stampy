@@ -1,5 +1,7 @@
-import os
+from api.utilities.gooseutils import GooseAIEngines
+from utilities.serviceutils import Services
 import dotenv
+import os
 
 dotenv.load_dotenv()
 
@@ -73,6 +75,7 @@ youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
 wiki_password = getenv("WIKI_BOT_PASSWORD")
 openai_api_key = getenv("OPENAI_API_KEY", default="null")
+goose_api_key = getenv("GOOSE_API_KEY", default="null")
 wolfram_token = getenv("WOLFRAM_TOKEN", default="null")
 # These defaults are just to not break production until slack is set up.
 slack_app_token = getenv("SLACK_APP_TOKEN", default="null")
@@ -87,4 +90,31 @@ stampy_control_channel_names = [
     "stampy-dev",
     "talk-to-stampy",
     "robertskmiles",
+]
+
+
+goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
+    GooseAIEngines.GPT_20B,
+    GooseAIEngines.GPT_6B,
+    GooseAIEngines.GPT_2_7B,
+    GooseAIEngines.GPT_1_3B,
+    GooseAIEngines.GPT_125M,
+    GooseAIEngines.FAIRSEQ_13B,
+    GooseAIEngines.FAIRSEQ_6_7B,
+    GooseAIEngines.FAIRSEQ_2_7B,
+    GooseAIEngines.FAIRSEQ_1_3B,
+    GooseAIEngines.FAIRSEQ_125M,
+]
+
+
+openai_channels: list[tuple[str, Services]] = [  # What channels may use openai.
+    ("stampy-dev-priv", Services.DISCORD),
+    ("aligned-intelligence-only", Services.DISCORD),
+    ("ai", Services.DISCORD),
+    ("not-ai", Services.DISCORD),
+    ("events", Services.DISCORD),
+    ("projects", Services.DISCORD),
+    ("memes", Services.DISCORD),
+    ("book-club", Services.DISCORD),
+    ("meta", Services.DISCORD),
 ]

@@ -441,7 +441,7 @@ class Utilities:
         uid = getattr(user, "id", None)
         try:
             uid = int(uid)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
         log.info(self.class_name, function_name="index_dammit", uuid=uid, index=self.index)
         if uid:
