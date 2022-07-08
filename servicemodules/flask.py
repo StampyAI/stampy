@@ -154,7 +154,7 @@ class FlaskHandler(threading.Thread):
         exit()
         raise SystemExit
 
-    def start(self, event: threading.Event) -> threading.Timer:
+    def start(self, event: threading.Event) -> threading.Thread:
         t = threading.Timer(1, flaskutils.kill_thread, args=[event, self])
         t.name = "Flask Killer"
         t.start()

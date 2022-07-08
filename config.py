@@ -94,7 +94,7 @@ stampy_control_channel_names = [
 
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
-    GooseAIEngines.GPT_20B,
+    # GooseAIEngines.GPT_20B,  # This is commented out as it uses a different tokenizer.
     GooseAIEngines.GPT_6B,
     GooseAIEngines.GPT_2_7B,
     GooseAIEngines.GPT_1_3B,
@@ -118,3 +118,12 @@ openai_channels: list[tuple[str, Services]] = [  # What channels may use openai.
     ("book-club", Services.DISCORD),
     ("meta", Services.DISCORD),
 ]
+
+
+service_italics_marks = {
+    Services.SLACK: "_",
+    Services.FLASK: "",
+}
+
+
+default_italics_mark = "*"
