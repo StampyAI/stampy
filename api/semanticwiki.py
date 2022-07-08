@@ -496,7 +496,7 @@ class SemanticWiki(Persistence):
                 message += "```"
                 yield message
             except Exception as e:
-                log.error(self.class_name, exception=e, traceback=traceback.format_exc())
+                log.error(self.class_name, exception=repr(e), traceback=traceback.format_exc())
                 message += repr(e) + "```"
                 yield message
 
