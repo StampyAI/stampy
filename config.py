@@ -94,7 +94,7 @@ stampy_control_channel_names = [
 
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
-    # GooseAIEngines.GPT_20B,  # This is commented out as it uses a different tokenizer.
+    GooseAIEngines.GPT_20B,
     GooseAIEngines.GPT_6B,
     GooseAIEngines.GPT_2_7B,
     GooseAIEngines.GPT_1_3B,

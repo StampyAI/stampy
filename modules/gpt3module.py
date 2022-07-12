@@ -139,8 +139,11 @@ class GPT3Module(Module):
 
         return forbidden_tokens
 
-    def get_engine(self, message: ServiceMessage):
-        if self.OpenAI.is_channel_allowed(message):
+    def tokenize(self, engine, data: str) -> int:
+        return engine.tokenizer(data)["input_ids"][0]
+
+    def get_engine(self, message: ServiceMessage, force_goose=False):
+        if self.OpenAI.is_channel_allowed(message) and not force_goose:
             return self.OpenAI.get_engine(message)
         return self.GooseAI.get_engine()
 
@@ -153,12 +156,12 @@ class GPT3Module(Module):
         forbidden_tokens = self.get_forbidden_tokens(message.channel, engine)
         self.log.info(self.class_name, forbidden_tokens=forbidden_tokens)
         logit_bias = {
-            9: -100,  # "*"
-            1174: -100,  # "**"
-            8162: -100,  # "***"
-            1635: -100,  # " *"
-            12429: -100,  # " **"
-            17202: -100,  # " ***"
+            self.tokenize(engine, "*"): -100,
+            self.tokenize(engine, "**"): -100,
+            self.tokenize(engine, "***"): -100,
+            self.tokenize(engine, " *"): -100,
+            self.tokenize(engine, " **"): -100,
+            self.tokenize(engine, " ***"): -100,
         }
         for forbidden_token in forbidden_tokens:
             logit_bias[forbidden_token] = -100
@@ -173,6 +176,27 @@ class GPT3Module(Module):
             self.log.info(self.class_name, response=response)
             if response != "":
                 return Response(confidence=10, text=f"{im}{response}{im}", why="OpenAI GPT-3 made me say it!")
+
+            # If OpenAI Failed, redo work and try GooseAI.
+            self.log.critical(self.class_name, msg="OpenAI Failed! Trying GooseAI!")
+            engine = self.get_engine(message, force_goose=True)
+            forbidden_tokens = self.get_forbidden_tokens(message.channel, engine)
+            self.log.info(self.class_name, forbidden_tokens=forbidden_tokens)
+            logit_bias = {
+                self.tokenize(engine, "*"): -100,
+                self.tokenize(engine, "**"): -100,
+                self.tokenize(engine, "***"): -100,
+                self.tokenize(engine, " *"): -100,
+                self.tokenize(engine, " **"): -100,
+                self.tokenize(engine, " ***"): -100,
+            }
+            for forbidden_token in forbidden_tokens:
+                logit_bias[forbidden_token] = -100
+
+        response = self.GooseAI.get_response(engine, prompt, logit_bias)
+        self.log.info(self.class_name, response=response)
+        if response != "":
+            return Response(confidence=10, text=f"{im}{response}{im}", why="GooseAI GPT-3 made me say it!")
 
         return Response()
 

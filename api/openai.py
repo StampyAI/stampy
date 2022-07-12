@@ -115,6 +115,7 @@ class OpenAI:
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
         if self.cf_risk_level(prompt) > 1:
+            self.log.info(self.class_name, msg="OpenAI's GPT-3 content filter thought the prompt was risky")
             return ""
 
         try:
