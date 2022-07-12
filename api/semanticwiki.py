@@ -430,6 +430,10 @@ class SemanticWiki(Persistence):
 
             message = f"Page offset {index + offset}/{max_offset}: <{item['fullurl']}>\n" f"```js\n"
             try:
+                if item["displaytitle"] == "":
+                    message += f"  WARNING: page `{page}` doesn't have a display title => skipping```\n"
+                    yield message
+                    continue
                 new_page = self.new_title_with_id(page, item["displaytitle"])
                 new_page_already_exists = (
                     page == new_page or "title" in self.get_page(new_page)["query"]["pages"][0].values()
@@ -496,7 +500,7 @@ class SemanticWiki(Persistence):
                 message += "```"
                 yield message
             except Exception as e:
-                log.error(self.class_name, exception=e, traceback=traceback.format_exc())
+                log.error(self.class_name, exception=repr(e), traceback=traceback.format_exc())
                 message += repr(e) + "```"
                 yield message
 
