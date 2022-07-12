@@ -1,7 +1,8 @@
-from config import CONFUSED_RESPONSE, openai_channels, openai_api_key, rob_id
-from modules.module import Module, Response
-from transformers import GPT2TokenizerFast
+from api.utilities.openai import OpenAIEngines
+from config import openai_channels, openai_api_key, rob_id
+from structlog import get_logger
 from utilities.serviceutils import Services, ServiceMessage
+from utilities import utilities
 import openai
 import discord
 
@@ -9,14 +10,12 @@ openai.api_key = openai_api_key
 start_sequence = "\nA:"
 restart_sequence = "\n\nQ: "
 
-default_italics_mark = "*"
-slack_italics_mark = "_"
-
 
 class OpenAI:
     def __init__(self):
         super().__init__()
         self.class_name = self.__class__.__name__
+        self.log = get_logger()
         self.allowed_channels: dict[Services, list[str]] = {}
         for channel, service in openai_channels:
             if service not in self.allowed_channels:
@@ -28,23 +27,6 @@ class OpenAI:
         if message.service not in self.allowed_channels:
             return False
         return message.channel.name in self.allowed_channels[message.service]
-
-    def get_forbidden_tokens(self, channel):
-        """Go through the chatlog and find the tokens that start each of stampy's own messages
-        This is so that we can tell GPT-3 not to use those tokens, to prevent repetition"""
-
-        forbidden_tokens = set([])
-
-        for message in self.message_logs[channel]:
-            if message.author.name == "stampy":
-                # we only need the first token, so just clip to ten chars
-                # the space is because we generate from "stampy:" so there's always a space at the start
-                text = " " + message.clean_content[:10].strip("*")
-                forbidden_token = self.tokenizer(text)["input_ids"][0]
-                forbidden_tokens.add(forbidden_token)
-                self.log.info(self.class_name, text=text, forbidden_token=forbidden_token)
-
-        return forbidden_tokens
 
     def cf_risk_level(self, prompt):
         """Ask the openai content filter if the prompt is risky
@@ -113,118 +95,51 @@ class OpenAI:
 
         return int(output_label)
 
-    def get_engine(self, message):
+    def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
 
-        guild, _ = self.get_guild_and_invite_role()
+        if message.service != Services.DISCORD:
+            return OpenAIEngines.BABBAGE
+
+        guild, _ = utilities.get_guild_and_invite_role()
 
         bot_dev_role = discord.utils.get(guild.roles, name="bot dev")
         member = guild.get_member(message.author.id)
 
         if message.author.id == rob_id:
-            return "text-davinci-001"
+            return OpenAIEngines.DAVINCI
         elif member and (bot_dev_role in member.roles):
-            return "text-curie-001"
+            return OpenAIEngines.CURIE
         else:
-            return "text-babbage-001"
+            return OpenAIEngines.BABBAGE
 
-    async def gpt3_chat(self, message):
-        """Ask GPT-3 what Stampy would say next in the chat log"""
-
-        engine = self.get_engine(message)
-        prompt = self.generate_chatlog_prompt(message.channel)
-
+    def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
         if self.cf_risk_level(prompt) > 1:
-            return Response(
-                confidence=0, text="", why=f"GPT-3's content filter thought the prompt was risky",
-            )
-
-        forbidden_tokens = self.get_forbidden_tokens(message.channel)
-        self.log.info(self.class_name, forbidden_tokens=forbidden_tokens)
-        logit_bias = {
-            9: -100,  # "*"
-            1174: -100,  # "**"
-            8162: -100,  # "***"
-            1635: -100,  # " *"
-            12429: -100,  # " **"
-            17202: -100,  # " ***"
-        }
-        for forbidden_token in forbidden_tokens:
-            logit_bias[forbidden_token] = -100
+            return ""
 
         try:
             response = openai.Completion.create(
-                engine=engine,
+                engine=str(engine),
                 prompt=prompt,
                 temperature=0,
                 max_tokens=100,
                 top_p=1,
                 # stop=["\n"],
                 logit_bias=logit_bias,
-                user=str(message.author.id),
+                # user=str(message.author.id),
             )
         except openai.error.AuthenticationError:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
-            return Response()
+            return ""
         except openai.error.RateLimitError:
             self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
-            return Response(why="Rate Limit Exceeded")
+            return ""
 
         if response["choices"]:
             choice = response["choices"][0]
             if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
                 text = choice["text"].strip(". \n").split("\n")[0]
                 self.log.info(self.class_name, gpt_response=text)
-                if message.service == Services.SLACK:
-                    im = slack_italics_mark
-                else:
-                    im = default_italics_mark
-                return Response(confidence=10, text=f"{im}{text}{im}", why="GPT-3 made me say it!",)
+                return text
 
-        return Response()
-
-    async def gpt3_question(self, message):
-        """Ask GPT-3 for an answer"""
-
-        engine = self.get_engine(message)
-
-        text = self.is_at_me(message)
-        if text.endswith("?"):
-            self.log.info(self.class_name, status="Asking GPT-3")
-            prompt = self.start_prompt + text + start_sequence
-
-            if self.cf_risk_level(prompt) > 1:
-                return Response(
-                    confidence=0, text="", why=f"GPT-3's content filter thought the prompt was risky",
-                )
-
-            try:
-                response = openai.Completion.create(
-                    engine=engine,
-                    prompt=prompt,
-                    temperature=0,
-                    max_tokens=100,
-                    top_p=1,
-                    user=str(message.author.id),
-                    # stop=["\n"],
-                )
-            except openai.error.AuthenticationError:
-                self.log.error(self.class_name, error="OpenAI Authentication Failed")
-                return Response()
-            except openai.error.RateLimitError:
-                self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
-                return Response(why="Rate Limit Exceeded")
-
-            if response["choices"]:
-                choice = response["choices"][0]
-                if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
-                    self.log.info(self.class_name, status="Asking GPT-3")
-                    return Response(
-                        confidence=10,
-                        text="*" + choice["text"].strip(". \n") + "*",
-                        why="GPT-3 made me say it!",
-                    )
-
-        # if we haven't returned yet
-        self.log.error(self.class_name, error="GPT-3 didn't make me say anything")
-        return Response()
+        return ""

@@ -24,7 +24,7 @@ class GooseAIEngines(Enum):
     def description(self) -> str:
         return self._description
 
-    @name.setter
+    @description.setter
     def description(self, value: str) -> None:
         self._description = value
 

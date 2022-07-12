@@ -24,7 +24,7 @@ class OpenAIEngines(Enum):
     def description(self) -> str:
         return self._description
 
-    @name.setter
+    @description.setter
     def description(self, value: str) -> None:
         self._description = value
 
@@ -42,6 +42,18 @@ class OpenAIEngines(Enum):
     DAVINCI = (
         "text-davinci-001",
         "Davinci 001",
-        "",
+        "Should only be used for Rob.",
+        tokenizers.gpt2,
+    )
+    CURIE = (
+        "text-curie-001",
+        "Curie 001",
+        "Should only be used for bot devs.",
+        tokenizers.gpt2,
+    )
+    BABBAGE = (
+        "text-babbage-001",
+        "Babbage 001",
+        "Should be used by everyone else.",
         tokenizers.gpt2,
     )

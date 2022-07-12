@@ -5,8 +5,7 @@ from structlog import get_logger
 from config import TEST_QUESTION_PREFIX
 from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
-from utilities.utilities import is_stampy_mentioned, stampy_is_author
-from utilities.serviceutils import ServiceRole
+from utilities.utilities import is_stampy_mentioned, stampy_is_author, get_guild_and_invite_role
 from typing import Callable, Iterable, Optional, Union
 from utilities.serviceutils import ServiceMessage
 
@@ -226,9 +225,7 @@ class Module(object):
             return False
 
     def get_guild_and_invite_role(self):
-        guild = self.utils.client.guilds[0]
-        invite_role = discord.utils.get(guild.roles, name="can-invite")
-        return guild, invite_role
+        return get_guild_and_invite_role()
 
     def dereference(self, string, who):
         """Dereference any template variables given in {{double curly brackets}}"""
