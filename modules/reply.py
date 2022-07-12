@@ -101,10 +101,7 @@ class Reply(Module):
         else:
             approver_string = ", ".join(approvers[:-1]) + ", and " + approvers[-1]
 
-        # strip off stampy's name
-        text = self.is_at_me(message)
-
-        reply_message = self.extract_reply(text)
+        reply_message = self.extract_reply(message.clean_content)
         reply_message += "\n -- _I am a bot. This reply was approved by %s_" % approver_string
 
         report = ""
