@@ -101,9 +101,6 @@ class Reply(Module):
         else:
             approver_string = ", ".join(approvers[:-1]) + ", and " + approvers[-1]
 
-        reply_message = self.extract_reply(message.clean_content)
-        reply_message += "\n -- _I am a bot. This reply was approved by %s_" % approver_string
-
         report = ""
 
         if message.reference:
@@ -154,6 +151,10 @@ class Reply(Module):
             answer_title = f"""{message.author.display_name}'s Answer to {question_title}"""
         else:
             answer_title = f"""{message.author.display_name}'s Answer"""
+
+        reply_message = self.extract_reply(message.clean_content)
+        if source == QuestionSource.YOUTUBE:
+            reply_message += "\n -- _I am a bot. This reply was approved by %s_" % approver_string
 
         quoted_reply_message = "> " + reply_message.replace("\n", "\n> ")
         report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (

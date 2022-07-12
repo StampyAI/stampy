@@ -195,9 +195,6 @@ class SemanticWiki(Persistence):
                 |stamps={', '.join(answer_users)}"""
         ftext = "{{" + ftext + "}}"
 
-        # replace square brackets with extra UTF-8 brackets
-        ftext = ftext.replace("[", "\uff3b").replace("]", "\uff3b")
-
         # Post the answer to wiki
         print("Trying to add reply " + answer_title + " to wiki")
         self.edit(answer_title, ftext)
