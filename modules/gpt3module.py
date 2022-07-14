@@ -47,8 +47,8 @@ class GPT3Module(Module):
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
         self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
-        self.OpenAI = OpenAI()
-        self.GooseAI = GooseAI()
+        self.openai = OpenAI()
+        self.gooseai = GooseAI()
 
     def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
@@ -143,9 +143,9 @@ class GPT3Module(Module):
         return engine.tokenizer(data)["input_ids"][0]
 
     def get_engine(self, message: ServiceMessage, force_goose=False):
-        if self.OpenAI.is_channel_allowed(message) and not force_goose:
-            return self.OpenAI.get_engine(message)
-        return self.GooseAI.get_engine()
+        if self.openai.is_channel_allowed(message) and not force_goose:
+            return self.openai.get_engine(message)
+        return self.gooseai.get_engine()
 
     async def gpt3_chat(self, message):
         """Ask GPT-3 what Stampy would say next in the chat log"""
@@ -171,8 +171,8 @@ class GPT3Module(Module):
         else:
             im = default_italics_mark
 
-        if self.OpenAI.is_channel_allowed(message):
-            response = self.OpenAI.get_response(engine, prompt, logit_bias)
+        if self.openai.is_channel_allowed(message):
+            response = self.openai.get_response(engine, prompt, logit_bias)
             self.log.info(self.class_name, response=response)
             if response != "":
                 return Response(confidence=10, text=f"{im}{response}{im}", why="OpenAI GPT-3 made me say it!")
@@ -193,7 +193,7 @@ class GPT3Module(Module):
             for forbidden_token in forbidden_tokens:
                 logit_bias[forbidden_token] = -100
 
-        response = self.GooseAI.get_response(engine, prompt, logit_bias)
+        response = self.gooseai.get_response(engine, prompt, logit_bias)
         self.log.info(self.class_name, response=response)
         if response != "":
             return Response(confidence=10, text=f"{im}{response}{im}", why="GooseAI GPT-3 made me say it!")
