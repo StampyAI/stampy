@@ -109,7 +109,7 @@ goose_engine_fallback_order = [  # What engine to use in order of preference in 
 
 openai_channels: list[tuple[str, Services]] = [  # What channels may use openai.
     ("stampy-dev-priv", Services.DISCORD),
-    ("aligned-intelligence-only", Services.DISCORD),
+    ("aligned-intelligences-only", Services.DISCORD),
     ("ai", Services.DISCORD),
     ("not-ai", Services.DISCORD),
     ("events", Services.DISCORD),
