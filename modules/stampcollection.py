@@ -243,7 +243,8 @@ class StampsModule(Module):
                 reaction_message_author_name=message.author.name,
             )
 
-            self.update_vote(emoji, from_id, to_id, False, False)
+            # I believe this call was a duplicate and it should not be called twice
+            # self.update_vote(emoji, from_id, to_id, False, False)
 
             stamps_before_update = self.get_user_stamps(to_id)
             self.update_vote(emoji, from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
@@ -272,6 +273,29 @@ class StampsModule(Module):
                     return Response(confidence=10, callback=self.reloadallstamps, args=[message])
                 else:
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
+
+        if self.utils.stampy_is_author(message):  # not sure how to send as stampy to test, but presumably this works
+            # Have tested the rest of this and it adds/removes stamps correctly
+
+            text = message.clean_content
+            if re.match(r"[0-9]+.+stamped.+", text):
+                users = re.findall(r"[0-9]+", text)
+                from_id = int(users[0])
+                to_id = int(users[1])
+                stamps_before_update = self.get_user_stamps(to_id)
+                emoji = "stamp"
+                negative = False
+                if re.match(r"[0-9]+.+unstamped.+", text):
+                    negative = True
+
+                self.update_vote(emoji, from_id, to_id, negative=negative)
+                self.log.info(
+                    self.class_name,
+                    reaction_message_author_id=to_id,
+                    stamps_before_update=stamps_before_update,
+                    stamps_after_update=self.get_user_stamps(to_id),
+                    negative_reaction=negative,
+                )
 
         return Response()
 
