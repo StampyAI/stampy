@@ -10,7 +10,7 @@ from utilities import (
     is_test_message,
     is_test_question,
     is_test_response,
-    get_question_id,
+    get_question_id
 )
 from utilities.flaskutils import FlaskMessage, FlaskUtilities
 import asyncio
@@ -32,6 +32,38 @@ class FlaskHandler(threading.Thread):
         self.flaskutils = FlaskUtilities.get_instance()
         self.service_utils = self.flaskutils
         self.modules = self.utils.modules_dict
+
+    def post_question(self) -> FlaskResponse:
+        """
+        Message Structure:
+
+        {
+            "question_title": str,
+            "username": str,
+            "timestamp": str,
+            "text": str,
+            "url": str,
+            "video_title": str,
+            "likes": int,
+            "asked": bool,
+            "reply_count": int
+        }
+
+        Keys are currently defined in utilities.flaskutils
+        """
+        if request.is_json:
+            message = request.get_json()
+            self.utils.wiki.add_question(
+                message["question_title"],
+                message["username"],
+                message["timestamp"],
+                message["text"],
+                comment_url=message["url"],
+                video_title=message["video_title"],
+                likes=message["likes"],
+                asked=message["asked"],
+                reply_count=message["reply_count"],
+            )
 
     def process_event(self) -> FlaskResponse:
         """
@@ -147,6 +179,7 @@ class FlaskHandler(threading.Thread):
 
     def run(self):
         app.add_url_rule("/", view_func=self.process_event, methods=["POST"])
+        app.add_url_rule("/post_question", view_func=self.post_question, methods=["POST"])
         app.add_url_rule("/list_modules", view_func=self.process_list_modules, methods=["GET"])
         app.run(host="0.0.0.0", port=2300)
 
