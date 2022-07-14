@@ -1,15 +1,3 @@
-import os
-
-# Sadly some of us run windows...
-if not os.name == "nt":
-    import pwd
-import re
-import random
-import psutil
-import discord
-from git import Repo
-from time import time
-from database.database import Database
 from api.semanticwiki import SemanticWiki, QuestionSource
 from config import (
     youtube_api_version,
@@ -31,11 +19,12 @@ from googleapiclient.errors import HttpError
 from structlog import get_logger
 from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
-from utilities.serviceutils import ServiceMessage, ServiceUser
+from utilities.serviceutils import ServiceMessage
 import discord
 import json
 import os
 import psutil
+import random
 import re
 
 # Sadly some of us run windows...
@@ -117,7 +106,9 @@ class Utilities:
 
             try:
                 self.youtube = get_youtube_api(
-                    youtube_api_service_name, youtube_api_version, developerKey=self.YOUTUBE_API_KEY,
+                    youtube_api_service_name,
+                    youtube_api_version,
+                    developerKey=self.YOUTUBE_API_KEY,
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
@@ -150,7 +141,7 @@ class Utilities:
         now = datetime.now(timezone.utc)
 
         # if there's no timestamp stored for that name, store now and don't rate limit
-        if not timer_name in self.last_timestamp:
+        if timer_name not in self.last_timestamp:
             self.last_timestamp[timer_name] = now
             return False
 
@@ -393,7 +384,12 @@ class Utilities:
                     + "{2}\n"
                     + "Is it an interesting question? Maybe we can answer it!\n"
                     + "{3}"
-                ).format(comment["username"], self.get_title(comment["url"])[1], text_quoted, comment["url"],)
+                ).format(
+                    comment["username"],
+                    self.get_title(comment["url"])[1],
+                    text_quoted,
+                    comment["url"],
+                )
         elif comment["source"] == QuestionSource.WIKI:
             report = "Wiki User {0} asked this question.\n{1}\n".format(
                 comment["username"], comment["question_title"]
@@ -441,7 +437,7 @@ class Utilities:
         uid = getattr(user, "id", None)
         try:
             uid = int(uid)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
         log.info(self.class_name, function_name="index_dammit", uuid=uid, index=self.index)
         if uid:
@@ -496,7 +492,10 @@ class Utilities:
             # this should actually only happen in dev
             video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
-        display_title = "{0}'s question on {1}".format(comment["username"], video_titles[0],)
+        display_title = "{0}'s question on {1}".format(
+            comment["username"],
+            video_titles[0],
+        )
 
         return self.wiki.add_question(
             display_title,
@@ -625,3 +624,10 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
 def stampy_is_author(message: ServiceMessage) -> bool:
     utils = Utilities.get_instance()
     return utils.service_modules_dict[message.service].service_utils.stampy_is_author(message)
+
+
+def get_guild_and_invite_role():
+    utils = Utilities.get_instance()
+    guild = utils.client.guilds[0]
+    invite_role = discord.utils.get(guild.roles, name="can-invite")
+    return guild, invite_role
