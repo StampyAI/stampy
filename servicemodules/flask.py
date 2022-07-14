@@ -148,7 +148,7 @@ class FlaskHandler(threading.Thread):
     def run(self):
         app.add_url_rule("/", view_func=self.process_event, methods=["POST"])
         app.add_url_rule("/list_modules", view_func=self.process_list_modules, methods=["GET"])
-        app.run(host="0.0.0.0", port=2300)
+        app.run(host="0.0.0.0", port=2300, debug=False)
 
     def stop(self):
         exit()
