@@ -1,5 +1,6 @@
 import sys
 import discord
+import re
 from modules.module import Module, Response
 from config import stampy_control_channel_names, TEST_RESPONSE_PREFIX
 from utilities import Utilities, get_github_info, get_memory_usage, get_running_user_info, get_question_id
@@ -22,13 +23,18 @@ class StampyControls(Module):
             "resetinviteroles": self.resetinviteroles,
             "stats": self.get_stampy_stats,
             "add member role to everyone": self.add_member_role,
+            "echo": self.echo,
         }
 
     def is_at_module(self, message):
         text = self.is_at_me(message)
         if text:
-            return text.lower() in self.routines
-        return False
+            if text.lower() in self.routines:
+                return text.lower()
+            else:
+                if text.split()[0] in self.routines:
+                    return text.split()[0]
+        return None
 
     async def send_control_message(self, message, text):
         if self.utils.test_mode:
@@ -38,8 +44,8 @@ class StampyControls(Module):
             await message.channel.send(text)
 
     def process_message(self, message):
-        if self.is_at_module(message):
-            routine_name = self.is_at_me(message).lower()
+        routine_name = self.is_at_module(message)
+        if routine_name:
             routine = self.routines[routine_name]
             return Response(
                 confidence=10,
@@ -62,6 +68,24 @@ class StampyControls(Module):
         return Response(
             confidence=10,
             why="%s tried to kill me! They said 'reboot'" % message.author.name,
+            text="You're not my supervisor!",
+        )
+
+    async def echo(self, message):
+        asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+        if asked_by_admin:
+            text = self.is_at_me(message)
+            echo_text = re.search(r'"(.*)"', text)
+            self.log.info(self.class_name, msg="[echoing message]")
+            return Response(
+                confidence=10,
+                why="%s asked me to echo" % message.author.name,
+                text=echo_text.group(1),
+            )
+        self.log.warning(self.class_name, msg="Stampy was asked to echo, but the user was not a bot admin")
+        return Response(
+            confidence=10,
+            why="%s asked me to echo" % message.author.name,
             text="You're not my supervisor!",
         )
 
