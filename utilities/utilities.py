@@ -476,7 +476,8 @@ class Utilities:
         return self.db.query(query)[0][0]
 
     def get_all_user_votes(self):
-        return self.db.get("uservotes", "user,votedFor,votecount")
+        query = "SELECT user,votedFor,votecount from uservotes;"
+        return self.db.query(query)
 
     def get_users(self):
         query = "SELECT user from (SELECT user FROM uservotes UNION SELECT votedFor as user FROM uservotes)"
