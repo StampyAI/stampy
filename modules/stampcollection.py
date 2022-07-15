@@ -6,6 +6,7 @@ from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path
 
+from stampy.utilities.discordutils import DiscordMessage
 from stampy.utilities.serviceutils import Services
 
 
@@ -171,6 +172,7 @@ class StampsModule(Module):
                 )
                 if channel.type == discord.ChannelType.text:
                     async for message in channel.history(limit=None):
+                        dmessage = DiscordMessage(message)
                         reactions = message.reactions
                         if reactions:
                             for reaction in reactions:
@@ -196,8 +198,8 @@ class StampsModule(Module):
                                         self.update_vote(
                                             reaction_type, user.id, message.author.id, False, False,
                                         )
-                        if utilities.stampy_is_author(message):
-                            text = message.clean_content
+                        if utilities.stampy_is_author(dmessage):
+                            text = dmessage.clean_content
                             if re.match(r"[0-9]+.+stamped.+", text):
                                 users = re.findall(r"[0-9]+", text)
                                 from_id = int(users[0])
