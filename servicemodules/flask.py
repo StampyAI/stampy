@@ -33,6 +33,35 @@ class FlaskHandler(threading.Thread):
         self.service_utils = self.flaskutils
         self.modules = self.utils.modules_dict
 
+    def post_question(self):
+        """
+        Message Structure:
+        {
+            "question_title": str,
+            "username": str,
+            "timestamp": str -- ISO Date: "2011-10-05T14:48:00.000Z",
+            "text": str,
+            "url": str with commentid -- "https://www...com/...&lc=1025",
+            "video_title": str,
+            "likes": int,
+            "asked": bool,
+            "reply_count": int
+        }
+        """
+        if request.is_json:
+            message = request.get_json()
+            self.utils.wiki.add_question(message["question_title"],
+                                         message["username"],
+                                         message["timestamp"],
+                                         message["text"],
+                                         message["url"],
+                                         message["video_title"],
+                                         message["likes"],
+                                         message["asked"],
+                                         message["reply_count"]
+                                         )
+            return
+
     def process_event(self) -> FlaskResponse:
         """
         Message Structure:
@@ -147,6 +176,7 @@ class FlaskHandler(threading.Thread):
 
     def run(self):
         app.add_url_rule("/", view_func=self.process_event, methods=["POST"])
+        app.add_url_rule("/post_question", view_func=self.post_question, methods=["POST"])
         app.add_url_rule("/list_modules", view_func=self.process_list_modules, methods=["GET"])
         app.run(host="0.0.0.0", port=2300)
 
