@@ -27,7 +27,7 @@ class StampsModule(Module):
         self.log.info(self.class_name, status="WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, str(rob_id))
+        self.utils.update_vote(god_id, str(rob_id), self.red_stamp_value)
 
     def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
 
@@ -290,7 +290,8 @@ class StampsModule(Module):
                 )
 
             elif text == "reloadallstamps":
-                if message.author.id == rob_id:
+                asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+                if asked_by_admin:
                     return Response(confidence=10, callback=self.reloadallstamps, args=[message])
                 else:
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
