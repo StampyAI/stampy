@@ -167,7 +167,7 @@ class Utilities:
     def is_stampy(self, user: DiscordUser) -> bool:
         if self.discord_user:
             return user == self.discord_user
-        if user.id == self.client.user.id:  # These are both int now
+        if user.id == str(self.client.user.id):
             self.discord_user = user
             return True
         return False

@@ -1,9 +1,13 @@
 import re
 import discord
 import numpy as np
+from utilities import utilities
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path
+
+from stampy.utilities.serviceutils import Services
+
 
 class StampsModule(Module):
 
@@ -192,7 +196,7 @@ class StampsModule(Module):
                                         self.update_vote(
                                             reaction_type, user.id, message.author.id, False, False,
                                         )
-                        if self.utils.stampy_is_author(message):
+                        if utilities.stampy_is_author(message):
                             text = message.clean_content
                             if re.match(r"[0-9]+.+stamped.+", text):
                                 users = re.findall(r"[0-9]+", text)
@@ -289,7 +293,8 @@ class StampsModule(Module):
                 )
 
             elif text == "reloadallstamps":
-                if message.service.name == "DISCORD":
+                print(type(message))
+                if message.service == Services.DISCORD:
                     asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
                     if asked_by_admin:
                         return Response(confidence=10, callback=self.reloadallstamps, args=[message])
