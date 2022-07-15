@@ -71,7 +71,7 @@ class Database:
 
     def query(self, sql, args=None):
         self.try_open()
-        if args:
+        if args is not None:
             self.cursor.execute(sql, args)
         else:
             self.cursor.execute(sql)

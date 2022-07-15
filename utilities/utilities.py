@@ -454,21 +454,22 @@ class Utilities:
 
     def update_vote(self, user, voted_for, vote_quantity):
         query = (
-            "INSERT OR REPLACE INTO uservotes VALUES ({0},{1},IFNULL((SELECT votecount "
-            "FROM uservotes WHERE user = {0} AND votedFor = {1}),0)+{2})".format(
-                user, voted_for, vote_quantity
-            )
+            "INSERT OR REPLACE INTO uservotes VALUES (:user,:voted_for,IFNULL((SELECT votecount "
+            "FROM uservotes WHERE user = :user AND votedFor = :voted_for),0)+:vote_quantity)"
         )
-        self.db.query(query)
+        args = {"user": user, "voted_for": voted_for, "vote_quantity": vote_quantity}
+        self.db.query(query, args)
         self.db.commit()
 
     def get_votes_by_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = {0}".format(user)
-        return self.db.query(query)[0][0]
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = ?"
+        args = (user,)
+        return self.db.query(query, args)[0][0]
 
     def get_votes_for_user(self, user):
-        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = {0}".format(user)
-        return self.db.query(query)[0][0]
+        query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = ?"
+        args = (user,)
+        return self.db.query(query, args)[0][0]
 
     def get_total_votes(self):
         query = "SELECT sum(votecount) from uservotes where user is not 0"
@@ -509,7 +510,7 @@ class Utilities:
         )
 
     def get_title(self, url):
-        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="{0}"'.format(url))
+        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="?"', url)
         if result:
             return result[0][0], result[0][1]
         return None
