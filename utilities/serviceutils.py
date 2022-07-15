@@ -8,6 +8,9 @@ class Services(Enum):
     FLASK = "Flask"
     SLACK = "Slack"
 
+    def __str__(self) -> None:
+        return str(self._value_)
+
 
 class ServiceRole:
     def __init__(self, name: str, id: str):

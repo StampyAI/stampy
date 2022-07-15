@@ -181,13 +181,13 @@ class FlaskHandler(threading.Thread):
         app.add_url_rule("/", view_func=self.process_event, methods=["POST"])
         app.add_url_rule("/post_question", view_func=self.post_question, methods=["POST"])
         app.add_url_rule("/list_modules", view_func=self.process_list_modules, methods=["GET"])
-        app.run(host="0.0.0.0", port=2300)
+        app.run(host="0.0.0.0", port=2300, debug=False)
 
     def stop(self):
         exit()
         raise SystemExit
 
-    def start(self, event: threading.Event) -> threading.Timer:
+    def start(self, event: threading.Event) -> threading.Thread:
         t = threading.Timer(1, flaskutils.kill_thread, args=[event, self])
         t.name = "Flask Killer"
         t.start()

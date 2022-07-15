@@ -243,7 +243,8 @@ class StampsModule(Module):
                 reaction_message_author_name=message.author.name,
             )
 
-            self.update_vote(emoji, from_id, to_id, False, False)
+            # I believe this call was a duplicate and it should not be called twice
+            # self.update_vote(emoji, from_id, to_id, False, False)
 
             stamps_before_update = self.get_user_stamps(to_id)
             self.update_vote(emoji, from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
@@ -274,6 +275,27 @@ class StampsModule(Module):
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
         return Response()
+
+    def process_message_from_stampy(self, message):
+        text = message.clean_content
+        if re.match(r"[0-9]+.+stamped.+", text):
+            users = re.findall(r"[0-9]+", text)
+            from_id = int(users[0])
+            to_id = int(users[1])
+            stamps_before_update = self.get_user_stamps(to_id)
+            emoji = "stamp"
+            negative = False
+            if re.match(r"[0-9]+.+unstamped.+", text):
+                negative = True
+
+            self.update_vote(emoji, from_id, to_id, negative=negative)
+            self.log.info(
+                self.class_name,
+                reaction_message_author_id=to_id,
+                stamps_before_update=stamps_before_update,
+                stamps_after_update=self.get_user_stamps(to_id),
+                negative_reaction=negative,
+            )
 
     async def reloadallstamps(self, message):
         self.log.info(self.class_name, ALERT="FULL STAMP HISTORY RESET BAYBEEEEEE")
