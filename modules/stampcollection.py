@@ -5,7 +5,6 @@ from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path
 
-
 class StampsModule(Module):
 
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
@@ -290,9 +289,10 @@ class StampsModule(Module):
                 )
 
             elif text == "reloadallstamps":
-                asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
-                if asked_by_admin:
-                    return Response(confidence=10, callback=self.reloadallstamps, args=[message])
+                if message.service.name == "DISCORD":
+                    asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+                    if asked_by_admin:
+                        return Response(confidence=10, callback=self.reloadallstamps, args=[message])
                 else:
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
