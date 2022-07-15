@@ -6,8 +6,8 @@ from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path
 
-from stampy.utilities.discordutils import DiscordMessage
-from stampy.utilities.serviceutils import Services
+from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import Services
 
 
 class StampsModule(Module):
