@@ -295,7 +295,6 @@ class StampsModule(Module):
                 )
 
             elif text == "reloadallstamps":
-                print(type(message))
                 if message.service == Services.DISCORD:
                     asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
                     if asked_by_admin:
