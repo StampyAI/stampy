@@ -511,7 +511,7 @@ class Utilities:
         )
 
     def get_title(self, url):
-        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="?"', url)
+        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="?"', (url,))
         if result:
             return result[0][0], result[0][1]
         return None
