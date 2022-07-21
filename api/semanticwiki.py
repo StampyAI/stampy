@@ -296,7 +296,7 @@ class SemanticWiki(Persistence):
 
     def get_unasked_wiki_question(self, sort, order):
         query = (
-            "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
+            "[[AnsweredStatus::Unanswered]][[AskedOnDiscord::f]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
             + "?asker|?AskDate|?AskedOnDiscord|sort=AskedOnDiscord,{0}|limit=1|order=asc,{1}".format(
                 sort, order
             )
@@ -324,7 +324,7 @@ class SemanticWiki(Persistence):
 
     def get_unasked_youtube_question(self, sort, order):
         query = (
-            "[[Category:Unanswered questions]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
+            "[[AnsweredStatus::Unanswered]][[AskedOnDiscord::f]][[Origin::YouTube]][[ForRob::!true]]|?Question|"
             + "?asker|?AskDate|?CommentURL|?AskedOnDiscord|?video|sort={0}|limit=1|order={1}".format(
                 sort, order
             )
