@@ -53,25 +53,9 @@ class Database:
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-    def get(self, table, columns, limit=None):
-        self.try_open()
-        query = "SELECT {0} from {1}".format(columns, table)
-        # Limit goes at the end...
-        if limit is not None:
-            query += " LIMIT {0}".format(limit)
-        query += ";"
-        self.cursor.execute(query)
-        data = self.cursor.fetchall()
-        self.close()
-
-        return data
-
-    def get_last(self, table, columns):
-        return self.get(table, columns, limit=1)[0]
-
     def query(self, sql, args=None):
         self.try_open()
-        if args:
+        if args is not None:
             self.cursor.execute(sql, args)
         else:
             self.cursor.execute(sql)
