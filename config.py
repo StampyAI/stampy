@@ -23,7 +23,7 @@ youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
 rob_id = 181142785259208704
 stampy_id = "736241264856662038"
-wikifeed_id = "818635549296427038"
+wikifeed_id = "819348549820088350"
 plex_id = "756254556811165756"
 god_id = "0"
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
