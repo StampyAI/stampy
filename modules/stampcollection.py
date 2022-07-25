@@ -174,7 +174,27 @@ class StampsModule(Module):
                     async for message in channel.history(limit=None):
                         message = DiscordMessage(message)
                         reactions = message.reactions
-                        if reactions:
+                        if utilities.stampy_is_author(message):
+                            text = message.clean_content
+                            if re.match(r"[0-9]+.+stamped.+", text):
+                                users = re.findall(r"[0-9]+", text)
+                                from_id = int(users[0])
+                                to_id = int(users[1])
+                                stamps_before_update = self.get_user_stamps(to_id)
+                                emoji = "stamp"
+                                negative = False
+                                if re.match(r"[0-9]+.+unstamped.+", text):
+                                    negative = True
+
+                                self.update_vote(emoji, from_id, to_id, negative=negative)
+                                self.log.info(
+                                    self.class_name,
+                                    reaction_message_author_id=to_id,
+                                    stamps_before_update=stamps_before_update,
+                                    stamps_after_update=self.get_user_stamps(to_id),
+                                    negative_reaction=negative,
+                                )
+                        elif reactions:
                             for reaction in reactions:
                                 reaction_type = getattr(reaction.emoji, "name", "")
                                 if reaction_type in ["stamp", "goldstamp"]:
@@ -198,27 +218,6 @@ class StampsModule(Module):
                                         self.update_vote(
                                             reaction_type, user.id, message.author.id, False, False,
                                         )
-                        if utilities.stampy_is_author(message):
-                            text = message.clean_content
-                            if re.match(r"[0-9]+.+stamped.+", text):
-                                users = re.findall(r"[0-9]+", text)
-                                from_id = int(users[0])
-                                to_id = int(users[1])
-                                stamps_before_update = self.get_user_stamps(to_id)
-                                emoji = "stamp"
-                                negative = False
-                                if re.match(r"[0-9]+.+unstamped.+", text):
-                                    negative = True
-
-                                self.update_vote(emoji, from_id, to_id, negative=negative)
-                                self.log.info(
-                                    self.class_name,
-                                    reaction_message_author_id=to_id,
-                                    stamps_before_update=stamps_before_update,
-                                    stamps_after_update=self.get_user_stamps(to_id),
-                                    negative_reaction=negative,
-                                )
-
         self.calculate_stamps()
 
     async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
