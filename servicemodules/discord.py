@@ -6,6 +6,7 @@ import threading
 import unicodedata
 from utilities import (
     Utilities,
+    utilities,
     get_question_id,
     is_test_response,
     is_test_message,
@@ -61,10 +62,10 @@ class DiscordHandler:
 
         @self.utils.client.event
         async def on_message(message: discord.message.Message) -> None:
-            # don't react to our own messages unless running test
-            message_author_is_stampy = message.author == self.utils.client.user
-
             message = DiscordMessage(message)
+
+            # don't react to our own messages unless running test
+            message_author_is_stampy = utilities.stampy_is_author(message)
             if is_test_message(message.clean_content) and self.utils.test_mode:
                 log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
             elif message_author_is_stampy:
