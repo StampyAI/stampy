@@ -172,7 +172,7 @@ class StampsModule(Module):
                 )
                 if channel.type == discord.ChannelType.text:
                     async for message in channel.history(limit=None):
-                        dmessage = DiscordMessage(message)
+                        message = DiscordMessage(message)
                         reactions = message.reactions
                         if reactions:
                             for reaction in reactions:
@@ -198,8 +198,8 @@ class StampsModule(Module):
                                         self.update_vote(
                                             reaction_type, user.id, message.author.id, False, False,
                                         )
-                        if utilities.stampy_is_author(dmessage):
-                            text = dmessage.clean_content
+                        if utilities.stampy_is_author(message):
+                            text = message.clean_content
                             if re.match(r"[0-9]+.+stamped.+", text):
                                 users = re.findall(r"[0-9]+", text)
                                 from_id = int(users[0])
@@ -241,10 +241,10 @@ class StampsModule(Module):
 
         if not channel:
             return
-        message = await channel.fetch_message(event.message_id)
+        message = DiscordMessage(await channel.fetch_message(event.message_id))
         emoji = getattr(event.emoji, "name", event.emoji)
 
-        if message.author.id == 736241264856662038:
+        if utilities.stampy_is_author(message):
             # votes for stampy don't affect voting
             return
         if message.author.id == event.user_id:
