@@ -12,7 +12,10 @@ class Services(Enum):
         return str(self._value_)
 
     def __eq__(self, other: object) -> bool:
-        return str(self) == str(other)
+        try:
+            return str(self) == str(other)
+        except Exception:
+            return False
 
     def __hash__(self):
 
