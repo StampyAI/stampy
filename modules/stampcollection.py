@@ -1,9 +1,13 @@
 import re
 import discord
 import numpy as np
+from utilities import utilities
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path
+
+from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import Services
 
 
 class StampsModule(Module):
@@ -27,7 +31,7 @@ class StampsModule(Module):
         self.log.info(self.class_name, status="WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, str(rob_id))
+        self.utils.update_vote(god_id, str(rob_id), self.red_stamp_value)
 
     def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
 
@@ -168,8 +172,29 @@ class StampsModule(Module):
                 )
                 if channel.type == discord.ChannelType.text:
                     async for message in channel.history(limit=None):
+                        message = DiscordMessage(message)
                         reactions = message.reactions
-                        if reactions:
+                        if utilities.stampy_is_author(message):
+                            text = message.clean_content
+                            if re.match(r"[0-9]+.+stamped.+", text):
+                                users = re.findall(r"[0-9]+", text)
+                                from_id = int(users[0])
+                                to_id = int(users[1])
+                                stamps_before_update = self.get_user_stamps(to_id)
+                                emoji = "stamp"
+                                negative = False
+                                if re.match(r"[0-9]+.+unstamped.+", text):
+                                    negative = True
+
+                                self.update_vote(emoji, from_id, to_id, negative=negative)
+                                self.log.info(
+                                    self.class_name,
+                                    reaction_message_author_id=to_id,
+                                    stamps_before_update=stamps_before_update,
+                                    stamps_after_update=self.get_user_stamps(to_id),
+                                    negative_reaction=negative,
+                                )
+                        elif reactions:
                             for reaction in reactions:
                                 reaction_type = getattr(reaction.emoji, "name", "")
                                 if reaction_type in ["stamp", "goldstamp"]:
@@ -215,10 +240,10 @@ class StampsModule(Module):
 
         if not channel:
             return
-        message = await channel.fetch_message(event.message_id)
+        message = DiscordMessage(await channel.fetch_message(event.message_id))
         emoji = getattr(event.emoji, "name", event.emoji)
 
-        if message.author.id == 736241264856662038:
+        if utilities.stampy_is_author(message):
             # votes for stampy don't affect voting
             return
         if message.author.id == event.user_id:
@@ -269,8 +294,10 @@ class StampsModule(Module):
                 )
 
             elif text == "reloadallstamps":
-                if message.author.id == rob_id:
-                    return Response(confidence=10, callback=self.reloadallstamps, args=[message])
+                if message.service == Services.DISCORD:
+                    asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+                    if asked_by_admin:
+                        return Response(confidence=10, callback=self.reloadallstamps, args=[message])
                 else:
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 

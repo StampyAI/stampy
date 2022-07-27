@@ -60,6 +60,7 @@ class DiscordMessage(ServiceMessage):
         self.clean_content = msg.clean_content.replace("\u200b", "")
         self._parse_discord_mentions(msg.mentions)
         self.reference = msg.reference
+        self.reactions = msg.reactions  # We need reactions for recalculating stamps from history
         if guild is None:
             self.is_dm = True
 

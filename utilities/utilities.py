@@ -10,6 +10,7 @@ from config import (
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
     wiki_config,
+    wikifeed_id,
 )
 from database.database import Database
 from datetime import datetime, timezone, timedelta
@@ -156,6 +157,8 @@ class Utilities:
         return self.is_stampy(message.author)
 
     def is_stampy(self, user: DiscordUser) -> bool:
+        if user.id == wikifeed_id:  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
+            return True
         if self.discord_user:
             return user == self.discord_user
         if user.id == str(self.client.user.id):
