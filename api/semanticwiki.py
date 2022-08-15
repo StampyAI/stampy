@@ -296,8 +296,9 @@ class SemanticWiki(Persistence):
 
     def get_unasked_wiki_question(self, sort, order):
         query = (
-            "[[AnsweredStatus::Unanswered]][[AskedOnDiscord::f]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
-            + "?asker|?AskDate|?AskedOnDiscord|sort=AskedOnDiscord,{0}|limit=1|order=asc,{1}".format(
+            "[[AnsweredStatus::Unanswered]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
+            + "?asker|?AskDate|?AskedOnDiscord |?Canonical"
+            + "|sort=AskedOnDiscord,Canonical,{0}|limit=1|order=asc,asc,{1}".format(
                 sort, order
             )
         )
