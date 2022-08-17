@@ -298,7 +298,7 @@ class SemanticWiki(Persistence):
         query = (
             "[[AnsweredStatus::Unanswered]][[Origin::Wiki]][[ForRob::!true]]|?Question|"
             + "?asker|?AskDate|?AskedOnDiscord |?Canonical"
-            + "|sort=AskedOnDiscord,Canonical,{0}|limit=1|order=asc,asc,{1}".format(
+            + "|sort=AskedOnDiscord,Canonical,{0}|limit=1|order=asc,desc,{1}".format(
                 sort, order
             )
         )
