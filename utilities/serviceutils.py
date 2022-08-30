@@ -1,25 +1,8 @@
+from config import Services
 from datetime import datetime, timezone
 from typing import Optional
 from enum import Enum
 
-
-class Services(Enum):
-    DISCORD = "Discord"
-    FLASK = "Flask"
-    SLACK = "Slack"
-
-    def __str__(self) -> None:
-        return str(self._value_)
-
-    def __eq__(self, other: object) -> bool:
-        try:
-            return str(self) == str(other)
-        except Exception:
-            return False
-
-    def __hash__(self):
-
-        return hash(str(self)) >> 22
 
 class ServiceRole:
     def __init__(self, name: str, id: str):

@@ -5,7 +5,6 @@ from servicemodules.discord import DiscordHandler
 from servicemodules.slack import SlackHandler
 from servicemodules.flask import FlaskHandler
 from utilities import Utilities
-from utilities.serviceutils import Services
 from structlog import get_logger
 from modules.module import Module
 from config import (
@@ -13,6 +12,7 @@ from config import (
     prod_local_path,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
+    Services,
 )
 
 log_type = "stam.py"

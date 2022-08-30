@@ -1,5 +1,5 @@
 from api.utilities.gooseutils import GooseAIEngines
-from utilities.serviceutils import Services
+from enum import Enum
 import dotenv
 import os
 
@@ -15,6 +15,25 @@ def getenv(env_var, default=None):
     if value is None:
         raise Exception(f"Environment Variable '{env_var}' not set and no default provided")
     return value
+
+
+class Services(Enum):
+    DISCORD = "Discord"
+    FLASK = "Flask"
+    SLACK = "Slack"
+
+    def __str__(self) -> None:
+        return str(self._value_)
+
+    def __eq__(self, other: object) -> bool:
+        try:
+            return str(self) == str(other)
+        except Exception:
+            return False
+
+    def __hash__(self):
+
+        return hash(str(self)) >> 22
 
 
 maximum_recursion_depth = 30
