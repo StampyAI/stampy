@@ -116,6 +116,7 @@ openai_channels: list[tuple[str, Services]] = [  # What channels may use openai.
     ("events", Services.DISCORD),
     ("projects", Services.DISCORD),
     ("book-club", Services.DISCORD),
+    ("dialogues-with-stampy", Services.DISCORD),
     ("meta", Services.DISCORD),
 ]
 
