@@ -4,10 +4,8 @@ import numpy as np
 from utilities import utilities
 from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
-from config import stamp_scores_csv_file_path
-
+from config import stamp_scores_csv_file_path, Services
 from utilities.discordutils import DiscordMessage
-from utilities.serviceutils import Services
 
 
 class StampsModule(Module):
