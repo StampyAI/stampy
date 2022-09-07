@@ -81,7 +81,7 @@ jobs:
             conda activate stampy
             python -m scripts.notify-discord-stampy-offline
             git stash
-            git pull
+            git pull --rebase
             conda deactivate
             conda env remove -n stampy
             conda env create -f environment.yml
