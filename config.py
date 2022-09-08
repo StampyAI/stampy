@@ -81,6 +81,7 @@ stampy_youtube_channel_id = {
 }[ENVIRONMENT_TYPE]
 
 bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
+error_channel_id = {"production": 1017527224540344380, "development": 1017531179664150608}[ENVIRONMENT_TYPE]
 
 stamp_scores_csv_file_path = {
     "production": "/var/www/html/stamps-export.csv",
