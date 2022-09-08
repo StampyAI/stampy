@@ -37,7 +37,7 @@ class DiscordHandler:
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
-        self.error_channel = await client.get_channel(error_channel_id)
+        self.error_channel = None
         """
         All Discord Functions need to be under another function in order to
         use self.
@@ -109,6 +109,8 @@ class DiscordHandler:
                     parts.extend(traceback.format_stack(limit=25)[:-2])
                     parts.extend(traceback.format_exception(*sys.exc_info())[1:])
                     message = "".join(parts)
+                    if self.error_channel is None:
+                        self.error_channel = await client.get_channel(error_channel_id)
                     await self.error_channel.send(f"```{message}```")
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
