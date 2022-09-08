@@ -37,7 +37,7 @@ class DiscordHandler:
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
-        self.error_channel = await client.get_channel(error_channel_id)
+        self.error_channel = asyncio.run(client.get_channel(error_channel_id))
         """
         All Discord Functions need to be under another function in order to
         use self.
