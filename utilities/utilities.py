@@ -121,6 +121,7 @@ class Utilities:
             self.db = Database(self.DB_PATH)
             intents = discord.Intents.default()
             intents.members = True
+            intents.message_content = True
             self.client = discord.Client(intents=intents)
             self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
 
