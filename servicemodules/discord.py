@@ -222,7 +222,7 @@ class DiscordHandler:
                         # Don't ask anything if the last thing posted in the chat was stampy asking a question
                         self.utils.last_question_asked_timestamp = now
                         # this actually gets the question and sets it to asked, then sends the report
-                        report = self.utils.get_question(order_type="LATEST")
+                        report = self.utils.get_question(order_type=utilities.OrderType.LATEST)
                         guild = discord.utils.find(
                             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
                         )

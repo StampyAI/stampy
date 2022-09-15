@@ -31,6 +31,7 @@ class StampsModule(Module):
         self.utils.clear_votes()
         self.utils.update_vote(god_id, str(rob_id), self.red_stamp_value)
 
+    #TODO: stringenum
     def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
 
         if to_id == stampy_id:
