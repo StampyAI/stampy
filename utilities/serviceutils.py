@@ -1,20 +1,19 @@
 from config import Services
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
-from enum import Enum
 
-
+@dataclass(slots=True)
 class ServiceRole:
-    def __init__(self, name: str, id: str):
-        self.name = name
-        self.id = id
+    name: str
+    id: str
+    _role: object = field(default=None, init=False)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
             return self.id == other
-        if hasattr(self, "_role"):
-            if type(self._role) == type(other):
-                return self._role == other
+        if self._role is not None and type(self._role) == type(other):
+            return self._role == other
         if not isinstance(other, ServiceRole):
             return False
         return (self.id == other.id) and type(self) == type(other)
@@ -27,19 +26,19 @@ class ServiceRole:
         return hash(self.id) >> 22
 
 
+@dataclass(slots=True)
 class ServiceUser:
-    def __init__(self, name: str, display_name: str, id: str):
-        self.name = name
-        self.id = id
-        self.display_name = display_name
-        self.roles: list[ServiceRole] = []
+    name: str
+    display_name: str
+    id: str
+    roles: list[ServiceRole] = field(default_factory=list, init=False)
+    _user: object = field(default=None, init=False)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
             return self.id == other
-        if hasattr(self, "_user"):
-            if type(self._user) == type(other):
-                return self._user == other
+        if self._user is not None and type(self._user) == type(other):
+            return self._user == other
         if not isinstance(other, ServiceUser):
             return False
         return (self.id == other.id) and type(self) == type(other)
@@ -55,17 +54,17 @@ class ServiceUser:
         return str(self.id)
 
 
+@dataclass(slots=True)
 class ServiceServer:
-    def __init__(self, name: str, id: str):
-        self.name = name
-        self.id = id
+    name: str
+    id: str
+    _server: object = field(default=None, init=False)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
             return self.id == other
-        if hasattr(self, "_server"):
-            if type(self._server) == type(other):
-                return self._server == other
+        if self._server is None and type(self._server) == type(other):
+            return self._server == other
         if not isinstance(other, ServiceServer):
             return False
         return (self.id == other.id) and type(self) == type(other)
@@ -78,11 +77,12 @@ class ServiceServer:
         return hash(self.id) >> 22
 
 
+@dataclass(slots=True)
 class ServiceChannel:
-    def __init__(self, name: str, id: str, server: Optional[ServiceServer]):
-        self.id = id
-        self.name = name
-        self.server = server
+    name: str
+    id: str
+    server: Optional[ServiceServer]
+    _channel: object = field(default=None, init=False)
 
     def __repr__(self):
         return f"ServiceChannel({self.id})"
@@ -90,9 +90,8 @@ class ServiceChannel:
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
             return self.id == other
-        if hasattr(self, "_channel"):
-            if type(self._channel) == type(other):
-                return self._channel == other
+        if self._channel and type(self._channel) == type(other):
+            return self._channel == other
         if not isinstance(other, ServiceChannel):
             return False
         return (self.id == other.id) and type(self) == type(other)
@@ -108,31 +107,28 @@ class ServiceChannel:
         raise NotImplementedError()
 
 
+@dataclass(slots=True)
 class ServiceMessage:
-    def __init__(
-        self, id: str, content: str, author: ServiceUser, channel: ServiceChannel, service: Services
-    ):
-        self.content = content
-        self.author = author
-        self.channel = channel
-        self.service = service
-        self.clean_content = content
-        self.service = service
-        self.created_at = datetime.now(timezone.utc)
-        self.id = id
-        self.mentions: list[ServiceUser] = []
-        self.reference: Optional[ServiceMessage] = None
-        self.is_dm = False
-
+    id: str
+    content: str
+    author: ServiceUser
+    channel: ServiceChannel
+    service: Services
+    clean_content: str = field(default="", init=False)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc), init=False)
+    mentions: list[ServiceUser] = field(default_factory=list, init=False)
+    reference: Optional["ServiceMessage"] = field(default=None, init=False)
+    is_dm: bool = field(default=False, init=False)
+    _message: object = field(default=None, init=False)
+    
     def __repr__(self):
         return f"ServiceMessage({self.content})"
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
             return self.id == other
-        if hasattr(self, "_message"):
-            if type(self._message) == type(other):
-                return self._message == other
+        if self._message is not None and type(self._message) == type(other):
+            return self._message == other
         if not isinstance(other, ServiceMessage):
             return False
         return (self.id == other.id) and type(self) == type(other)
