@@ -352,7 +352,6 @@ class Utilities:
 
         return new_comments
 
-    #TODO: stringenum
     def get_question(
         self, order_type: OrderType = OrderType.TOP, wiki_question_bias: float =SemanticWiki.default_wiki_question_percent_bias
     ):

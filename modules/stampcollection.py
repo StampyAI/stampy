@@ -1,6 +1,6 @@
 from enum import Enum
 import re
-from typing import Union
+from typing import DefaultDict, Union
 import discord
 import numpy as np
 from utilities import utilities
@@ -15,7 +15,8 @@ class StampType(Enum):
     RED = 1
     OTHER = 2
     
-stamp_type_str2enum = defaultdict(
+# For any string that is neither "stamp" nor "goldstamp", returns `StampType.OTHER`
+stamp_type_str2enum: DefaultDict[str, StampType] = defaultdict(
     lambda: StampType.OTHER,
     **{
         "stamp": StampType.RED,
@@ -46,7 +47,6 @@ class StampsModule(Module):
         self.utils.clear_votes()
         self.utils.update_vote(StampType.OTHER, str(rob_id), self.red_stamp_value)
 
-    #TODO: stringenum
     def update_vote(self, stamp_type: StampType, from_id: Union[int, str], to_id: Union[int, str],
                     *, negative: bool = False, recalculate: bool = True):
 
