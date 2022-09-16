@@ -93,7 +93,7 @@ class Response:
 
 
 class Module(object):
-    utils = None
+    utils: Utilities
 
     def __init__(self):
         self.utils = Utilities.get_instance()

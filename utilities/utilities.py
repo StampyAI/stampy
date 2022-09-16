@@ -70,7 +70,7 @@ class Utilities:
     service_modules_dict = {}
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> "Utilities":
         if Utilities.__instance is None:
             Utilities()
         return Utilities.__instance

@@ -1,4 +1,6 @@
+from enum import Enum
 import re
+from typing import Union
 import discord
 import numpy as np
 from utilities import utilities
@@ -6,7 +8,20 @@ from modules.module import Module, Response
 from config import rob_id, god_id, stampy_id
 from config import stamp_scores_csv_file_path, Services
 from utilities.discordutils import DiscordMessage
+from collections import defaultdict
 
+class StampType(Enum):
+    GOLD = 0
+    RED = 1
+    OTHER = 2
+    
+stamp_type_str2enum = defaultdict(
+    lambda: StampType.OTHER,
+    **{
+        "stamp": StampType.RED,
+        "goldstamp": StampType.GOLD
+    }
+    )
 
 class StampsModule(Module):
 
@@ -29,10 +44,11 @@ class StampsModule(Module):
         self.log.info(self.class_name, status="WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, str(rob_id), self.red_stamp_value)
+        self.utils.update_vote(StampType.OTHER, str(rob_id), self.red_stamp_value)
 
     #TODO: stringenum
-    def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
+    def update_vote(self, stamp_type: StampType, from_id: Union[int, str], to_id: Union[int, str],
+                    *, negative: bool = False, recalculate: bool = True):
 
         if to_id == stampy_id:
             # votes for stampy do nothing
@@ -43,9 +59,9 @@ class StampsModule(Module):
             return
 
         vote_strength = 0
-        if stamp_type == "stamp":
+        if stamp_type == StampType.RED:
             vote_strength = self.red_stamp_value
-        elif stamp_type == "goldstamp":
+        elif stamp_type == StampType.GOLD:
             vote_strength = self.gold_stamp_value
 
         if negative:
@@ -149,7 +165,8 @@ class StampsModule(Module):
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
                 msg_id, react_type, from_id, to_id = line.strip().split(",")
-                self.update_vote(react_type, from_id, to_id, False, False)
+                stamp_type = stamp_type_str2enum[react_type]
+                self.update_vote(stamp_type, from_id, to_id, recalculate=False)
 
         self.calculate_stamps()
 
@@ -180,12 +197,9 @@ class StampsModule(Module):
                                 from_id = int(users[0])
                                 to_id = int(users[1])
                                 stamps_before_update = self.get_user_stamps(to_id)
-                                emoji = "stamp"
-                                negative = False
-                                if re.match(r"[0-9]+.+unstamped.+", text):
-                                    negative = True
+                                negative = bool(re.match(r"[0-9]+.+unstamped.+", text))
 
-                                self.update_vote(emoji, from_id, to_id, negative=negative)
+                                self.update_vote(StampType.RED, from_id, to_id, negative=negative)
                                 self.log.info(
                                     self.class_name,
                                     reaction_message_author_id=to_id,
@@ -215,7 +229,7 @@ class StampsModule(Module):
                                         )
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type, user.id, message.author.id, False, False,
+                                            stamp_type_str2enum[reaction_type], user.id, message.author.id, recalculate=False,
                                         )
         self.calculate_stamps()
 
@@ -271,7 +285,7 @@ class StampsModule(Module):
             # self.update_vote(emoji, from_id, to_id, False, False)
 
             stamps_before_update = self.get_user_stamps(to_id)
-            self.update_vote(emoji, from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
+            self.update_vote(stamp_type_str2enum[emoji], from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
             self.log.info(
                 self.class_name,
                 reaction_message_author_id=to_id,
@@ -309,12 +323,9 @@ class StampsModule(Module):
             from_id = int(users[0])
             to_id = int(users[1])
             stamps_before_update = self.get_user_stamps(to_id)
-            emoji = "stamp"
-            negative = False
-            if re.match(r"[0-9]+.+unstamped.+", text):
-                negative = True
+            negative = bool(re.match(r"[0-9]+.+unstamped.+", text))
 
-            self.update_vote(emoji, from_id, to_id, negative=negative)
+            self.update_vote(StampType.RED, from_id, to_id, negative=negative)
             self.log.info(
                 self.class_name,
                 reaction_message_author_id=to_id,
