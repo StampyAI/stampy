@@ -27,8 +27,25 @@ class QuestionQueueManager(Module):
             generic_question_regex.format(question_type="[yY](ou)?[tT](ube)? question")
         )
         self.question_count_regex = re.compile(
-            r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
-            r"(long is|long's)) (the|your)( question)? queue( now)?\??",
+            r"""
+            (
+                ( # how many questions are there left in ...
+                how\s+many\s+questions\s+
+                (are\s+(there\s+)?)?
+                ((left\s+)?in\s+)?
+                )
+            |
+                ( # how long is/'s the/your questions queue now
+                how\s+
+                (long\s+is|long's)\s+
+                (the\s+|your\s+)?
+                (question\s+)?
+                queue
+                (\s+now)?
+                )
+            )
+            \?? # optional question mark
+            """, re.X | re.I
         )
 
     def question_count_response(self, count):
