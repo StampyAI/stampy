@@ -108,10 +108,10 @@ class DiscordHandler:
                     parts = ["Traceback (most recent call last):\n"]
                     parts.extend(traceback.format_stack(limit=25)[:-2])
                     parts.extend(traceback.format_exception(*sys.exc_info())[1:])
-                    message = "".join(parts)
+                    error_message = "".join(parts)
                     if self.error_channel is None:
                         self.error_channel = self.utils.client.get_channel(error_channel_id)
-                    await self.error_channel.send(f"```{message}```")
+                    await self.error_channel.send(f"```{error_message}```")
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
 
