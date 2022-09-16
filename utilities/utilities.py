@@ -30,7 +30,7 @@ import re
 from enum import Enum
 
 # Sadly some of us run windows...
-if not os.name == "nt":
+if os.name != "nt":
     import pwd
 
 log = get_logger()
