@@ -110,7 +110,7 @@ class DiscordHandler:
                     parts.extend(traceback.format_exception(*sys.exc_info())[1:])
                     message = "".join(parts)
                     if self.error_channel is None:
-                        self.error_channel = await client.get_channel(error_channel_id)
+                        self.error_channel = await self.utils.client.get_channel(error_channel_id)
                     await self.error_channel.send(f"```{message}```")
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
