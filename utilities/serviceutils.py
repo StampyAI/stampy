@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
-@dataclass(slots=True)
+@dataclass
 class ServiceRole:
     name: str
     id: str
@@ -26,7 +26,7 @@ class ServiceRole:
         return hash(self.id) >> 22
 
 
-@dataclass(slots=True)
+@dataclass
 class ServiceUser:
     name: str
     display_name: str
@@ -54,7 +54,7 @@ class ServiceUser:
         return str(self.id)
 
 
-@dataclass(slots=True)
+@dataclass
 class ServiceServer:
     name: str
     id: str
@@ -77,7 +77,7 @@ class ServiceServer:
         return hash(self.id) >> 22
 
 
-@dataclass(slots=True)
+@dataclass
 class ServiceChannel:
     name: str
     id: str
@@ -107,7 +107,7 @@ class ServiceChannel:
         raise NotImplementedError()
 
 
-@dataclass(slots=True)
+@dataclass
 class ServiceMessage:
     id: str
     content: str
