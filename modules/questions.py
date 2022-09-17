@@ -7,7 +7,7 @@ class QuestionQueueManager(Module):
     """Module to manage commands about the question queue"""
 
     EMPTY_QUEUE_MESSAGE = "There are no questions in the queue"
-
+    
     def __init__(self):
         super().__init__()
 
@@ -17,13 +17,13 @@ class QuestionQueueManager(Module):
             r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) {question_type}s?( for us)?\??)!?"
         )
 
-        self.re_next_question_generic_regex = re.compile(
+        self.re_next_question_generic = re.compile(
             generic_question_regex.format(question_type="question")
         )
-        self.re_next_question_wiki_regex = re.compile(
+        self.re_next_question_wiki = re.compile(
             generic_question_regex.format(question_type="wiki question")
         )
-        self.re_next_question_yt_regex = re.compile(
+        self.re_next_question_yt = re.compile(
             generic_question_regex.format(question_type="[yY](ou)?[tT](ube)? question")
         )
         self.re_question_count = re.compile(
@@ -56,15 +56,13 @@ class QuestionQueueManager(Module):
             """, re.X | re.I
         )
 
-    def question_count_response(self, count):
-        if count:
-            if count == 1:
-                result = "There's one question in the queue"
-            else:
-                result = f"There are {count} questions in the queue"
-        else:
-            result = self.EMPTY_QUEUE_MESSAGE
-        return result
+    def question_count_response(self, count: int) -> str:
+        """Report number of questions."""
+        if not count:
+            return self.EMPTY_QUEUE_MESSAGE
+        if count == 1:
+            return "There's one question in the queue"
+        return f"There are {count} questions in the queue"
 
     def process_message(self, message):
         if self.is_at_me(message):
@@ -76,17 +74,17 @@ class QuestionQueueManager(Module):
                     text=self.question_count_response(count),
                     why=f"{message.author.name} asked about the question queue",
                 )
-            elif self.re_next_question_generic_regex.match(text):  # we're being asked for the next question
+            elif self.re_next_question_generic.match(text):  # we're being asked for the next question
                 # Popping a question off the stack modifies things, so do it with a callback
                 return Response(confidence=10, callback=self.post_question, args=[message])
-            elif self.re_next_question_wiki_regex.match(text):
+            elif self.re_next_question_wiki.match(text):
                 return Response(
                     confidence=10,
                     callback=self.post_question,
                     args=[message],
                     kwargs={"wiki_question_bias": 1},
                 )  # always give a wiki question
-            elif self.re_next_question_yt_regex.match(text):
+            elif self.re_next_question_yt.match(text):
                 return Response(
                     confidence=10,
                     callback=self.post_question,
@@ -98,7 +96,7 @@ class QuestionQueueManager(Module):
         return Response()
 
     async def post_question(
-        self, message, wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias
+        self, message, wiki_question_bias: float = SemanticWiki.default_wiki_question_percent_bias
     ):
         if self.utils.test_mode:
             return Response(confidence=9, text=self.EMPTY_QUEUE_MESSAGE, why="test")
