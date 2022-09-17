@@ -18,6 +18,11 @@ class Silly(Module):
         who = message.author.name
         print(atme)
         print(text)
+        
+        if text.lower() == "show me how exceptional you are!":
+            class SillyError(Exception):
+                pass
+            raise SillyError("this much")
 
         # Stampy say X -> X!
         if text.lower().startswith("say "):
