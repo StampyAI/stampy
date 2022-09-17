@@ -1,6 +1,7 @@
 import re
 from api.semanticwiki import SemanticWiki
 from modules.module import Module, Response
+from utilities.serviceutils import ServiceMessage
 
 
 class QuestionQueueManager(Module):
@@ -64,35 +65,34 @@ class QuestionQueueManager(Module):
             return "There's one question in the queue"
         return f"There are {count} questions in the queue"
 
-    def process_message(self, message):
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
-            if self.re_question_count.match(text):
-                count = self.utils.get_question_count()
-                return Response(
-                    confidence=9,
-                    text=self.question_count_response(count),
-                    why=f"{message.author.name} asked about the question queue",
-                )
-            elif self.re_next_question_generic.match(text):  # we're being asked for the next question
-                # Popping a question off the stack modifies things, so do it with a callback
-                return Response(confidence=10, callback=self.post_question, args=[message])
-            elif self.re_next_question_wiki.match(text):
-                return Response(
-                    confidence=10,
-                    callback=self.post_question,
-                    args=[message],
-                    kwargs={"wiki_question_bias": 1},
-                )  # always give a wiki question
-            elif self.re_next_question_yt.match(text):
-                return Response(
-                    confidence=10,
-                    callback=self.post_question,
-                    args=[message],
-                    kwargs={"wiki_question_bias": -1},
-                )  # never give a wiki question
-
-        # This is either not at me, or not something we can handle
+    def process_message(self, message: ServiceMessage) -> Response:
+        if not (text:=self.is_at_me(message)):
+            # This is either not at me, or something we can't handle
+            return Response()
+        if self.re_question_count.match(text):
+            return Response(
+                confidence=9,
+                text=self.question_count_response(self.utils.get_question_count()),
+                why=f"{message.author.name} asked about the question queue",
+            )
+        if self.re_next_question_generic.match(text):  # we're being asked for the next question
+            # Popping a question off the stack modifies things, so do it with a callback
+            return Response(confidence=10, callback=self.post_question, args=[message])
+        if self.re_next_question_wiki.match(text):
+            return Response(
+                confidence=10,
+                callback=self.post_question,
+                args=[message],
+                kwargs={"wiki_question_bias": 1},
+            )  # always give a wiki question
+        if self.re_next_question_yt.match(text):
+            return Response(
+                confidence=10,
+                callback=self.post_question,
+                args=[message],
+                kwargs={"wiki_question_bias": -1},
+            )  # never give a wiki question
+        # No regex matched -> empty response
         return Response()
 
     async def post_question(
