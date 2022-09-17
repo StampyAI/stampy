@@ -9,7 +9,7 @@ class QuestionQueueManager(Module):
     EMPTY_QUEUE_MESSAGE = "There are no questions in the queue"
 
     def __init__(self):
-        Module.__init__(self)
+        super().__init__()
 
         generic_question_regex = (
             r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
@@ -26,13 +26,14 @@ class QuestionQueueManager(Module):
         self.re_next_question_yt_regex = re.compile(
             generic_question_regex.format(question_type="[yY](ou)?[tT](ube)? question")
         )
-        self.question_count_regex = re.compile(
+        self.re_question_count = re.compile(
             r"""
             (
                 ( # how many questions are there left in ...
-                how\s+many\s+questions\s+
-                (are\s+(there\s+)?)?
-                ((left\s+)?in\s+)?
+                how\s+many\s+questions\s*
+                (are\s*(there\s*)?)?
+                (left\s*)?
+                (in\s+(your\s+|the\s+)?queue\s*)?
                 )
             |
                 ( # how long is/'s the/your questions queue now
@@ -43,8 +44,15 @@ class QuestionQueueManager(Module):
                 queue
                 (\s+now)?
                 )
+            |
+                (
+                (\#|n|num)\s+(of\s+)?questions
+                )
+            |
+                (\#\s*q)|(nq) # shorthands, you can just ask "nq" for number of questions
             )
-            \?? # optional question mark
+            \?* # optional question mark
+            $   # end
             """, re.X | re.I
         )
 
@@ -61,7 +69,7 @@ class QuestionQueueManager(Module):
     def process_message(self, message):
         if self.is_at_me(message):
             text = self.is_at_me(message)
-            if self.question_count_regex.match(text):
+            if self.re_question_count.match(text):
                 count = self.utils.get_question_count()
                 return Response(
                     confidence=9,
