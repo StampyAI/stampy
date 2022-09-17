@@ -116,7 +116,7 @@ class QuestionQueueManager(Module):
         return "Question Queue Manager"
 
     @property
-    def test_cases(self):
+    def test_cases(self) -> list[dict]:
         return [
             self.create_integration_test(
                 question="how many questions are in the queue?",
