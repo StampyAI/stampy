@@ -96,22 +96,21 @@ class QuestionQueueManager(Module):
         return Response()
 
     async def post_question(
-        self, message, wiki_question_bias: float = SemanticWiki.default_wiki_question_percent_bias
-    ):
+        self, message: ServiceMessage, wiki_question_bias: float = SemanticWiki.default_wiki_question_percent_bias
+    ) -> Response:
         if self.utils.test_mode:
             return Response(confidence=9, text=self.EMPTY_QUEUE_MESSAGE, why="test")
         result = self.utils.get_question(wiki_question_bias=wiki_question_bias)
         self.log.info("QQManager", post_question_result=result, message_author=message.author.name)
         if result:
             return Response(
-                confidence=10, text=result, why="%s asked for a question to answer" % message.author.name
+                confidence=10, text=result, why=f"{message.author.name} asked for a question to answer"
             )
-        else:
-            return Response(
-                confidence=8,
-                text=self.EMPTY_QUEUE_MESSAGE,
-                why="%s asked for a question to answer, but I haven't got any" % message.author.name,
-            )
+        return Response(
+            confidence=8,
+            text=self.EMPTY_QUEUE_MESSAGE,
+            why=f"{message.author.name} asked for a question to answer, but I haven't got any"
+        )
 
     def __str__(self):
         return "Question Queue Manager"
