@@ -7,3 +7,4 @@ factoids.db
 modules/choose.py
 .pylintrc
 .venv
+_private

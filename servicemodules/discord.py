@@ -3,6 +3,7 @@ import asyncio
 import inspect
 import discord
 import threading
+import traceback
 import unicodedata
 from utilities import (
     Utilities,
@@ -24,6 +25,7 @@ from config import (
     bot_dev_channel_id,
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
+    error_channel_id,
 )
 
 log = get_logger()
@@ -35,6 +37,7 @@ class DiscordHandler:
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
+        self.error_channel = None
         """
         All Discord Functions need to be under another function in order to
         use self.
@@ -99,7 +102,16 @@ class DiscordHandler:
             responses = [Response()]
             for module in self.modules:
                 log.info(class_name, msg=f"# Asking module: {module}")
-                response = module.process_message(message)
+                try:
+                    response = module.process_message(message)
+                except Exception as e:
+                    parts = ["Traceback (most recent call last):\n"]
+                    parts.extend(traceback.format_stack(limit=25)[:-2])
+                    parts.extend(traceback.format_exception(*sys.exc_info())[1:])
+                    error_message = "".join(parts)
+                    if self.error_channel is None:
+                        self.error_channel = self.utils.client.get_channel(error_channel_id)
+                    await self.error_channel.send(f"```{error_message}```")
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
 
