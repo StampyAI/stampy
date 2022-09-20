@@ -44,8 +44,10 @@ class StampsModule(Module):
             or emoji not in vote_strengths_per_emoji): # votes with emojis other than stamp and goldstamp do nothing            
             return
         
-        # if negative is True we are going to subtract the vote value (False chooses -1, True chooses 1)
-        vote_strength = vote_strengths_per_emoji[emoji] * (-1, 1)[negative]
+        vote_strength = vote_strengths_per_emoji[emoji]
+        if negative:
+            vote_strength *= -1
+
         self.total_votes += vote_strength
         self.utils.update_vote(from_id, to_id, vote_strength)
         self.update_utils()

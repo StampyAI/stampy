@@ -363,14 +363,9 @@ class Utilities:
             comment = self.wiki.get_random_question(wiki_question_bias=wiki_question_bias)
         elif order_type == OrderType.TOP:
             comment = self.wiki.get_top_question(wiki_question_bias=wiki_question_bias)
-        elif order_type == OrderType.LATEST:
+        else: # order_type == OrderType.LATEST:
             comment = self.wiki.get_latest_question(wiki_question_bias=wiki_question_bias)
-        else:
-            raise ValueError(f"Invalid order type: {order_type}")
         
-        if not comment:
-            return None
-
         self.latest_question_posted = comment
 
         text = comment["text"]
