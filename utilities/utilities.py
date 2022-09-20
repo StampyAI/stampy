@@ -27,13 +27,18 @@ import os
 import psutil
 import random
 import re
+from enum import Enum
 
 # Sadly some of us run windows...
-if not os.name == "nt":
+if os.name != "nt":
     import pwd
 
 log = get_logger()
 
+class OrderType(Enum):
+    TOP = 0
+    RANDOM = 1
+    LATEST = 2
 
 class Utilities:
     __instance = None
@@ -65,9 +70,9 @@ class Utilities:
     service_modules_dict = {}
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> "Utilities":
         if Utilities.__instance is None:
-            Utilities()
+            return Utilities()
         return Utilities.__instance
 
     def __init__(self):
@@ -348,22 +353,19 @@ class Utilities:
         return new_comments
 
     def get_question(
-        self, order_type="TOP", wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias
+        self, order_type: OrderType = OrderType.TOP, wiki_question_bias: float =SemanticWiki.default_wiki_question_percent_bias
     ):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
-        if order_type == "RANDOM":
+        if order_type == OrderType.RANDOM:
             comment = self.wiki.get_random_question(wiki_question_bias=wiki_question_bias)
-        elif order_type == "TOP":
+        elif order_type == OrderType.TOP:
             comment = self.wiki.get_top_question(wiki_question_bias=wiki_question_bias)
-        else:
+        else: # order_type == OrderType.LATEST:
             comment = self.wiki.get_latest_question(wiki_question_bias=wiki_question_bias)
-
-        if not comment:
-            return None
-
+        
         self.latest_question_posted = comment
 
         text = comment["text"]

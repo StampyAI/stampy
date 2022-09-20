@@ -93,7 +93,7 @@ class Response:
 
 
 class Module(object):
-    utils = None
+    utils: Utilities
 
     def __init__(self):
         self.utils = Utilities.get_instance()
@@ -139,11 +139,6 @@ class Module(object):
         This method should not return anything, and should not try to send messages unless you really know what you're doing
         """
         pass
-
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
-        """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
-        Use this to allow modules to handle adding and removing reactions on messages"""
-        return Response()
 
     async def process_raw_reaction_event(self, event):
         """event is a discord.RawReactionActionEvent object
