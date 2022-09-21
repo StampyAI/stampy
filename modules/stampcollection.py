@@ -1,12 +1,18 @@
 import re
+from typing import Union
 import discord
 import numpy as np
 from utilities import utilities
 from modules.module import Module, Response
-from config import rob_id, god_id, stampy_id
+from config import stampy_id
 from config import stamp_scores_csv_file_path, Services
 from utilities.discordutils import DiscordMessage
 
+
+vote_strengths_per_emoji = {
+ "stamp": 1,
+ "goldstamp": 5
+}
 
 class StampsModule(Module):
 
@@ -17,10 +23,8 @@ class StampsModule(Module):
         return "Stamps Module"
 
     def __init__(self):
-        Module.__init__(self)
+        super().__init__()
         self.class_name = "StampsModule"
-        self.red_stamp_value = 1
-        self.gold_stamp_value = self.red_stamp_value * 5
         self.user_karma = 1.0
         self.total_votes = self.utils.get_total_votes()
         self.calculate_stamps()
@@ -29,34 +33,30 @@ class StampsModule(Module):
         self.log.info(self.class_name, status="WIPING STAMP RECORDS")
 
         self.utils.clear_votes()
-        self.utils.update_vote(god_id, str(rob_id), self.red_stamp_value)
+        self.update_utils()
+        self.calculate_stamps()
 
-    def update_vote(self, stamp_type, from_id, to_id, negative=False, recalculate=True):
+    def update_vote(self, emoji: str, from_id: Union[int, str], to_id: Union[int, str],
+                    *, negative: bool = False, recalculate: bool = True):
 
-        if to_id == stampy_id:
-            # votes for stampy do nothing
+        if (to_id == stampy_id  # votes for stampy do nothing
+            or to_id == from_id # votes for yourself do nothing
+            or emoji not in vote_strengths_per_emoji): # votes with emojis other than stamp and goldstamp do nothing            
             return
-
-        if to_id == from_id:
-            # votes for yourself do nothing
-            return
-
-        vote_strength = 0
-        if stamp_type == "stamp":
-            vote_strength = self.red_stamp_value
-        elif stamp_type == "goldstamp":
-            vote_strength = self.gold_stamp_value
-
+        
+        vote_strength = vote_strengths_per_emoji[emoji]
         if negative:
-            # if negative is True we are going to subtract the vote value
-            vote_strength = -vote_strength
+            vote_strength *= -1
 
         self.total_votes += vote_strength
         self.utils.update_vote(from_id, to_id, vote_strength)
-        self.utils.users = self.utils.get_users()
-        self.utils.update_ids_list()
+        self.update_utils()
         if recalculate:
             self.calculate_stamps()
+
+    def update_utils(self) -> None:
+        self.utils.users = self.utils.get_users()
+        self.utils.update_ids_list()
 
     def calculate_stamps(self):
         """Set up and solve the system of linear equations"""
@@ -147,8 +147,8 @@ class StampsModule(Module):
         with open(filename, "r") as stamps_file:
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
-                msg_id, react_type, from_id, to_id = line.strip().split(",")
-                self.update_vote(react_type, from_id, to_id, False, False)
+                msg_id, emoji, from_id, to_id = line.strip().split(",")
+                self.update_vote(emoji, from_id, to_id, recalculate=False)
 
         self.calculate_stamps()
 
@@ -179,12 +179,8 @@ class StampsModule(Module):
                                 from_id = int(users[0])
                                 to_id = int(users[1])
                                 stamps_before_update = self.get_user_stamps(to_id)
-                                emoji = "stamp"
-                                negative = False
-                                if re.match(r"[0-9]+.+unstamped.+", text):
-                                    negative = True
-
-                                self.update_vote(emoji, from_id, to_id, negative=negative)
+                                negative = bool(re.match(r"[0-9]+.+unstamped.+", text))
+                                self.update_vote("stamp", from_id, to_id, negative=negative)
                                 self.log.info(
                                     self.class_name,
                                     reaction_message_author_id=to_id,
@@ -194,42 +190,24 @@ class StampsModule(Module):
                                 )
                         elif reactions:
                             for reaction in reactions:
-                                reaction_type = getattr(reaction.emoji, "name", "")
-                                if reaction_type in ["stamp", "goldstamp"]:
+                                emoji = getattr(reaction.emoji, "name", "")
+                                if emoji in ["stamp", "goldstamp"]:
                                     users = await reaction.users().flatten()
                                     for user in users:
-                                        string = "%s,%s,%s,%s" % (
-                                            message.id,
-                                            reaction_type,
-                                            user.id,
-                                            message.author.id,
-                                        )
+                                        string = f"{message.id},{emoji},{user.id},{message.author.id}"
                                         self.log.info(
                                             self.class_name,
                                             user_id=user.id,
                                             message_id=message.id,
-                                            reaction_type=reaction_type,
+                                            reaction_type=emoji,
                                             author_name=message.author.name,
                                             message_author_id=message.author.id,
                                         )
                                         stamplog.write(string + "\n")
                                         self.update_vote(
-                                            reaction_type, user.id, message.author.id, False, False,
+                                            emoji, user.id, message.author.id, recalculate=False,
                                         )
         self.calculate_stamps()
-
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
-        emoji = getattr(reaction.emoji, "name", reaction.emoji)
-        if emoji == "stamp":
-            self.log.info(
-                self.class_name,
-                update="STAMP AWARDED",
-                reaction_message_id=reaction.message.id,
-                emoji=emoji,
-                user_id=user.id,
-                reaction_message_author_id=reaction.message.audthor.id,
-                reaction_message_author_name=reaction.message.audthor.name,
-            )
 
     async def process_raw_reaction_event(self, event):
         event_type = event.event_type
@@ -255,7 +233,7 @@ class StampsModule(Module):
             ms_gid = event.message_id
             from_id = event.user_id
             to_id = message.author.id
-
+            
             self.log.info(
                 self.class_name,
                 update="STAMP AWARDED",
@@ -265,10 +243,10 @@ class StampsModule(Module):
                 reaction_message_author_id=to_id,
                 reaction_message_author_name=message.author.name,
             )
-
+    
             # I believe this call was a duplicate and it should not be called twice
             # self.update_vote(emoji, from_id, to_id, False, False)
-
+            
             stamps_before_update = self.get_user_stamps(to_id)
             self.update_vote(emoji, from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
             self.log.info(
@@ -280,9 +258,7 @@ class StampsModule(Module):
             )
 
     def process_message(self, message):
-        if self.is_at_me(message):
-            text = self.is_at_me(message)
-
+        if text := self.is_at_me(message):
             if re.match(r"(how many stamps am i worth)\??", text.lower()):
                 authors_stamps = self.get_user_stamps(message.author)
                 return Response(
@@ -308,12 +284,9 @@ class StampsModule(Module):
             from_id = int(users[0])
             to_id = int(users[1])
             stamps_before_update = self.get_user_stamps(to_id)
-            emoji = "stamp"
-            negative = False
-            if re.match(r"[0-9]+.+unstamped.+", text):
-                negative = True
+            negative = bool(re.match(r"[0-9]+.+unstamped.+", text))
 
-            self.update_vote(emoji, from_id, to_id, negative=negative)
+            self.update_vote("stamp", from_id, to_id, negative=negative)
             self.log.info(
                 self.class_name,
                 reaction_message_author_id=to_id,
