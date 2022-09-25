@@ -1,8 +1,8 @@
 import re
 import random
 from modules.module import Module, Response
-from utilities.utilities import randbool
 from database.eliza_db import psychobabble, reflections
+from utilities.serviceutils import ServiceMessage
 
 
 class Eliza(Module):
@@ -12,7 +12,7 @@ class Eliza(Module):
         self.psychobabble = psychobabble
         self.reflections = reflections
 
-    def reflect(self, fragment):
+    def reflect(self, fragment: str) -> str:
         """
         Convert a string to parrot it back
         'I am your friend' -> 'You are my friend' etc.
@@ -23,7 +23,7 @@ class Eliza(Module):
                 tokens[i] = self.reflections[token]
         return " ".join(tokens)
 
-    def analyze(self, statement):
+    def analyze(self, statement: str) -> str:
         # self.log(self.class_name, msg="analyzing with ELIZA")
         for pattern, responses in self.psychobabble:
             match = re.match(pattern, statement.lower().rstrip(".!"))
@@ -32,10 +32,9 @@ class Eliza(Module):
                 return response.format(*[self.reflect(g) for g in match.groups()])
         return ""
 
-    def process_message(self, message):
-        if self.is_at_me(message):
+    def process_message(self, message: ServiceMessage) -> Response:
+        if text := self.is_at_me(message):
             # ELIZA can respond to almost anything, so it only talks if nothing else has, hence 1 confidence
-            text = self.is_at_me(message)
             if text.startswith("is ") and text[-1] != "?":  # stampy is x becomes "you are x"
                 text = "you are " + text.partition(" ")[2]
             result = self.dereference(
@@ -45,7 +44,6 @@ class Eliza(Module):
                 return Response(
                     confidence=1,
                     text=result,
-                    why="%s said '%s', and ELIZA responded '%s'" % (message.author.name, text, result),
+                    why=f"{message.author.name} said '{text}', and ELIZA responded '{result}'" ,
                 )
-        else:
-            return Response()
+        return Response()

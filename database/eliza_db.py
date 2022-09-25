@@ -337,12 +337,12 @@ psychobabble = [
         ],
     ],
     [
-        r"could you (please)?(.*)",
+        r"could you (?:please)?(.*)",
         [
             "I reckon I could, yeah",
             "If I put my mind to it, I could do anything",
             "Could you?",
-            "{1}?",
+            "{0}?",
             "Yeah, but I don't want to",
         ],
     ],
