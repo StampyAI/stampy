@@ -44,7 +44,7 @@ class GooseAI:
                 if response["ready"] is True:
                     return engine
             except Exception as e:
-                log.error(self.class_name, _msg="Got error checking if {engine.name} is online.", e=e)
+                log.error(self.class_name, _msg=f"Got error checking if {engine.name} is online.", e=e)
         log.critical(self.class_name, error="No engines for GooseAI are online!")
 
     def completion(
