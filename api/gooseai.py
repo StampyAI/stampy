@@ -1,12 +1,15 @@
 from api.utilities.gooseutils import GooseAIEngines
 from config import goose_api_key, goose_engine_fallback_order
+from utilities import Utilities
 from structlog import get_logger
 from typing import Any
+import asyncio
 import json
 import requests
 
 
 log = get_logger()
+utils = Utilities.get_instance()
 
 
 class GooseAI:
@@ -45,6 +48,9 @@ class GooseAI:
                     return engine
             except Exception as e:
                 log.error(self.class_name, _msg=f"Got error checking if {engine.name} is online.", e=e)
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"Got error checking if {engine.name} is online."))
+                loop.create_task(utils.log_exception(e))
         log.critical(self.class_name, error="No engines for GooseAI are online!")
 
     def completion(
@@ -79,6 +85,8 @@ class GooseAI:
         if "error" in response:
             error = response["error"]
             log.error(self.class_name, code=error["code"], error=error["message"], info=error["type"])
+            loop = asyncio.get_running_loop()
+            loop.create_task(utils.log_error(f'GooseAI Error {error["code"]} ({error["type"]}): {error["message"]}'))
             return ""
 
         if response["choices"]:

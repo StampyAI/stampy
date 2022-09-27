@@ -5,6 +5,7 @@ from config import (
     rob_miles_youtube_channel_id,
     discord_token,
     discord_guild,
+    error_channel_id,
     youtube_api_key,
     database_path,
     TEST_RESPONSE_PREFIX,
@@ -14,6 +15,7 @@ from config import (
 )
 from database.database import Database
 from datetime import datetime, timezone, timedelta
+from enum import Enum
 from git import Repo
 from googleapiclient.discovery import build as get_youtube_api
 from googleapiclient.errors import HttpError
@@ -27,7 +29,8 @@ import os
 import psutil
 import random
 import re
-from enum import Enum
+import sys
+import traceback
 
 # Sadly some of us run windows...
 if os.name != "nt":
@@ -60,6 +63,7 @@ class Utilities:
     last_timestamp = None
     last_question_asked_timestamp = None
     latest_question_posted = None
+    error_channel = None
 
     users = None
     ids = None
@@ -539,6 +543,18 @@ class Utilities:
         message += " " + str(time_running.minute) + " minutes"
         message += " and " + str(time_running.second) + " seconds."
         return message
+
+    async def log_exception(self, e: Exception) -> None:
+        parts = ["Traceback (most recent call last):\n"]
+        parts.extend(traceback.format_stack(limit=25)[:-2])
+        parts.extend(traceback.format_exception(*sys.exc_info())[1:])
+        error_message = "".join(parts)
+        await self.log_error(error_message)
+
+    async def log_error(self, error_message: str) -> None:
+        if self.error_channel is None:
+            self.error_channel = self.client.get_channel(error_channel_id)
+        await self.error_channel.send(f"```{error_message}```")
 
 
 def get_github_info():
