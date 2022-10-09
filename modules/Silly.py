@@ -28,8 +28,8 @@ class Silly(Module):
         if text.lower().startswith("say "):
             return Response(
                 confidence=4,
-                text=self.utils.modules_dict["Factoids"].dereference(text.partition(" ")[2]) + "!",
-                why="%s told me to say it!" % who,
+                text=self.dereference(text.partition(" ")[2], who) + "!",
+                why=f"{who} told me to say it!",
             )
 
         # XKCD #37
