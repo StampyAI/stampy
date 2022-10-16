@@ -109,7 +109,7 @@ class Silly(Module):
         # The sex number
         # TODO make this a regex factoid
         if re.search(r"\b69\b", text):
-            return Response(confidence=4, result="nice.", why="I'll tell you when you're older")
+            return Response(confidence=4, text="nice.", why="I'll tell you when you're older")
 
         # ...If you will
         # TODO make this a regex factoid
@@ -128,7 +128,7 @@ class Silly(Module):
         ):
             return Response(
                 confidence=4,
-                result="So's your face?",
+                text="So's your face?",
                 why=f"{who} said '{text}'. which reminded me of their face",
             )
 
@@ -197,7 +197,7 @@ class Silly(Module):
         if match:
             thing = match.group(2).replace(" a ", " the ")
             return Response(
-                confidence=4, text="You just %s" % thing, why=f"{who} asked how you {thing}, so I told them"
+                confidence=4, text=f"You just {thing}", why=f"{who} asked how you {thing}, so I told them"
             )
 
         # Dude where's my car is still relevant right?
