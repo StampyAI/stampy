@@ -13,3 +13,5 @@ python-dotenv
 slack-sdk
 structlog
 transformers
+ezodf
+pydrive

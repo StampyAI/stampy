@@ -1,5 +1,6 @@
 import re
 import random
+from typing import Iterable, Literal, Optional, Union
 import requests
 import traceback
 from enum import Enum
@@ -21,7 +22,7 @@ class SemanticWiki(Persistence):
     # until we want to switch focus all by default questions will be all wiki
     default_wiki_question_percent_bias: float = 1.00  # 1 == 100%, 0 == 0%
 
-    def __init__(self, uri, user, api_key):
+    def __init__(self, uri: str, user, api_key: str):
         super().__init__(uri, user, api_key)
         self.class_name = self.__class__.__name__
         # Should we just log in on init? Or separate it out?
@@ -66,7 +67,7 @@ class SemanticWiki(Persistence):
             
         return json
 
-    def get_page(self, title):
+    def get_page(self, title: str):
         """Gets a page by the title (page titles are unique).
         Returns a lot of information on revisions and their contents.
         If you only care about the content use get_page_content"""
@@ -140,7 +141,7 @@ class SemanticWiki(Persistence):
     # Be ready to handle a None return if the api call fails
     ########################################
 
-    def get_page_content(self, title):
+    def get_page_content(self, title: str) -> Optional[str]:
         """Retrieves the source text for a page with name `title`.
         If no such page exists (or there are other API errors) returns None"""
         content = self.get_page(title)
@@ -149,7 +150,19 @@ class SemanticWiki(Persistence):
         except (KeyError, IndexError):
             return None
 
-    def get_page_properties(self, pagename, *properties):
+    def get_page_content_dict(self, title: str) -> dict:
+        """Retrieves the page content and parses it into a dictionary."""
+        page_content = self.get_page_content(title)
+        assert page_content is not None
+        assert page_content.startswith("{{")
+        assert page_content.endswith("}}")
+        pat = re.compile(r"[\w\d]+=.+", re.DOTALL)
+        return dict(m.group().split("=", maxsplit=1)
+                    for x in page_content[2:-2].split("\n|")
+                    if (m := pat.match(x)))
+
+    
+    def get_page_properties(self, pagename: str, *properties):
         """Returns an array containing
         All the values of that property in the page with the specified `pagename`. These arrays may be empty if the
         property is not set.
@@ -182,7 +195,15 @@ class SemanticWiki(Persistence):
     # most of them handle the saving and updating of questions and answers
     ########################################
 
-    def add_answer(self, answer_title, answer_writer, answer_users, answer_time, answer_text, question_title):
+    def add_answer(
+        self,
+        answer_title: str,
+        answer_writer: str,
+        answer_users: list[str],
+        answer_time,
+        answer_text: str,
+        question_title: str
+    ) -> None:
         # add a answer, we need to figure out which question this is an answer to
         if not answer_title:
             log.warning(
@@ -190,7 +211,7 @@ class SemanticWiki(Persistence):
                 status="No title provided, need the answer title for the primary key of the article",
             )
             return
-        ftext = f"""Answer
+        ftext = "{{" f"""Answer
                 |answer={answer_text}
                 |answerto={question_title}
                 |canonical=No
@@ -198,25 +219,51 @@ class SemanticWiki(Persistence):
                 |unstamped=No
                 |writtenby={answer_writer}
                 |date={answer_time}
-                |stamps={', '.join(answer_users)}"""
-        ftext = "{{" + ftext + "}}"
+                |stamps={', '.join(answer_users)}""" "}}"
 
         # Post the answer to wiki
         print("Trying to add reply " + answer_title + " to wiki")
         self.edit(answer_title, ftext)
         return
 
+    def get_all_answers(self, question_titles: Union[str, list[str]]) -> list[dict]:
+        if isinstance(question_titles, str):
+            question_titles = [question_titles]
+        results = self.post({
+            "action": "ask",
+            "format": "json",
+            "api_version": "2",
+            "query": "[[Category:Answers]]|?AnswerTo|?canonical|limit=3000"
+        })["query"]["results"]
+        answer_titles = [answer_data["fulltext"]
+                         for answer_data in results.values()
+                         if any(answer_to["fulltext"] in question_titles
+                                for answer_to in answer_data["printouts"]["AnswerTo"])]
+        print(f"{answer_titles=}")
+        return [self.get_page_content_dict(at) for at in answer_titles]        
+    
+    def get_canonical_answer(self, question_title: str) -> Optional[str]:
+        """Get the canonical answer for a question."""
+        return next((a["answer"] for a in self.get_all_answers(question_title) if a.get("canonical") == "Yes"), None)
+    
+    def get_noncanonical_answers(self, question_title: str) -> list[str]:
+        """Get noncanonical answers for a question."""
+        return [a["answer"]
+                for a in self.get_all_answers(question_title)
+                if a.get("canonical") != "Yes"
+                and "answer" in a]
+    
     def add_question(
         self,
-        display_title,
+        display_title: str,
         asker,
         asked_time,
-        text,
-        comment_url="",
-        video_title="",
-        likes=0,
-        asked=False,
-        reply_count=0,
+        text: str,
+        comment_url: Optional[str] = "",
+        video_title: Optional[str] = "",
+        likes: int = 0,
+        asked: bool = False,
+        reply_count: int = 0,
     ):
 
         # Split the url into the comment id and video url
@@ -239,13 +286,13 @@ class SemanticWiki(Persistence):
         asker,
         asked_time,
         text,
-        comment_url="",
-        video_title="",
-        likes=0,
-        asked=False,
-        reply_count=0,
+        comment_url: Optional[str] = "",
+        video_title: Optional[str] = "",
+        likes: int = 0,
+        asked: Union[bool, Literal["Yes", "No"]] = False,
+        reply_count: int = 0,
     ):
-        asked = "Yes" if asked else "No"
+        asked = "Yes" if asked in [True, "Yes"] else "No"
         formatted_asked_time = re.sub(
             r"(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2}):\d{2}(\.\d+)?Z?", r"\1T\2", asked_time
         )
@@ -271,15 +318,15 @@ class SemanticWiki(Persistence):
 
     def edit_question(
         self,
-        question_title,
-        asker,
+        question_title: str,
+        asker: str,
         asked_time,
-        text,
-        comment_url=None,
-        video_title=None,
-        likes=0,
-        asked=False,
-        reply_count=0,
+        text: str,
+        comment_url: Optional[str] = None,
+        video_title: Optional[str] = None,
+        likes: int = 0,
+        asked: bool = False,
+        reply_count: int = 0,
     ):
         # I think this is probably fine, but maybe it is slightly different? Could check to see if it exists?
         self.add_question(
@@ -405,7 +452,12 @@ class SemanticWiki(Persistence):
         return new_title
 
     def move_pages_generator(
-        self, page: str = None, limit: int = None, offset: int = None, dry_run=True, skip_boring=False
+        self,
+        page: Optional[str] = None, #type:ignore
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        dry_run: bool = True,
+        skip_boring: bool = False
     ):
         """Move wiki pages related to questions that have a modified title. Also update related fields.
         https://stampy.ai/wiki/Property:PageNeedsMovingTo for more info
@@ -428,7 +480,7 @@ class SemanticWiki(Persistence):
         max_offset = len(results) + offset - 1
         changes_were_made = False
         for index, item in enumerate(results.values()):
-            page = item["fulltext"]
+            page: str = item["fulltext"]
             if skip_boring and "Video Title Unknown" in page:
                 continue
 
@@ -454,6 +506,7 @@ class SemanticWiki(Persistence):
                 }
 
                 answer_printouts = self.get_page_properties(page, "AnsweredBy")
+                assert isinstance(answer_printouts, Iterable)
                 for item in answer_printouts:
                     pages_to_load_contents[item["fulltext"]] = "x|?AnsweredBy"
                 related_categories = [

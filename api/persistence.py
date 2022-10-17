@@ -3,8 +3,11 @@
 ###########################################################################
 
 
-class Persistence(object):
-    def __init__(self, uri, user, api_key):
+from typing import Optional
+
+
+class Persistence:
+    def __init__(self, uri: str, user, api_key: str):
         self._uri = uri
         self._user = user
         self._api_key = api_key
@@ -17,15 +20,15 @@ class Persistence(object):
 
     def add_question(
         self,
-        question_title,
-        asker,
+        question_title: str,
+        asker: str,
         asked_time,
-        question_text,
-        comment_url=None,
-        video_title=None,
-        likes=0,
-        asked=False,
-        reply_count=0,
+        question_text: str,
+        comment_url: Optional[str] = None,
+        video_title: Optional[str] = None,
+        likes: int = 0,
+        asked: bool = False,
+        reply_count: int = 0,
     ):
         raise NotImplementedError
 
@@ -34,15 +37,15 @@ class Persistence(object):
 
     def edit_question(
         self,
-        question_title,
-        asker,
+        question_title: str,
+        asker: str,
         asked_time,
-        text,
-        comment_url="",
-        video_title="",
-        likes=0,
-        asked=False,
-        reply_count=0,
+        text: str,
+        comment_url: str = "",
+        video_title: str = "",
+        likes: int = 0,
+        asked: bool = False,
+        reply_count: int = 0,
     ):
         raise NotImplementedError
 
@@ -52,10 +55,10 @@ class Persistence(object):
     def get_random_question(self):
         raise NotImplementedError
 
-    def set_question_asked(self, title):
+    def set_question_asked(self, title: str):
         raise NotImplementedError
 
-    def set_question_replied(self, title):
+    def set_question_replied(self, title: str):
         # TODO: Do we still need this? We can already query unanswered questions, and track if they've been asked
         # NotImplementedError
         pass

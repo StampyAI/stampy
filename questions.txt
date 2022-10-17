@@ -1,0 +1,7 @@
+What is artificial general intelligence safety / AI alignment?
+How might a superintelligence socially manipulate humans?
+Does the importance of AI risk depend on caring about transhumanist utopias?
+What is the general nature of the concern about AI alignment?
+What are the differences between “AI safety”, “AGI safety”, “AI alignment” and “AI existential safety”?
+Where can I find people to talk to about AI alignment?
+What are language models?

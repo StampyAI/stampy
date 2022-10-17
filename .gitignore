@@ -7,3 +7,5 @@ factoids.db
 modules/choose.py
 .venv
 .pylintrc
+*.odt*
+client_secrets.json

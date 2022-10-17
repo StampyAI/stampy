@@ -31,7 +31,7 @@ for k, v in answer_query_result["query"]["results"].items():
             "form": "Answer",
             "target": k,
             "format": "json",
-            "query": "Answer[{0}]={1}".format("answerto", new_question_title),
+            "query": f"Answer[answerto]={new_question_title}"
         }
     )
 

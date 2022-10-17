@@ -22,7 +22,7 @@ class Services(Enum):
     FLASK = "Flask"
     SLACK = "Slack"
 
-    def __str__(self) -> None:
+    def __str__(self) -> str:
         return str(self._value_)
 
     def __eq__(self, other: object) -> bool:
