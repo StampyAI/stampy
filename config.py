@@ -102,7 +102,7 @@ wolfram_token = getenv("WOLFRAM_TOKEN", default="null")
 slack_app_token = getenv("SLACK_APP_TOKEN", default="null")
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default="null")
 
-wiki_config = {"uri": "https://wiki.stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
+wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 
 
 stampy_control_channel_names = [
