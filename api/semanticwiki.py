@@ -390,10 +390,10 @@ class SemanticWiki(Persistence):
         return response
 
     def get_question_count(self):
-        query = "[[Wiki:API Queries]]|?UnaskedQuestions"
+        query = "[[Meta:API Queries]]|?UnaskedQuestions"
         results = self.ask(query)
 
-        return results["Wiki:API Queries"]["printouts"]["UnaskedQuestions"][0]
+        return results["Meta:API Queries"]["printouts"]["UnaskedQuestions"][0]
 
     @staticmethod
     def new_title_with_id(old_title: str, new_title: str):
