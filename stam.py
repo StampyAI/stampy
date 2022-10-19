@@ -65,10 +65,10 @@ if __name__ == "__main__":
     service_threads = []
     e = threading.Event()
     utils.stop = e
-    for module in utils.service_modules_dict:
-        log.info(log_type, msg=f"Starting {module}")
-        service_threads.append(utils.service_modules_dict[module].start(e))
-        log.info(log_type, msg=f"{module} Started!")
+    for service in utils.service_modules_dict:
+        log.info(log_type, msg=f"Starting {service}")
+        service_threads.append(utils.service_modules_dict[service].start(e))
+        log.info(log_type, msg=f"{service} Started!")
 
     for thread in service_threads:
         if thread.is_alive() and not thread.daemon:
