@@ -39,7 +39,6 @@ stampy from the test discord server and see the messages in your terminal.
 # How to Contribute
 
 Check out the currently open github issues and pull requests, if you see something open you can help out with add a comment. Most coordinations is done through live voice calls in the discord.
-There's a [Trello](https://trello.com/b/LBmYgkes/stampy) you can request access to, but it's not very updated.
 
 If you make a change to source code, please create a new branch first, then commit your changes there. Open a pull request on github and ask for other developers to review your code before merging.
 
