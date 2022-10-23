@@ -56,9 +56,15 @@ class SemanticWiki(Persistence):
     def post(self, body):
         """Most basic way to comunicate with the Mediawiki API. body must be a dictionary of things that make sense
         in the context of the API."""
-        data = self._session.post(self._uri, data=body)
-        response = data.json()
-        return response
+        response = self._session.post(self._uri, data=body)
+        response.raise_for_status()
+        
+        json = response.json()
+        if "errors" in json:
+            # https://www.mediawiki.org/wiki/API:Errors_and_warnings
+            raise TypeError(json)
+            
+        return json
 
     def get_page(self, title):
         """Gets a page by the title (page titles are unique).

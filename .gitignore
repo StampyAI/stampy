@@ -5,5 +5,5 @@ factoids.db
 .idea/*
 .env
 modules/choose.py
-.pylintrc
 .venv
+.pylintrc

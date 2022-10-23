@@ -3,6 +3,7 @@ from api.openai import OpenAI
 from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
+    goose_api_key,
     rob_id,
     service_italics_marks,
     default_italics_mark,
@@ -47,9 +48,13 @@ class GPT3Module(Module):
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
         self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
-        self.openai = OpenAI()
-        self.gooseai = GooseAI()
-
+        self.openai = OpenAI() if openai_api_key else None
+        self.gooseai = GooseAI() if goose_api_key else None
+        if not openai_api_key and not goose_api_key:
+            self.log.info(
+                self.class_name,
+                warning="No API key found in env for any of the GPT3 providers."
+            )
     def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
 
@@ -143,14 +148,19 @@ class GPT3Module(Module):
         return engine.tokenizer(data)["input_ids"][0]
 
     def get_engine(self, message: ServiceMessage, force_goose=False):
-        if self.openai.is_channel_allowed(message) and not force_goose:
+        if not force_goose and self.openai and self.openai.is_channel_allowed(message):
             return self.openai.get_engine(message)
-        return self.gooseai.get_engine()
+
+        if self.gooseai:
+            return self.gooseai.get_engine()
 
     async def gpt3_chat(self, message):
         """Ask GPT-3 what Stampy would say next in the chat log"""
 
         engine = self.get_engine(message)
+        if not engine:
+            return Response()
+
         prompt = self.generate_chatlog_prompt(message.channel)
 
         forbidden_tokens = self.get_forbidden_tokens(message.channel, engine)

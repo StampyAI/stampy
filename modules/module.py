@@ -6,7 +6,7 @@ from config import TEST_QUESTION_PREFIX
 from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
 from utilities.utilities import is_stampy_mentioned, stampy_is_author, get_guild_and_invite_role
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable, Iterable, Literal, Optional, Union
 from utilities.serviceutils import ServiceMessage
 
 log = get_logger()
@@ -93,7 +93,7 @@ class Response:
 
 
 class Module:
-    utils = None
+    utils: Utilities
 
     def __init__(self):
         self.utils = Utilities.get_instance()
@@ -140,11 +140,6 @@ class Module:
         """
         pass
 
-    async def process_reaction_event(self, reaction, user, event_type="REACTION_ADD"):
-        """event_type can be 'REACTION_ADD' or 'REACTION_REMOVE'
-        Use this to allow modules to handle adding and removing reactions on messages"""
-        return Response()
-
     async def process_raw_reaction_event(self, event):
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
@@ -189,7 +184,7 @@ class Module:
             return text[len(prefix_with_number) :]
         return text
 
-    def is_at_me(self, message):
+    def is_at_me(self, message: ServiceMessage) -> Union[str, Literal[False]]:
         """
         Determine if the message is directed at Stampy
         If it's not, return False. If it is, strip away the

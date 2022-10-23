@@ -5,6 +5,7 @@ from config import (
     rob_miles_youtube_channel_id,
     discord_token,
     discord_guild,
+    error_channel_id,
     youtube_api_key,
     database_path,
     TEST_RESPONSE_PREFIX,
@@ -14,6 +15,7 @@ from config import (
 )
 from database.database import Database
 from datetime import datetime, timezone, timedelta
+from enum import Enum
 from git import Repo
 from googleapiclient.discovery import build as get_youtube_api
 from googleapiclient.errors import HttpError
@@ -27,13 +29,19 @@ import os
 import psutil
 import random
 import re
+import sys
+import traceback
 
 # Sadly some of us run windows...
-if not os.name == "nt":
+if os.name != "nt":
     import pwd
 
 log = get_logger()
 
+class OrderType(Enum):
+    TOP = 0
+    RANDOM = 1
+    LATEST = 2
 
 class Utilities:
     __instance = None
@@ -55,6 +63,7 @@ class Utilities:
     last_timestamp = None
     last_question_asked_timestamp = None
     latest_question_posted = None
+    error_channel = None
 
     users = None
     ids = None
@@ -65,9 +74,9 @@ class Utilities:
     service_modules_dict = {}
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> "Utilities":
         if Utilities.__instance is None:
-            Utilities()
+            return Utilities()
         return Utilities.__instance
 
     def __init__(self):
@@ -348,22 +357,19 @@ class Utilities:
         return new_comments
 
     def get_question(
-        self, order_type="TOP", wiki_question_bias=SemanticWiki.default_wiki_question_percent_bias
+        self, order_type: OrderType = OrderType.TOP, wiki_question_bias: float =SemanticWiki.default_wiki_question_percent_bias
     ):
         """Pull the oldest question from the queue
         Returns False if the queue is empty, the question string otherwise"""
         # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
         # So wanted to keep it consistent for now. Maybe get _a_ question?
-        if order_type == "RANDOM":
+        if order_type == OrderType.RANDOM:
             comment = self.wiki.get_random_question(wiki_question_bias=wiki_question_bias)
-        elif order_type == "TOP":
+        elif order_type == OrderType.TOP:
             comment = self.wiki.get_top_question(wiki_question_bias=wiki_question_bias)
-        else:
+        else: # order_type == OrderType.LATEST:
             comment = self.wiki.get_latest_question(wiki_question_bias=wiki_question_bias)
-
-        if not comment:
-            return None
-
+        
         self.latest_question_posted = comment
 
         text = comment["text"]
@@ -537,6 +543,18 @@ class Utilities:
         message += " " + str(time_running.minute) + " minutes"
         message += " and " + str(time_running.second) + " seconds."
         return message
+
+    async def log_exception(self, e: Exception) -> None:
+        parts = ["Traceback (most recent call last):\n"]
+        parts.extend(traceback.format_stack(limit=25)[:-2])
+        parts.extend(traceback.format_exception(*sys.exc_info())[1:])
+        error_message = "".join(parts)
+        await self.log_error(error_message)
+
+    async def log_error(self, error_message: str) -> None:
+        if self.error_channel is None:
+            self.error_channel = self.client.get_channel(error_channel_id)
+        await self.error_channel.send(f"```{error_message}```")
 
 
 def get_github_info():

@@ -99,7 +99,10 @@ class DiscordHandler:
             responses = [Response()]
             for module in self.modules:
                 log.info(class_name, msg=f"# Asking module: {module}")
-                response = module.process_message(message)
+                try:
+                    response = module.process_message(message)
+                except Exception as e:
+                    await self.utils.log_exception(e)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
 
@@ -133,44 +136,47 @@ class DiscordHandler:
                     )
 
                 top_response = responses.pop(0)
+                try:
+                    if top_response.callback:
+                        log.info(class_name, msg="Top response is a callback. Calling it")
+                        if inspect.iscoroutinefunction(top_response.callback):
+                            new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
+                        else:
+                            new_response = top_response.callback(*top_response.args, **top_response.kwargs)
 
-                if top_response.callback:
-                    log.info(class_name, msg="Top response is a callback. Calling it")
-                    if inspect.iscoroutinefunction(top_response.callback):
-                        new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
+                        new_response.module = top_response.module
+                        responses.append(new_response)
                     else:
-                        new_response = top_response.callback(*top_response.args, **top_response.kwargs)
-
-                    new_response.module = top_response.module
-                    responses.append(new_response)
-                else:
-                    if top_response:
-                        if self.utils.test_mode:
-                            if is_test_response(message.clean_content):
-                                return  # must return after process message is called so that response can be evaluated
-                            if is_test_question(message.clean_content):
-                                top_response.text = (
-                                    TEST_RESPONSE_PREFIX
-                                    + str(get_question_id(message))
-                                    + ": "
-                                    + (
-                                        top_response.text
-                                        if not isinstance(top_response.text, Generator)
-                                        else "".join(list(top_response.text))
+                        if top_response:
+                            if self.utils.test_mode:
+                                if is_test_response(message.clean_content):
+                                    return  # must return after process message is called so that response can be evaluated
+                                if is_test_question(message.clean_content):
+                                    top_response.text = (
+                                        TEST_RESPONSE_PREFIX
+                                        + str(get_question_id(message))
+                                        + ": "
+                                        + (
+                                            top_response.text
+                                            if not isinstance(top_response.text, Generator)
+                                            else "".join(list(top_response.text))
+                                        )
                                     )
-                                )
-                        log.info(class_name, top_response=top_response.text)
-                        # TODO: check to see if module is allowed to embed via a config?
-                        if top_response.embed:
-                            await message.channel.send(top_response.text, embed=top_response.embed)
-                        elif isinstance(top_response.text, str):
-                            # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
-                            await message.channel.send(top_response.text[:2000])
-                        elif isinstance(top_response.text, Iterable):
-                            for chunk in top_response.text:
-                                await message.channel.send(chunk)
-                    sys.stdout.flush()
-                    return
+                            log.info(class_name, top_response=top_response.text)
+                            # TODO: check to see if module is allowed to embed via a config?
+                            if top_response.embed:
+                                await message.channel.send(top_response.text, embed=top_response.embed)
+                            elif isinstance(top_response.text, str):
+                                # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
+                                await message.channel.send(top_response.text[:2000])
+                            elif isinstance(top_response.text, Iterable):
+                                for chunk in top_response.text:
+                                    await message.channel.send(chunk)
+                        sys.stdout.flush()
+                        return
+                except Exception as e:
+                    log.error(e)
+                    await self.utils.log_exception(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
@@ -222,7 +228,7 @@ class DiscordHandler:
                         # Don't ask anything if the last thing posted in the chat was stampy asking a question
                         self.utils.last_question_asked_timestamp = now
                         # this actually gets the question and sets it to asked, then sends the report
-                        report = self.utils.get_question(order_type="LATEST")
+                        report = self.utils.get_question(order_type=utilities.OrderType.LATEST)
                         guild = discord.utils.find(
                             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
                         )

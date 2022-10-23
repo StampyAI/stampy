@@ -2,13 +2,14 @@ from api.utilities.openai import OpenAIEngines
 from config import openai_channels, openai_api_key, rob_id
 from structlog import get_logger
 from utilities.serviceutils import Services, ServiceMessage
-from utilities import utilities
+from utilities import utilities, Utilities
 import openai
 import discord
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
 restart_sequence = "\n\nQ: "
+utils = Utilities.get_instance()
 
 
 class OpenAI:
@@ -46,11 +47,17 @@ class OpenAI:
                 top_p=0,
                 logprobs=10,
             )
-        except openai.error.AuthenticationError:
+        except openai.error.AuthenticationError as e:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
+            loop = asyncio.get_running_loop()
+            loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
+            loop.create_task(utils.log_exception(e))
             return 2
-        except openai.error.RateLimitError:
+        except openai.error.RateLimitError as e:
             self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+            loop = asyncio.get_running_loop()
+            loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
+            loop.create_task(utils.log_exception(e))
             return 2
 
         output_label = response["choices"][0]["text"]
@@ -129,11 +136,17 @@ class OpenAI:
                 logit_bias=logit_bias,
                 # user=str(message.author.id),
             )
-        except openai.error.AuthenticationError:
+        except openai.error.AuthenticationError as e:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
+            loop = asyncio.get_running_loop()
+            loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
+            loop.create_task(utils.log_exception(e))
             return ""
-        except openai.error.RateLimitError:
+        except openai.error.RateLimitError as e:
             self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+            loop = asyncio.get_running_loop()
+            loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
+            loop.create_task(utils.log_exception(e))
             return ""
 
         if response["choices"]:

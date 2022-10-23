@@ -15,8 +15,8 @@ To explain how to implement a new Stampy feature, let's work through an example:
 # Module Creation Steps
 We'll implement this by creating a new module, which we'll call the 'choose' module. Here's how you'd do that!
 
-1. Create a card on the [trello](https://trello.com/b/LBmYgkes/stampy) in the "Ideas" List, that describes the module that you are planning to make.
-1. Message the [`#stampy-dev` channel on Discord](https://discord.com/channels/677546901339504640/758062805810282526) with the card, to get feedback and buy-in for your potential module. If the general idea seems well liked, move the card into the "Doing" lane and add your name to the card.
+1. Open a GitHub issue that describes the module that you're planning to make.
+1. Message the [`#stampy-dev` channel on Discord](https://discord.com/channels/677546901339504640/758062805810282526), to get feedback and buy-in for your potential module. If the general idea seems well liked, assign it to yourself and start coding.
 1. Create a new branch named similarly to your module. `$ git checkout -b choose-module`
 1. Create a new file named after your module inside of [the `modules` folder](https://github.com/robertskmiles/stampy/tree/master/modules). `$ <editor of your choice> choose.py`
 1. Inside of `choose.py`, create a child class of the `Module` class
