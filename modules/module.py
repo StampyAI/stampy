@@ -77,7 +77,7 @@ class Response:
     a good response is, and how slow/expensive the callback function is.
     """
 
-    embed: discord.Embed = None
+    embed: Optional[discord.Embed] = None
     confidence: float = 0.0
     text: Union[str, Iterable[str]] = ""
     callback: Optional[Callable] = None
@@ -92,7 +92,7 @@ class Response:
         return bool(self.text) or bool(self.callback) or bool(self.confidence)
 
 
-class Module(object):
+class Module:
     utils: Utilities
 
     def __init__(self):
