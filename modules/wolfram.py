@@ -13,23 +13,24 @@ class Wolfram(Module):
 
     def process_message(self, message):
         text = self.is_at_me(message)
-        if text:
-            if text.endswith("?"):
-                return Response(
-                    confidence=5,
-                    callback=self.ask,
-                    args=[text],
-                    why="It's a question, we might be able to answer it",
-                )
-            else:
-                return Response(
-                    confidence=1,
-                    callback=self.ask,
-                    args=[text],
-                    why="It's not a question but we might be able to look it up",
-                )
-        else:
+
+        if not wolfram_token or not text:
             return Response()
+
+        if text.endswith("?"):
+            return Response(
+                confidence=5,
+                callback=self.ask,
+                args=[text],
+                why="It's a question, we might be able to answer it",
+            )
+        else:
+            return Response(
+                confidence=1,
+                callback=self.ask,
+                args=[text],
+                why="It's not a question but we might be able to look it up",
+            )
 
     def ask(self, question):
         try:

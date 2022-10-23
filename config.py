@@ -4,15 +4,16 @@ import dotenv
 import os
 
 dotenv.load_dotenv()
+NOT_PROVIDED = '__NOT_PROVIDED__'
 
 
-def getenv(env_var, default=None):
+def getenv(env_var, default=NOT_PROVIDED):
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
     """
     value = os.getenv(env_var, default)
-    if value is None:
+    if value == NOT_PROVIDED:
         raise Exception(f"Environment Variable '{env_var}' not set and no default provided")
     return value
 
@@ -95,12 +96,12 @@ discord_guild = getenv("DISCORD_GUILD")
 youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
 wiki_password = getenv("WIKI_BOT_PASSWORD")
-openai_api_key = getenv("OPENAI_API_KEY", default="null")
-goose_api_key = getenv("GOOSE_API_KEY", default="null")
-wolfram_token = getenv("WOLFRAM_TOKEN", default="null")
+openai_api_key = getenv("OPENAI_API_KEY", default=None)
+goose_api_key = getenv("GOOSE_API_KEY", default=None)
+wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 # These defaults are just to not break production until slack is set up.
-slack_app_token = getenv("SLACK_APP_TOKEN", default="null")
-slack_bot_token = getenv("SLACK_BOT_TOKEN", default="null")
+slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
+slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 

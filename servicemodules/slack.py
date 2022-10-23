@@ -167,7 +167,7 @@ class SlackHandler:
     def start(self, event: threading.Event) -> threading.Timer:
         t = threading.Timer(1, self._start, args=[event])
         t.name = "Slack Thread"
-        if slack_app_token != "null" and slack_bot_token != "null":
+        if slack_app_token and slack_bot_token:
             t.start()
         else:
             log.info(class_name, msg="Skipping Slack since our token's aren't configured!")
