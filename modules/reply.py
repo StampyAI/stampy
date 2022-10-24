@@ -186,7 +186,7 @@ class Reply(Module):
             for reaction in reactions:
                 reaction_type = getattr(reaction.emoji, "name", "")
                 if reaction_type in ["stamp", "goldstamp"]:
-                    users = await reaction.users().flatten()
+                    users = [user async for user in reaction.users()]
                     for user in users:
                         approvers.append(user)
                         stampvalue = self.utils.modules_dict["StampsModule"].get_user_stamps(user)
