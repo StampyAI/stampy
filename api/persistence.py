@@ -3,7 +3,7 @@
 ###########################################################################
 
 
-class Persistence(object):
+class Persistence:
     def __init__(self, uri, user, api_key):
         self._uri = uri
         self._user = user

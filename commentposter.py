@@ -13,7 +13,7 @@ spinner = cycle("\\|/-")
 log = get_logger()
 
 
-class CommentPoster(object):
+class CommentPoster:
     utils = None
 
     def __init__(self):
