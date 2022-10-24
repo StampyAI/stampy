@@ -23,6 +23,7 @@ from structlog import get_logger
 from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage
+from typing import List
 import discord
 import json
 import os
@@ -37,6 +38,8 @@ if os.name != "nt":
     import pwd
 
 log = get_logger()
+
+discord_message_length_limit = 2000
 
 class OrderType(Enum):
     TOP = 0
@@ -554,7 +557,30 @@ class Utilities:
     async def log_error(self, error_message: str) -> None:
         if self.error_channel is None:
             self.error_channel = self.client.get_channel(error_channel_id)
-        await self.error_channel.send(f"```{error_message}```")
+        for msg_chunk in Utilities.split_message_for_discord(error_message, max_length=discord_message_length_limit-6):
+            await self.error_channel.send(f"```{msg_chunk}```")
+
+    @staticmethod
+    def split_message_for_discord(msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit) \
+            -> List[str]:
+        """Splitting a message in chunks of maximum 2000, so that the end of each chunk is a newline if possible.
+        We can do this greedily, and if a solution exists. """
+        msg_len = len(msg)
+        next_split_marker = 0
+        last_split_index = 0
+        output = []
+        while last_split_index + max_length < msg_len:
+            split_marker_try = msg.find(stop_char, next_split_marker + 1, last_split_index + max_length)
+            if split_marker_try == -1:
+                if next_split_marker == last_split_index:  # there are no newlines in the next 2000 chars, just take all
+                    next_split_marker = last_split_index + max_length
+
+                output.append(msg[last_split_index:next_split_marker])
+                last_split_index = next_split_marker
+            else:
+                next_split_marker = split_marker_try + 1
+        output.append(msg[last_split_index:])
+        return output
 
 
 def get_github_info():
@@ -655,3 +681,13 @@ def get_guild_and_invite_role():
     guild = utils.client.guilds[0]
     invite_role = discord.utils.get(guild.roles, name="can-invite")
     return guild, invite_role
+
+
+class UtilsTests:
+    def test_split_message_for_discord(self):
+        test_out = len(Utilities.split_message_for_discord(
+            "123456789012345\n1234567890123456789\n10\n10\n10\n01234567890123456789", max_length=20
+        ))
+        self.assertEqual(len(test_out), 4)
+        for chunk in test_out:
+            self.assertLessEqual(len(chunk), 20)
