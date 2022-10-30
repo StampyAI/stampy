@@ -81,7 +81,7 @@ stampy_youtube_channel_id = {
     "development": "DvKrlpIXM0BGYLD2jjLGvg",
 }[ENVIRONMENT_TYPE]
 
-bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
+bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE] # TODO: the id is for talk-to-stampy, does the var name need to change, or does the id (correct is 758062805810282526//817518145472299009)
 error_channel_id = {"production": 1017527224540344380, "development": 1017531179664150608}[ENVIRONMENT_TYPE]
 
 stamp_scores_csv_file_path = {
@@ -89,7 +89,7 @@ stamp_scores_csv_file_path = {
     "development": "stamps-export.csv",
 }[ENVIRONMENT_TYPE]
 
-admin_usernames = ["robertskmiles", "sudonym"]
+# admin_usernames = ["robertskmiles", "sudonym"]
 
 discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
@@ -106,13 +106,14 @@ slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 
 
-stampy_control_channel_names = [
-    "test",
-    "stampy-dev-priv",
-    "stampy-dev",
-    "talk-to-stampy",
-    "robertskmiles",
-]
+stampy_control_channel_ids = (
+    {"production": -1, "development": 803448149946662923}[ENVIRONMENT_TYPE],  # test
+    {"production": 736247813616304159, "development": 817518389848309760}[ENVIRONMENT_TYPE],  # stampy-dev-priv
+    {"production": 758062805810282526, "development": 817518145472299009}[ENVIRONMENT_TYPE],  # stampy-dev
+    {"production": 758062805810282526, "development": 817518440192409621}[ENVIRONMENT_TYPE],  # talk-to-stampy
+    {"production": -1, "development": 736241264856662038}[ENVIRONMENT_TYPE],  # robertskmiles TODO: replace -1 with the id for robs DM with stampy,
+)
+bot_admin_role_id = {"production": 819898114823159819, "development": 948709263461711923}[ENVIRONMENT_TYPE]
 
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
