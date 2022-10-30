@@ -37,7 +37,7 @@ class StampsModule(Module):
         self.update_utils()
         self.calculate_stamps()
 
-    def update_vote(self, emoji: str, from_id: Union[int, str], to_id: Union[int, str],
+    def update_vote(self, emoji: str, from_id: int, to_id: int,
                     *, negative: bool = False, recalculate: bool = True):
 
         if (to_id == stampy_id  # votes for stampy do nothing
@@ -149,7 +149,7 @@ class StampsModule(Module):
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
                 msg_id, emoji, from_id, to_id = line.strip().split(",")
-                self.update_vote(emoji, from_id, to_id, recalculate=False)
+                self.update_vote(emoji, int(from_id), int(to_id), recalculate=False)
 
         self.calculate_stamps()
 

@@ -63,4 +63,4 @@ member_role_id: int = {"production": 945033781818040391, "development": 94746361
 # pretty sure can-invite is deprecated, but putting it here for completeness
 
 rob_id: int = 181142785259208704
-stampy_id: int = "736241264856662038"
+stampy_id: int = 736241264856662038
