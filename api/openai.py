@@ -1,7 +1,9 @@
 from api.utilities.openai import OpenAIEngines
-from config import openai_channels, openai_api_key, rob_id
+from config import openai_api_key
 from structlog import get_logger
-from utilities.serviceutils import Services, ServiceMessage
+from servicemodules.discordConstants import rob_id
+from servicemodules.serviceConstants import Services, openai_channel_ids
+from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
 import openai
 import discord
@@ -17,17 +19,11 @@ class OpenAI:
         super().__init__()
         self.class_name = self.__class__.__name__
         self.log = get_logger()
-        self.allowed_channels: dict[Services, list[str]] = {}
-        for channel, service in openai_channels:
-            if service not in self.allowed_channels:
-                self.allowed_channels[service] = [channel]
-            else:
-                self.allowed_channels[service].append(channel)
 
     def is_channel_allowed(self, message: ServiceMessage) -> bool:
-        if message.service not in self.allowed_channels:
+        if message.service not in openai_channel_ids:
             return False
-        return message.channel.name in self.allowed_channels[message.service]
+        return message.channel.id in openai_channel_ids[message.service]
 
     def cf_risk_level(self, prompt):
         """Ask the openai content filter if the prompt is risky

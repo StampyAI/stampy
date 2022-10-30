@@ -4,8 +4,9 @@ import discord
 import numpy as np
 from utilities import utilities
 from modules.module import Module, Response
-from config import stampy_id
-from config import stamp_scores_csv_file_path, Services
+from config import stamp_scores_csv_file_path
+from servicemodules.serviceConstants import Services
+from servicemodules.discordConstants import stampy_id, bot_admin_role_id
 from utilities.discordutils import DiscordMessage
 
 
@@ -36,7 +37,7 @@ class StampsModule(Module):
         self.update_utils()
         self.calculate_stamps()
 
-    def update_vote(self, emoji: str, from_id: Union[int, str], to_id: Union[int, str],
+    def update_vote(self, emoji: str, from_id: int, to_id: int,
                     *, negative: bool = False, recalculate: bool = True):
 
         if (to_id == stampy_id  # votes for stampy do nothing
@@ -148,7 +149,7 @@ class StampsModule(Module):
             stamps_file.readline()  # throw away the first line, it's headers
             for line in stamps_file:
                 msg_id, emoji, from_id, to_id = line.strip().split(",")
-                self.update_vote(emoji, from_id, to_id, recalculate=False)
+                self.update_vote(emoji, int(from_id), int(to_id), recalculate=False)
 
         self.calculate_stamps()
 
@@ -269,7 +270,7 @@ class StampsModule(Module):
 
             elif text == "reloadallstamps":
                 if message.service == Services.DISCORD:
-                    asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+                    asked_by_admin = discord.utils.get(message.author.roles, id=bot_admin_role_id)
                     if asked_by_admin:
                         return Response(confidence=10, callback=self.reloadallstamps, args=[message])
                 else:

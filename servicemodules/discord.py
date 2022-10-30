@@ -21,10 +21,10 @@ from datetime import datetime, timezone, timedelta
 from typing import Generator
 from config import (
     discord_token,
-    bot_dev_channel_id,
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
 )
+from servicemodules.discordConstants import stampy_dev_priv_channel_id, automatic_question_channel_id
 
 log = get_logger()
 class_name = "DiscordHandler"
@@ -56,7 +56,7 @@ class DiscordHandler:
 
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(class_name, guild_members=members)
-            await self.utils.client.get_channel(bot_dev_channel_id).send(
+            await self.utils.client.get_channel(stampy_dev_priv_channel_id).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
 
@@ -92,7 +92,7 @@ class DiscordHandler:
                 message_content=message.content,
             )
 
-            if hasattr(message.channel, "name") and message.channel.name == "general":
+            if hasattr(message.channel, "id") and message.channel.id == automatic_question_channel_id:
                 log.info(class_name, msg="the latest general discord channel message was not from stampy")
                 self.utils.last_message_was_youtube_question = False
 
@@ -232,7 +232,7 @@ class DiscordHandler:
                         guild = discord.utils.find(
                             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
                         )
-                        general = discord.utils.find(lambda c: c.name == "general", guild.channels)
+                        general = discord.utils.get(guild.channels, id=automatic_question_channel_id)
                         await general.send(report)
                         self.utils.last_message_was_youtube_question = True
                     else:

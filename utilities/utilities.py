@@ -5,14 +5,13 @@ from config import (
     rob_miles_youtube_channel_id,
     discord_token,
     discord_guild,
-    error_channel_id,
     youtube_api_key,
     database_path,
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
     wiki_config,
-    wikifeed_id,
 )
+from servicemodules.discordConstants import stampy_error_log_channel_id, wiki_feed_channel_id
 from database.database import Database
 from datetime import datetime, timezone, timedelta
 from enum import Enum
@@ -170,7 +169,7 @@ class Utilities:
         return self.is_stampy(message.author)
 
     def is_stampy(self, user: DiscordUser) -> bool:
-        if user.id == wikifeed_id:  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
+        if user.id == wiki_feed_channel_id:  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
             return True
         if self.discord_user:
             return user == self.discord_user
@@ -556,7 +555,7 @@ class Utilities:
 
     async def log_error(self, error_message: str) -> None:
         if self.error_channel is None:
-            self.error_channel = self.client.get_channel(error_channel_id)
+            self.error_channel = self.client.get_channel(stampy_error_log_channel_id)
         for msg_chunk in Utilities.split_message_for_discord(error_message, max_length=discord_message_length_limit-6):
             await self.error_channel.send(f"```{msg_chunk}```")
 

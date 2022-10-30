@@ -4,12 +4,11 @@ from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
     goose_api_key,
-    rob_id,
-    service_italics_marks,
-    default_italics_mark,
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
+from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
+from servicemodules.discordConstants import rob_id, stampy_id
 import openai
 
 openai.api_key = openai_api_key
@@ -130,7 +129,7 @@ class GPT3Module(Module):
         forbidden_tokens = set([])
 
         for message in self.message_logs[channel]:
-            if message.author.name == "stampy":
+            if message.author.id == stampy_id:
                 # we only need the first token, so just clip to ten chars
                 # the space is because we generate from "stampy:" so there's always a space at the start
                 if message.service in service_italics_marks:

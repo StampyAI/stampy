@@ -1,7 +1,7 @@
 import discord
 from git import Repo, cmd
 from structlog import get_logger
-from config import bot_dev_channel_id, discord_token
+from config import stampy_dev_priv_channel_id, discord_token
 
 client = discord.Client()
 log = get_logger()
@@ -24,7 +24,7 @@ async def on_ready():
     date = master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z")
     message = offline_message % (actor, git_message, date)
     log.info("notify_discord_script", msg=message)
-    await client.get_channel(bot_dev_channel_id).send(message)
+    await client.get_channel(stampy_dev_priv_channel_id).send(message)
     log.info("notify_discord_script", status="COMPLETE")
     exit()
 

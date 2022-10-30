@@ -1,5 +1,4 @@
 from api.utilities.gooseutils import GooseAIEngines
-from enum import Enum
 import dotenv
 import os
 
@@ -18,33 +17,10 @@ def getenv(env_var, default=NOT_PROVIDED):
     return value
 
 
-class Services(Enum):
-    DISCORD = "Discord"
-    FLASK = "Flask"
-    SLACK = "Slack"
-
-    def __str__(self) -> None:
-        return str(self._value_)
-
-    def __eq__(self, other: object) -> bool:
-        try:
-            return str(self) == str(other)
-        except Exception:
-            return False
-
-    def __hash__(self):
-
-        return hash(str(self)) >> 22
-
-
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
-rob_id = 181142785259208704
-stampy_id = "736241264856662038"
-wikifeed_id = "819348549820088350"
-plex_id = "756254556811165756"
 god_id = "0"
 youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
 
@@ -81,15 +57,11 @@ stampy_youtube_channel_id = {
     "development": "DvKrlpIXM0BGYLD2jjLGvg",
 }[ENVIRONMENT_TYPE]
 
-bot_dev_channel_id = {"production": 808138366330994688, "development": 803448149946662923}[ENVIRONMENT_TYPE]
-error_channel_id = {"production": 1017527224540344380, "development": 1017531179664150608}[ENVIRONMENT_TYPE]
-
 stamp_scores_csv_file_path = {
     "production": "/var/www/html/stamps-export.csv",
     "development": "stamps-export.csv",
 }[ENVIRONMENT_TYPE]
 
-admin_usernames = ["robertskmiles", "sudonym"]
 
 discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
@@ -106,15 +78,6 @@ slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 
 
-stampy_control_channel_names = [
-    "test",
-    "stampy-dev-priv",
-    "stampy-dev",
-    "talk-to-stampy",
-    "robertskmiles",
-]
-
-
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
     GooseAIEngines.GPT_20B,
     GooseAIEngines.GPT_6B,
@@ -127,25 +90,3 @@ goose_engine_fallback_order = [  # What engine to use in order of preference in 
     GooseAIEngines.FAIRSEQ_1_3B,
     GooseAIEngines.FAIRSEQ_125M,
 ]
-
-
-openai_channels: list[tuple[str, Services]] = [  # What channels may use openai.
-    ("stampy-dev-priv", Services.DISCORD),
-    ("aligned-intelligences-only", Services.DISCORD),
-    ("ai", Services.DISCORD),
-    ("not-ai", Services.DISCORD),
-    ("events", Services.DISCORD),
-    ("projects", Services.DISCORD),
-    ("book-club", Services.DISCORD),
-    ("dialogues-with-stampy", Services.DISCORD),
-    ("meta", Services.DISCORD),
-]
-
-
-service_italics_marks = {
-    Services.SLACK: "_",
-    Services.FLASK: "",
-}
-
-
-default_italics_mark = "*"

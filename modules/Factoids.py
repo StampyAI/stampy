@@ -1,7 +1,7 @@
 import re
 import random
 import sqlite3
-from config import rob_id
+from servicemodules.discordConstants import rob_id, bot_dev_role_id
 from modules.module import Module, Response
 
 
@@ -16,7 +16,7 @@ def is_bot_dev(user):
     if user.id == rob_id:
         return True
     roles = getattr(user, "roles", [])
-    return "bot dev" in [role.name for role in roles]
+    return discord.utils.get(roles, id=bot_dev_role_id)
 
 
 class Factoids(Module):

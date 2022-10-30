@@ -1,5 +1,6 @@
 from unittest import TestCase
-from utilities.serviceutils import ServiceMessage, ServiceUser, Services
+from servicemodules.serviceConstants import Services
+from utilities.serviceutils import ServiceMessage, ServiceUser
 from utilities import Utilities
 from servicemodules.discord import DiscordHandler
 from modules.Eliza import Eliza
