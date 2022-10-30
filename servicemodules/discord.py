@@ -24,7 +24,7 @@ from config import (
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
 )
-from servicemodules.discordConstants import stampy_dev_priv_channel_id
+from servicemodules.discordConstants import stampy_dev_priv_channel_id, automatic_question_channel_id
 
 log = get_logger()
 class_name = "DiscordHandler"
@@ -92,7 +92,7 @@ class DiscordHandler:
                 message_content=message.content,
             )
 
-            if hasattr(message.channel, "name") and message.channel.name == "general":
+            if hasattr(message.channel, "id") and message.channel.id == automatic_question_channel_id:
                 log.info(class_name, msg="the latest general discord channel message was not from stampy")
                 self.utils.last_message_was_youtube_question = False
 
@@ -232,7 +232,7 @@ class DiscordHandler:
                         guild = discord.utils.find(
                             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
                         )
-                        general = discord.utils.find(lambda c: c.name == "general", guild.channels)
+                        general = discord.utils.get(guild.channels, id=automatic_question_channel_id)
                         await general.send(report)
                         self.utils.last_message_was_youtube_question = True
                     else:

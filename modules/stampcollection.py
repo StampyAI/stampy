@@ -6,7 +6,7 @@ from utilities import utilities
 from modules.module import Module, Response
 from config import stamp_scores_csv_file_path
 from servicemodules.serviceConstants import Services
-from servicemodules.discordConstants import stampy_id
+from servicemodules.discordConstants import stampy_id, bot_admin_role_id
 from utilities.discordutils import DiscordMessage
 
 
@@ -270,7 +270,7 @@ class StampsModule(Module):
 
             elif text == "reloadallstamps":
                 if message.service == Services.DISCORD:
-                    asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+                    asked_by_admin = discord.utils.get(message.author.roles, id=bot_admin_role_id)
                     if asked_by_admin:
                         return Response(confidence=10, callback=self.reloadallstamps, args=[message])
                 else:

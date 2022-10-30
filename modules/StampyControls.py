@@ -3,7 +3,7 @@ import discord
 from modules.module import Module, Response
 from config import TEST_RESPONSE_PREFIX
 from servicemodules.serviceConstants import Services
-from servicemodules.discordConstants import bot_admin_role_id, stampy_control_channel_ids
+from servicemodules.discordConstants import bot_admin_role_id, stampy_control_channel_ids, can_invite_role_id, member_role_id
 from utilities import Utilities, get_github_info, get_memory_usage, get_running_user_info, get_question_id
 
 
@@ -83,7 +83,7 @@ class StampyControls(Module):
             discord_guild=guild,
             discord_guild_member_count=len(guild.members),
         )
-        role = discord.utils.get(guild.roles, name="can-invite")
+        role = discord.utils.get(guild.roles, id=can_invite_role_id)
         reset_users_count = 0
         if not self.utils.test_mode:
             for member in guild.members:
@@ -103,7 +103,7 @@ class StampyControls(Module):
         if message.service != Services.DISCORD:
             return Response(confidence=10, text="This feature is only available on Discord")
         guild = message._message.guild
-        member_role = discord.utils.get(guild.roles, name="member")
+        member_role = discord.utils.get(guild.roles, id=member_role_id)
         if not member_role:
             return Response(
                 confidence=10,
