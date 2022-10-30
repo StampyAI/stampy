@@ -1,7 +1,7 @@
 import re
 import random
 import sqlite3
-from config import rob_id
+from servicemodules.discordConstants import rob_id
 from modules.module import Module, Response
 
 

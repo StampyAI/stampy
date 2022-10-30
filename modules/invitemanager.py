@@ -1,6 +1,7 @@
 import re
 import discord
-from config import rob_id, Services
+from servicemodules.discordConstants import rob_id
+from servicemodules.serviceConstants import Services
 from modules.module import Module, Response
 
 

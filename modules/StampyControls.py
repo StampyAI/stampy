@@ -1,7 +1,9 @@
 import sys
 import discord
 from modules.module import Module, Response
-from config import stampy_control_channel_names, bot_admin_role_id, TEST_RESPONSE_PREFIX, Services
+from config import TEST_RESPONSE_PREFIX
+from servicemodules.serviceConstants import Services
+from servicemodules.discordConstants import bot_admin_role_id, stampy_control_channel_ids
 from utilities import Utilities, get_github_info, get_memory_usage, get_running_user_info, get_question_id
 
 

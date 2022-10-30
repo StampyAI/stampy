@@ -4,8 +4,9 @@ import discord
 import numpy as np
 from utilities import utilities
 from modules.module import Module, Response
-from config import stampy_id
-from config import stamp_scores_csv_file_path, Services
+from config import stamp_scores_csv_file_path
+from servicemodules.serviceConstants import Services
+from servicemodules.discordConstants import stampy_id
 from utilities.discordutils import DiscordMessage
 
 

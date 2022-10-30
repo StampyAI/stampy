@@ -1,5 +1,6 @@
 from functools import cache
-from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage, Services
+from servicemodules.serviceConstants import Services
+from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
 from typing import Any
 
 

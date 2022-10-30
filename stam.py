@@ -12,8 +12,8 @@ from config import (
     prod_local_path,
     ENVIRONMENT_TYPE,
     acceptable_environment_types,
-    Services,
 )
+from servicemodules.serviceConstants import Services
 
 log_type = "stam.py"
 log = get_logger()

@@ -1,8 +1,8 @@
+from servicemodules.serviceConstants import Services
 from utilities.serviceutils import (
     ServiceChannel,
     ServiceMessage,
     ServiceRole,
-    Services,
     ServiceServer,
     ServiceUser,
 )
