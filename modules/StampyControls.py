@@ -60,10 +60,15 @@ class StampyControls(Module):
                 sys.stdout.flush()
                 Utilities.get_instance().stop.set()
                 exit()
+            return Response(
+                confidence=10,
+                why="%s tried to kill me! They said 'reboot'" % message.author.name,
+                text="You're not my supervisor!",
+            )
         return Response(
             confidence=10,
             why="%s tried to kill me! They said 'reboot'" % message.author.name,
-            text="You're not my supervisor!",
+            text="This is not the place for violent murder of an agent.",
         )
 
     async def resetinviteroles(self, message):
