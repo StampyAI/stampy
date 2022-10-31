@@ -53,7 +53,7 @@ class StampyControls(Module):
 
     @staticmethod
     async def reboot(message):
-        if hasattr(message.channel, "id") and int(message.channel.id) in stampy_control_channel_ids:
+        if hasattr(message.channel, "id") and message.channel.id in stampy_control_channel_ids:
             asked_by_admin = discord.utils.get(message.author.roles, id=bot_admin_role_id)
             if asked_by_admin:
                 await message.channel.send("Rebooting...")
