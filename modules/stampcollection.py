@@ -26,7 +26,7 @@ class StampsModule(Module):
     def __init__(self):
         super().__init__()
         self.class_name = "StampsModule"
-        self.user_karma = 1.0
+        self.gamma = 0.99
         self.total_votes = self.utils.get_total_votes()
         self.calculate_stamps()
 
@@ -78,7 +78,7 @@ class StampsModule(Module):
             toi = self.utils.index[to_id]
             total_votes_by_user = self.utils.get_votes_by_user(from_id)
             if total_votes_by_user != 0:
-                score = (self.user_karma * votes_for_user) / total_votes_by_user
+                score = (self.gamma * votes_for_user) / total_votes_by_user
                 users_matrix[toi, from_id_index] = score
         for i in range(1, user_count):
             users_matrix[i, i] = -1.0
