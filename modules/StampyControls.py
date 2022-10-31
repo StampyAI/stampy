@@ -53,17 +53,22 @@ class StampyControls(Module):
 
     @staticmethod
     async def reboot(message):
-        if hasattr(message.channel, "id") and int(message.channel.id) in stampy_control_channel_ids:
+        if hasattr(message.channel, "id") and message.channel.id in stampy_control_channel_ids:
             asked_by_admin = discord.utils.get(message.author.roles, id=bot_admin_role_id)
             if asked_by_admin:
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 Utilities.get_instance().stop.set()
                 exit()
+            return Response(
+                confidence=10,
+                why="%s tried to kill me! They said 'reboot'" % message.author.name,
+                text="You're not my supervisor!",
+            )
         return Response(
             confidence=10,
             why="%s tried to kill me! They said 'reboot'" % message.author.name,
-            text="You're not my supervisor!",
+            text="This is not the place for violent murder of an agent.",
         )
 
     async def resetinviteroles(self, message):
