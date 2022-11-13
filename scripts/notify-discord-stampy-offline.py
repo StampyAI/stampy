@@ -24,7 +24,7 @@ async def on_ready():
     date = master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z")
     message = offline_message % (actor, git_message, date)
     log.info("notify_discord_script", msg=message)
-    await client.get_channel(stampy_dev_priv_channel_id).send(message)
+    await client.get_channel(int(stampy_dev_priv_channel_id)).send(message)
     log.info("notify_discord_script", status="COMPLETE")
     exit()
 

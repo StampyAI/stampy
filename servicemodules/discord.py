@@ -56,7 +56,7 @@ class DiscordHandler:
 
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(class_name, guild_members=members)
-            await self.utils.client.get_channel(stampy_dev_priv_channel_id).send(
+            await self.utils.client.get_channel(int(stampy_dev_priv_channel_id)).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
 
@@ -92,7 +92,7 @@ class DiscordHandler:
                 message_content=message.content,
             )
 
-            if hasattr(message.channel, "id") and message.channel.id == automatic_question_channel_id:
+            if hasattr(message.channel, "id") and str(message.channel.id) == automatic_question_channel_id:
                 log.info(class_name, msg="the latest general discord channel message was not from stampy")
                 self.utils.last_message_was_youtube_question = False
 
@@ -232,7 +232,7 @@ class DiscordHandler:
                         guild = discord.utils.find(
                             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
                         )
-                        general = discord.utils.get(guild.channels, id=automatic_question_channel_id)
+                        general = discord.utils.get(guild.channels, id=int(automatic_question_channel_id))
                         await general.send(report)
                         self.utils.last_message_was_youtube_question = True
                     else:

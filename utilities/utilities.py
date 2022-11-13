@@ -555,7 +555,7 @@ class Utilities:
 
     async def log_error(self, error_message: str) -> None:
         if self.error_channel is None:
-            self.error_channel = self.client.get_channel(stampy_error_log_channel_id)
+            self.error_channel = self.client.get_channel(int(stampy_error_log_channel_id))
         for msg_chunk in Utilities.split_message_for_discord(error_message, max_length=discord_message_length_limit-6):
             await self.error_channel.send(f"```{msg_chunk}```")
 

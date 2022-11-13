@@ -88,7 +88,7 @@ class StampyControls(Module):
             discord_guild=guild,
             discord_guild_member_count=len(guild.members),
         )
-        role = discord.utils.get(guild.roles, id=can_invite_role_id)
+        role = discord.utils.get(guild.roles, id=int(can_invite_role_id))
         reset_users_count = 0
         if not self.utils.test_mode:
             for member in guild.members:
@@ -108,7 +108,7 @@ class StampyControls(Module):
         if message.service != Services.DISCORD:
             return Response(confidence=10, text="This feature is only available on Discord")
         guild = message._message.guild
-        member_role = discord.utils.get(guild.roles, id=member_role_id)
+        member_role = discord.utils.get(guild.roles, id=int(member_role_id))
         if not member_role:
             return Response(
                 confidence=10,
