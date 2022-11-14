@@ -220,10 +220,11 @@ class StampsModule(Module):
         message = DiscordMessage(await channel.fetch_message(event.message_id))
         emoji = getattr(event.emoji, "name", event.emoji)
 
+        author_id_int = int(message.author.id)
         if utilities.stampy_is_author(message):
             # votes for stampy don't affect voting
             return
-        if message.author.id == event.user_id:
+        if author_id_int == event.user_id:
             # votes for yourself don't affect voting
             # if event_type == 'REACTION_ADD' and emoji in ['stamp', 'goldstamp']:
             # 	await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
@@ -233,7 +234,7 @@ class StampsModule(Module):
 
             ms_gid = event.message_id
             from_id = event.user_id
-            to_id = message.author.id
+            to_id = author_id_int
             
             self.log.info(
                 self.class_name,
