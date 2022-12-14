@@ -46,7 +46,10 @@ bot_owner_dms_id: str = {"production": "-1", "development": "736241264856662038"
 # ID DERIVED VARIABLES
 #################################
 
-automatic_question_channel_id = general_channel_id  # TODO: should this be ai_safety_questions_channel_id?
+automatic_question_channel_id = general_channel_id
+faq_hub_channel_id = talk_to_stampy_channel_id
+feedback_channel_id = stampy_error_log_channel_id  # TODO: this should eventually get its own channel
+
 
 stampy_control_channel_ids: Tuple[str, ...] = (test_channel_id, stampy_dev_priv_channel_id, stampy_dev_channel_id,
                                                talk_to_stampy_channel_id, bot_owner_dms_id)
