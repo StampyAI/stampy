@@ -67,7 +67,7 @@ class Silly(Module):
         ):
             return Response(
                 confidence=4,
-                text=self.utils.modules_dict["Factoids"].dereference("{{$yelling}}"),
+                text=self.dereference("{{$yelling}}", who),
                 why="PEOPLE WERE YELLING",
             )
 
