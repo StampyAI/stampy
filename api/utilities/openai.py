@@ -40,8 +40,8 @@ class OpenAIEngines(Enum):
         return str(self._value_)
 
     DAVINCI = (
-        "text-davinci-001",
-        "Davinci 001",
+        "text-davinci-003",
+        "Davinci 003",
         "Should only be used for Rob.",
         tokenizers.gpt2,
     )

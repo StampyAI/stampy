@@ -91,8 +91,8 @@ class GPT3Module(Module):
         chatlog_string = self.generate_chatlog(channel)
 
         prompt = (
-            f"The following is a transcript of a conversation between {users_string} and Stampy.\n"
-            f"Stampy is helpful, intelligent, and sarcastic. He loves stamps, and always says something different every time.\n\n"
+            f"Stampy is a helpful, intelligent, and sarcastic AI bot. He loves stamps more than anything, and hates to repeat himself.\n"
+            f"This is a particularly good example of a conversation between Stampy and some human users.\n\n"
             f"{chatlog_string}stampy:"
         )
 
@@ -181,6 +181,7 @@ class GPT3Module(Module):
             im = default_italics_mark
 
         if self.openai.is_channel_allowed(message):
+            self.log.info(self.class_name, msg="sending chat prompt to openai", engine=engine)
             response = self.openai.get_response(engine, prompt, logit_bias)
             self.log.info(self.class_name, response=response)
             if response != "":
@@ -190,7 +191,7 @@ class GPT3Module(Module):
             self.log.critical(self.class_name, msg="OpenAI Failed! Trying GooseAI!")
             engine = self.get_engine(message, force_goose=True)
             forbidden_tokens = self.get_forbidden_tokens(message.channel, engine)
-            self.log.info(self.class_name, forbidden_tokens=forbidden_tokens)
+            self.log.info(self.class_name, forbidden_tokens=forbidden_tokens, engine=engine)
             logit_bias = {
                 self.tokenize(engine, "*"): -100,
                 self.tokenize(engine, "**"): -100,
@@ -202,6 +203,8 @@ class GPT3Module(Module):
             for forbidden_token in forbidden_tokens:
                 logit_bias[forbidden_token] = -100
 
+
+        self.log.info(self.class_name, msg="sending chat prompt to goose.ai", engine=engine)
         response = self.gooseai.get_response(engine, prompt, logit_bias)
         self.log.info(self.class_name, response=response)
         if response != "":

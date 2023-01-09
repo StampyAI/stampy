@@ -31,8 +31,8 @@ openai_channel_ids: dict[Services, tuple[int, ...]] = {
         discordConstants.projects_channel_id,
         discordConstants.book_club_channel_id,
         discordConstants.dialogues_with_stampy_channel_id,
-        discordConstants.meta_channel_id,
-
+        discordConstants.meta_channel_id,        
+        discordConstants.general_channel_id
     )
 }
 
