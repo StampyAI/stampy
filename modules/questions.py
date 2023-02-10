@@ -30,13 +30,13 @@ log = get_logger()
 load_dotenv()
 
 
-class QuestionManager(Module):
+class Questions(Module):
     """Fetches not started questions from
     [Write answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Write-answers_suuwH#Write-answers_tu4_x/r220)
     """
 
     DOC_ID = "fau7sl2hmG"
-    TABLE_NAME = "All answers"
+    TABLE_ID = "table-YvPEyAXl8a"
 
     def __init__(self) -> None:
         super().__init__()
@@ -104,7 +104,8 @@ class QuestionManager(Module):
             questions = qq.filter_on_tags(questions)
         # otherwise, get all the oldest ones and shuffle them
         else:
-            questions = self.get_least_recently_asked_on_discord_and_shuffle(questions)
+            questions = self.shuffle_questions(questions)
+            questions = self.get_least_recently_asked_on_discord(questions)
 
         # get exactly n questions (default is 1)
         questions = qq.filter_on_max_num_of_questions(questions)
@@ -150,10 +151,10 @@ class QuestionManager(Module):
             questions_df = qq.filter_on_tags(questions_df)
 
         # Make message and respond
-        if (n_questions := len(questions_df)) == 1:
+        if len(questions_df) == 1:
             msg = "There is 1 question"
-        elif n_questions > 1:
-            msg = f"There are {n_questions} questions"
+        elif len(questions_df) > 1:
+            msg = f"There are {len(questions_df)} questions"
         else:  # n_questions == 0:
             msg = "There are no questions"
 
@@ -187,15 +188,19 @@ class QuestionManager(Module):
         return dt.fromisoformat(date_str.split("T")[0])
 
     @staticmethod
-    def get_least_recently_asked_on_discord_and_shuffle(
+    def shuffle_questions(questions: pd.DataFrame) -> pd.DataFrame:
+        questions_inds = questions.index.tolist()
+        shuffled_inds = random.sample(questions_inds, len(questions_inds))
+        return questions.loc[shuffled_inds]
+
+    @staticmethod
+    def get_least_recently_asked_on_discord(
         questions: pd.DataFrame,
     ) -> pd.DataFrame:
         """Get all questions with oldest date and shuffle them"""
 
         oldest_date = questions["last_asked_on_discord"].min()
-        questions = questions.query("last_asked_on_discord == @oldest_date")
-        shuffled_inds = random.sample(questions.index.tolist(), len(questions))
-        return questions.iloc[shuffled_inds]
+        return questions.query("last_asked_on_discord == @oldest_date")
 
     ############
     # Coda API #
@@ -216,7 +221,7 @@ class QuestionManager(Module):
         # optionally query by status
         if qq and qq.status:
             params["query"] = f'"Status":"{qq.status}"'
-        uri = f"https://coda.io/apis/v1/docs/{cls.DOC_ID}/tables/{cls.TABLE_NAME}/rows"
+        uri = f"https://coda.io/apis/v1/docs/{cls.DOC_ID}/tables/{cls.TABLE_ID}/rows"
         response = requests.get(uri, headers=headers, params=params, timeout=16).json()
         return response
 
@@ -271,7 +276,7 @@ class ParsedRow(TypedDict):
     last_asked_on_discord: dt
 
 
-_status_shorthands = QuestionManager.get_status_shorthand_dict()
+_status_shorthands = Questions.get_status_shorthand_dict()
 
 
 @dataclass(frozen=True)
@@ -392,13 +397,13 @@ _PAT_NEXT_QUESTION = r"""
         [Ll]et[’']?s\shave
     |
         [gG]ive\sus
-    )?
+    )?  # Optional: what's / can we have / let's have / give us
     (
-        \s?[Aa](nother)?
+        \s?[Aa](nother)? # a / another
     |
         (\sthe)?\s?
         [nN]ext)\s
-        ({question_query}),?
+        ({question_query}),? # next question (please)
         (\splease)?\??
     |
         ([Dd]o\syou\shave
@@ -418,6 +423,15 @@ _PAT_NEXT_QUESTION = r"""
 """.format(
     question_query=_PAT_QUESTION_QUERY
 )
+"""Exemplary questions that trigger this regex:
+- Can you give us another question?
+- Do you have any more questions for us?
+- next 5 questions
+- give us next 2 questions with status live on site and tagged as "decision theory"
+
+Suggested:
+- next N questions (with status X) (and tagged "Y" "Z")
+"""
 
 _PAT_COUNT_QUESTIONS = r"""
 (
@@ -448,3 +462,6 @@ $   # end
 """.format(
     question_query=_PAT_QUESTION_QUERY
 )
+"""Suggested:
+- how many questions (with status X) (and tagged "Y" "Z")
+"""
