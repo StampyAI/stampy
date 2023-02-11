@@ -139,10 +139,14 @@ class DiscordHandler:
                 try:
                     if top_response.callback:
                         log.info(class_name, msg="Top response is a callback. Calling it")
-                        if inspect.iscoroutinefunction(top_response.callback):
-                            new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
-                        else:
-                            new_response = top_response.callback(*top_response.args, **top_response.kwargs)
+                        
+                        # Callbacks can take a while to run, so we tell discord to say "Stampy is typing..."
+                        # Note that sometimes a callback will run but not send a message, in which case he'll seem to be typing but not say anything. I think this will be rare though.
+                        async with message.channel._channel.typing():
+                            if inspect.iscoroutinefunction(top_response.callback):
+                                new_response = await top_response.callback(*top_response.args, **top_response.kwargs)
+                            else:
+                                new_response = top_response.callback(*top_response.args, **top_response.kwargs)
 
                         new_response.module = top_response.module
                         responses.append(new_response)
