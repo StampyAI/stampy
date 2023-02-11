@@ -212,7 +212,7 @@ class StampsModule(Module):
 
     async def process_raw_reaction_event(self, event):
         event_type = event.event_type
-        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
+        guild = discord.utils.find(lambda g: g.id == event.guild_id, self.utils.client.guilds)
         channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
 
         if not channel:
