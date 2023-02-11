@@ -6,6 +6,8 @@
 
 This repository contains the code for Stampy The Safety Bot (@Stampy). Stampy’s primary purpose is to share questions from Rob Miles YouTube comments section and responses from Rob Miles AI Discord. Questions from YouTube that are interesting spark conversations on discord. Responses to the YouTube question on Discord can then be posted by Stampy as a reply to the YouTube comment.
 
+You can also directly interact with Stampy on Discord (see invite link below). Ask it a question by messaging `Stampy <YOUR QUESTION>` on any channel.
+
 # Discord
 
 Discussion and planning is primarily done on Discord. You are welcome to join via [this invite](https://discord.com/invite/7wjJbFJnSN).
