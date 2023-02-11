@@ -5,7 +5,9 @@ from modules.module import Module, Response
 
 
 class DuckDuckGo(Module):
-    IRRELEVANT_WORDS = ["film", "movie", "tv", "song", "album", "band"]
+    # Some types of things we don't really care about
+    IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
+    words = re.compile('[A-Za-z]+')
 
     def process_message(self, message):
         text = self.is_at_me(message)
@@ -30,12 +32,15 @@ class DuckDuckGo(Module):
     def __str__(self):
         return "DuckDuckGo"
 
-    def get_confidence(self, text, max_confidence):
+    def get_confidence(self, answer: str, max_confidence: float) -> float:
         """How confident should I be with this response string?"""
-
-        # Some types of things we don't really care about
-
-        if any(word in text for word in self.IRRELEVANT_WORDS):
+        answer_words = set(word.lower() for word in self.words.findall(answer))
+        irrelevant_words_in_answer = answer_words & self.IRRELEVANT_WORDS
+        if irrelevant_words_in_answer:
+            self.log.info(
+                "DuckDuckGo",
+                msg=f"Answer contains {irrelevant_words_in_answer}, downrating",
+            )
             return 1
         else:
             return max_confidence
