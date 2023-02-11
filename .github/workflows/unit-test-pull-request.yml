@@ -13,6 +13,7 @@ env:
   YOUTUBE_API_KEY: 'testing'
   DATABASE_PATH: './database/stampy.db'
   WIKI_BOT_PASSWORD: 'testing'
+  CODA_API_TOKEN: 'testing'
 jobs:
   build:
     runs-on: ubuntu-latest
