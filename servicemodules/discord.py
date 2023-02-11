@@ -264,7 +264,10 @@ class DiscordHandler:
             log.info(class_name, payload=payload)
 
             for module in self.modules:
-                await module.process_raw_reaction_event(payload)
+                try:
+                    await module.process_raw_reaction_event(payload)
+                except Exception as e:
+                    await self.utils.log_exception(e)
 
         @self.utils.client.event
         async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:
