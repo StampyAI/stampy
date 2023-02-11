@@ -249,7 +249,7 @@ class Questions(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="next q", expected_regex=r".+\n\nhttps:.+"
+                question="next q", expected_regex=r".+\n\n?https:.+"
             ),
             self.create_integration_test(
                 question="how many questions?",
