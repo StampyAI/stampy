@@ -73,6 +73,10 @@ class Reply(Module):
         return self.utils.get_total_votes() * comment_posting_threshold_factor
 
     def process_message(self, message):
+        # Disabled for now because the bot is banned.
+        # https://github.com/StampyAI/stampy/issues/200
+        return
+
         if self.is_at_me(message):
             text = self.is_at_me(message)
 
@@ -214,11 +218,14 @@ class Reply(Module):
         return False
 
     async def process_raw_reaction_event(self, event):
+        # Disabled for now because the bot is banned.
+        # https://github.com/StampyAI/stampy/issues/200
+        return
         emoji = getattr(event.emoji, "name", event.emoji)
 
         if emoji in ["stamp", "goldstamp"]:
             self.log.info(self.class_name, guild=self.utils.GUILD)
-            guild = discord.utils.find(lambda g: g.name == event.guild_id, self.utils.client.guilds)
+            guild = discord.utils.find(lambda g: g.id == event.guild_id, self.utils.client.guilds)
             channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
             message = await channel.fetch_message(event.message_id)
             if self.is_at_me(DiscordMessage(message)) and self.is_post_request(
