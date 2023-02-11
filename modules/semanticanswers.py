@@ -28,7 +28,7 @@ class SemanticAnswers(Module):
         )
         
         try:
-            data = urllib.request.urlopen(url).read()
+            data = urllib.request.urlopen(url, timeout=4).read()
             j = json.loads(data)
 
             self.log.info("SemanticAnswers", query=q, url=url)
