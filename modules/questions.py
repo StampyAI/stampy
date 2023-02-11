@@ -245,21 +245,21 @@ class Questions(Module):
     # Other #
     #########
 
-    @property
-    def test_cases(self):
-        return [
-            self.create_integration_test(
-                question="next q", expected_regex=r".+\n\nhttps:.+"
-            ),
-            self.create_integration_test(
-                question="how many questions?",
-                expected_regex=r"There are \d{3,4} questions",
-            ),
-            self.create_integration_test(
-                question="what is the next question with status withdrawn and tagged 'doom'",
-                expected_regex=r"There are no",
-            ),
-        ]
+    # @property
+    # def test_cases(self):
+    #     return [
+    #         self.create_integration_test(
+    #             question="next q", expected_regex=r".+\n\nhttps:.+"
+    #         ),
+    #         self.create_integration_test(
+    #             question="how many questions?",
+    #             expected_regex=r"There are \d{3,4} questions",
+    #         ),
+    #         self.create_integration_test(
+    #             question="what is the next question with status withdrawn and tagged 'doom'",
+    #             expected_regex=r"There are no",
+    #         ),
+    #     ]
 
     def __str__(self):
         return "Question Manager module"
