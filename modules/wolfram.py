@@ -1,9 +1,27 @@
+import re
 import urllib
 from config import wolfram_token
 from modules.module import Module, Response
 
 
 class Wolfram(Module):
+    """Module to send question to Wolfram Alpha
+
+    We use the "short answers" API. Docs here:
+
+    https://products.wolframalpha.com/short-answers-api/documentation
+
+    You'll need a WOLFRAM_TOKEN setting in your .env file. You can get one
+    here:
+
+    https://developer.wolframalpha.com/portal/myapps/index.html
+
+    In my experience it took a couple of minutes for queries to start
+    succeeding after I set it up.
+    """
+    IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
+    words = re.compile('[A-Za-z]+')
+
     def __init__(self):
         super().__init__()
         self.class_name = "Wolfram"
@@ -32,6 +50,19 @@ class Wolfram(Module):
                 why="It's not a question but we might be able to look it up",
             )
 
+    def confidence_of_answer(self, answer: str) -> float:
+        """We already looked up an answer. How confident are we that it's good?"""
+        answer_words = set(word.lower() for word in self.words.findall(answer))
+        irrelevant_words_in_answer = answer_words & self.IRRELEVANT_WORDS
+        if irrelevant_words_in_answer:
+            self.log.info(
+                self.class_name,
+                msg=f"Answer contains {irrelevant_words_in_answer}, downrating",
+            )
+            return 1
+        else:
+            return 8
+
     def ask(self, question):
         try:
             self.log.info(self.class_name, wolfram_alpha_question=question)
@@ -39,7 +70,11 @@ class Wolfram(Module):
             url = "http://api.wolframalpha.com/v1/result?appid=%s&i=%s" % (wolfram_token, question_escaped,)
             answer = urllib.request.urlopen(url).read().decode("utf-8")
             if "olfram" not in answer:
-                return Response(confidence=8, text=answer, why="That's what Wolfram Alpha suggested")
+                return Response(
+                    confidence=self.confidence_of_answer(answer),
+                    text=answer,
+                    why="That's what Wolfram Alpha suggested",
+                )
         except Exception as e:
             self.log.error(self.class_name, msg="Wolfram failed with error:", error=e)
         return Response()
