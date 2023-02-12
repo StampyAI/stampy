@@ -37,6 +37,8 @@ class Questions(Module):
 
     DOC_ID = "fau7sl2hmG"
     TABLE_ID = "table-YvPEyAXl8a"
+    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
+    
 
     def __init__(self) -> None:
         super().__init__()
@@ -85,9 +87,9 @@ class Questions(Module):
             "last_asked_on_discord": last_asked_on_discord,
         }
 
-    ###################
-    # Making messages #
-    ###################
+    ####################
+    # Posting messages #
+    ####################
 
     async def post_next_question_messages(
         self, match: re.Match[str], message: ServiceMessage
@@ -210,8 +212,7 @@ class Questions(Module):
     def send_coda_questions_request(cls, qq: QuestionQuery | None = None) -> dict:
         """Get rows from "All Answers" table in our coda"""
 
-        coda_api_token = os.environ["CODA_API_TOKEN"]
-        headers = {"Authorization": f"Bearer {coda_api_token}"}
+        headers = {"Authorization": f"Bearer {cls.CODA_API_TOKEN}"}
         params = {
             "valueFormat": "simple",
             "useColumnNames": True,
@@ -230,6 +231,9 @@ class Questions(Module):
         """Get dictionary mapping statuses and shorthands for statuses
         to actual status labels as appear in coda
         """
+        # Workaround to make mock request during testing
+        if cls.CODA_API_TOKEN == "testing":
+            return {}
 
         response = cls.send_coda_questions_request()
         status_vals = {row["values"]["Status"] for row in response["items"]}
