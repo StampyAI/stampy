@@ -20,6 +20,7 @@ log = get_logger()
 
 
 def get_stampy_modules():
+    """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
     for file_title in [f[:-3] for f in os.listdir(path) if f.endswith(".py") and f != "__init__.py"]:

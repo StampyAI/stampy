@@ -6,6 +6,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env: 
+        CODA_API_TOKEN: ${{secrets.CODA_API_TOKEN}}
     steps:
       - name: Deploy Stampy to Production Server
         uses: appleboy/ssh-action@v0.1.2
@@ -76,6 +78,7 @@ jobs:
             export OPENAI_API_KEY="$(cat ~/.openaikey)"
             export GOOSE_API_KEY="$(cat ~/.goosekey)"
             export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
+            export CODA_API_TOKEN=$CODA_API_TOKEN
 
             cd ~/stampy
             conda activate stampy

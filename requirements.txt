@@ -13,3 +13,4 @@ python-dotenv
 slack-sdk
 structlog
 transformers
+pandas
