@@ -6,6 +6,7 @@ dependencies:
   - numpy
   - pip
   - sqlite
+  - pandas
   - pip:
       - lxml
       - black
