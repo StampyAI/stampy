@@ -78,7 +78,7 @@ jobs:
             export OPENAI_API_KEY="$(cat ~/.openaikey)"
             export GOOSE_API_KEY="$(cat ~/.goosekey)"
             export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
-            export CODA_API_TOKEN=$CODA_API_TOKEN
+            export CODA_API_TOKEN=$(cat ~/.codatoken);
 
             cd ~/stampy
             conda activate stampy
