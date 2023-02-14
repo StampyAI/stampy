@@ -23,7 +23,7 @@ class SemanticAnswers(Module):
     def ask(self, question):
         q = question.lower().strip()
         url = (
-            "https://stampy-nlp.uw.r.appspot.com/api/search?query=%s"
+            "https://nlp.stampy.ai/api/search?query=%s"
             % urllib.parse.quote_plus(q)
         )
         
