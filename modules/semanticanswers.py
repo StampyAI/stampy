@@ -36,6 +36,8 @@ class SemanticAnswers(Module):
 
             for possible_answer in j:
                 if possible_answer["score"] > 0.5:
+                    if not possible_answer["url"].endswith("_"):
+                        possible_answer["url"] = possible_answer["url"] + "_"
                     response = f"""Perhaps this can answer your question?
 {possible_answer["url"]}"""
 
@@ -47,5 +49,6 @@ class SemanticAnswers(Module):
 
         except Exception as e:
             self.log.error("SemanticAnswers", error=e)
+            raise(e)
 
         return Response()
