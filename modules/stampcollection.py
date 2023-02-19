@@ -104,11 +104,7 @@ class StampsModule(Module):
             # self.log.debug(self.class_name, step=scores)
 
             # Check if solved
-            solved = True
-            for a, b in zip(old_scores, scores):
-                if not round(a, self.PRECISION) == round(b, self.PRECISION):
-                    solved = False
-                    break
+            solved = np.all(old_scores.round(self.PRECISION) == scores.round(self.PRECISION))
             if solved:
                 # Double check work.
                 solved = False
