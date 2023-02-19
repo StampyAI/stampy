@@ -107,21 +107,18 @@ class StampsModule(Module):
             solved = np.all(old_scores.round(self.PRECISION) == scores.round(self.PRECISION))
             if solved:
                 # Double check work.
-                solved = False
-                for a in scores:
-                    if round(a, self.PRECISION) != 0:
-                        solved = True
-                        break
+                solved = np.any(scores.round(self.PRECISION) != 0)
                 if not solved and drains == 0:
                     self.log.warning(
                         self.class_name,
                         msg=f"After double checking (at {i+1} round(s)), turns out we have a stamp loop.",
                     )
                     drains = 1
-                    continue
+                    continue  # Re-solve
                 self.utils.scores = list(scores)
                 self.log.info(self.class_name, msg=f"Solved stamps in {i+1} round(s).")
                 break
+
         if not solved:
             alert = f"Took over {self.MAX_ROUNDS} rounds to solve for stamps!"
             self.log.warning(self.class_name, alert=alert)
