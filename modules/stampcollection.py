@@ -21,7 +21,7 @@ class StampsModule(Module):
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
     UNAUTHORIZED_MESSAGE = "You can't do that!"
     MAX_ROUNDS = 1000  # If we don't converge stamps after 1,000 rounds give up.
-    DECAY = 0.25  # Decay of votes
+    DECAY_RATE = 0.25  # Decay of votes
     PRECISION = 8  # Decimal points of precision with stamp solving
 
     def __str__(self):
@@ -78,27 +78,25 @@ class StampsModule(Module):
         # self.log.debug(self.class_name, votes=votes)
 
         for from_id, to_id, votes_for_user in votes:
-            from_id_index = self.utils.index[from_id]
+            fromi = self.utils.index[from_id]
             toi = self.utils.index[to_id]
             total_votes_by_user = self.utils.get_votes_by_user(from_id)
-            if total_votes_by_user != 0:
+            if total_votes_by_user != 0 and toi != fromi:
                 score = votes_for_user / total_votes_by_user
-                users_matrix[toi, from_id_index] = score
-        for i in range(user_count):
-            users_matrix[i, i] = 0
+                users_matrix[toi, fromi] = score
 
         # self.log.debug(self.class_name, matrix=users_matrix)
 
-        user_count_matrix = np.zeros(user_count)
-        user_count_matrix[0] = 1.0  # God has 1 karma
+        user_raw_stamps_vector = np.zeros(user_count)
+        user_raw_stamps_vector[0] = 1.0  # God has 1 karma
 
-        scores = user_count_matrix
+        scores = user_raw_stamps_vector
         drains = self.utils.get_total_drains()
-        decay = 1 - self.DECAY
+        decay_factor = 1 - self.DECAY_RATE
         # self.log.debug(self.class_name, msg="There is" + (" not" if not drains else "") + " a drain!")
         for i in range(self.MAX_ROUNDS):
             old_scores = scores
-            scores = np.dot(users_matrix, scores) * decay
+            scores = np.dot(users_matrix, scores) * decay_factor
             if drains:  # If there are drains, we need to make sure stampy always has 1 trust.
                 scores[0] = 1
             # self.log.debug(self.class_name, step=scores)
