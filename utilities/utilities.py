@@ -491,6 +491,15 @@ class Utilities:
         query = "SELECT user,votedFor,votecount from uservotes;"
         return self.db.query(query)
 
+    def get_total_drains(self) -> int:
+        query = (
+            "SELECT count(*) as drains "
+            "FROM (SELECT `votedFor` as `user`, sum(`votecount`) as votes_received FROM `uservotes`"
+            "GROUP BY `votedFor`) AS B LEFT JOIN (SELECT `user`, sum(`votecount`) as votes_made FROM "
+            "`uservotes` GROUP BY `user`) AS A USING(`user`) WHERE `votes_made` is NULL;"
+        )
+        return self.db.query(query)[0][0]
+
     def get_users(self):
         query = "SELECT user from (SELECT user FROM uservotes UNION SELECT votedFor as user FROM uservotes)"
         result = self.db.query(query)

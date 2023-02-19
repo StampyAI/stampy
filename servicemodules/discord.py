@@ -102,7 +102,7 @@ class DiscordHandler:
                 try:
                     response = module.process_message(message)
                 except Exception as e:
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception_async(e)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
 
@@ -139,7 +139,7 @@ class DiscordHandler:
                 try:
                     if top_response.callback:
                         log.info(class_name, msg="Top response is a callback. Calling it")
-                        
+
                         # Callbacks can take a while to run, so we tell discord to say "Stampy is typing..."
                         # Note that sometimes a callback will run but not send a message, in which case he'll seem to be typing but not say anything. I think this will be rare though.
                         async with message.channel._channel.typing():
@@ -180,7 +180,7 @@ class DiscordHandler:
                         return
                 except Exception as e:
                     log.error(e)
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception_async(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
@@ -271,7 +271,7 @@ class DiscordHandler:
                 try:
                     await module.process_raw_reaction_event(payload)
                 except Exception as e:
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception_async(e)
 
         @self.utils.client.event
         async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:

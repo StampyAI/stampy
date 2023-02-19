@@ -15,10 +15,14 @@ vote_strengths_per_emoji = {
  "goldstamp": 5
 }
 
+
 class StampsModule(Module):
 
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
     UNAUTHORIZED_MESSAGE = "You can't do that!"
+    MAX_ROUNDS = 1000  # If we don't converge stamps after 1,000 rounds give up.
+    DECAY = 0.25  # Decay of votes
+    PRECISION = 8  # Decimal points of precision with stamp solving
 
     def __str__(self):
         return "Stamps Module"
@@ -42,9 +46,9 @@ class StampsModule(Module):
 
         if (to_id == stampy_id  # votes for stampy do nothing
             or to_id == from_id # votes for yourself do nothing
-            or emoji not in vote_strengths_per_emoji): # votes with emojis other than stamp and goldstamp do nothing            
+            or emoji not in vote_strengths_per_emoji): # votes with emojis other than stamp and goldstamp do nothing
             return
-        
+
         vote_strength = vote_strengths_per_emoji[emoji]
         if negative:
             vote_strength *= -1
@@ -78,16 +82,54 @@ class StampsModule(Module):
             toi = self.utils.index[to_id]
             total_votes_by_user = self.utils.get_votes_by_user(from_id)
             if total_votes_by_user != 0:
-                score = (self.gamma * votes_for_user) / total_votes_by_user
+                score = votes_for_user / total_votes_by_user
                 users_matrix[toi, from_id_index] = score
-        for i in range(1, user_count):
-            users_matrix[i, i] = -1.0
-        users_matrix[0, 0] = 1.0
+        for i in range(user_count):
+            users_matrix[i, i] = 0
+
+        # self.log.debug(self.class_name, matrix=users_matrix)
 
         user_count_matrix = np.zeros(user_count)
         user_count_matrix[0] = 1.0  # God has 1 karma
 
-        self.utils.scores = list(np.linalg.solve(users_matrix, user_count_matrix))
+        scores = user_count_matrix
+        drains = self.utils.get_total_drains()
+        decay = 1 - self.DECAY
+        # self.log.debug(self.class_name, msg="There is" + (" not" if not drains else "") + " a drain!")
+        for i in range(self.MAX_ROUNDS):
+            old_scores = scores
+            scores = np.dot(users_matrix, scores) * decay
+            if drains:  # If there are drains, we need to make sure stampy always has 1 trust.
+                scores[0] = 1
+            # self.log.debug(self.class_name, step=scores)
+
+            # Check if solved
+            solved = True
+            for a, b in zip(old_scores, scores):
+                if not round(a, self.PRECISION) == round(b, self.PRECISION):
+                    solved = False
+                    break
+            if solved:
+                # Double check work.
+                solved = False
+                for a in scores:
+                    if round(a, self.PRECISION) != 0:
+                        solved = True
+                        break
+                if not solved and drains == 0:
+                    self.log.warning(
+                        self.class_name,
+                        msg=f"After double checking (at {i+1} round(s)), turns out we have a stamp loop.",
+                    )
+                    drains = 1
+                    continue
+                self.utils.scores = list(scores)
+                self.log.info(self.class_name, msg=f"Solved stamps in {i+1} round(s).")
+                break
+        if not solved:
+            alert = f"Took over {self.MAX_ROUNDS} rounds to solve for stamps!"
+            self.log.warning(self.class_name, alert=alert)
+            self.utils.log_error(alert)
 
         self.export_scores_csv()
         # self.print_all_scores()
@@ -130,7 +172,7 @@ class StampsModule(Module):
                 name = "<@" + str(user_id) + ">"
             stamps = self.get_user_stamps(user_id)
             total_stamps += stamps
-            self.log.info(self.class_name, name=name, stamps=stamps)
+            self.log.info(self.class_name, name=name, stamps=stamps, raw_stamps=stamps / self.total_votes)
 
         self.log.info(self.class_name, total_votes=self.total_votes)
         self.log.info(self.class_name, total_stamps=total_stamps)
@@ -235,7 +277,7 @@ class StampsModule(Module):
             ms_gid = event.message_id
             from_id = event.user_id
             to_id = author_id_int
-            
+
             self.log.info(
                 self.class_name,
                 update="STAMP AWARDED",
@@ -245,10 +287,10 @@ class StampsModule(Module):
                 reaction_message_author_id=to_id,
                 reaction_message_author_name=message.author.name,
             )
-    
+
             # I believe this call was a duplicate and it should not be called twice
             # self.update_vote(emoji, from_id, to_id, False, False)
-            
+
             stamps_before_update = self.get_user_stamps(to_id)
             self.update_vote(emoji, from_id, to_id, negative=(event_type == "REACTION_REMOVE"))
             self.log.info(
@@ -274,6 +316,17 @@ class StampsModule(Module):
                     asked_by_admin = discord.utils.get(message.author.roles, id=bot_admin_role_id)
                     if asked_by_admin:
                         return Response(confidence=10, callback=self.reloadallstamps, args=[message])
+                else:
+                    return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
+            elif text == "recalculatestamps":
+                if message.service == Services.DISCORD:
+                    asked_by_admin = discord.utils.get(message.author.roles, name="bot admin")
+                    if asked_by_admin:
+                        return Response(
+                            confidence=10,
+                            callback=self.recalculate_stamps,
+                            args=[message],
+                        )
                 else:
                     return Response(confidence=10, text=self.UNAUTHORIZED_MESSAGE, args=[message])
 
@@ -304,6 +357,16 @@ class StampsModule(Module):
         await self.load_votes_from_history()
         return Response(
             confidence=10, text=self.STAMPS_RESET_MESSAGE, why="robertskmiles reset the stamp history",
+        )
+
+    async def recalculate_stamps(self, message):
+        self.log.info(self.class_name, ALERT="Recalculating Stamps")
+        await message.channel.send("Recalculating stamps...")
+        self.calculate_stamps()
+        return Response(
+            confidence=10,
+            text="Done!",
+            why="I was asked to recalculate stamps",
         )
 
     @property
