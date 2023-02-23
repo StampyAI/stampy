@@ -18,6 +18,7 @@ from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
+from textwrap import wrap
 from typing import Dict, Generator, List, Union
 from config import (
     discord_token,
@@ -177,8 +178,15 @@ class DiscordHandler:
                             if top_response.embed:
                                 sent.append(await message.channel.send(top_response.text, embed=top_response.embed))
                             elif isinstance(top_response.text, str):
-                                # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
-                                sent.append(await message.channel.send(top_response.text[:2000]))
+                                # Discord allows max 2000 characters
+                                chunks = wrap(
+                                    top_response.text,
+                                    width=2000,
+                                    replace_whitespace=False,
+                                    drop_whitespace=False
+                                )
+                                for chunk in chunks:
+                                    sent.append(await message.channel.send(chunk))
                             elif isinstance(top_response.text, Iterable):
                                 for chunk in top_response.text:
                                     sent.append(await message.channel.send(chunk))
