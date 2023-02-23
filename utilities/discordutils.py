@@ -27,6 +27,7 @@ class DiscordUser(ServiceUser):
 class DiscordChannel(ServiceChannel):
     def __init__(self, channel: discord.abc.Messageable, server: Optional[ServiceServer]):
         self._channel = channel
+        self.history = channel.history
         if not isinstance(channel, discord.DMChannel):
             name = channel.name
         else:

@@ -18,7 +18,7 @@ from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
-from typing import Generator
+from typing import Dict, Generator, List, Union
 from config import (
     discord_token,
     TEST_RESPONSE_PREFIX,
@@ -35,6 +35,7 @@ class DiscordHandler:
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
+        self.messages: Dict[int, Dict[str, Union[str, List[str]]]] = {}
         """
         All Discord Functions need to be under another function in order to
         use self.
@@ -97,11 +98,14 @@ class DiscordHandler:
                 self.utils.last_message_was_youtube_question = False
 
             responses = [Response()]
+            why_traceback: List[str] = []
             for module in self.modules:
                 log.info(class_name, msg=f"# Asking module: {module}")
                 try:
                     response = module.process_message(message)
                 except Exception as e:
+                    why_traceback.append(f"There was an {e} asking {module} module!")
+                    log.error(class_name, error=f"Caught error in {module} module!")
                     await self.utils.log_exception(e)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
@@ -127,7 +131,7 @@ class DiscordHandler:
                         response_module=response.module,
                         response_confidence=response.confidence,
                         response_is_callback=bool(response.callback),
-                        response_callback=response.callback,
+                        response_callback=(response.callback.__name__ if response.callback else None),
                         response_args=args_string,
                         response_text=(
                             response.text if not isinstance(response.text, Generator) else "[Generator]"
@@ -136,6 +140,7 @@ class DiscordHandler:
                     )
 
                 top_response = responses.pop(0)
+                why_traceback.append(f"The top response was {top_response}")
                 try:
                     if top_response.callback:
                         log.info(class_name, msg="Top response is a callback. Calling it")
@@ -167,19 +172,24 @@ class DiscordHandler:
                                         )
                                     )
                             log.info(class_name, top_response=top_response.text)
+                            sent: List[discord.message.Message] = []
                             # TODO: check to see if module is allowed to embed via a config?
                             if top_response.embed:
-                                await message.channel.send(top_response.text, embed=top_response.embed)
+                                sent.append(await message.channel.send(top_response.text, embed=top_response.embed))
                             elif isinstance(top_response.text, str):
                                 # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
-                                await message.channel.send(top_response.text[:2000])
+                                sent.append(await message.channel.send(top_response.text[:2000]))
                             elif isinstance(top_response.text, Iterable):
                                 for chunk in top_response.text:
-                                    await message.channel.send(chunk)
+                                    sent.append(await message.channel.send(chunk))
+                            why_traceback.append("Responded with that response!")
+                            for m in sent:
+                                self.messages[str(m.id)] = {"why": top_response.why, "traceback": why_traceback}
                         sys.stdout.flush()
                         return
                 except Exception as e:
-                    log.error(e)
+                    why_traceback.append(f"Caught {e} while trying to send the top response")
+                    log.error(class_name, error=f"Caught error {e}!")
                     await self.utils.log_exception(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
