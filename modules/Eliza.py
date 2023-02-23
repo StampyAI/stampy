@@ -12,6 +12,9 @@ class Eliza(Module):
         self.psychobabble = psychobabble
         self.reflections = reflections
 
+    def __str__(self) -> str:
+        return "Eliza"
+
     def reflect(self, fragment: str) -> str:
         """
         Convert a string to parrot it back
