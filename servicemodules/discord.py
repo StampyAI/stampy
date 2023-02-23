@@ -18,7 +18,8 @@ from structlog import get_logger
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
-from typing import Generator
+from textwrap import wrap
+from typing import Dict, Generator, List, Union
 from config import (
     discord_token,
     TEST_RESPONSE_PREFIX,
@@ -35,6 +36,7 @@ class DiscordHandler:
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
+        self.messages: Dict[str, Dict[str, Union[str, List[str]]]] = {}
         """
         All Discord Functions need to be under another function in order to
         use self.
@@ -97,11 +99,14 @@ class DiscordHandler:
                 self.utils.last_message_was_youtube_question = False
 
             responses = [Response()]
+            why_traceback: List[str] = []
             for module in self.modules:
                 log.info(class_name, msg=f"# Asking module: {module}")
                 try:
                     response = module.process_message(message)
                 except Exception as e:
+                    why_traceback.append(f"There was a(n) {e} asking the {module} module!")
+                    log.error(class_name, error=f"Caught error in {module} module!")
                     await self.utils.log_exception(e)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
@@ -110,6 +115,7 @@ class DiscordHandler:
                         response.confidence -= 0.001
 
                     responses.append(response)
+                    why_traceback.append(f"I asked the {module} module, and it responded with: {response}")
 
             for i in range(maximum_recursion_depth):  # don't hang if infinite regress
                 responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
@@ -124,10 +130,10 @@ class DiscordHandler:
                             )
                     log.info(
                         class_name,
-                        response_module=response.module,
+                        response_module=str(response.module),
                         response_confidence=response.confidence,
                         response_is_callback=bool(response.callback),
-                        response_callback=response.callback,
+                        response_callback=(response.callback.__name__ if response.callback else None),
                         response_args=args_string,
                         response_text=(
                             response.text if not isinstance(response.text, Generator) else "[Generator]"
@@ -136,9 +142,11 @@ class DiscordHandler:
                     )
 
                 top_response = responses.pop(0)
+                why_traceback.append(f"The top response was {top_response}")
                 try:
                     if top_response.callback:
                         log.info(class_name, msg="Top response is a callback. Calling it")
+                        why_traceback.append(f"That response was a callback, so I called it.")
                         
                         # Callbacks can take a while to run, so we tell discord to say "Stampy is typing..."
                         # Note that sometimes a callback will run but not send a message, in which case he'll seem to be typing but not say anything. I think this will be rare though.
@@ -150,6 +158,7 @@ class DiscordHandler:
 
                         new_response.module = top_response.module
                         responses.append(new_response)
+                        why_traceback.append(f"The callback responded with: {new_response}")
                     else:
                         if top_response:
                             if self.utils.test_mode:
@@ -167,24 +176,39 @@ class DiscordHandler:
                                         )
                                     )
                             log.info(class_name, top_response=top_response.text)
+                            sent: List[discord.message.Message] = []
                             # TODO: check to see if module is allowed to embed via a config?
                             if top_response.embed:
-                                await message.channel.send(top_response.text, embed=top_response.embed)
+                                sent.append(await message.channel.send(top_response.text, embed=top_response.embed))
                             elif isinstance(top_response.text, str):
-                                # Discord allows max 2000 characters, use a list or other iterable to sent multiple messages for longer text
-                                await message.channel.send(top_response.text[:2000])
+                                # Discord allows max 2000 characters
+                                chunks = wrap(
+                                    top_response.text,
+                                    width=2000,
+                                    replace_whitespace=False,
+                                    drop_whitespace=False
+                                )
+                                for chunk in chunks:
+                                    sent.append(await message.channel.send(chunk))
                             elif isinstance(top_response.text, Iterable):
                                 for chunk in top_response.text:
-                                    await message.channel.send(chunk)
+                                    sent.append(await message.channel.send(chunk))
+                            why_traceback.append("Responded with that response!")
+                            for m in sent:
+                                self.messages[str(m.id)] = {"why": top_response.why, "traceback": why_traceback}
                         sys.stdout.flush()
                         return
                 except Exception as e:
-                    log.error(e)
+                    why_traceback.append(f"There was a(n) {e} trying to send or callback the top response!")
+                    log.error(class_name, error=f"Caught error {e}!")
                     await self.utils.log_exception(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
-            await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
+            sent = await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
+            self.messages[str(sent.id)] = {"why": "I detected recursion and killed the response process!", "traceback": why_traceback}
+            why_traceback.append("Detected recursion and killed the response process!")
+            log.critical(class_name, error="Hit our recursion limit!")
 
         @self.utils.client.event
         async def on_socket_raw_receive(_) -> None:

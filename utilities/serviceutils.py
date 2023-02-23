@@ -121,8 +121,9 @@ class ServiceMessage:
     is_dm: bool = field(default=False, init=False)
     _message: object = field(default=None, init=False)
     
-    def __repr__(self):
-        return f"ServiceMessage({self.content})"
+    def __repr__(self) -> str:
+        content = self.content.replace('"', r'\"')
+        return f'ServiceMessage("{content}")'
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):
