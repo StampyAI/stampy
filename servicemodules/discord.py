@@ -105,7 +105,7 @@ class DiscordHandler:
                 try:
                     response = module.process_message(message)
                 except Exception as e:
-                    why_traceback.append(f"There was an {e} asking {module} module!")
+                    why_traceback.append(f"There was a(n) {e} asking the {module} module!")
                     log.error(class_name, error=f"Caught error in {module} module!")
                     await self.utils.log_exception(e)
                 if response:
@@ -115,6 +115,7 @@ class DiscordHandler:
                         response.confidence -= 0.001
 
                     responses.append(response)
+                    why_traceback.append(f"I asked the {module} module, and it responded with: {response}")
 
             for i in range(maximum_recursion_depth):  # don't hang if infinite regress
                 responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
@@ -129,7 +130,7 @@ class DiscordHandler:
                             )
                     log.info(
                         class_name,
-                        response_module=response.module,
+                        response_module=str(response.module),
                         response_confidence=response.confidence,
                         response_is_callback=bool(response.callback),
                         response_callback=(response.callback.__name__ if response.callback else None),
@@ -145,6 +146,7 @@ class DiscordHandler:
                 try:
                     if top_response.callback:
                         log.info(class_name, msg="Top response is a callback. Calling it")
+                        why_traceback.append(f"That response was a callback, so I called it.")
                         
                         # Callbacks can take a while to run, so we tell discord to say "Stampy is typing..."
                         # Note that sometimes a callback will run but not send a message, in which case he'll seem to be typing but not say anything. I think this will be rare though.
@@ -156,6 +158,7 @@ class DiscordHandler:
 
                         new_response.module = top_response.module
                         responses.append(new_response)
+                        why_traceback.append(f"The callback responded with: {new_response}")
                     else:
                         if top_response:
                             if self.utils.test_mode:
@@ -196,13 +199,16 @@ class DiscordHandler:
                         sys.stdout.flush()
                         return
                 except Exception as e:
-                    why_traceback.append(f"Caught {e} while trying to send the top response")
+                    why_traceback.append(f"There was a(n) {e} trying to send or callback the top response!")
                     log.error(class_name, error=f"Caught error {e}!")
                     await self.utils.log_exception(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
-            await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
+            sent = await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
+            self.messages[str(sent.id)] = {"why": "I detected recursion and killed the response process!", "traceback": why_traceback}
+            why_traceback.append("Detected recursion and killed the response process!")
+            log.critical(class_name, error=f"Hit our recursion limit!")
 
         @self.utils.client.event
         async def on_socket_raw_receive(_) -> None:
