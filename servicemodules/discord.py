@@ -36,7 +36,7 @@ class DiscordHandler:
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
-        self.messages: Dict[int, Dict[str, Union[str, List[str]]]] = {}
+        self.messages: Dict[str, Dict[str, Union[str, List[str]]]] = {}
         """
         All Discord Functions need to be under another function in order to
         use self.
@@ -208,7 +208,7 @@ class DiscordHandler:
             sent = await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
             self.messages[str(sent.id)] = {"why": "I detected recursion and killed the response process!", "traceback": why_traceback}
             why_traceback.append("Detected recursion and killed the response process!")
-            log.critical(class_name, error=f"Hit our recursion limit!")
+            log.critical(class_name, error="Hit our recursion limit!")
 
         @self.utils.client.event
         async def on_socket_raw_receive(_) -> None:
