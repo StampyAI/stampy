@@ -122,7 +122,8 @@ class ServiceMessage:
     _message: object = field(default=None, init=False)
     
     def __repr__(self):
-        return f"ServiceMessage({self.content})"
+        content = self.content.replace('"', r'\"')
+        return f'ServiceMessage("{content}")'
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, int):

@@ -91,6 +91,28 @@ class Response:
     def __bool__(self):
         return bool(self.text) or bool(self.callback) or bool(self.confidence)
 
+    def __repr__(self) -> str:
+        embed = self.embed
+        confidence = self.confidence
+        text = self.text
+        callback = (self.callback.__name__ if self.callback else None)
+        args = self.args
+        kwargs = self.kwargs
+        module = str(self.module)
+        why = self.why
+        return (
+            "Response("
+            + (f"{embed=} " if embed else "")
+            + f"{confidence=} "
+            + (f"{text=} " if text else "")
+            + (f"{callback=} " if callback else "")
+            + (f"{args=} " if args else "")
+            + (f"{kwargs=} " if kwargs else "")
+            + (f"{module=} " if module else "")
+            + (f"{why=}" if why else "")
+            + ")"
+        )
+
 
 class Module:
     utils: Utilities
