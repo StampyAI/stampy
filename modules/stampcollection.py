@@ -11,6 +11,9 @@ from utilities.discordutils import DiscordMessage
 
 
 vote_strengths_per_emoji = {
+ "aisafetyinfo": 1,
+ "stampy": 1,
+ "stampyog": 1,
  "stamp": 1,
  "goldstamp": 5
 }
@@ -42,7 +45,7 @@ class StampsModule(Module):
 
         if (to_id == stampy_id  # votes for stampy do nothing
             or to_id == from_id # votes for yourself do nothing
-            or emoji not in vote_strengths_per_emoji): # votes with emojis other than stamp and goldstamp do nothing            
+            or emoji not in vote_strengths_per_emoji): # votes with emojis other than stamps do nothing            
             return
         
         vote_strength = vote_strengths_per_emoji[emoji]
@@ -192,7 +195,7 @@ class StampsModule(Module):
                         elif reactions:
                             for reaction in reactions:
                                 emoji = getattr(reaction.emoji, "name", "")
-                                if emoji in ["stamp", "goldstamp"]:
+                                if emoji in vote_strengths_per_emoji:
                                     users = await reaction.users().flatten()
                                     for user in users:
                                         string = f"{message.id},{emoji},{user.id},{message.author.id}"
@@ -230,7 +233,7 @@ class StampsModule(Module):
             # 	await channel.send("<@" + str(event.user_id) + "> just awarded a stamp to themselves...")
             return
 
-        if emoji in ["stamp", "goldstamp"]:
+        if emoji in vote_strengths_per_emoji:
 
             ms_gid = event.message_id
             from_id = event.user_id
