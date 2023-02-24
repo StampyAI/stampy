@@ -12,10 +12,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime as dt
+from functools import reduce
+from operator import add
 import os
-import re
 import random
-from typing import Optional, TypedDict
+import re
+from string import punctuation
+from typing import Literal, Optional, TypedDict, cast
 
 from dotenv import load_dotenv
 import pandas as pd
@@ -32,52 +35,57 @@ load_dotenv()
 
 class Questions(Module):
     """Fetches not started questions from
-    [Write answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Write-answers_suuwH#Write-answers_tu4_x/r220)
+    [All Answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
     """
 
     DOC_ID = "fau7sl2hmG"
     TABLE_ID = "table-YvPEyAXl8a"
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    
+    last_question_id: Optional[str] = None
 
     def __init__(self) -> None:
         super().__init__()
-        self.re_next_question = re.compile(_PAT_NEXT_QUESTION, re.I | re.X)
-        self.re_count_questions = re.compile(_PAT_COUNT_QUESTIONS, re.I | re.X)
-
+    
+    #########################################
+    # Core: processing and posting messages #
+    #########################################
+    
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
         if not (text := self.is_at_me(message)):
             return Response()
-        if match := self.re_count_questions.search(text):
-            return Response(
-                confidence=8,
-                callback=self.post_count_questions_message,
-                args=[match, message],
-                why="I was asked to count questions",
-            )
-        if match := self.re_next_question.search(text):
-            return Response(
-                confidence=8,
-                callback=self.post_next_question_messages,
-                args=[match, message],
-                why="I was asked for next questions",
-            )
+        if get_question_query := GetQuestionQuery.parse(text):
+            if get_question_query.action == "count":
+                return Response(
+                    confidence=8,
+                    callback=self.post_count_questions_message,
+                    args=[get_question_query, message],
+                    why="I was asked to count questions",
+                )
+            else: # get_question_query.action == "next":
+                return Response(
+                    confidence=8,
+                    callback=self.post_next_question_messages,
+                    args=[get_question_query, message],
+                    why="I was asked for next questions",
+                )
         return Response(why="Left QuestionManager without matching to any Regex")
 
-    def get_questions_df(self, qq: QuestionQuery) -> pd.DataFrame:
+    @classmethod
+    def get_questions_df(cls, qq: GetQuestionQuery | None = None) -> pd.DataFrame:
         """Get questions from with `status="Not started"`"""
-        request_res = self.send_coda_questions_request(qq)
-        rows = [self.parse_row(row) for row in request_res["items"]]
+        request_res = cls.request_get_questions(qq)
+        rows = [cls.parse_row(row) for row in request_res["items"]]
         return pd.DataFrame(rows)
 
-    def parse_row(self, row: dict) -> ParsedRow:
+    @classmethod
+    def parse_row(cls, row: dict) -> ParsedRow:
         """Parse row from "All answers" table"""
         title = row["values"]["Edit Answer"]
         url = row["values"]["Link"]
         status = row["values"]["Status"]
         tags = row["values"]["Tags"].split(",")
-        last_asked_on_discord = self.adjust_date(row["values"]["Last Asked On Discord"])
+        last_asked_on_discord = adjust_date(row["values"]["Last Asked On Discord"])
         return {
             "id": row["id"],
             "title": title,
@@ -92,86 +100,51 @@ class Questions(Module):
     ####################
 
     async def post_next_question_messages(
-        self, match: re.Match[str], message: ServiceMessage
+        self, query: GetQuestionQuery, message: ServiceMessage
     ) -> Response:
         """Post message to Discord for least recently asked question.
         It will contain question title and GDoc url.
         """
         # get questions df
-        qq = QuestionQuery.parse(match.group())
-        questions = self.get_questions_df(qq)
+        questions = self.get_questions_df(query)
 
         # if tags were specified, filter questions on those which have at least one of the tags
-        if qq.tags:
-            questions = qq.filter_on_tags(questions)
+        if query.tag:
+            questions = query.filter_on_tag(questions)
         # otherwise, get all the oldest ones and shuffle them
         else:
-            questions = self.shuffle_questions(questions)
-            questions = self.get_least_recently_asked_on_discord(questions)
+            questions = shuffle_questions(questions)
+            questions = get_least_recently_asked_on_discord(questions)
 
         # get exactly n questions (default is 1)
-        questions = qq.filter_on_max_num_of_questions(questions)
+        questions = query.filter_on_max_num_of_questions(questions)
 
         # make question message and return response
-        if questions.empty:
-            msg = f"There are no questions conforming to the following query\n{qq.code_info}"
-        else:
-            msg = "\n---\n".join(
-                self.make_next_question_message(r) for _, r in questions.iterrows()
+        msg = query.next_result_info(len(questions))
+        if not questions.empty:
+            msg += "\n\n" + "\n---\n".join(
+                make_next_question_message(r) for _, r in questions.iterrows()
             )
-            if len(questions) < qq.max_num_of_questions:
-                if len(questions) == 1:
-                    msg = f"(I found only 1 such question)\n\n{msg}"
-                else:
-                    msg = f"I found only {len(questions)} such questions\n\n{msg}"
         return Response(
             confidence=8,
             text=msg,
             why=f"{message.author} asked me for next questions",
         )
 
-    @staticmethod
-    def make_next_question_message(question: pd.Series) -> str:
-        """Make question message from questions DataFrame row
-
-        <title>\n
-        <url>
-        """
-        return question["title"] + "\n" + question["url"]
-
     async def post_count_questions_message(
-        self, match: re.Match[str], message: ServiceMessage
+        self, query: GetQuestionQuery, message: ServiceMessage
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
 
         # get df with questions
-        qq = QuestionQuery.parse(match.group())
-        questions_df = self.get_questions_df(qq)
+        questions = self.get_questions_df(query)
 
         # if tags were specified, filter for questions which have at least one of these tags
-        if qq.tags:
-            questions_df = qq.filter_on_tags(questions_df)
+        if query.tag:
+            questions = query.filter_on_tag(questions)
 
         # Make message and respond
-        if len(questions_df) == 1:
-            msg = "There is 1 question"
-        elif len(questions_df) > 1:
-            msg = f"There are {len(questions_df)} questions"
-        else:  # n_questions == 0:
-            msg = "There are no questions"
-
-        if qq.status is not None and not qq.tags:
-            msg += f" with status '{qq.status}'"
-        elif qq.status is not None and qq.tags:
-            if len(qq.tags) > 1:
-                msg += f" with status '{qq.status}' and tagged as one of: {qq.tags}"
-            else:
-                msg += f" with status '{qq.status}' and tagged as '{qq.tags[0]}'"
-        elif qq.status is None and qq.tags:
-            if len(qq.tags) > 1:
-                msg += f" tagged as one of: {qq.tags}"
-            else:
-                msg += f" tagged as '{qq.tags[0]}'"
+        msg = query.count_result_info(len(questions))
 
         return Response(
             confidence=8,
@@ -179,40 +152,38 @@ class Questions(Module):
             why=f"{message.author} asked me to count questions",
         )
 
-    @staticmethod
-    def adjust_date(date_str: str) -> dt:
-        """If date is in isoformat, parse it.
-        Otherwise, assign earliest date possible.
-        """
-
-        if not date_str:
-            return dt(1, 1, 1, 0)
-        return dt.fromisoformat(date_str.split("T")[0])
-
-    @staticmethod
-    def shuffle_questions(questions: pd.DataFrame) -> pd.DataFrame:
-        questions_inds = questions.index.tolist()
-        shuffled_inds = random.sample(questions_inds, len(questions_inds))
-        return questions.loc[shuffled_inds]
-
-    @staticmethod
-    def get_least_recently_asked_on_discord(
-        questions: pd.DataFrame,
-    ) -> pd.DataFrame:
-        """Get all questions with oldest date and shuffle them"""
-
-        oldest_date = questions["last_asked_on_discord"].min()
-        return questions.query("last_asked_on_discord == @oldest_date")
+    # async def post_tag_question_message(
+    #     self, match: re.Match[str], message: ServiceMessage
+    # ) -> Response:
+    #     matched_question_title = match.group()
+    #     row = self.get_row_by_question_title(matched_question_title)
+    #     if row is None:
+    #         return Response(
+    #             confidence=8,
+    #             text=f"Now question with title matching {matched_question_title}",
+    #             why="Couldn't find question with title matching that",
+    #         )
+    #     row_id = row["id"]
+    #     title = row["title"]
+    #     uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TABLE_ID}/rows/{row_id}"
+    #     payload = {
+    #     "row": {
+    #         "cells": [
+    #         {'column': '<column ID>', 'value': 'Get groceries from Whole Foods'},
+    #         ],
+    #     },
+    #     }
+    #     req = requests.put(uri, headers=self.get_headers(), json=payload)
+    #     req.raise_for_status() # Throw if there was an error.
+    #     res = req.json()
 
     ############
     # Coda API #
     ############
 
     @classmethod
-    def send_coda_questions_request(cls, qq: QuestionQuery | None = None) -> dict:
+    def request_get_questions(cls, query: GetQuestionQuery | None = None) -> dict:
         """Get rows from "All Answers" table in our coda"""
-
-        headers = {"Authorization": f"Bearer {cls.CODA_API_TOKEN}"}
         params = {
             "valueFormat": "simple",
             "useColumnNames": True,
@@ -220,11 +191,22 @@ class Questions(Module):
             "limit": 1000,
         }
         # optionally query by status
-        if qq and qq.status:
-            params["query"] = f'"Status":"{qq.status}"'
+        if query and query.status:
+            params["query"] = f'"Status":"{query.status}"'
         uri = f"https://coda.io/apis/v1/docs/{cls.DOC_ID}/tables/{cls.TABLE_ID}/rows"
-        response = requests.get(uri, headers=headers, params=params, timeout=16).json()
+        response = requests.get(uri, headers=cls.get_headers(), params=params, timeout=16).json()
         return response
+
+    
+    # def request_get_question_info(self, q: )
+
+    # @classmethod
+    # def get_row_by_question_title(cls, title: str) -> ParsedRow | None:
+    #     """Get ID of that questions' row"""
+    #     df = cls.get_questions_df()
+    #     for _, r in df.iterrows():
+    #         if contains(container=r["title"], contained=title):
+    #             return cast(ParsedRow, r.to_dict())
 
     @classmethod
     def get_status_shorthand_dict(cls) -> dict[str, str]:
@@ -232,10 +214,10 @@ class Questions(Module):
         to actual status labels as appear in coda
         """
         # Workaround to make mock request during testing
-        if cls.CODA_API_TOKEN == "testing":
+        if cls.is_in_testing_mode():
             return {}
 
-        response = cls.send_coda_questions_request()
+        response = cls.request_get_questions()
         status_vals = {row["values"]["Status"] for row in response["items"]}
         shorthand_dict = {}
         for status_val in status_vals:
@@ -245,13 +227,34 @@ class Questions(Module):
             shorthand_dict[shorthand] = status_val
         return shorthand_dict
 
+    @classmethod
+    def get_all_tags(cls) -> list[str]:
+        """Get all tags from "All Answers" table"""
+        if cls.is_in_testing_mode():
+            return []
+
+        response = cls.request_get_questions()
+        all_tags: set[str] = set(#TODO: make it more readable
+            filter(
+                bool,
+                reduce(
+                    add, [row["values"]["Tags"].split(",") for row in response["items"]]
+                ),
+            )
+        )
+        return sorted(all_tags)
+
     #########
     # Other #
     #########
 
+    @classmethod
+    def is_in_testing_mode(cls) -> bool:
+        return cls.CODA_API_TOKEN == "testing"
+
     @property
     def test_cases(self):
-        if self.CODA_API_TOKEN == "testing":
+        if self.is_in_testing_mode():
             return []
         return [
             self.create_integration_test(
@@ -267,6 +270,10 @@ class Questions(Module):
             ),
         ]
 
+    @classmethod
+    def get_headers(cls) -> dict:
+        return {"Authorization": f"Bearer {cls.CODA_API_TOKEN}"}
+    
     def __str__(self):
         return "Question Manager module"
 
@@ -283,31 +290,77 @@ class ParsedRow(TypedDict):
 
 
 _status_shorthands = Questions.get_status_shorthand_dict()
+_all_tags = Questions.get_all_tags()
 
+
+##########################
+# Question query classes #
+##########################
 
 @dataclass(frozen=True)
-class QuestionQuery:
-    status: Optional[str]  # extend to list[str] (?)
-    tags: list[str]
+class GetQuestionQuery:
+    status: Optional[str]
+    tag: Optional[str]
     max_num_of_questions: int
-    # TODO: more queries (?)
+    action: Literal["count", "next"]
 
-    @property
-    def code_info(self) -> str:
+    def code_info(self, *, with_num: bool = False) -> str:
         """Print info about query in code block"""
-        return f"""```\nstatus: {self.status}\ntags: {self.tags}\n```"""
+        s = f"""```\nstatus: {self.status}\ntags: {self.tag}\n"""
+        if with_num:
+            s += f"max_num_of_questions: {self.max_num_of_questions}\n"
+        s += "```"
+        return s
+    
+    def count_result_info(self, num_found: int) -> str:
+        if num_found == 1:
+            s = "There is 1 question"
+        elif num_found > 1:
+            s = f"There are {num_found} questions"
+        else:  # n_questions == 0:
+            s = "There are no questions"
+        return s + self.status_and_tags_info()
+
+                
+    def next_result_info(self, num_found: int) -> str:
+        #TODO: test/assert?
+        if self.max_num_of_questions == 1:
+            s = "Here is a question"
+        elif num_found == 0:
+            s = "I found no questions"
+        elif num_found < self.max_num_of_questions:
+            s = f"I found only {num_found} questions"
+        else:
+            s = f"Here are {self.max_num_of_questions} questions"
+        return s + self.status_and_tags_info()
+        
+    def status_and_tags_info(self) -> str:
+        if self.status and not self.tag:
+            return f' with status "{self.status}"'
+        if self.status and self.tag:
+            return f' with status "{self.status}" and tagged as "{self.tag}"'
+        if not self.status and self.tag:
+            return f' tagged as "{self.tag}"'
+        return ""
+
 
     ##############################
     # Parsing query from message #
     ##############################
 
     @classmethod
-    def parse(cls, msg: str) -> Self:
-        status = cls.parse_status(msg)
-        tags = cls.parse_tags(msg)
-        max_num_of_questions = cls.parse_max_num_of_questions(msg)
+    def parse(cls, text: str) -> Optional[Self]:
+        if re_count_questions.search(text):
+            action = "count"
+        elif re_next_question.search(text):
+            action = "next"
+        else:
+            return
+        status = cls.parse_status(text)
+        tag = cls.parse_tag(text)
+        max_num_of_questions = cls.parse_max_num_of_questions(text)
         question_query = cls(
-            status=status, tags=tags, max_num_of_questions=max_num_of_questions
+            status=status, tag=tag, max_num_of_questions=max_num_of_questions, action=action
         )
         log.info(f"{question_query=}")
         return question_query
@@ -328,14 +381,18 @@ class QuestionQuery:
         return _status_shorthands[val.lower()]
 
     @staticmethod
-    def parse_tags(msg: str) -> list[str]:
+    def parse_tag(msg: str) -> Optional[str]:
         """Parse string of tags extracted from message"""
-        re_tags = re.compile(r"tag(?:s|ged(?:\sas)?)?\s+([\"'].+[\"'])+", re.I)
-        if (match := re_tags.search(msg)) is None:
-            return []
-        tag_string = match.group(1)
-        tags = re.split(r"[\"']\s+[\"']", tag_string)
-        return [t.replace('"', "").replace("'", "") for t in tags]
+        # breakpoint()
+        tag_group = "(" + "|".join(_all_tags).replace(" ", r"\s") + ")" # this \s may not be necessary (?)
+        re_tag = re.compile(r"tag(?:s|ged(?:\sas)?)?\s+" + tag_group, re.I)
+        if (match := re_tag.search(msg)) is None:
+            return None
+        tag = match.group(1)
+        tag_group = tag_group.replace(r"\s", " ")
+        tag_idx = tag_group.lower().find(tag.lower())
+        tag = tag_group[tag_idx : tag_idx + len(tag)]
+        return tag
 
     @staticmethod
     def parse_max_num_of_questions(msg: str) -> int:
@@ -352,27 +409,12 @@ class QuestionQuery:
     # Filtering quetions DataFrame #
     ################################
 
-    def filter_on_all(self, questions: pd.DataFrame) -> pd.DataFrame:
-        assert not questions.empty
-        questions = self.filter_on_status(questions)
-        questions = self.filter_on_tags(questions)
-        questions = self.filter_on_max_num_of_questions(questions)
-        return questions
+    def _contains_tag(self, tags: list[str]) -> bool:
+        return any(t.lower() == cast(str, self.tag).lower() for t in tags)
 
-    def filter_on_status(self, questions: pd.DataFrame) -> pd.DataFrame:
-        if (status := self.status) is not None:
-            questions = questions.query("status == @status")
-        return questions
-
-    def filter_on_tags(self, questions: pd.DataFrame) -> pd.DataFrame:
-        if self.tags:
-            questions = questions[
-                questions["tags"].map(
-                    lambda tags: any(
-                        t.casefold() in list(map(str.casefold, self.tags)) for t in tags
-                    )
-                )
-            ]
+    def filter_on_tag(self, questions: pd.DataFrame) -> pd.DataFrame:
+        if self.tag:
+            return questions[questions["tags"].map(self._contains_tag)]
         return questions
 
     def filter_on_max_num_of_questions(self, questions: pd.DataFrame) -> pd.DataFrame:
@@ -384,13 +426,77 @@ class QuestionQuery:
         ).iloc[: min(self.max_num_of_questions, len(questions))]
         return questions
 
+@dataclass(frozen=True)
+class GetQuestionInfoQuery:
+    id: Optional[str]
+    title: Optional[str]
+    
+    @classmethod
+    def parse(cls, msg: str) -> Optional[Self]:
+        re_id = re.compile(r"id:?\s+([-\w]+)", re.I)
+        if match := re_id.search(msg):
+            question_id = match.group(0)
+            return cls(question_id, None)
+        re_title = re.compile(r"(?:titled?|question):?\s+([-\w]+)", re.I)
+        if match := re_title.search(msg):
+            question_title = match.group(0)
+            return cls(None, question_title)
 
-###################################################
-# Big regexes defined separately for code clarity #
-###################################################
+        
+##################
+# Util functions #
+##################
 
-_PAT_QUESTION_QUERY = r"(\d{,2}\s)?q(uestions?)?(\s?.{,128})"
-_PAT_NEXT_QUESTION = r"""
+def contains(container: str, contained: str) -> bool:
+    return remove_punct(
+        contained.casefold().replace(" ", "")
+    ) in remove_punct(container.casefold().replace(" ", ""))
+
+
+@staticmethod
+def remove_punct(s: str) -> str:
+    for p in punctuation:
+        s = s.replace(p, "")
+    return s
+
+def adjust_date(date_str: str) -> dt:
+    """If date is in isoformat, parse it.
+    Otherwise, assign earliest date possible.
+    """
+
+    if not date_str:
+        return dt(1, 1, 1, 0)
+    return dt.fromisoformat(date_str.split("T")[0])
+
+
+def shuffle_questions(questions: pd.DataFrame) -> pd.DataFrame:
+    questions_inds = questions.index.tolist()
+    shuffled_inds = random.sample(questions_inds, len(questions_inds))
+    return questions.loc[shuffled_inds]
+
+def get_least_recently_asked_on_discord(
+    questions: pd.DataFrame,
+) -> pd.DataFrame:
+    """Get all questions with oldest date and shuffle them"""
+
+    oldest_date = questions["last_asked_on_discord"].min()
+    return questions.query("last_asked_on_discord == @oldest_date")
+
+def make_next_question_message(question: pd.Series) -> str:
+    """Make question message from questions DataFrame row
+
+    <title>\n
+    <url>
+    """
+    return question["title"] + "\n" + question["url"]
+
+
+###############
+# Big regexes #
+###############
+
+PAT_QUESTION_QUERY = r"(\d{,2}\s)?q(uestions?)?(\s?.{,128})"
+re_next_question = re.compile(r"""
 (
     (
         [wW]hat
@@ -427,8 +533,8 @@ _PAT_NEXT_QUESTION = r"""
 )
 !?
 """.format(
-    question_query=_PAT_QUESTION_QUERY
-)
+    question_query=PAT_QUESTION_QUERY
+), re.I | re.X)
 """Exemplary questions that trigger this regex:
 - Can you give us another question?
 - Do you have any more questions for us?
@@ -439,7 +545,7 @@ Suggested:
 - next N questions (with status X) (and tagged "Y" "Z")
 """
 
-_PAT_COUNT_QUESTIONS = r"""
+re_count_questions = re.compile(r"""
 (
     ( # how many questions are there left in ...
     how\s+many\s+({question_query})\s*
@@ -466,8 +572,8 @@ _PAT_COUNT_QUESTIONS = r"""
 \?* # optional question mark
 $   # end
 """.format(
-    question_query=_PAT_QUESTION_QUERY
-)
+    question_query=PAT_QUESTION_QUERY
+), re.I | re.X)
 """Suggested:
 - how many questions (with status X) (and tagged "Y" "Z")
 """
