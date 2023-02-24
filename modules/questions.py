@@ -416,7 +416,7 @@ _PAT_NEXT_QUESTION = r"""
     |
         ([Hh]ave\syou\s)?
         [gG]ot
-    )?
+    )
     (
         \s?[Aa]ny(\smore|\sother)?
     |
