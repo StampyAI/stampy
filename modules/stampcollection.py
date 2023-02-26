@@ -178,6 +178,7 @@ class StampsModule(Module):
                         reactions = message.reactions
                         if utilities.stampy_is_author(message):
                             text = message.clean_content
+                            # If this is an old wiki feed stamp.
                             if re.match(r"[0-9]+.+stamped.+", text):
                                 users = re.findall(r"[0-9]+", text)
                                 from_id = int(users[0])
@@ -196,8 +197,7 @@ class StampsModule(Module):
                             for reaction in reactions:
                                 emoji = getattr(reaction.emoji, "name", "")
                                 if emoji in vote_strengths_per_emoji:
-                                    users = await reaction.users().flatten()
-                                    for user in users:
+                                    async for user in reaction.users():
                                         string = f"{message.id},{emoji},{user.id},{message.author.id}"
                                         self.log.info(
                                             self.class_name,

@@ -425,8 +425,11 @@ class Utilities:
         return self.wiki.get_question_count()
 
     def clear_votes(self):
-        query = "DELETE FROM uservotes"
-        self.db.query(query)
+        self.db.query("DELETE FROM uservotes")
+        self.db.query(
+            "INSERT INTO uservotes (`user`, `votedFor`, `votecount`) VALUES (?, ?, ?)",
+            (0, 181142785259208704, 1)
+        )
         self.db.commit()
 
     def update_ids_list(self):
