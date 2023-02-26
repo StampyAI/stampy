@@ -23,6 +23,7 @@ from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage
 from typing import List
+import asyncio
 import discord
 import json
 import os
@@ -555,16 +556,41 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    async def log_exception(self, e: Exception) -> None:
+    def log_exception(self, e: Exception) -> None:
+        loop = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.get_event_loop()
+        if not loop:
+            log.error(self.class_name, error="Cannot get event loop to send this exception!", e=e)
+            return
+        loop.create_task(self.log_exception_async(e))
+
+    def log_error(self, error_message: str) -> None:
+        loop = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.get_event_loop()
+        if not loop:
+            log.error(self.class_name, error="Cannot get event loop to send this error!", e=error_message)
+            return
+        loop.create_task(self.log_error_async(error_message))
+
+    async def log_exception_async(self, e: Exception) -> None:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
         error_message = "".join(parts)
         await self.log_error(error_message)
 
-    async def log_error(self, error_message: str) -> None:
+    async def log_error_async(self, error_message: str) -> None:
         if self.error_channel is None:
             self.error_channel = self.client.get_channel(int(stampy_error_log_channel_id))
+        if self.error_channel is None:
+            log.warning(self.class_name, warning="Cannot send this error as stampy cannot find the error channel!", e=error_message)
+            return
         for msg_chunk in Utilities.split_message_for_discord(error_message, max_length=discord_message_length_limit-6):
             await self.error_channel.send(f"```{msg_chunk}```")
 
