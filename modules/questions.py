@@ -92,7 +92,7 @@ class Questions(Module):
 
     def is_review_request(self, message: ServiceMessage) -> Optional[SetQuestionQuery]:
         """Is this message a review request with link do GDoc?"""
-        text = message.content
+        text = message.clean_content
         if (gdoc_link := parse_gdoc_link(text)) is None:
             return
         if (question := self.get_question_by_gdoc_link(gdoc_link)) is None:
