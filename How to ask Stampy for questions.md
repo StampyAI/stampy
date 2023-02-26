@@ -5,7 +5,7 @@ Remember that you need to prefix your message with "stampy, " or "s, ".
 ## Posting questions to Discord
 
 You ask stampy for some number of questions (default is 1), optionally matching status and/or one 
-tag.Stampy will return that many questions matching your query or, if you asked for more than there 
+tag. Stampy will return that many questions matching your query or, if you asked for more than there 
 are, all the questions he found.
 
 You can use status shorthands (e.g. "los" for "Live on site") when querying for status.
