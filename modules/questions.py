@@ -44,7 +44,7 @@ class Questions(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
-        # this one option is before `.is_at_me` 
+        # this one option is before `.is_at_me`
         # because it doesn't require calling Stampy explicitly
         if query := self.is_review_request(message):
             return Response(
@@ -124,7 +124,7 @@ class Questions(Module):
         # if tags were specified, filter questions on those which have at least one of the tags
         if query.tag:
             questions = query.filter_on_tag(questions)
-        
+
         # get all the oldest ones and shuffle them
         questions = shuffle_questions(questions)
         questions = get_least_recently_asked_on_discord(questions)
@@ -144,9 +144,9 @@ class Questions(Module):
             self.last_question_id = questions.iloc[0]["id"]
 
         # update Last Asked On Discord column
-        self.update_questions_last_asked_date(
-            questions["id"].tolist(), dt.now().isoformat()
-        )
+        current_time = dt.now().isoformat()
+        for question_id in questions["id"].tolist():
+            self.update_question_last_asked_date(question_id, current_time)
 
         return Response(
             confidence=8,
@@ -154,9 +154,7 @@ class Questions(Module):
             why=f"{message.author} asked me for next questions",
         )
 
-    def update_questions_last_asked_date(
-        self, row_ids: list[str], current_time: str
-    ) -> None:
+    def update_question_last_asked_date(self, row_id: str, current_time: str) -> None:
         """Update the "Last Asked on Discord" field in table for the question"""
         payload = {
             "row": {
@@ -165,11 +163,10 @@ class Questions(Module):
                 ],
             },
         }
-        for row_id in row_ids:
-            uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{row_id}"
-            req = requests.put(uri, headers=self.get_headers(), json=payload)
-            # req.raise_for_status() # Throw if there was an error.
-            log.info("Updated question with id %s to time %s", row_id, current_time)
+        uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{row_id}"
+        req = requests.put(uri, headers=self.get_headers(), json=payload)
+        # req.raise_for_status() # Throw if there was an error.
+        log.info("Updated question with id %s to time %s", row_id, current_time)
 
     def reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
@@ -177,7 +174,8 @@ class Questions(Module):
         questions_with_dt_ids = questions[
             questions["last_asked_on_discord"] != DEFAULT_DATE
         ]["id"].tolist()
-        self.update_questions_last_asked_date(questions_with_dt_ids, "")
+        for question_id in questions_with_dt_ids:
+            self.update_question_last_asked_date(question_id, "")
 
     ###################
     # Count questions #
@@ -262,7 +260,7 @@ class Questions(Module):
                 id "{query.id}" to "{query.status}" but I couldn\'t find it"""
                 ),
             )
-            
+
         self.last_question_id = question_row["id"]
 
         if "Live on site" in [
@@ -400,14 +398,10 @@ class Questions(Module):
             return []
 
         response = cls.send_all_answers_table_request()
-        all_tags: set[str] = set(  # TODO: make it more readable
-            filter(
-                bool,
-                reduce(
-                    add, [row["values"]["Tags"].split(",") for row in response["items"]]
-                ),
-            )
-        )
+        all_tags = set()
+        for row in response["items"]:
+            if tags := row["values"]["Tags"]:
+                all_tags.update(tags.split(","))
         return sorted(all_tags)
 
     @classmethod
@@ -654,7 +648,6 @@ class QuestionInfoQuery:
         return False
 
 
-
 @dataclass(frozen=True)
 class SetQuestionQuery:
     """Change status of a particular question."""
@@ -793,6 +786,7 @@ def parse_gdoc_link(text: str) -> Optional[str]:
     )
     if match:
         return match.group()
+
 
 def parse_id(text: str) -> Optional[str]:
     """Parse question id from message content"""
