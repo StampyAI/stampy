@@ -583,7 +583,7 @@ class Utilities:
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
         error_message = "".join(parts)
-        await self.log_error(error_message)
+        await self.log_error_async(error_message)
 
     async def log_error_async(self, error_message: str) -> None:
         if self.error_channel is None:
