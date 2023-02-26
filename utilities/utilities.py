@@ -1,4 +1,3 @@
-from api.semanticwiki import SemanticWiki, QuestionSource
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -9,7 +8,6 @@ from config import (
     database_path,
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
-    wiki_config,
 )
 from servicemodules.discordConstants import stampy_error_log_channel_id, wiki_feed_channel_id
 from database.database import Database
@@ -134,7 +132,6 @@ class Utilities:
             intents.members = True
             intents.message_content = True
             self.client = discord.Client(intents=intents)
-            self.wiki = SemanticWiki(wiki_config["uri"], wiki_config["user"], wiki_config["password"])
 
     def rate_limit(self, timer_name, **kwargs):
         """Should I rate-limit? i.e. Has it been less than this length of time since the last time
@@ -358,72 +355,6 @@ class Utilities:
 
         return new_comments
 
-    def get_question(
-        self, order_type: OrderType = OrderType.TOP, wiki_question_bias: float =SemanticWiki.default_wiki_question_percent_bias
-    ):
-        """Pull the oldest question from the queue
-        Returns False if the queue is empty, the question string otherwise"""
-        # TODO: I dont know that "latest" makes sense, but this is maybe used in a lot of places
-        # So wanted to keep it consistent for now. Maybe get _a_ question?
-        if order_type == OrderType.RANDOM:
-            comment = self.wiki.get_random_question(wiki_question_bias=wiki_question_bias)
-        elif order_type == OrderType.TOP:
-            comment = self.wiki.get_top_question(wiki_question_bias=wiki_question_bias)
-        else: # order_type == OrderType.LATEST:
-            comment = self.wiki.get_latest_question(wiki_question_bias=wiki_question_bias)
-        
-        self.latest_question_posted = comment
-
-        text = comment["text"]
-        if len(text) > 1500:
-            text = text[:1500] + " [truncated]"
-        text_quoted = "> " + "\n> ".join(text.split("\n"))
-
-        # This might be better if moved to be handled by get_random_question directly.
-        if comment["source"] == QuestionSource.YOUTUBE:
-            if "title" in comment:
-                report = (
-                    "YouTube user {0} asked this question, on the video {1}!:\n"
-                    + "{2}\n"
-                    + "Is it an interesting question? Maybe we can answer it!\n"
-                    + "{3}"
-                ).format(comment["username"], comment["title"], text_quoted, comment["url"])
-
-            else:
-                # TODO: not sure if there are any cases where this branch is met, this is left here until confirmed
-                report = (
-                    "YouTube user {0} asked this question, on the video {1}!:\n"
-                    + "{2}\n"
-                    + "Is it an interesting question? Maybe we can answer it!\n"
-                    + "{3}"
-                ).format(
-                    comment["username"],
-                    self.get_title(comment["url"])[1],
-                    text_quoted,
-                    comment["url"],
-                )
-        elif comment["source"] == QuestionSource.WIKI:
-            report = "Wiki User {0} asked this question.\n{1}\n".format(
-                comment["username"], comment["question_title"]
-            )
-            if comment["text"]:
-                report += text_quoted
-            report += "\nIs it an interesting question? Maybe we can answer it!\n{0}".format(comment["url"])
-        else:
-            report = "I am being told to post a question which I cant parse properly, i am very sorry"
-        log.info(f"{self.class_name}: YouTube", youtube_question_report=report)
-
-        # reset the question waiting timer
-        self.last_question_asked_timestamp = datetime.now(timezone.utc)
-
-        # mark it in the database as having been asked
-        self.wiki.set_question_asked(comment["question_title"])
-
-        return report
-
-    def get_question_count(self):
-        return self.wiki.get_question_count()
-
     def clear_votes(self):
         query = "DELETE FROM uservotes"
         self.db.query(query)
@@ -511,16 +442,7 @@ class Utilities:
             video_titles[0],
         )
 
-        return self.wiki.add_question(
-            display_title,
-            comment["username"],
-            comment["timestamp"],
-            comment["text"],
-            comment_url=comment["url"],
-            video_title=video_titles[1],
-            likes=comment["likes"],
-            reply_count=comment["reply_count"],
-        )
+        # TODO: add to Coda
 
     def get_title(self, url):
         result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="?"', (url,))

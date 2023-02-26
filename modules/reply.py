@@ -2,7 +2,6 @@ import re
 import json
 import discord
 from datetime import datetime
-from api.semanticwiki import QuestionSource
 from modules.module import Module, Response
 from config import stampy_youtube_channel_id, comment_posting_threshold_factor
 from utilities.discordutils import DiscordMessage
@@ -114,8 +113,6 @@ class Reply(Module):
             question_url = reference_text.split("\n")[-1].strip("<> \n")
 
             if "youtube.com" in question_url:
-                source = QuestionSource.YOUTUBE
-
                 match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
                 if match:
                     question_user = match.group(1)  # YouTube user (.*) asked this question
@@ -129,13 +126,6 @@ class Reply(Module):
                     video_titles = ["Video Title Unknown", "Video Title Unknown"]
 
                 question_title = f"""{question_user}'s question on {video_titles[0]} id:{comment_id}"""
-            elif "stampy.ai/wiki" in question_url:
-                source = QuestionSource.WIKI
-
-                split_ref = reference_text.split("\n", 3)
-                if len(split_ref) < 3:
-                    return "I cannot understand the message you are trying to answer"
-                question_title = split_ref[1]
             else:
                 return "I'm confused about what to reply to... "
         else:
@@ -157,7 +147,7 @@ class Reply(Module):
             answer_title = f"""{message.author.display_name}'s Answer"""
 
         reply_message = self.extract_reply(message.clean_content)
-        if source == QuestionSource.YOUTUBE:
+        if "youtube.com" in question_url:
             reply_message += "\n -- _I am a bot. This reply was approved by %s_" % approver_string
 
         quoted_reply_message = "> " + reply_message.replace("\n", "\n> ")
@@ -171,7 +161,7 @@ class Reply(Module):
             answer_title, message.author.display_name, approvers, answer_time, reply_message, question_title,
         )
 
-        if source == QuestionSource.YOUTUBE:
+        if "youtube.com" in question_url:
             question_id = re.match(r".*lc=([^&]+)", question_url).group(1)
             self.post_reply(reply_message, question_id)
 
