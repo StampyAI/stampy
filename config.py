@@ -31,7 +31,6 @@ discord_token_env_variable = "DISCORD_TOKEN"
 discord_guild_env_variable = "DISCORD_GUILD"
 youtube_api_key_env_variable = "YOUTUBE_API_KEY"
 database_path_env_variable = "DATABASE_PATH"
-wiki_password_path_env_variable = "WIKI_BOT_PASSWORD"
 environment_type_env_variable = "ENVIRONMENT_TYPE"
 openai_env_variable = "OPENAI_API_KEY"
 test_response_message = "LOGGED_TEST_RESPONSE"
@@ -67,15 +66,12 @@ discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
 youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
-wiki_password = getenv("WIKI_BOT_PASSWORD")
 openai_api_key = getenv("OPENAI_API_KEY", default=None)
 goose_api_key = getenv("GOOSE_API_KEY", default=None)
 wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 # These defaults are just to not break production until slack is set up.
 slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
-
-wiki_config = {"uri": "https://stampy.ai/w/api.php", "user": "Stampy@stampy", "password": wiki_password}
 
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
