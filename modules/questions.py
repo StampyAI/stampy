@@ -2,15 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime as dt
-from functools import reduce
-from operator import add
 import os
 from pprint import pformat
 import random
 import re
 from string import punctuation
 from textwrap import dedent
-from typing import Literal, Optional, TypedDict, cast
+from typing import Any, Literal, Optional, TypedDict, cast
 
 from dotenv import load_dotenv
 import pandas as pd
@@ -36,7 +34,11 @@ class Questions(Module):
     STATUSES_TABLE = "grid-IWDInbu5n2"
 
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    last_question_id: Optional[str] = None
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.last_question_id: Optional[str] = None
+        self.review_msg_id2question_id: dict[str, str] = {}
 
     #########################################
     # Core: processing and posting messages #
@@ -49,9 +51,16 @@ class Questions(Module):
         if query := self.is_review_request(message):
             return Response(
                 confidence=8,
-                callback=self.message_set_question,
+                callback=self.message_set_status,
                 args=[query, message],
-                why=f"{message.author} asked for a review",
+                why=f"{message.author.name} asked for a review",
+            )
+        if query := self.is_response_to_review_request(message):
+            return Response(
+                confidence=8,
+                callback=self.message_set_status,
+                args=[query, message],
+                why=f"{message.author.name} accepted the review",
             )
         if not (text := self.is_at_me(message)):
             return Response()
@@ -80,7 +89,7 @@ class Questions(Module):
         if query := SetQuestionQuery.parse(text, self.last_question_id):
             return Response(
                 confidence=8,
-                callback=self.message_set_question,
+                callback=self.message_set_status,
                 args=[query, message],
                 why=f"I was asked to set status of question `{query.id}` to `{query.status}`",
             )
@@ -105,7 +114,28 @@ class Questions(Module):
             new_status = "In progress"
         else:
             return
-        return SetQuestionQuery("@", question["id"], new_status)
+        self.review_msg_id2question_id[message.id] = question["id"]
+        return SetQuestionQuery("review-request", question["id"], new_status)
+
+    def is_response_to_review_request(
+        self, message: ServiceMessage
+    ) -> Optional[SetQuestionQuery]:
+        """Is this message a response to review request?"""
+        # breakpoint()
+        if (msg_ref := message.reference) is None:
+            return
+        if (
+            msg_ref_id := str(getattr(msg_ref, "message_id", None))
+        ) not in self.review_msg_id2question_id:
+            return
+
+        text = message.clean_content
+        if "approved" in text or "accepted" in text:
+            return SetQuestionQuery(
+                "review-request-approved",
+                self.review_msg_id2question_id[cast(str, msg_ref_id)],
+                "Live on site",
+            )
 
     ####################
     # Post question(s) #
@@ -150,7 +180,7 @@ class Questions(Module):
         return Response(
             confidence=8,
             text=msg,
-            why=f"{message.author} asked me for next questions",
+            why=f"{message.author.name} asked me for next questions",
         )
 
     def update_question_last_asked_date(self, row_id: str, current_time: str) -> None:
@@ -198,7 +228,7 @@ class Questions(Module):
         return Response(
             confidence=8,
             text=msg,
-            why=f"{message.author} asked me to count questions",
+            why=f"{message.author.name} asked me to count questions",
         )
 
     #####################
@@ -213,7 +243,8 @@ class Questions(Module):
                 confidence=8,
                 text="There is no last question ;/",
                 why=dedent(
-                    f"""{message.author} asked me for last question but I 
+                    f"""\
+                    {message.author.name} asked me for last question but I 
                     haven't been asked for (or posted) any questions since I've been started"""
                 ),
             )
@@ -230,77 +261,68 @@ class Questions(Module):
         return Response(
             confidence=8,
             text=msg,
-            why=f"{message.author} asked me to get the question with " + query.info(),
+            why=f"{message.author.name} asked me to get the question with "
+            + query.info(),
         )
 
     ##############
     # Set status #
     ##############
 
-    async def message_set_question(
+    async def message_set_status(
         self, query: SetQuestionQuery, message: ServiceMessage
     ) -> Response:
+        # If asked for setting status on last question but there is no last question
         if query.type == "last" and query.id is None:
             return Response(
                 confidence=8,
                 text='What do you mean by "it"?',
                 why=dedent(
-                    f"""{message.author} asked me to set last question's status 
+                    f"""\
+                    {message.author.name} asked me to set last question's status 
                     to {query.status} but I haven't posted any questions yet"""
                 ),
             )
+
+        
         question_row = self.get_question_by_id(cast(str, query.id))
+        # if couldn't find question
         if question_row is None:
             return Response(
                 confidence=8,
                 text=f'I couldn\'t find a question with id "{query.id}"',
                 why=dedent(
-                    f"""{message.author} asked me to set the status of question with 
-                id "{query.id}" to "{query.status}" but I couldn\'t find it"""
+                    f"""\
+                    {message.author.name} asked me to set the status of question 
+                    with id "{query.id}" to "{query.status}" but I couldn't find it"""
                 ),
             )
 
-        self.last_question_id = question_row["id"]
+        self.last_question_id = query.id
 
-        if "Live on site" in [
-            query.status,
-            question_row["status"],
-        ] and not is_from_reviewer(message):
-            if query.status == "Live on site":
-                response_msg = dedent(
-                    f"""Sorry, {message.author.name}. 
-                        You can't set this question's status to `Live on site` 
-                        because you are not a `@reviewer`. 
-                        Only `@reviewer`s can change question status to `Live on site`."""
-                )
-                why = dedent(
-                    f"""{message.author} wanted to change status to `Live on site` 
-                    but they're not a @reviewer"""
-                )
-            else:  # question_row["status"] == "Live on site":
-                response_msg = dedent(
-                    f"""Sorry, {message.author.name}. You can't set this question's status 
-                    to `{query.status}` because its current status is `Live on site` and you are not
-                    a `@reviewer`. Only `@reviewer`s can change status of questions that are already
-                    `Live on site`."""
-                )
-                why = f"{message.author} wanted to change status from `Live on site` but they're not a @reviewer"
-        else:
-            response_msg = self.update_question_status(query, message)
-            response_msg += "\n\nPreviously:\n" + pformat_to_codeblock(
-                cast(dict, question_row)
-            )
-            why = dedent(
-                f"""{message.author} asked me to set the status of question
-                with id "{query.id}" to "{query.status}" and so I did"""
-            )
+        # if somebody without `@reviewer` role tried setting question status to "Live on site"
+        # case of unauthorized approval is handled separately in update_question_status
+        if (
+            response := unauthorized_set_los(query, question_row, message)
+        ) and query.type != "review-request-approved":
+            return response
+        
+        response_msg = self.update_question_status(query, question_row, message)
+        why = dedent(
+            f"""\
+            {message.author.name} asked me to set the status of question
+            with id "{query.id}" to "{query.status}"
+            """
+        )
         return Response(confidence=8, text=response_msg, why=why)
 
     def update_question_status(
-        self, query: SetQuestionQuery, message: ServiceMessage
+        self, query: SetQuestionQuery, question_row: ParsedRow, message: ServiceMessage
     ) -> str:
-        row_id = query.id
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{row_id}"
+        if query.type == "review-request-approved" and not is_from_reviewer(message):
+            return f"You're not a `@reviewer` {message.author.name}"
+
+        uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{query.id}"
         payload = {
             "row": {
                 "cells": [
@@ -309,10 +331,14 @@ class Questions(Module):
             },
         }
         req = requests.put(uri, headers=self.get_headers(), json=payload)
-        if query.type == "@":
-            msg = f"Thanks, @{message.author.name}!\nI updated this question's status to `{query.status}`"
+        if query.type == "review-request":
+            msg = f"Thanks, {message.author.name}!\nI updated this question's status to `{query.status}`"
+        elif query.type == "review-request-approved":
+            msg = f"Question approved! Updated status to `{query.status}`"
         else:
             msg = f"Updated question's  status to `{query.status}`"
+            msg += "\n\nPreviously:\n" + pformat_to_codeblock(cast(dict, question_row))
+
         log.info(msg)
         return msg
 
@@ -397,11 +423,11 @@ class Questions(Module):
             return []
 
         response = cls.send_all_answers_table_request()
-        all_tags = set()
+        tags = set()
         for row in response["items"]:
-            if tags := row["values"]["Tags"]:
-                all_tags.update(tags.split(","))
-        return sorted(all_tags)
+            if tag_string := row["values"]["Tags"]:
+                tags.update(tag_string.split(","))
+        return sorted(tags)
 
     @classmethod
     def get_all_statuses(cls) -> list[str]:
@@ -561,9 +587,9 @@ class PostOrCountQuestionQuery:
 
     def code_info(self, *, with_num: bool = False) -> str:
         """Print info about query in code block"""
-        d = {"status": self.status, "tag": self.tag}
+        d: dict[str, Any] = {"status": self.status, "tag": self.tag}
         if with_num:
-            d["max_num_of_questions"] = self.max_num_of_questions #type:ignore
+            d["max_num_of_questions"] = self.max_num_of_questions
         return pformat_to_codeblock(d)
 
     def count_result_info(self, num_found: int) -> str:
@@ -651,13 +677,15 @@ class QuestionInfoQuery:
 class SetQuestionQuery:
     """Change status of a particular question."""
 
-    type: Literal["id", "last", "@"]
+    type: Literal["id", "last", "review-request", "review-request-approved"]
     """
     - "id" - specified by unique row identifier in "All Answers" table
     - "last" - ordered to get the last row that stampy interacted with
     (changed or posted) in isolation from other rows
-    - "@" - somebody mentioned one of the roles and posted a link to GDoc,
+    - "review-request" - somebody mentioned one of the roles and posted a link to GDoc,
     which triggered Stampy to change status of that question  
+    - "review-request-approved" - a `@reviewer` responded to a review request with 
+    "accepted" or "approved" -> questions's status changes to "Live on site"  
     """
     id: Optional[str]
     status: str
@@ -799,7 +827,41 @@ def parse_id(text: str) -> Optional[str]:
 
 def is_from_reviewer(message: ServiceMessage) -> bool:
     """This message is from @reviewer"""
-    return any(role.name == "@reviewer" for role in message.author.roles)
+    return any(role.name == "reviewer" for role in message.author.roles)
+
+
+def unauthorized_set_los(
+    query: SetQuestionQuery, question_row: ParsedRow, message: ServiceMessage
+) -> Optional[Response]:
+    """Somebody tried set questions status "Live on site" but they're not a reviewer"""
+    if "Live on site" not in (
+        query.status,
+        question_row["status"],
+    ) or is_from_reviewer(message):
+        return
+    if query.status == "Live on site":
+        response_msg = dedent(
+            f"""\
+            Sorry, {message.author.name}. 
+            You can't set this question's status to `Live on site` 
+            because you are not a `@reviewer`. 
+            Only `@reviewer`s can change question status to `Live on site`."""
+        )
+        why = dedent(
+            f"""\
+            {message.author.name} wanted to change status to `Live on site` 
+            but they're not a @reviewer"""
+        )
+    else:  # question_row["status"] == "Live on site":
+        response_msg = dedent(
+            f"""\
+            Sorry, {message.author.name}. You can't set this question's status 
+            to `{query.status}` because its current status is `Live on site` and you are not
+            a `@reviewer`. Only `@reviewer`s can change status of questions that are already
+            `Live on site`."""
+        )
+        why = f"{message.author.name} wanted to change status from `Live on site` but they're not a @reviewer"
+    return Response(confidence=8, text=response_msg, why=why)
 
 
 ###############
