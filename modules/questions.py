@@ -92,12 +92,11 @@ class Questions(Module):
 
     def is_review_request(self, message: ServiceMessage) -> Optional[SetQuestionQuery]:
         """Is this message a review request with link do GDoc?"""
-        text = message.content
+        text = message.clean_content
         if (gdoc_link := parse_gdoc_link(text)) is None:
             return
         if (question := self.get_question_by_gdoc_link(gdoc_link)) is None:
             return
-
         if "@reviewer" in text:
             new_status = "In review"
         elif "@feedback-sketch" in text:
@@ -564,7 +563,7 @@ class PostOrCountQuestionQuery:
         """Print info about query in code block"""
         d = {"status": self.status, "tag": self.tag}
         if with_num:
-            d["max_num_of_questions"] = self.max_num_of_questions
+            d["max_num_of_questions"] = self.max_num_of_questions #type:ignore
         return pformat_to_codeblock(d)
 
     def count_result_info(self, num_found: int) -> str:
