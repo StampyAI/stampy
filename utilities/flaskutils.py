@@ -1,7 +1,12 @@
 from servicemodules.serviceConstants import Services
 from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
+from typing import TYPE_CHECKING
 import threading
 import time
+
+
+if TYPE_CHECKING:
+    from servicemodules.flask import FlaskHandler
 
 
 # Depending on how secret we want this, we may want to move it to an environment variable with a JSON dict.
@@ -35,7 +40,7 @@ class FlaskUtilities:
         return True  # Flask only process messages meant for stampy so assume True
 
 
-def kill_thread(event: threading.Event, thread: threading.Thread):
+def kill_thread(event: threading.Event, thread: "FlaskHandler"):
     event.wait()
     thread.stop()
 
@@ -55,7 +60,7 @@ class FlaskServer(ServiceServer):
 
 class FlaskChannel(ServiceChannel):
     def __init__(self, server: FlaskServer):
-        super().__init__("Web Interface", 0, server)
+        super().__init__("Web Interface", "flask_api", server)
 
 
 class FlaskMessage(ServiceMessage):
