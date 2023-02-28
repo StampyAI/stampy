@@ -20,13 +20,14 @@ from structlog import get_logger
 from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage
-from typing import List
+from typing import List, Optional
 import discord
 import json
 import os
 import psutil
 import random
 import re
+import requests
 import sys
 import traceback
 
@@ -50,11 +51,12 @@ class Utilities:
     client = None
     discord_user = None
     stop = None
+    youtube = None
 
-    TOKEN = None
-    GUILD = None
-    YOUTUBE_API_KEY = None
-    DB_PATH = None
+    TOKEN = discord_token
+    GUILD = discord_guild
+    YOUTUBE_API_KEY = youtube_api_key
+    DB_PATH = database_path
 
     last_message_was_youtube_question = None
     latest_comment_timestamp = None
@@ -72,6 +74,14 @@ class Utilities:
 
     modules_dict = {}
     service_modules_dict = {}
+    
+    # Coda
+    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
+    DOC_ID = "fau7sl2hmG"
+    ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
+    STATUSES_GRID_ID = "grid-IWDInbu5n2"
+    TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
+    
 
     @staticmethod
     def get_instance() -> "Utilities":
@@ -85,11 +95,6 @@ class Utilities:
         else:
             Utilities.__instance = self
             self.class_name = self.__class__.__name__
-            self.TOKEN = discord_token
-            self.GUILD = discord_guild
-            self.YOUTUBE_API_KEY = youtube_api_key
-            self.DB_PATH = database_path
-            self.youtube = None
             self.start_time = time()
             self.test_mode = False
             self.people = set("stampy")
@@ -506,6 +511,47 @@ class Utilities:
         output.append(msg[last_split_index:])
         return output
 
+    ##############
+    # Coda utils #
+    ##############
+    
+    def get_coda_auth_headers(self) -> dict:
+        """Get authorization headers for coda requests"""
+        return {"Authorization": f"Bearer {self.CODA_API_TOKEN}"}
+    
+    def get_user_row(self, query: str) -> Optional[dict]:
+        params = {
+            "valueFormat": "simple",
+            "useColumnNames": True,
+            "query": query,
+            "limit": 1,
+        }
+        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
+        response = requests.get(
+            uri, headers=self.get_coda_auth_headers(), params=params, timeout=10
+        )
+        response.raise_for_status()
+        users = response.json()["items"]
+        if users:
+            return users[0]
+        
+    
+    def get_team_grid(self) -> list[dict]:
+        uri = (
+            f"https://coda.io/apis/v1/docs/fau7sl2hmG/tables/{self.TEAM_GRID_ID}/rows"
+        )
+        resp = requests.get(
+            uri,
+            params={"valueFormat": "simple", "useColumnNames": True},
+            headers=self.get_coda_auth_headers(),
+            timeout=10
+        )
+        resp.raise_for_status()
+        return [item["values"] for item in resp.json()["items"]]
+
+
+
+
 
 def get_github_info():
     message = (
@@ -529,7 +575,7 @@ def get_git_branch_info():
     return f"from git branch `{branch}` by `{name}`"
 
 
-def get_running_user_info():
+def get_running_user_info() -> str:
     if not os.name == "nt":
         user_info = pwd.getpwuid(os.getuid())
         user_name = user_info.pw_gecos.split(",")[0]
@@ -558,7 +604,7 @@ def get_memory_usage():
     return "I'm using %s of memory." % megabytes_string
 
 
-def get_question_id(message):
+def get_question_id(message: ServiceMessage):
     text = message.clean_content
     first_number_found = re.search(r"\d+", text)
     if first_number_found:
@@ -566,7 +612,7 @@ def get_question_id(message):
     return ""
 
 
-def contains_prefix_with_number(text, prefix):
+def contains_prefix_with_number(text: str, prefix: str) -> bool:
     prefix = prefix.strip()  # remove white space for regex formatting
     return bool(re.search(rf"^{prefix}\s[0-9]+", text))
 
@@ -583,12 +629,10 @@ def is_test_message(text):
     return is_test_response(text) or is_test_question(text)
 
 
-def randbool(p):
+def randbool(p: float) -> bool:
     if random.random() < p:
         return True
-    else:
-        return False
-
+    return False
 
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
     utils = Utilities.get_instance()
@@ -606,6 +650,8 @@ def get_guild_and_invite_role():
     invite_role = discord.utils.get(guild.roles, name="can-invite")
     return guild, invite_role
 
+def get_user_handle(user: DiscordUser) -> str:
+    return user.name + "#" + user.discriminator
 
 class UtilsTests:
     def test_split_message_for_discord(self):

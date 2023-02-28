@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime as dt
-import os
 from pprint import pformat
 import random
 import re
@@ -17,23 +16,18 @@ from structlog import get_logger
 from typing_extensions import Self
 
 from modules.module import Module, Response
+from utilities import Utilities
 from utilities.serviceutils import ServiceMessage
 
 log = get_logger()
 load_dotenv()
+utils = Utilities.get_instance()
 
 
 class Questions(Module):
     """Fetches not started questions from
     [All Answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
     """
-
-    # ids
-    DOC = "fau7sl2hmG"
-    ALL_ANSWERS_TABLE = "table-YvPEyAXl8a"
-    STATUSES_TABLE = "grid-IWDInbu5n2"
-
-    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
 
     def __init__(self) -> None:
         super().__init__()
@@ -121,7 +115,6 @@ class Questions(Module):
         self, message: ServiceMessage
     ) -> Optional[SetQuestionQuery]:
         """Is this message a response to review request?"""
-        # breakpoint()
         if (msg_ref := message.reference) is None:
             return
         if (
@@ -130,7 +123,7 @@ class Questions(Module):
             return
 
         text = message.clean_content
-        if "approved" in text or "accepted" in text:
+        if any(s in text.lower() for s in ["approved", "accepted", "lgtm"]):
             return SetQuestionQuery(
                 "review-request-approved",
                 self.review_msg_id2question_id[cast(str, msg_ref_id)],
@@ -192,8 +185,8 @@ class Questions(Module):
                 ],
             },
         }
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{row_id}"
-        req = requests.put(uri, headers=self.get_headers(), json=payload)
+        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{row_id}"
+        req = requests.put(uri, headers=utils.get_coda_auth_headers(), json=payload)
         # req.raise_for_status() # Throw if there was an error.
         log.info("Updated question with id %s to time %s", row_id, current_time)
 
@@ -284,7 +277,6 @@ class Questions(Module):
                 ),
             )
 
-        
         question_row = self.get_question_by_id(cast(str, query.id))
         # if couldn't find question
         if question_row is None:
@@ -306,7 +298,7 @@ class Questions(Module):
             response := unauthorized_set_los(query, question_row, message)
         ) and query.type != "review-request-approved":
             return response
-        
+
         response_msg = self.update_question_status(query, question_row, message)
         why = dedent(
             f"""\
@@ -322,7 +314,7 @@ class Questions(Module):
         if query.type == "review-request-approved" and not is_from_reviewer(message):
             return f"You're not a `@reviewer` {message.author.name}"
 
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{query.id}"
+        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{query.id}"
         payload = {
             "row": {
                 "cells": [
@@ -330,7 +322,7 @@ class Questions(Module):
                 ],
             },
         }
-        req = requests.put(uri, headers=self.get_headers(), json=payload)
+        req = requests.put(uri, headers=utils.get_coda_auth_headers(), json=payload)
         if query.type == "review-request":
             msg = f"Thanks, {message.author.name}!\nI updated this question's status to `{query.status}`"
         elif query.type == "review-request-approved":
@@ -360,9 +352,9 @@ class Questions(Module):
         # optionally query by status
         if query and query.status:
             params["query"] = f'"Status":"{query.status}"'
-        uri = f"https://coda.io/apis/v1/docs/{cls.DOC}/tables/{cls.ALL_ANSWERS_TABLE}/rows"
+        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows"
         response = requests.get(
-            uri, headers=cls.get_headers(), params=params, timeout=16
+            uri, headers=utils.get_coda_auth_headers(), params=params, timeout=16
         ).json()
         return response
 
@@ -379,12 +371,12 @@ class Questions(Module):
         """Get question by id in "All Answers" table.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
         """
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC}/tables/{self.ALL_ANSWERS_TABLE}/rows/{row_id}"
+        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{row_id}"
         params = {
             "valueFormat": "simple",
             "useColumnNames": True,
         }
-        req = requests.get(uri, params=params, headers=self.get_headers())
+        req = requests.get(uri, params=params, headers=utils.get_coda_auth_headers())
         if req.status_code == 200:
             return parse_row(req.json())
 
@@ -437,15 +429,12 @@ class Questions(Module):
             "useColumnNames": True,
         }
 
-        uri = f"https://coda.io/apis/v1/docs/{cls.DOC}/tables/{cls.STATUSES_TABLE}/rows"
-        res = requests.get(uri, params=params, headers=cls.get_headers()).json()
+        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.STATUSES_GRID_ID}/rows"
+        res = requests.get(
+            uri, params=params, headers=utils.get_coda_auth_headers()
+        ).json()
         statuses = [r["name"] for r in res["items"]]
         return sorted(statuses)
-
-    @classmethod
-    def get_headers(cls) -> dict:
-        """Get authorization headers for coda requests"""
-        return {"Authorization": f"Bearer {cls.CODA_API_TOKEN}"}
 
     #########
     # Other #
@@ -453,7 +442,7 @@ class Questions(Module):
 
     @classmethod
     def is_in_testing_mode(cls) -> bool:
-        return cls.CODA_API_TOKEN == "testing"
+        return utils.CODA_API_TOKEN == "testing"
 
     @property
     def test_cases(self):
