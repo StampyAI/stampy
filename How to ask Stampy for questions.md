@@ -64,6 +64,8 @@ the status of the question of that GDoc accordingly (even if you don't ask him)
 - `@feedback` -> "In progress"
 - `@feedback-sketch` -> "Bulletpoint sketch"
 
+If a `@reviewer` replies to it with a message containing "approved" or "accepted", Stampy changes the question's status to "Live on site".
+
 ## Stampy remembers last question
 
 Whenever stampy "touches" **one** question, he remembers its id as `last_question_id`. You can use it later
