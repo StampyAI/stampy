@@ -8,3 +8,4 @@ modules/choose.py
 .venv
 .pylintrc
 *.ipynb
+*.csv
