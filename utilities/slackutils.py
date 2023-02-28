@@ -1,13 +1,13 @@
 from functools import cache
 from servicemodules.serviceConstants import Services
 from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
-from typing import Any
+from typing import Any, Optional
 
 
 class SlackUtilities:
     __instance = None
     client = None
-    user = None
+    user: Optional["SlackUser"] = None
 
     @staticmethod
     def get_instance():
@@ -133,6 +133,8 @@ class SlackMessage(ServiceMessage):
         else:
             id = msg["client_msg_id"]
         super().__init__(str(id), msg["text"], SlackUser(msg["user"]), channel, service)
+        self.author: SlackUser
+        self.mentions: list[SlackUser]
         self._parse_mentions()
         self.clean_content = self.clean_content.replace("<!here>", "@here")
         self.clean_content = self.clean_content.replace("<!channel>", "@channel")
