@@ -1,7 +1,8 @@
+from collections.abc import Coroutine
 from servicemodules.serviceConstants import Services
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional
 
 @dataclass
 class ServiceRole:
@@ -83,6 +84,7 @@ class ServiceChannel:
     id: str
     server: Optional[ServiceServer]
     _channel: object = field(default=None, init=False)
+    send: Optional[Coroutine[Any, Any, Any]] = field(default=None, init=False)
 
     def __repr__(self):
         return f"ServiceChannel({self.id})"
@@ -102,9 +104,6 @@ class ServiceChannel:
         The hash was added around self.id to handle alphanumerics.
         """
         return hash(self.id) >> 22
-
-    async def send(self, content):
-        raise NotImplementedError()
 
 
 @dataclass

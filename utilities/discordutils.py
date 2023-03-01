@@ -1,3 +1,4 @@
+from collections.abc import Coroutine
 from servicemodules.serviceConstants import Services
 from utilities.serviceutils import (
     ServiceChannel,
@@ -6,7 +7,7 @@ from utilities.serviceutils import (
     ServiceServer,
     ServiceUser,
 )
-from typing import Optional
+from typing import Any, Optional
 import discord
 
 
@@ -35,10 +36,10 @@ class DiscordChannel(ServiceChannel):
         super().__init__(name, str(channel.id), server)
 
         # Bring over functions
-        self.send = channel.send
+        self.send: Coroutine[Any, Any, discord.message.Message] = channel.send
 
     @property
-    def guild(self) -> ServiceServer:
+    def guild(self) -> Optional[ServiceServer]:
         """
         Alias for server for discord message compatibility.
         """
@@ -49,6 +50,7 @@ class DiscordMessage(ServiceMessage):
     def __init__(self, msg: discord.message.Message):
         self._message = msg
         author = DiscordUser(msg.author)
+        guild: Optional[ServiceServer]
         if msg.guild:
             guild = ServiceServer(msg.guild.name, str(msg.guild.id))
         else:
