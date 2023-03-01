@@ -235,11 +235,9 @@ class Questions(Module):
             return Response(
                 confidence=8,
                 text="There is no last question ;/",
-                why=dedent(
-                    f"""\
-                    {message.author.name} asked me for last question but I 
-                    haven't been asked for (or posted) any questions since I've been started"""
-                ),
+                why=
+                    f"{message.author.name} asked me for last question but I haven't been asked for (or posted) any questions since I've been started"
+                ,
             )
         questions = self.get_questions_df()
         msg = f"Here it is ({query.info()}):\n\n"
@@ -271,9 +269,7 @@ class Questions(Module):
                 confidence=8,
                 text='What do you mean by "it"?',
                 why=dedent(
-                    f"""\
-                    {message.author.name} asked me to set last question's status 
-                    to {query.status} but I haven't posted any questions yet"""
+                    f"{message.author.name} asked me to set last question's status to {query.status} but I haven't posted any questions yet"
                 ),
             )
 
@@ -283,11 +279,7 @@ class Questions(Module):
             return Response(
                 confidence=8,
                 text=f'I couldn\'t find a question with id "{query.id}"',
-                why=dedent(
-                    f"""\
-                    {message.author.name} asked me to set the status of question 
-                    with id "{query.id}" to "{query.status}" but I couldn't find it"""
-                ),
+                why=f'{message.author.name} asked me to set the status of question with id "{query.id}" to "{query.status}" but I couldn\'t find it',
             )
 
         self.last_question_id = query.id
@@ -301,10 +293,7 @@ class Questions(Module):
 
         response_msg = self.update_question_status(query, question_row, message)
         why = dedent(
-            f"""\
-            {message.author.name} asked me to set the status of question
-            with id "{query.id}" to "{query.status}"
-            """
+            f'{message.author.name} asked me to set the status of question with id "{query.id}" to "{query.status}"'
         )
         return Response(confidence=8, text=response_msg, why=why)
 
@@ -798,7 +787,7 @@ def parse_gdoc_link(text: str) -> Optional[str]:
     Returns `None` if message doesn't contain GDoc link.
     """
     match = re.search(
-        r"https://docs\.google\.com/document/d/.+(?=\b)", text, re.I | re.S
+        r"https://docs\.google\.com/document/d/[^\s\b]+", text, re.I | re.S
     )
     if match:
         return match.group()
@@ -831,23 +820,18 @@ def unauthorized_set_los(
     if query.status == "Live on site":
         response_msg = dedent(
             f"""\
-            Sorry, {message.author.name}. 
-            You can't set this question's status to `Live on site` 
-            because you are not a `@reviewer`. 
+            Sorry, {message.author.name}. You can't set this question's status to `Live on site` because you are not a `@reviewer`. 
             Only `@reviewer`s can change question status to `Live on site`."""
         )
         why = dedent(
-            f"""\
-            {message.author.name} wanted to change status to `Live on site` 
-            but they're not a @reviewer"""
+            f"{message.author.name} wanted to change status to `Live on site` but they're not a @reviewer"
         )
     else:  # question_row["status"] == "Live on site":
         response_msg = dedent(
             f"""\
-            Sorry, {message.author.name}. You can't set this question's status 
-            to `{query.status}` because its current status is `Live on site` and you are not
-            a `@reviewer`. Only `@reviewer`s can change status of questions that are already
-            `Live on site`."""
+            Sorry, {message.author.name}. You can't set this question's status  to `{query.status}` because its current status is `Live on site` and you are not
+            a `@reviewer`. 
+            Only `@reviewer`s can change status of questions that are already `Live on site`."""
         )
         why = f"{message.author.name} wanted to change status from `Live on site` but they're not a @reviewer"
     return Response(confidence=8, text=response_msg, why=why)
