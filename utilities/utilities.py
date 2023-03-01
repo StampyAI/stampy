@@ -9,6 +9,7 @@ from config import (
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
 )
+from servicemoudles.serviceConstants import Services
 from servicemodules.discordConstants import stampy_error_log_channel_id, wiki_feed_channel_id
 from database.database import Database
 from datetime import datetime, timezone, timedelta
@@ -18,9 +19,9 @@ from googleapiclient.discovery import build as get_youtube_api
 from googleapiclient.errors import HttpError
 from structlog import get_logger
 from time import time
+from typing import TYPE_CHECKING, Optional
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage
-from typing import List
 import discord
 import json
 import os
@@ -29,6 +30,10 @@ import random
 import re
 import sys
 import traceback
+
+if TYPE_CHECKING:
+    from modules.module import Module
+    import discord as discord_real
 
 # Sadly some of us run windows...
 if os.name != "nt":
@@ -47,7 +52,7 @@ class Utilities:
     __instance = None
     db = None
     discord = None
-    client = None
+    client: Optional["discord_real.client.Client"] = None
     discord_user = None
     stop = None
 
@@ -70,8 +75,8 @@ class Utilities:
     index = None
     scores = None
 
-    modules_dict = {}
-    service_modules_dict = {}
+    modules_dict: dict[str, "Module"] = {}
+    service_modules_dict: dict[str, Services] = {}
 
     @staticmethod
     def get_instance() -> "Utilities":
@@ -166,6 +171,8 @@ class Utilities:
         return self.is_stampy(message.author)
 
     def is_stampy(self, user: DiscordUser) -> bool:
+        if not self.client or not self.client.user:
+            return False
         if user.id == wiki_feed_channel_id:  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
             return True
         if self.discord_user:
@@ -486,7 +493,7 @@ class Utilities:
 
     @staticmethod
     def split_message_for_discord(msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit) \
-            -> List[str]:
+            -> list[str]:
         """Splitting a message in chunks of maximum 2000, so that the end of each chunk is a newline if possible.
         We can do this greedily, and if a solution exists. """
         msg_len = len(msg)

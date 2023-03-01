@@ -7,7 +7,7 @@ from utilities.serviceutils import (
     ServiceServer,
     ServiceUser,
 )
-from typing import Any, no_type_check, Optional 
+from typing import Any, Optional, Union
 import discord
 
 
@@ -27,13 +27,17 @@ class DiscordUser(ServiceUser):
 
 class DiscordChannel(ServiceChannel):
     def __init__(self, channel: discord.abc.Messageable, server: Optional[ServiceServer]):
-        self._channel = channel
+        self._channel: discord.abc.Messageable = channel
         self.history = channel.history
-        if not isinstance(channel, discord.DMChannel):
+        if not isinstance(channel, discord.abc.Messageable):
+            channel_id = channel.id
+        else:
+            channel_id = 0
+        if not isinstance(channel, discord.DMChannel) and not isinstance(channel, discord.abc.Messageable):
             name = channel.name
         else:
-            name = None
-        super().__init__(name, str(channel.id), server)
+            name = ""
+        super().__init__(name, str(channel_id), server)
 
     @property
     def guild(self) -> Optional[ServiceServer]:
@@ -42,10 +46,6 @@ class DiscordChannel(ServiceChannel):
         """
         return self.server
 
-    """
-    Have to put no type check for now.  discord-py is not typed so discord.abc.Messageable is type(object)
-    """
-    @no_type_check
     async def send(self, *args, **kwargs) -> discord.message.Message:
         return await self._channel.send(*args, **kwargs)
 
@@ -64,12 +64,17 @@ class DiscordMessage(ServiceMessage):
 
         super().__init__(str(msg.id), msg.content, author, channel, service)
         self.clean_content = msg.clean_content.replace("\u200b", "")
+        self.mentions: list[DiscordUser]
         self._parse_discord_mentions(msg.mentions)
-        self.reference = msg.reference
+        self.reference = None
+        if msg.reference:
+            if msg.reference.resolved:
+                self.reference = DiscordMessage(msg.reference.resolved) if isinstance(msg.reference.resolved, discord.message.Message) else None
         self.reactions = msg.reactions  # We need reactions for recalculating stamps from history
+        self.author: DiscordUser
         if guild is None:
             self.is_dm = True
 
-    def _parse_discord_mentions(self, mentions: list[discord.abc.User]):
+    def _parse_discord_mentions(self, mentions: list[Union[discord.user.User, discord.Member]]):
         for user in mentions:
             self.mentions.append(DiscordUser(user))

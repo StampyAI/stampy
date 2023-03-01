@@ -136,7 +136,7 @@ class SlackMessage(ServiceMessage):
             id = msg["client_msg_id"]
         super().__init__(str(id), msg["text"], SlackUser(msg["user"]), channel, service)
         self.author: SlackUser
-        self.mentions: list[SlackUser]
+        self.mentions: list[SlackUser] = []
         self._parse_mentions()
         self.clean_content = self.clean_content.replace("<!here>", "@here")
         self.clean_content = self.clean_content.replace("<!channel>", "@channel")
