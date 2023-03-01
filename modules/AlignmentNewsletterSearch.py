@@ -213,6 +213,15 @@ class AlignmentNewsletterSearch(Module):
 
     def __str__(self):
         return "Alignment Newsletter Search"
+    
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="paper search bugs features",
+                expected_regex=r"This seems relevant:\n.?Adversarial Examples Are Not Bugs, They Are Features"
+            ),
+        ]
 
 
 if __name__ == "__main__":
