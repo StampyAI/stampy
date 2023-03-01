@@ -121,7 +121,6 @@ class Questions(Module):
         self, message: ServiceMessage
     ) -> Optional[SetQuestionQuery]:
         """Is this message a response to review request?"""
-        # breakpoint()
         if (msg_ref := message.reference) is None:
             return
         if (
@@ -284,7 +283,6 @@ class Questions(Module):
                 ),
             )
 
-        
         question_row = self.get_question_by_id(cast(str, query.id))
         # if couldn't find question
         if question_row is None:
@@ -306,7 +304,7 @@ class Questions(Module):
             response := unauthorized_set_los(query, question_row, message)
         ) and query.type != "review-request-approved":
             return response
-        
+
         response_msg = self.update_question_status(query, question_row, message)
         why = dedent(
             f"""\
@@ -809,7 +807,7 @@ def parse_gdoc_link(text: str) -> Optional[str]:
     Returns `None` if message doesn't contain GDoc link.
     """
     match = re.search(
-        r"https://docs\.google\.com/document/d/.+(?=\b)", text, re.I | re.S
+        r"https://docs\.google\.com/document/d/[^\s\b]+", text, re.I | re.S
     )
     if match:
         return match.group()
