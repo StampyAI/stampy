@@ -77,7 +77,7 @@ class Utilities:
     
     # Coda
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    DOC_ID = "fau7sl2hmG"
+    DOC_ID = "ah62XEPvpG" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
     ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
