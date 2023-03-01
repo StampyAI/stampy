@@ -84,7 +84,6 @@ class ServiceChannel:
     id: str
     server: Optional[ServiceServer]
     _channel: object = field(default=None, init=False)
-    send: Optional[Coroutine[Any, Any, Any]] = field(default=None, init=False)
 
     def __repr__(self):
         return f"ServiceChannel({self.id})"
@@ -104,6 +103,8 @@ class ServiceChannel:
         The hash was added around self.id to handle alphanumerics.
         """
         return hash(self.id) >> 22
+
+    async def send(self, *args, **kwargs) -> Any: ...
 
 
 @dataclass

@@ -1,3 +1,4 @@
+from collections.abc import Coroutine
 from functools import cache
 from servicemodules.serviceConstants import Services
 from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
@@ -114,7 +115,8 @@ class SlackChannel(ServiceChannel):
         super().__init__(name, channel_id, server)
         self.channel_type = channel_type
 
-    async def send(self, data: str):
+    async def send(self, *args, **kwargs) -> None:
+        data = kwargs["data"] if "data" in kwargs else args[0]
         utils.client.web_client.api_call(
             api_method="chat.postMessage", params={"channel": self.id, "text": data}
         )

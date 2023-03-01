@@ -7,7 +7,7 @@ from utilities.serviceutils import (
     ServiceServer,
     ServiceUser,
 )
-from typing import Any, Optional
+from typing import Any, no_type_check, Optional 
 import discord
 
 
@@ -35,15 +35,19 @@ class DiscordChannel(ServiceChannel):
             name = None
         super().__init__(name, str(channel.id), server)
 
-        # Bring over functions
-        self.send: Coroutine[Any, Any, discord.message.Message] = channel.send
-
     @property
     def guild(self) -> Optional[ServiceServer]:
         """
         Alias for server for discord message compatibility.
         """
         return self.server
+
+    """
+    Have to put no type check for now.  discord-py is not typed so discord.abc.Messageable is type(object)
+    """
+    @no_type_check
+    async def send(self, *args, **kwargs) -> discord.message.Message:
+        return await self._channel.send(*args, **kwargs)
 
 
 class DiscordMessage(ServiceMessage):
