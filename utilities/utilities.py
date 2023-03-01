@@ -53,7 +53,7 @@ class Utilities:
     __instance = None
     db = None
     discord = None
-    client = None
+    # client = None
     discord_user = None
     stop = None
     youtube = None

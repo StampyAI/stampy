@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
+import os
 from pprint import pformat
 import random
 import re
@@ -10,11 +11,13 @@ from textwrap import dedent
 from typing import Any, Literal, Optional, TypedDict, cast
 
 from dotenv import load_dotenv
+from discord.threads import Thread
 import pandas as pd
 import requests
 from structlog import get_logger
 from typing_extensions import Self
 
+from servicemodules.discordConstants import stampy_dev_priv_channel_id
 from modules.module import Module, Response
 from utilities import Utilities
 from utilities.serviceutils import ServiceMessage
@@ -29,10 +32,25 @@ class Questions(Module):
     [All Answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
     """
 
+    # ids
+    DOC = "fau7sl2hmG"
+    ALL_ANSWERS_TABLE = "table-YvPEyAXl8a"
+    STATUSES_TABLE = "grid-IWDInbu5n2"
+
+    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
+    AUTOPOST_QUESTION_INTERVAL = timedelta(hours=6)
+
     def __init__(self) -> None:
         super().__init__()
         self.last_question_id: Optional[str] = None
         self.review_msg_id2question_id: dict[str, str] = {}
+        self.last_question_posted: dt = dt.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
+
+        # Register 
+        @self.utils.client.event
+        async def on_socket_event_type(event_type) -> None:
+            if self.last_question_posted < dt.now() - self.AUTOPOST_QUESTION_INTERVAL:
+                await self.post_random_oldest_question(event_type)
 
     #########################################
     # Core: processing and posting messages #
@@ -40,6 +58,8 @@ class Questions(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
+        if "lm" in message.clean_content:
+            breakpoint()
         # this one option is before `.is_at_me`
         # because it doesn't require calling Stampy explicitly
         if query := self.is_review_request(message):
@@ -87,7 +107,9 @@ class Questions(Module):
                 args=[query, message],
                 why=f"I was asked to set status of question `{query.id}` to `{query.status}`",
             )
-        return Response(why="Left QuestionManager without matching to any query")
+        return Response(
+            why="Left QuestionManager without matching to any possible response"
+        )
 
     ##################
     # Review request #
@@ -158,7 +180,8 @@ class Questions(Module):
         msg = query.next_result_info(len(questions))
         if not questions.empty:
             msg += "\n\n" + "\n---\n".join(
-                make_post_question_message(r) for _, r in questions.iterrows()
+                make_post_question_message(cast(ParsedRow, r.to_dict()))
+                for _, r in questions.iterrows()
             )
 
         # if there is only one question, remember that one
@@ -169,6 +192,8 @@ class Questions(Module):
         current_time = dt.now().isoformat()
         for question_id in questions["id"].tolist():
             self.update_question_last_asked_date(question_id, current_time)
+
+        self.last_question_posted = dt.now()
 
         return Response(
             confidence=8,
@@ -190,14 +215,24 @@ class Questions(Module):
         # req.raise_for_status() # Throw if there was an error.
         log.info("Updated question with id %s to time %s", row_id, current_time)
 
-    def reset_dates(self) -> None:
-        """Reset all questions' dates (util, not to be used by Stampy)"""
-        questions = self.get_questions_df()
-        questions_with_dt_ids = questions[
-            questions["last_asked_on_discord"] != DEFAULT_DATE
-        ]["id"].tolist()
-        for question_id in questions_with_dt_ids:
-            self.update_question_last_asked_date(question_id, "")
+    async def post_random_oldest_question(self, event_type) -> None:
+        channel = cast(
+            Thread, self.utils.client.get_channel(int(stampy_dev_priv_channel_id))
+        )
+        if channel is None:
+            return
+        q = cast(
+            ParsedRow,
+            get_least_recently_asked_on_discord(self.get_questions_df())
+            .iloc[0]
+            .to_dict(),
+        )
+        self.last_question_id = q["id"]
+        self.last_question_posted = dt.now()
+        self.update_question_last_asked_date(q["id"], dt.now().isoformat())
+        msg = make_post_question_message(q)
+        self.log.info(f"Reacting because of {event_type}")
+        await channel.send(msg)
 
     ###################
     # Count questions #
@@ -454,6 +489,15 @@ class Questions(Module):
     def __str__(self):
         return "Question Manager module"
 
+    def reset_dates(self) -> None:
+        """Reset all questions' dates (util, not to be used by Stampy)"""
+        questions = self.get_questions_df()
+        questions_with_dt_ids = questions[
+            questions["last_asked_on_discord"] != DEFAULT_DATE
+        ]["id"].tolist()
+        for question_id in questions_with_dt_ids:
+            self.update_question_last_asked_date(question_id, "")
+
 
 class ParsedRow(TypedDict):
     """Dict representing one row parsed from coda "All Answers" table"""
@@ -531,11 +575,10 @@ class PostOrCountQuestionQuery:
     def parse_max_num_of_questions(text: str) -> int:
         re_pre = re.compile(r"(\d{1,2})\sq(?:uestions?)?", re.I)
         re_post = re.compile(r"n\s?=\s?(\d{1,2})", re.I)
-        if (match := re_pre.search(text)) or (match := re_post.search(text)):
-            try:
-                return int(match.group(1))
-            except ValueError as exc:
-                log.error(exc)
+        if (match := (re_pre.search(text) or re_post.search(text))) and (
+            num := match.group(1)
+        ).isdigit():
+            return int(num)
         return 1
 
     ################################
@@ -733,7 +776,7 @@ def get_least_recently_asked_on_discord(
     return questions.query("last_asked_on_discord == @oldest_date")
 
 
-def make_post_question_message(question_row: pd.Series) -> str:
+def make_post_question_message(question_row: ParsedRow) -> str:
     """Make question message from questions DataFrame row
 
     <title>\n
