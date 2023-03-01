@@ -9,7 +9,7 @@ from config import (
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
 )
-from servicemoudles.serviceConstants import Services
+from servicemodules.serviceConstants import Services
 from servicemodules.discordConstants import stampy_error_log_channel_id, wiki_feed_channel_id
 from database.database import Database
 from datetime import datetime, timezone, timedelta
@@ -76,7 +76,7 @@ class Utilities:
     scores = None
 
     modules_dict: dict[str, "Module"] = {}
-    service_modules_dict: dict[str, Services] = {}
+    service_modules_dict: dict[Services, object] = {}
 
     @staticmethod
     def get_instance() -> "Utilities":
