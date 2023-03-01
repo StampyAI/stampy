@@ -787,7 +787,7 @@ def parse_gdoc_link(text: str) -> Optional[str]:
     Returns `None` if message doesn't contain GDoc link.
     """
     match = re.search(
-        r"https://docs\.google\.com/document/d/[^\s\b]+", text, re.I | re.S
+        r"https://docs\.google\.com/document/d/[\w_-]+", text
     )
     if match:
         return match.group()
