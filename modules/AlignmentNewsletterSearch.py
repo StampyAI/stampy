@@ -333,6 +333,6 @@ class AlignmentNewsletterSearch(Module):
 
 if __name__ == "__main__":
     module = AlignmentNewsletterSearch()
-    module.load_items()
+    items = module.load_items()
     log = get_logger()
-    log.info(module.class_name, an_search_items=module.items[0])
+    log.info(module.class_name, an_search_items=items[0])
