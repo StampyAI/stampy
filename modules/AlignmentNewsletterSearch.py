@@ -36,7 +36,7 @@ class Item:
         self.score = 0
 
     def __repr__(self):
-        return '<Item: %f "%s" %d>' % (self.score, self.title, len(self.summary))
+        return f'Item(score={self.score}, title="{self.title}", summary_length={len(self.summary)})'
 
     def __str__(self):
         return self.__repr__()
@@ -296,18 +296,14 @@ class AlignmentNewsletterSearch(Module):
     def convert_items_to_string(items: list[Item]) -> str:
         """Convert a list of items to a string that can be sent as a reply."""
         item = items[0]
-        item_description = "*%s*\n%s\n> %s" % (
-            item.title,
-            item.url,
-            item.summary[:1500],
-        )
+        item_description = f"*{item.title}*\n{item.url}\n> {item.summary[:1500]}"
 
         reply = "This seems relevant:\n" + item_description
 
         if len(items) > 1:
             reply += "\n\nIt could also be:\n"
             for item in items[1:MAX_NUM_ITEMS]:
-                reply += "- *%s*:\n  (<%s>)\n" % (item.title, item.url)
+                reply += f"- *{item.title}*:\n  (<{item.url}>)\n"
 
         if len(reply) >= 2000:
             reply = reply[:1995] + "...`"
