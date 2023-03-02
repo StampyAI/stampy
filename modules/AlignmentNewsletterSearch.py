@@ -51,6 +51,13 @@ class AlignmentNewsletterSearch(Module):
         super().__init__()
         self.class_name = self.__class__.__name__
 
+    def process_message(self, message: ServiceMessage) -> Response:
+        """Process a message and return a response if this module can handle it."""
+        text = self.is_at_me(message)
+        
+        if text is False:
+            return Response()
+        
         # create regex for determining if message should be answered by this module.
         # examples that match:
         # What paper is that blah blah blah
@@ -65,7 +72,7 @@ class AlignmentNewsletterSearch(Module):
         )
         question3 = noun + " [Ss]earch"
 
-        self.re_search = re.compile(
+        pattern = (
             "("
             + question1
             + "|"
@@ -76,14 +83,7 @@ class AlignmentNewsletterSearch(Module):
             + r".? (?P<query>.+)"
         )
 
-    def process_message(self, message: ServiceMessage) -> Response:
-        """Process a message and return a response if this module can handle it."""
-        text = self.is_at_me(message)
-        
-        if text is False:
-            return Response()
-
-        match = re.match(self.re_search, text)
+        match = re.match(pattern, text)
 
         if not match:
             return Response()
