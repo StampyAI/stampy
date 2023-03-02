@@ -61,9 +61,8 @@ class ChatGPTModule(Module):
         self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
 
         self.message_logs[message.channel].append(message)
-        self.message_logs[message.channel] = self.message_logs[message.channel][
-            -self.log_max_messages :
-        ]
+        self.message_logs[message.channel] = \
+            self.message_logs[message.channel][-self.log_max_messages:]
 
     def generate_messages_list(self, channel):
         messages = []
@@ -126,7 +125,7 @@ class ChatGPTModule(Module):
 
                 self.log.info(self.class_name, response=response)
 
-                if response != "":
+                if response:
                     return Response(
                         confidence=10,
                         text=f"{im}{response}{im}",
