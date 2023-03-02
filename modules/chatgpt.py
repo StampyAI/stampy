@@ -91,7 +91,7 @@ class ChatGPTModule(Module):
             0,
             {
                 "role": "system",
-                "content": "You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be disrespectful or unhelpful to them.",
+                "content": "You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them.",
             },
         )
 
@@ -119,8 +119,8 @@ class ChatGPTModule(Module):
             if chatcompletion.choices:
                 response = chatcompletion.choices[0].message.content
 
-                # sometimes the response starts with "Stampy says" or responds or replies etc, which we don't want
-                response = re.sub(r"^([sS]tampy says:|[sS]tampy re\w{0,10}:)\s?", "", response)
+                # sometimes the response starts with "Stampy says:" or responds or replies etc, which we don't want
+                response = re.sub(r"^[sS]tampy\ ?[a-zA-Z]{,15}:\s?", "", response)
 
                 self.log.info(self.class_name, response=response)
 
