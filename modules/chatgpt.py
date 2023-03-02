@@ -1,4 +1,3 @@
-from api.gooseai import GooseAI
 from api.openai import OpenAI
 from config import (
     CONFUSED_RESPONSE,
