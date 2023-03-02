@@ -33,7 +33,7 @@ class Item:
         self.summary = ""
         self.opinion = ""
 
-        self.score = 0
+        self.score = 0.0
 
     def __repr__(self):
         return f'Item(score={self.score}, title="{self.title}", summary_length={len(self.summary)})'
@@ -251,13 +251,13 @@ class AlignmentNewsletterSearch(Module):
         for item in items:
             for keyword in keywords:
                 item.score += (
-                    1.0 * item.title.lower().count(keyword) / (len(item.title) + 1)
+                    item.title.lower().count(keyword) / (len(item.title) + 1)
                 )
                 item.score += (
-                    1.0 * item.authors.lower().count(keyword) / (len(item.authors) + 1)
+                    item.authors.lower().count(keyword) / (len(item.authors) + 1)
                 )
                 item.score += (
-                    1.0 * item.summary.lower().count(keyword) / (len(item.summary) + 1)
+                    item.summary.lower().count(keyword) / (len(item.summary) + 1)
                 )
 
             if item.is_highlight:
