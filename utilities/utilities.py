@@ -540,14 +540,14 @@ class Utilities:
         uri = (
             f"https://coda.io/apis/v1/docs/fau7sl2hmG/tables/{self.TEAM_GRID_ID}/rows"
         )
-        resp = requests.get(
+        response = requests.get(
             uri,
             params={"valueFormat": "simple", "useColumnNames": True},
             headers=self.get_coda_auth_headers(),
             timeout=10
         )
-        resp.raise_for_status()
-        return [item["values"] for item in resp.json()["items"]]
+        response.raise_for_status()
+        return [item["values"] for item in response.json()["items"]]
 
 
 
