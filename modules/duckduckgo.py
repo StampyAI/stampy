@@ -2,6 +2,7 @@ import re
 import json
 import urllib
 from modules.module import Module, Response
+from utilities.serviceutils import ServiceMessage
 
 
 class DuckDuckGo(Module):
@@ -9,25 +10,26 @@ class DuckDuckGo(Module):
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
     words = re.compile('[A-Za-z]+')
 
-    def process_message(self, message):
+    def process_message(self, message: ServiceMessage) -> Response:
+        """Process message and return a response if this module can handle it."""
         text = self.is_at_me(message)
-        if text:
-            if text.endswith("?"):
-                return Response(
-                    confidence=6,
-                    callback=self.ask,
-                    args=[text],
-                    why="It's a question, we might be able to answer it",
-                )
-            else:
-                return Response(
-                    confidence=2,
-                    callback=self.ask,
-                    args=[text],
-                    why="It's not a question but we might be able to look it up",
-                )
-        else:
+        if text is False:
             return Response()
+        
+        if text.endswith("?"):
+            return Response(
+                confidence=6,
+                callback=self.ask,
+                args=[text],
+                why="It's a question, we might be able to answer it",
+            )
+        else:
+            return Response(
+                confidence=2,
+                callback=self.ask,
+                args=[text],
+                why="It's not a question but we might be able to look it up",
+            )
 
     def __str__(self):
         return "DuckDuckGo"
@@ -45,10 +47,16 @@ class DuckDuckGo(Module):
         else:
             return max_confidence
 
-    def ask(self, question):
+    def ask(self, question: str) -> Response:
+        """Ask DuckDuckGo a question and return a response."""
+
+        # strip out question mark and common 'question phrases', e.g. 'who are',
+        # 'what is', 'tell me about'
         q = question.lower().strip().strip("?")
         q = re.sub(r"w(hat|ho)('s|'re| is| are| was| were) ?", "", q)
-        q = re.sub(r"(what do you know||(what )?(can you)? ?tell me) about", "", q)
+        q = re.sub(r"(what do you know|(what )?(can you)? ?tell me) about", "", q)
+
+        # create url which searches DuckDuckGo for the question
         url = (
             "https://api.duckduckgo.com/?q=%s&format=json&nohtml=1&skip_disambig=1"
             % urllib.parse.quote_plus(q)
