@@ -29,6 +29,7 @@ class Item:
     Most of the attributes are just the columns from the database.
     self.score will show much the item matches a query.
     """
+
     category: str
     is_highlight: bool
     url: str
@@ -41,12 +42,12 @@ class Item:
     @classmethod
     def parse(cls, row) -> Item | None:
         """Parse a row from the google sheets database into an Item object.
-        
+
         Parameters
         ----------
         row : some kind of lxml etree object
             see AlignmentNewsletterSearch.load_items() for where row comes from
-        
+
         Returns
         -------
         Item | None
@@ -68,7 +69,7 @@ class Item:
             return None
 
         # ../ means it doesn't have to be the immediate child
-        atag = row[3].find(".//a")  
+        atag = row[3].find(".//a")
         if atag is not None:
             title = atag.text or ""
             url = atag.attrib["href"] or ""
@@ -114,10 +115,10 @@ class AlignmentNewsletterSearch(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         """Process a message and return a response if this module can handle it."""
         text = self.is_at_me(message)
-        
+
         if text is False:
             return Response()
-        
+
         # create regex for determining if message should be answered by this module.
         # examples that match:
         # What paper is that blah blah blah
@@ -147,7 +148,7 @@ class AlignmentNewsletterSearch(Module):
 
         if not match:
             return Response()
-        
+
         query = match.group("query")
         return Response(
             confidence=9, callback=self.process_search_request, args=[query]
@@ -155,7 +156,7 @@ class AlignmentNewsletterSearch(Module):
 
     async def process_search_request(self, query) -> Response:
         """Search for relevant items for the query.
-        
+
         First we load all items from the Alignment Newsletter database.
         Then we sort the items by relevance to the query.
         Finally we return the most relevant items, if any.
@@ -219,7 +220,7 @@ class AlignmentNewsletterSearch(Module):
             item = Item.parse(row)
             if item is not None:
                 items.append(item)
-        
+
         return items
 
     @staticmethod
@@ -245,7 +246,7 @@ class AlignmentNewsletterSearch(Module):
         self, items: list[Item], query: str, reverse: bool = False
     ) -> list[Item]:
         """Sort items by calculating how relevant each item is to the query.
-        
+
         Parameters
         ----------
         items : list[Item]
@@ -254,7 +255,7 @@ class AlignmentNewsletterSearch(Module):
             The query from user.
         reverse : bool, optional
             Whether to sort in descending order, by default False
-        
+
         Returns
         -------
         list[Item]
@@ -267,14 +268,12 @@ class AlignmentNewsletterSearch(Module):
 
         for item in items:
             for keyword in keywords:
-                item.score += (
-                    item.title.lower().count(keyword) / (len(item.title) + 1)
+                item.score += item.title.lower().count(keyword) / (len(item.title) + 1)
+                item.score += item.authors.lower().count(keyword) / (
+                    len(item.authors) + 1
                 )
-                item.score += (
-                    item.authors.lower().count(keyword) / (len(item.authors) + 1)
-                )
-                item.score += (
-                    item.summary.lower().count(keyword) / (len(item.summary) + 1)
+                item.score += item.summary.lower().count(keyword) / (
+                    len(item.summary) + 1
                 )
 
             if item.is_highlight:
@@ -284,11 +283,11 @@ class AlignmentNewsletterSearch(Module):
 
     def get_most_relevant_items(self, items_sorted: list[Item]) -> list[Item]:
         """Get the most relevant items.
-        
+
         Parameters
         ----------
         items_sorted : list[Item]
-        
+
         Returns
         -------
         list[Item]
