@@ -1,4 +1,6 @@
+from __future__ import annotations
 import re
+from dataclasses import dataclass
 import zipfile
 import requests
 from io import BytesIO
@@ -16,24 +18,82 @@ HIGHLIGHT_WEIGHT = 1.5
 # maximum number of items to return in the response
 MAX_NUM_ITEMS = 5
 
+# regex for pulling the first markdown link, with its title and url.
+RE_MARKDOWN_LINK = re.compile(rb"""\[(?P<title>[^\]]+)\]\((?P<url>[^\)]+)\)""")
 
+
+@dataclass
 class Item:
     """Class to hold a single row from the google sheets database.
 
     Most of the attributes are just the columns from the database.
-    self.score will show much the item matches the query.
+    self.score will show much the item matches a query.
     """
+    category: str
+    is_highlight: bool
+    url: str
+    title: str
+    authors: str
+    summary: str
+    opinion: str
+    score: float = 0.0
 
-    def __init__(self):
-        self.category = ""
-        self.is_highlight = False
-        self.url = ""
-        self.title = ""
-        self.authors = ""
-        self.summary = ""
-        self.opinion = ""
+    @classmethod
+    def parse(cls, row) -> Item | None:
+        """Parse a row from the google sheets database into an Item object.
+        
+        Parameters
+        ----------
+        row : some kind of lxml etree object
+            see AlignmentNewsletterSearch.load_items() for where row comes from
+        
+        Returns
+        -------
+        Item | None
+            If the row is valid, return an Item object.
+            If the row is invalid, return None.
+        """
+        # TODO - Any kind of error checking and handling
 
-        self.score = 0.0
+        # column 1 is the category
+        category = row[1].text or ""
+
+        # column 2 contains "highlight" if the item is a highlight
+        is_highlight = bool(row[2].text)
+
+        # column 3 is the title, which is also a link to the paper/post
+        # so we fill 2 fields from this 1 column
+        title_field_text = etree.tostring(row[3], method="text", encoding="UTF-8")
+        if not title_field_text:
+            return None
+
+        # ../ means it doesn't have to be the immediate child
+        atag = row[3].find(".//a")  
+        if atag is not None:
+            title = atag.text or ""
+            url = atag.attrib["href"] or ""
+        else:
+            # no A tag, maybe a markdown link?
+            match_object = RE_MARKDOWN_LINK.match(title_field_text)
+            if match_object:
+                title = match_object["title"].decode("utf-8") or ""
+                url = match_object["url"].decode("utf-8") or ""
+            else:
+                return None
+
+        authors = (
+            etree.tostring(row[4], method="text", encoding="UTF-8").decode("utf-8")
+            or ""
+        )
+        summary = (
+            etree.tostring(row[9], method="text", encoding="UTF-8").decode("utf-8")
+            or ""
+        )
+        opinion = (
+            etree.tostring(row[10], method="text", encoding="UTF-8").decode("utf-8")
+            or ""
+        )
+        return cls(category, is_highlight, url, title, authors, summary, opinion)
 
     def __repr__(self):
         return f'Item(score={self.score}, title="{self.title}", summary_length={len(self.summary)})'
@@ -135,13 +195,8 @@ class AlignmentNewsletterSearch(Module):
         Returns
         --------------
         items : list[Item]
-            Each item is a row from the google sheets database.
+            Each item is a parsed row from the google sheets database.
         """
-        # TODO - Any kind of error checking and handling
-
-        # regex for pulling the first markdown link, with its title and url
-        re_markdown_link = re.compile(rb"""\[(?P<title>[^\]]+)\]\((?P<url>[^\)]+)\)""")
-
         # download the sheet as zipped html from the google sheets API.
         response = requests.get(SPREADSHEET_URL)
 
@@ -161,47 +216,9 @@ class AlignmentNewsletterSearch(Module):
 
         items: list[Item] = []
         for row in rows:
-            item = Item()
-
-            item.category = row[1].text or ""
-
-            # column 2 contains "highlight" if the item is a highlight
-            item.is_highlight = bool(row[2].text)
-
-            # column 3 is the title, which is also a link to the paper/post
-            # so we fill 2 fields from this 1 column
-            title_field_text = etree.tostring(row[3], method="text", encoding="UTF-8")
-            if not title_field_text:
-                continue
-
-            atag = row[3].find(
-                ".//a"
-            )  # ../ means it doesn't have to be the immediate child
-            if atag is not None:
-                item.title = atag.text or ""
-                item.url = atag.attrib["href"] or ""
-            else:  # no A tag, maybe a markdown link?
-                match_object = re.search(re_markdown_link, title_field_text)
-                if match_object:
-                    item.title = match_object["title"].decode("utf-8") or ""
-                    item.url = match_object["url"].decode("utf-8") or ""
-                else:
-                    continue
-
-            item.authors = (
-                etree.tostring(row[4], method="text", encoding="UTF-8").decode("utf-8")
-                or ""
-            )
-            item.summary = (
-                etree.tostring(row[9], method="text", encoding="UTF-8").decode("utf-8")
-                or ""
-            )
-            item.opinion = (
-                etree.tostring(row[10], method="text", encoding="UTF-8").decode("utf-8")
-                or ""
-            )
-
-            items.append(item)
+            item = Item.parse(row)
+            if item is not None:
+                items.append(item)
         
         return items
 
