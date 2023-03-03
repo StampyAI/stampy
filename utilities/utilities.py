@@ -553,7 +553,7 @@ class Utilities:
 
 
 
-def get_github_info():
+def get_github_info() -> str:
     message = (
         "\nThe latest commit was by %(actor)s."
         + "\nThe commit message was '%(git_message)s'."
