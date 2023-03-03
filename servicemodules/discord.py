@@ -107,7 +107,7 @@ class DiscordHandler:
                 except Exception as e:
                     why_traceback.append(f"There was a(n) {e} asking the {module} module!")
                     log.error(class_name, error=f"Caught error in {module} module!")
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception_async(e)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
 
@@ -146,6 +146,7 @@ class DiscordHandler:
                 try:
                     if top_response.callback:
                         log.info(class_name, msg="Top response is a callback. Calling it")
+
                         why_traceback.append(f"That response was a callback, so I called it.")
                         
                         # Callbacks can take a while to run, so we tell discord to say "Stampy is typing..."
@@ -199,9 +200,10 @@ class DiscordHandler:
                         sys.stdout.flush()
                         return
                 except Exception as e:
+                    log.error(e)
                     why_traceback.append(f"There was a(n) {e} trying to send or callback the top response!")
                     log.error(class_name, error=f"Caught error {e}!")
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception_async(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
@@ -258,7 +260,7 @@ class DiscordHandler:
                 try:
                     await module.process_raw_reaction_event(payload)
                 except Exception as e:
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception_async(e)
 
         @self.utils.client.event
         async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:
