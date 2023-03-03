@@ -515,7 +515,7 @@ class Utilities:
     # Coda utils #
     ##############
     
-    def get_coda_auth_headers(self) -> dict:
+    def get_coda_auth_headers(self) -> dict[str, str]:
         """Get authorization headers for coda requests"""
         return {"Authorization": f"Bearer {self.CODA_API_TOKEN}"}
     
