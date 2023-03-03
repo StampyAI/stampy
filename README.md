@@ -32,6 +32,7 @@ current version of stampy.
     * In the `#stampy-dev-priv` channel, go to pinned messages, and copy the message that starts with `DISCORD_TOKEN`
     * Create `.env` in the root of the stampy repository (so [dotenv](https://pypi.org/project/python-dotenv/) can find it)
     * Paste the message into `.env`
+    * Add coda api token to `.env`: first create a [coda account](https://coda.io/), then create a token in [account settings](https://coda.io/account), then add `CODA_API_TOKEN="your-token-here"` to `.env`
 1. Verify that your setup is working
     * Run `conda activate stampy`
     * Then run `python3 stam.py` or `python stam.py` from the base directory of the repository.
