@@ -520,6 +520,10 @@ class Utilities:
         return {"Authorization": f"Bearer {self.CODA_API_TOKEN}"}
     
     def get_user_row(self, query: str) -> Optional[dict]:
+        """Get user row from the users table using a query with the following form
+        
+        `"<column name>":"<value>"` 
+        """
         params = {
             "valueFormat": "simple",
             "useColumnNames": True,
@@ -538,7 +542,7 @@ class Utilities:
     
     def get_team_grid(self) -> list[dict]:
         uri = (
-            f"https://coda.io/apis/v1/docs/fau7sl2hmG/tables/{self.TEAM_GRID_ID}/rows"
+            f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
         )
         resp = requests.get(
             uri,
