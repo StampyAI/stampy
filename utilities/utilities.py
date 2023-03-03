@@ -9,7 +9,10 @@ from config import (
     TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
 )
-from servicemodules.discordConstants import stampy_error_log_channel_id, wiki_feed_channel_id
+from servicemodules.discordConstants import (
+    stampy_error_log_channel_id,
+    wiki_feed_channel_id,
+)
 from database.database import Database
 from datetime import datetime, timezone, timedelta
 from enum import Enum
@@ -39,10 +42,12 @@ log = get_logger()
 
 discord_message_length_limit = 2000
 
+
 class OrderType(Enum):
     TOP = 0
     RANDOM = 1
     LATEST = 2
+
 
 class Utilities:
     __instance = None
@@ -74,14 +79,15 @@ class Utilities:
 
     modules_dict = {}
     service_modules_dict = {}
-    
+
     # Coda
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    DOC_ID = "ah62XEPvpG" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
+    DOC_ID = (
+        "ah62XEPvpG" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
+    )
     ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
-    
 
     @staticmethod
     def get_instance() -> "Utilities":
@@ -127,7 +133,9 @@ class Utilities:
                 )
             except HttpError:
                 if self.YOUTUBE_API_KEY:
-                    log.info(self.class_name, msg="YouTube API Key is set but not correct")
+                    log.info(
+                        self.class_name, msg="YouTube API Key is set but not correct"
+                    )
                 else:
                     log.info(self.class_name, msg="YouTube API Key is not set")
 
@@ -171,7 +179,9 @@ class Utilities:
         return self.is_stampy(message.author)
 
     def is_stampy(self, user: DiscordUser) -> bool:
-        if user.id == wiki_feed_channel_id:  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
+        if (
+            user.id == wiki_feed_channel_id
+        ):  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
             return True
         if self.discord_user:
             return user == self.discord_user
@@ -194,7 +204,9 @@ class Utilities:
             response = request.execute()
         except HttpError as err:
             if err.resp.get("content-type", "").startswith("application/json"):
-                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                message = (
+                    json.loads(err.content).get("error").get("errors")[0].get("message")
+                )
                 if message:
                     log.error(f"{self.class_name}: YouTube", error=message)
                     return
@@ -227,7 +239,9 @@ class Utilities:
             response = request.execute()
         except HttpError as err:
             if err.resp.get("content-type", "").startswith("application/json"):
-                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                message = (
+                    json.loads(err.content).get("error").get("errors")[0].get("message")
+                )
                 if message:
                     log.error(f"{self.class_name}: YouTube", error=message)
                     return
@@ -264,15 +278,18 @@ class Utilities:
             log.info(f"{self.class_name}: YouTube", msg="Hitting YT API")
             self.last_check_timestamp = now
         else:
-
             log.info(
                 f"{self.class_name}: YouTube",
-                msg="YT waiting >%s\t- " % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
+                msg="YT waiting >%s\t- "
+                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
             )
             return None
 
         if self.youtube is None:
-            log.info(f"{self.class_name}: YouTube", msg="WARNING: YouTube API Key is invalid or not set")
+            log.info(
+                f"{self.class_name}: YouTube",
+                msg="WARNING: YouTube API Key is invalid or not set",
+            )
             self.youtube_cooldown = self.youtube_cooldown * 10
             return []
 
@@ -283,7 +300,9 @@ class Utilities:
             response = request.execute()
         except HttpError as err:
             if err.resp.get("content-type", "").startswith("application/json"):
-                message = json.loads(err.content).get("error").get("errors")[0].get("message")
+                message = (
+                    json.loads(err.content).get("error").get("errors")[0].get("message")
+                )
                 if message:
                     log.error(f"{self.class_name}: YouTube", error=message)
                     return
@@ -293,7 +312,10 @@ class Utilities:
         items = response.get("items", None)
         if not items:
             # something broke, slow way down
-            log.info(f"{self.class_name}: YouTube", msg="YT comment checking broke. I got this response:")
+            log.info(
+                f"{self.class_name}: YouTube",
+                msg="YT comment checking broke. I got this response:",
+            )
             log.info(f"{self.class_name}: YouTube", response=response)
             self.youtube_cooldown = self.youtube_cooldown * 10
             return None
@@ -318,7 +340,8 @@ class Utilities:
 
         log.info(
             f"{self.class_name}: YouTube",
-            msg="Got %s items, most recent published at %s" % (len(items), newest_timestamp),
+            msg="Got %s items, most recent published at %s"
+            % (len(items), newest_timestamp),
         )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
@@ -335,7 +358,8 @@ class Utilities:
             likes = top_level_comment["snippet"]["likeCount"]
             reply_count = item["snippet"]["totalReplyCount"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s" % (video_id, comment_id),
+                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
+                % (video_id, comment_id),
                 "username": username,
                 "text": text,
                 "title": "",
@@ -347,15 +371,19 @@ class Utilities:
             new_comments.append(comment)
 
         log.info(
-            f"{self.class_name}: YouTube", msg="Got %d new comments since last check" % len(new_comments)
+            f"{self.class_name}: YouTube",
+            msg="Got %d new comments since last check" % len(new_comments),
         )
 
         if not new_comments:
             # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cooldown = min(self.youtube_cooldown * 2, timedelta(seconds=1200))
+            self.youtube_cooldown = min(
+                self.youtube_cooldown * 2, timedelta(seconds=1200)
+            )
             log.info(
                 f"{self.class_name}: YouTube",
-                msg="No new comments, increasing cooldown timer to %s" % self.youtube_cooldown,
+                msg="No new comments, increasing cooldown timer to %s"
+                % self.youtube_cooldown,
             )
 
         return new_comments
@@ -364,12 +392,11 @@ class Utilities:
         self.db.query("DELETE FROM uservotes")
         self.db.query(
             "INSERT INTO uservotes (`user`, `votedFor`, `votecount`) VALUES (?, ?, ?)",
-            (0, 181142785259208704, 1)
+            (0, 181142785259208704, 1),
         )
         self.db.commit()
 
     def update_ids_list(self):
-
         self.ids = sorted(list(self.users))
         self.index = {0: 0}
         for userid in self.ids:
@@ -390,7 +417,9 @@ class Utilities:
             uid = int(uid)
         except (ValueError, TypeError):
             pass
-        log.info(self.class_name, function_name="index_dammit", uuid=uid, index=self.index)
+        log.info(
+            self.class_name, function_name="index_dammit", uuid=uid, index=self.index
+        )
         if uid:
             return self.index_dammit(uid)
 
@@ -453,7 +482,9 @@ class Utilities:
         # TODO: add to Coda
 
     def get_title(self, url):
-        result = self.db.query('select ShortTitle, FullTitle from video_titles where URL="?"', (url,))
+        result = self.db.query(
+            'select ShortTitle, FullTitle from video_titles where URL="?"', (url,)
+        )
         if result:
             return result[0][0], result[0][1]
         return None
@@ -485,23 +516,32 @@ class Utilities:
 
     async def log_error(self, error_message: str) -> None:
         if self.error_channel is None:
-            self.error_channel = self.client.get_channel(int(stampy_error_log_channel_id))
-        for msg_chunk in Utilities.split_message_for_discord(error_message, max_length=discord_message_length_limit-6):
+            self.error_channel = self.client.get_channel(
+                int(stampy_error_log_channel_id)
+            )
+        for msg_chunk in Utilities.split_message_for_discord(
+            error_message, max_length=discord_message_length_limit - 6
+        ):
             await self.error_channel.send(f"```{msg_chunk}```")
 
     @staticmethod
-    def split_message_for_discord(msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit) \
-            -> List[str]:
+    def split_message_for_discord(
+        msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit
+    ) -> List[str]:
         """Splitting a message in chunks of maximum 2000, so that the end of each chunk is a newline if possible.
-        We can do this greedily, and if a solution exists. """
+        We can do this greedily, and if a solution exists."""
         msg_len = len(msg)
         next_split_marker = 0
         last_split_index = 0
         output = []
         while last_split_index + max_length < msg_len:
-            split_marker_try = msg.find(stop_char, next_split_marker + 1, last_split_index + max_length)
+            split_marker_try = msg.find(
+                stop_char, next_split_marker + 1, last_split_index + max_length
+            )
             if split_marker_try == -1:
-                if next_split_marker == last_split_index:  # there are no newlines in the next 2000 chars, just take all
+                if (
+                    next_split_marker == last_split_index
+                ):  # there are no newlines in the next 2000 chars, just take all
                     next_split_marker = last_split_index + max_length
 
                 output.append(msg[last_split_index:next_split_marker])
@@ -514,15 +554,15 @@ class Utilities:
     ##############
     # Coda utils #
     ##############
-    
+
     def get_coda_auth_headers(self) -> dict[str, str]:
         """Get authorization headers for coda requests"""
         return {"Authorization": f"Bearer {self.CODA_API_TOKEN}"}
-    
+
     def get_user_row(self, query: str) -> Optional[dict]:
         """Get user row from the users table using a query with the following form
-        
-        `"<column name>":"<value>"` 
+
+        `"<column name>":"<value>"`
         """
         params = {
             "valueFormat": "simple",
@@ -538,23 +578,17 @@ class Utilities:
         users = response.json()["items"]
         if users:
             return users[0]
-        
-    
+
     def get_team_grid(self) -> list[dict]:
-        uri = (
-            f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
-        )
+        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
         response = requests.get(
             uri,
             params={"valueFormat": "simple", "useColumnNames": True},
             headers=self.get_coda_auth_headers(),
-            timeout=10
+            timeout=10,
         )
         response.raise_for_status()
         return [item["values"] for item in response.json()["items"]]
-
-
-
 
 
 def get_github_info() -> str:
@@ -568,7 +602,9 @@ def get_github_info() -> str:
     return message % {
         "actor": master.commit.author,
         "git_message": master.commit.message.strip(),
-        "date": master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z"),
+        "date": master.commit.committed_datetime.strftime(
+            "%A, %B %d, %Y at %I:%M:%S %p UTC%z"
+        ),
     }
 
 
@@ -588,10 +624,16 @@ def get_running_user_info() -> str:
             + "\nThey used the %(shell)s shell."
             + "\nMy Process ID is %(pid)s on this machine."
         )
-        return message % {"username": user_name, "shell": user_info.pw_shell, "pid": os.getpid()}
+        return message % {
+            "username": user_name,
+            "shell": user_info.pw_shell,
+            "pid": os.getpid(),
+        }
     else:
         # This should be replaced with a better test down the line.
-        shell = "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
+        shell = (
+            "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
+        )
         user_name = os.getlogin()
         message = (
             "The last user to start my server was %(username)s."
@@ -638,14 +680,19 @@ def randbool(p: float) -> bool:
         return True
     return False
 
+
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
     utils = Utilities.get_instance()
-    return utils.service_modules_dict[message.service].service_utils.is_stampy_mentioned(message)
+    return utils.service_modules_dict[
+        message.service
+    ].service_utils.is_stampy_mentioned(message)
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
     utils = Utilities.get_instance()
-    return utils.service_modules_dict[message.service].service_utils.stampy_is_author(message)
+    return utils.service_modules_dict[message.service].service_utils.stampy_is_author(
+        message
+    )
 
 
 def get_guild_and_invite_role():
@@ -654,14 +701,19 @@ def get_guild_and_invite_role():
     invite_role = discord.utils.get(guild.roles, name="can-invite")
     return guild, invite_role
 
+
 def get_user_handle(user: DiscordUser) -> str:
     return user.name + "#" + user.discriminator
 
+
 class UtilsTests:
     def test_split_message_for_discord(self):
-        test_out = len(Utilities.split_message_for_discord(
-            "123456789012345\n1234567890123456789\n10\n10\n10\n01234567890123456789", max_length=20
-        ))
+        test_out = len(
+            Utilities.split_message_for_discord(
+                "123456789012345\n1234567890123456789\n10\n10\n10\n01234567890123456789",
+                max_length=20,
+            )
+        )
         self.assertEqual(len(test_out), 4)
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
