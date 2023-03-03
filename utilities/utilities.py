@@ -544,20 +544,20 @@ class Utilities:
         uri = (
             f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
         )
-        resp = requests.get(
+        response = requests.get(
             uri,
             params={"valueFormat": "simple", "useColumnNames": True},
             headers=self.get_coda_auth_headers(),
             timeout=10
         )
-        resp.raise_for_status()
-        return [item["values"] for item in resp.json()["items"]]
+        response.raise_for_status()
+        return [item["values"] for item in response.json()["items"]]
 
 
 
 
 
-def get_github_info():
+def get_github_info() -> str:
     message = (
         "\nThe latest commit was by %(actor)s."
         + "\nThe commit message was '%(git_message)s'."
