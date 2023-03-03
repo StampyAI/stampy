@@ -91,3 +91,16 @@ class DuckDuckGo(Module):
             self.log.error("DuckDuckGo", error=e)
 
         return Response()
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="what is linear algebra?",
+                expected_regex="Linear algebra is the branch of mathematics concerning linear equations",
+            ),
+            self.create_integration_test(
+                question="what is deep learning?",
+                expected_regex="Deep learning is part of a broader family of machine learning method",
+            ),
+        ]
