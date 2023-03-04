@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime as dt, timedelta
-import os
 from pprint import pformat
 import random
 import re
@@ -17,7 +16,9 @@ import requests
 from structlog import get_logger
 from typing_extensions import Self
 
-from servicemodules.discordConstants import stampy_dev_priv_channel_id
+from servicemodules.discordConstants import (
+    editing_channel_id,
+)
 from modules.module import Module, Response
 from utilities import Utilities
 from utilities.serviceutils import ServiceMessage
@@ -32,12 +33,6 @@ class Questions(Module):
     [All Answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
     """
 
-    # ids
-    DOC = "fau7sl2hmG"
-    ALL_ANSWERS_TABLE = "table-YvPEyAXl8a"
-    STATUSES_TABLE = "grid-IWDInbu5n2"
-
-    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
     AUTOPOST_QUESTION_INTERVAL = timedelta(hours=6)
 
     def __init__(self) -> None:
@@ -46,7 +41,7 @@ class Questions(Module):
         self.review_msg_id2question_id: dict[str, str] = {}
         self.last_question_posted: dt = dt.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
 
-        # Register 
+        # Register
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
             if self.last_question_posted < dt.now() - self.AUTOPOST_QUESTION_INTERVAL:
@@ -58,8 +53,6 @@ class Questions(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
-        if "lm" in message.clean_content:
-            breakpoint()
         # this one option is before `.is_at_me`
         # because it doesn't require calling Stampy explicitly
         if query := self.is_review_request(message):
@@ -216,9 +209,7 @@ class Questions(Module):
         log.info("Updated question with id %s to time %s", row_id, current_time)
 
     async def post_random_oldest_question(self, event_type) -> None:
-        channel = cast(
-            Thread, self.utils.client.get_channel(int(stampy_dev_priv_channel_id))
-        )
+        channel = cast(Thread, self.utils.client.get_channel(int(editing_channel_id)))
         if channel is None:
             return
         q = cast(
@@ -270,9 +261,7 @@ class Questions(Module):
             return Response(
                 confidence=8,
                 text="There is no last question ;/",
-                why=
-                    f"{message.author.name} asked me for last question but I haven't been asked for (or posted) any questions since I've been started"
-                ,
+                why=f"{message.author.name} asked me for last question but I haven't been asked for (or posted) any questions since I've been started",
             )
         questions = self.get_questions_df()
         msg = f"Here it is ({query.info()}):\n\n"
@@ -829,9 +818,7 @@ def parse_gdoc_link(text: str) -> Optional[str]:
     """Extract a link to GDoc from message content.
     Returns `None` if message doesn't contain GDoc link.
     """
-    match = re.search(
-        r"https://docs\.google\.com/document/d/[\w_-]+", text
-    )
+    match = re.search(r"https://docs\.google\.com/document/d/[\w_-]+", text)
     if match:
         return match.group()
 

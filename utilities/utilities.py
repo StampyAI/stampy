@@ -1,3 +1,4 @@
+from __future__ import annotations
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -32,6 +33,7 @@ import random
 import re
 import requests
 import sys
+from threading import Event
 import traceback
 
 # Sadly some of us run windows...
@@ -50,12 +52,11 @@ class OrderType(Enum):
 
 
 class Utilities:
-    __instance = None
-    db = None
-    discord = None
-    # client = None
-    discord_user = None
-    stop = None
+    __instance: Optional[Utilities] = None
+    db: Database
+    client: discord.Client
+    discord_user: Optional[DiscordUser] = None
+    stop: Optional[Event] = None
     youtube = None
 
     TOKEN = discord_token
@@ -63,12 +64,12 @@ class Utilities:
     YOUTUBE_API_KEY = youtube_api_key
     DB_PATH = database_path
 
-    last_message_was_youtube_question = None
-    latest_comment_timestamp = None
-    last_check_timestamp = None
-    youtube_cooldown = None
-    last_timestamp = None
-    last_question_asked_timestamp = None
+    last_message_was_youtube_question: bool = False
+    latest_comment_timestamp: datetime
+    last_check_timestamp: datetime
+    youtube_cooldown: timedelta
+    last_timestamp: dict[str, datetime] = {}
+    last_question_asked_timestamp: datetime
     latest_question_posted = None
     error_channel = None
 
@@ -90,7 +91,7 @@ class Utilities:
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
 
     @staticmethod
-    def get_instance() -> "Utilities":
+    def get_instance() -> Utilities:
         if Utilities.__instance is None:
             return Utilities()
         return Utilities.__instance
@@ -98,55 +99,55 @@ class Utilities:
     def __init__(self):
         if Utilities.__instance is not None:
             raise Exception("This class is a singleton!")
-        else:
-            Utilities.__instance = self
-            self.class_name = self.__class__.__name__
-            self.start_time = time()
-            self.test_mode = False
-            self.people = set("stampy")
+        
+        Utilities.__instance = self
+        self.class_name = self.__class__.__name__
+        self.start_time = time()
+        self.test_mode = False
+        self.people = set("stampy")
 
-            # dict to keep last timestamps in
-            self.last_timestamp = {}
+        # dict to keep last timestamps in
+        self.last_timestamp = {}
 
-            # when was the most recent comment we saw posted?
-            self.latest_comment_timestamp = datetime.now(timezone.utc)
+        # when was the most recent comment we saw posted?
+        self.latest_comment_timestamp = datetime.now(timezone.utc)
 
-            # when did we last hit the API to check for comments?
-            self.last_check_timestamp = datetime.now(timezone.utc)
+        # when did we last hit the API to check for comments?
+        self.last_check_timestamp = datetime.now(timezone.utc)
 
-            # how many seconds should we wait before we can hit YT API again
-            # this the start value. It doubles every time we don't find anything new
-            self.youtube_cooldown = timedelta(seconds=60)
+        # how many seconds should we wait before we can hit YT API again
+        # this the start value. It doubles every time we don't find anything new
+        self.youtube_cooldown = timedelta(seconds=60)
 
-            # timestamp of last time we asked a youtube question
-            self.last_question_asked_timestamp = datetime.now(timezone.utc)
+        # timestamp of last time we asked a youtube question
+        self.last_question_asked_timestamp = datetime.now(timezone.utc)
 
-            # Was the last message posted in #general by anyone, us asking a question from YouTube?
-            # We start off not knowing, but it's better to assume yes than no
-            self.last_message_was_youtube_question = True
+        # Was the last message posted in #general by anyone, us asking a question from YouTube?
+        # We start off not knowing, but it's better to assume yes than no
+        self.last_message_was_youtube_question = True
 
-            try:
-                self.youtube = get_youtube_api(
-                    youtube_api_service_name,
-                    youtube_api_version,
-                    developerKey=self.YOUTUBE_API_KEY,
+        try:
+            self.youtube = get_youtube_api(
+                youtube_api_service_name,
+                youtube_api_version,
+                developerKey=self.YOUTUBE_API_KEY,
+            )
+        except HttpError:
+            if self.YOUTUBE_API_KEY:
+                log.info(
+                    self.class_name, msg="YouTube API Key is set but not correct"
                 )
-            except HttpError:
-                if self.YOUTUBE_API_KEY:
-                    log.info(
-                        self.class_name, msg="YouTube API Key is set but not correct"
-                    )
-                else:
-                    log.info(self.class_name, msg="YouTube API Key is not set")
+            else:
+                log.info(self.class_name, msg="YouTube API Key is not set")
 
-            log.info(self.class_name, status="Trying to open db - " + self.DB_PATH)
-            self.db = Database(self.DB_PATH)
-            intents = discord.Intents.default()
-            intents.members = True
-            intents.message_content = True
-            self.client = discord.Client(intents=intents)
+        log.info(self.class_name, status="Trying to open db - " + self.DB_PATH)
+        self.db = Database(self.DB_PATH)
+        intents = discord.Intents.default()
+        intents.members = True
+        intents.message_content = True
+        self.client = discord.Client(intents=intents)
 
-    def rate_limit(self, timer_name, **kwargs):
+    def rate_limit(self, timer_name: str, **kwargs) -> bool:
         """Should I rate-limit? i.e. Has it been less than this length of time since the last time
         this function was called using the same `timer_name`?
         Used in a function like Module.tick() to make sure it doesn't run too often.
@@ -172,8 +173,8 @@ class Utilities:
         if (now - self.last_timestamp[timer_name]) > tick_cooldown:
             self.last_timestamp[timer_name] = now
             return False
-        else:  # it hasn't been long enough, rate limit
-            return True
+        # it hasn't been long enough, rate limit
+        return True
 
     def stampy_is_author(self, message: DiscordMessage) -> bool:
         return self.is_stampy(message.author)
