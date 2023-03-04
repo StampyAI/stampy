@@ -95,12 +95,7 @@ class StampsModule(Module):
             uri, headers=utils.get_coda_auth_headers(), json=payload, timeout=20
         )
         response.raise_for_status()
-        log.info(
-            "%s updated stamp count of user %s to %f",
-            self.class_name,
-            user.name,
-            stamp_count,
-        )
+        log.info(self.class_name, "Updated %s's stamp count to %f on coda", user.name, stamp_count)
 
     def update_all_stamps_in_users_table(self) -> None:
         users = self.utils.get_users()
