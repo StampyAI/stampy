@@ -1,4 +1,3 @@
-from utilities import utilities as util
 from utilities.utilities import (
     Utilities,
     get_github_info,
