@@ -1,13 +1,11 @@
 """#TODO
-1. caching separately questions and users
-2. printing better messages when posting multiple gdoc links
-3. updating status in this file should have no "question logic"
+1. printing better messages when posting multiple gdoc links
 """
 from __future__ import annotations
 
 from datetime import datetime as dt
 import os
-from typing import cast, Optional, Union
+from typing import cast, Optional
 
 import pandas as pd
 import requests
@@ -18,11 +16,8 @@ from api.utilities.coda_utils import (
     parse_coda_question,
     CodaQuestion,
     DEFAULT_DATE,
-    pformat_to_codeblock,
     request_succesful
 )
-from utilities import is_in_testing_mode, is_from_reviewer
-from utilities.serviceutils import ServiceMessage
 
 log = get_logger()
 
@@ -156,7 +151,7 @@ class Coda:
 
     def get_questions_by_ids(
         self, question_ids: list[str]
-    ) -> dict[str, Optional[CodaQuestion]]:
+    ) -> dict[str, CodaQuestion]: #TODO: handle questions that couldn't be found?
         """Get many question by their ids in "All Answers" table.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
         """
@@ -164,11 +159,11 @@ class Coda:
         id2question = cast(
             dict[str, CodaQuestion], questions.set_index("id").to_dict(orient="records")
         )
-        return {qid: id2question.get(qid) for qid in question_ids}
+        return {qid: id2question[qid] for qid in question_ids if qid in id2question}
 
     def get_question_by_id(
         self, questions_id: str, *, use_cache: bool = True
-    ) -> Optional[CodaQuestion]:
+    ) -> CodaQuestion:
         """Get question by id in "All Answers" table.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
         """
@@ -178,7 +173,6 @@ class Coda:
                     CodaQuestion,
                     self.questions_df.query("id == @row_id").iloc[0].to_dict(),
                 )
-            return
 
         uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.ALL_ANSWERS_TABLE_ID}/rows/{questions_id}"
         params = {
@@ -330,14 +324,6 @@ class Coda:
     #   Updating questions   #
     ##########################
 
-    def update_questions_statuses(
-        self,
-        question_ids: Union[str, list[str]],
-        status: str,
-    ) -> None: # str # (?)
-        for question_id in question_ids:
-            self.update_question_status(question_id, status)
-
     def update_question_status(
         self,
         question_id: str,
@@ -357,71 +343,6 @@ class Coda:
             json=payload,
             timeout=self.REQUEST_TIMEOUT,
         )
-
-    def _update_question_status(
-        self,
-        query_type: str,
-        question_ids: Union[str, list[str]],
-        status: str,
-        questions: list[CodaQuestion],
-        message: ServiceMessage,
-    ) -> str:
-        if query_type == "review-request-approved" and not is_from_reviewer(message):
-            return f"You're not a `@reviewer` {message.author.name}"
-
-        if isinstance(question_ids, str):
-            question_ids = [question_ids]
-
-        for question_id in question_ids:
-            uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.ALL_ANSWERS_TABLE_ID}/rows/{question_id}"
-            payload = {
-                "row": {
-                    "cells": [
-                        {"column": "Status", "value": status},
-                    ],
-                },
-            }
-            response = requests.put(
-                uri,
-                headers=self.auth_headers,
-                json=payload,
-                timeout=self.REQUEST_TIMEOUT,
-            )
-            if not request_succesful(response):
-                self.log.error(
-                    self.class_name,
-                    msg="Couldn't update questions status",
-                    question_id=question_id,
-                    status=status,
-                )
-                response.raise_for_status()
-
-        if query_type == "review-request":
-            questions_message = (
-                "this question"
-                if len(question_ids) == 1
-                else f"{len(question_ids)} questions"
-            )
-            msg = f"Thanks, {message.author.name}!\nI updated status of {questions_message} to `{status}`"
-        elif query_type == "review-request-approved":
-            questions_message = (
-                "1 question"
-                if len(question_ids) == 1
-                else f"{len(question_ids)} questions"
-            )
-            msg = f"Approved! Updated status of {questions_message} to `{status}`"
-        else:
-            if len(question_ids) == 1:
-                msg = f"Updated question's status to `{status}`"
-                msg += "\n\nPreviously:\n" + pformat_to_codeblock(
-                    cast(dict, questions[0])
-                )
-            else:
-                msg = f"Updated satus of {len(question_ids)} questions to `{status}`"
-
-        log.info(self.class_name, msg=msg)
-        return msg
-    
 
 
     def update_questions_last_asked_date(self, question_ids: list[str]) -> None:

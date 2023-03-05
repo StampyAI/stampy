@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime as dt
 from pprint import pformat
 import requests
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 DEFAULT_DATE = dt(1, 1, 1, 0)
@@ -47,7 +47,7 @@ def parse_coda_question(row: dict) -> CodaQuestion:
 
 
 
-def pformat_to_codeblock(d: dict) -> str:
+def pformat_to_codeblock(d: dict[Any, Any]) -> str:
     """`pformat` a dictionary and embed it in a code block
     (for nice display in discord message)
     """

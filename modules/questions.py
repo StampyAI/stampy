@@ -5,7 +5,7 @@ from datetime import datetime as dt, timedelta
 import random
 import re
 from textwrap import dedent
-from typing import Any, Literal, Optional, cast
+from typing import Any, Literal, Optional, Union, cast
 
 from dotenv import load_dotenv
 from discord.threads import Thread
@@ -20,7 +20,6 @@ from servicemodules.discordConstants import (
 )
 from modules.module import Module, Response
 from utilities.utilities import (
-    Utilities,
     is_in_testing_mode,
     is_from_reviewer,
     fuzzy_contains,
@@ -66,14 +65,14 @@ class Questions(Module):
         if query := self.is_review_request(message):
             return Response(
                 confidence=8,
-                callback=self.cb_set_status,
+                callback=self.cb_set_status_by_review_request,
                 args=[query, message],
                 why=f"{message.author.name} asked for a review",
             )
         if query := self.is_response_to_review_request(message):
             return Response(
                 confidence=8,
-                callback=self.cb_set_status,
+                callback=self.cb_set_status_by_approved,
                 args=[query, message],
                 why=f"{message.author.name} accepted the review",
             )
@@ -101,12 +100,12 @@ class Questions(Module):
                 args=[query, message],
                 why="I was asked to post info about a message",
             )
-        if query := SetQuestionQuery.parse(text, self.last_question_id):
+        if query := SetQuestionByMsgQuery.parse(text, self.last_question_id):
             return Response(
                 confidence=8,
-                callback=self.cb_set_status,
+                callback=self.cb_set_status_by_msg,
                 args=[query, message],
-                why=f"I was asked to set status of questions with ids `{query.ids}` to `{query.status}`",
+                why=f"I was asked to set status of question with id `{query.id}` to `{query.status}`",
             )
         return Response(
             why="Left QuestionManager without matching to any possible response"
@@ -116,7 +115,9 @@ class Questions(Module):
     # Review request #
     ##################
 
-    def is_review_request(self, message: ServiceMessage) -> Optional[SetQuestionQuery]:
+    def is_review_request(
+        self, message: ServiceMessage
+    ) -> Optional[SetQuestionByAtOrReplyQuery]:
         """Is this message a review request with link do GDoc?"""
         text = message.clean_content
 
@@ -137,11 +138,11 @@ class Questions(Module):
         question_ids = [q["id"] for q in questions]
         self.review_msg_id2question_ids[message.id] = question_ids
 
-        return SetQuestionQuery("review-request", question_ids, new_status)
+        return SetQuestionByAtOrReplyQuery(question_ids, new_status)
 
     def is_response_to_review_request(
         self, message: ServiceMessage
-    ) -> Optional[SetQuestionQuery]:
+    ) -> Optional[SetQuestionByAtOrReplyQuery]:
         """Is this message a response to review request?"""
         if (msg_ref := message.reference) is None:
             return
@@ -152,8 +153,7 @@ class Questions(Module):
 
         text = message.clean_content
         if any(s in text.lower() for s in ["approved", "accepted", "lgtm"]):
-            return SetQuestionQuery(
-                "review-request-approved",
+            return SetQuestionByAtOrReplyQuery(
                 self.review_msg_id2question_ids[cast(str, msg_ref_id)],
                 "Live on site",
             )
@@ -286,11 +286,10 @@ class Questions(Module):
     # Set status #
     ##############
 
-    async def cb_set_status(
-        self, query: SetQuestionQuery, message: ServiceMessage
+    async def cb_set_status_by_msg(
+        self, query: SetQuestionByMsgQuery, message: ServiceMessage
     ) -> Response:
-        # If asked for setting status on last question but there is no last question
-        if query.type == "last" and not query.ids:
+        if query.type == "last" and query.id is None:
             return Response(
                 confidence=8,
                 text='What do you mean by "it"?',
@@ -298,45 +297,73 @@ class Questions(Module):
                     f"{message.author.name} asked me to set last question's status to {query.status} but I haven't posted any questions yet"
                 ),
             )
-
-        id2question = coda_api.get_questions_by_ids(query.ids)
-        
-        
-        # Things that need handling
-        # 1. calling stampy manually to update last question or 
-        
-        
-        
-        
-        # if couldn't find question
-        if not questions:
-            return Response(
-                confidence=8,
-                text=f"I couldn't find question with ids `{query.ids}`",
-                why=f"{message.author.name} asked me to set the status of questions with ids `{query.ids}` to `{query.status}` but I couldn't find them",
-            )
-
-        if len(query.ids):
-            self.last_question_id = query.ids[0]
-
-        # if somebody without `@reviewer` role tried setting question status to "Live on site"
-        # case of unauthorized approval is handled separately in update_question_status
-        if (
-            response := unauthorized_set_los(query, questions, message)
-        ) and query.type != "review-request-approved":
+        query_id = cast(str, query.id)
+        question = coda_api.get_question_by_id(query_id)
+        if response := unauthorized_set_los(query, [question], message):
             return response
 
-        response_msg = coda_api.update_question_status(
-            query_type=query.type,
-            question_ids=query.ids,
-            status=query.status,
-            questions=questions,
-            message=message,
-        )
-        # response_msg = coda_api.update_question_status(query, questions, message)
-        why = f"{message.author.name} asked me to set the status of questions with ids `{query.ids}` to `{query.status}`"
+        coda_api.update_question_status(query_id, query.status)
+        msg = f"Updated question's status to `{query.status}`"
+        msg += "\n\nPreviously:\n" + pformat_to_codeblock(cast(dict, question))
 
-        return Response(confidence=8, text=response_msg, why=why)
+        return Response(
+            confidence=8,
+            text=msg,
+            why=f"{message.author.name} asked me to set the status of questions with id `{query_id}` to `{query.status}`",
+        )
+
+    async def cb_set_status_by_review_request(
+        self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
+    ) -> Response:
+        id2question = coda_api.get_questions_by_ids(query.ids)
+        id2status = {qid: q["status"] for qid, q in id2question.items()}
+        if not is_from_reviewer(message) and "Live on site" in id2status.values():
+            ids_los = [
+                qid for qid, status in id2status.items() if status == "Live on site"
+            ]
+            msg_los = (
+                f"{len(ids_los)} of these questions are already `Live on site`. You can't change their status, {message.author.name} because you're not a `@reviewer`.\n\nThese are:\n"
+                + "\n".join(
+                    f'"{id2question[qid]["title"]}" - {id2question[qid]["url"]}'
+                    for qid in ids_los
+                )
+            )
+            id2question = {
+                qid: q for qid, q in id2question.items() if qid not in ids_los
+            }
+        else:
+            msg_los = ""
+
+        for qid, q in id2question.items():
+            coda_api.update_question_status(qid, q["status"])
+
+        msg = (
+            f"Thanks, {message.author.name}!\nI updated status of {num_questions(len(id2question))} to `{query.status}`\n\n"
+            + msg_los
+        )
+
+        self.log.info(self.class_name, msg=msg)
+        return Response(
+            confidence=8, text=msg, why=f"{message.author.name} kindly asked for review"
+        )
+
+
+    async def cb_set_status_by_approved(
+        self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
+    ) -> Response:
+        if not is_from_reviewer(message):
+            await message.channel.send(
+                YOURE_NOT_A_REVIEWER.format(author_name=message.author.name)
+            )
+        for qid in query.ids:
+            coda_api.update_question_status(qid, query.status)
+        response_text = f"Approved! {num_questions(len(query.ids))} to `Live on site`"
+        return Response(
+            confidence=8,
+            text=response_text,
+            why=f"{message.author.name} approved the questions posted for review"
+        )
+        
 
     #########
     # Other #
@@ -545,10 +572,10 @@ class QuestionInfoQuery:
 
 
 @dataclass(frozen=True)
-class SetQuestionQuery:
+class SetQuestionByMsgQuery:
     """Change status of a particular question."""
 
-    type: Literal["id", "last", "review-request", "review-request-approved"]
+    type: Literal["id", "last"]
     """
     - "id" - specified by unique row identifier in "All Answers" table
     - "last" - ordered to get the last row that stampy interacted with
@@ -558,7 +585,7 @@ class SetQuestionQuery:
     - "review-request-approved" - a `@reviewer` responded to a review request with 
     "accepted" or "approved" -> questions's status changes to "Live on site"  
     """
-    ids: list[str]  # TODO: adjust description and make comments in `parse`
+    id: Optional[str]  # TODO: adjust description and make comments in `parse`
     status: str
 
     @classmethod
@@ -576,8 +603,13 @@ class SetQuestionQuery:
         status = parse_status(text, require_status_prefix=False)
         if status is None:
             return
-        ids = [query_id] if query_id is not None else []
-        return cls(query_type, ids, status)
+        return cls(query_type, query_id, status)
+
+
+@dataclass(frozen=True)
+class SetQuestionByAtOrReplyQuery:
+    ids: list[str]
+    status: str
 
 
 ##################
@@ -644,7 +676,9 @@ def make_post_question_message(question_row: CodaQuestion) -> str:
 
 
 def unauthorized_set_los(
-    query: SetQuestionQuery, questions: list[CodaQuestion], message: ServiceMessage
+    query: Union[SetQuestionByMsgQuery, SetQuestionByAtOrReplyQuery],
+    questions: list[CodaQuestion],
+    message: ServiceMessage,
 ) -> Optional[Response]:
     """Somebody tried set questions status "Live on site" but they're not a reviewer"""
     question_statuses = [q["status"] for q in questions]
@@ -654,19 +688,13 @@ def unauthorized_set_los(
     ) or is_from_reviewer(message):
         return
     if query.status == "Live on site":
-        response_msg = dedent(
-            f"""\
-            Sorry, {message.author.name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
-            Only `@reviewer`s can do thats."""
+        response_msg = NOT_FROM_REVIEWER_TO_LIVE_ON_SITE.format(
+            author_name=message.author.name
         )
-        why = dedent(
-            f"{message.author.name} wanted to change question status to `Live on site` but they're not a @reviewer"
-        )
+        why = f"{message.author.name} wanted to change question status to `Live on site` but they're not a @reviewer"
     else:  # "Live on site" in question_statuses:
-        response_msg = dedent(
-            f"""\
-            Sorry, {message.author.name}. You can't set status  to `{query.status}` because at least one of them is already `Live on site`. 
-            Only `@reviewer`s can change status of questions that are already `Live on site`."""
+        response_msg = NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE.format(
+            author_name=message.author.name, query_status=query.status
         )
         why = f"{message.author.name} wanted to change status from `Live on site` but they're not a @reviewer"
     return Response(confidence=8, text=response_msg, why=why)
@@ -771,3 +799,22 @@ $   # end
 """Suggested:
 - how many questions (with status X) (and tagged "Y" "Z")
 """
+
+NOT_FROM_REVIEWER_TO_LIVE_ON_SITE = dedent(
+    """\
+        Sorry, {author_name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
+        Only `@reviewer`s can do thats."""
+)
+NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE = dedent(
+    """\
+        Sorry, {author_name}. You can't set status  to `{query_status}` because at least one of them is already `Live on site`. 
+        Only `@reviewer`s can change status of questions that are already `Live on site`."""
+)
+YOURE_NOT_A_REVIEWER = "You're not a `@reviewer` {author_name}"
+
+def num_questions(n: int) -> str:
+    if n == 0:
+        return "no questions"
+    if n == 1:
+        return "1 question"
+    return f"{n} questions"
