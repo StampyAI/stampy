@@ -2,30 +2,38 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime as dt, timedelta
-from pprint import pformat
 import random
 import re
-from string import punctuation
 from textwrap import dedent
-from typing import Any, Literal, Optional, TypedDict, cast
+from typing import Any, Literal, Optional, cast
 
 from dotenv import load_dotenv
 from discord.threads import Thread
 import pandas as pd
-import requests
 from structlog import get_logger
 from typing_extensions import Self
 
+from api.coda import Coda
+from api.utilities.coda_utils import CodaQuestion, pformat_to_codeblock
 from servicemodules.discordConstants import (
     editing_channel_id,
 )
 from modules.module import Module, Response
-from utilities import Utilities
+from utilities.utilities import (
+    Utilities,
+    is_in_testing_mode,
+    is_from_reviewer,
+    fuzzy_contains,
+)
 from utilities.serviceutils import ServiceMessage
+
 
 log = get_logger()
 load_dotenv()
-utils = Utilities.get_instance()
+
+coda_api = Coda.get_instance()
+status_shorthands = coda_api.get_status_shorthand_dict()
+all_tags = coda_api.get_all_tags()
 
 
 class Questions(Module):
@@ -38,10 +46,10 @@ class Questions(Module):
     def __init__(self) -> None:
         super().__init__()
         self.last_question_id: Optional[str] = None
-        self.review_msg_id2question_id: dict[str, str] = {}
+        self.review_msg_id2question_ids: dict[str, list[str]] = {}
         self.last_question_posted: dt = dt.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
 
-        # Register
+        # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
             if self.last_question_posted < dt.now() - self.AUTOPOST_QUESTION_INTERVAL:
@@ -58,14 +66,14 @@ class Questions(Module):
         if query := self.is_review_request(message):
             return Response(
                 confidence=8,
-                callback=self.message_set_status,
+                callback=self.cb_set_status,
                 args=[query, message],
                 why=f"{message.author.name} asked for a review",
             )
         if query := self.is_response_to_review_request(message):
             return Response(
                 confidence=8,
-                callback=self.message_set_status,
+                callback=self.cb_set_status,
                 args=[query, message],
                 why=f"{message.author.name} accepted the review",
             )
@@ -75,30 +83,30 @@ class Questions(Module):
             if query.action == "count":
                 return Response(
                     confidence=8,
-                    callback=self.message_count_questions,
+                    callback=self.cb_count_questions,
                     args=[query, message],
                     why="I was asked to count questions",
                 )
             # get_question_query.action == "post":
             return Response(
                 confidence=8,
-                callback=self.message_post_question,
+                callback=self.cb_post_question,
                 args=[query, message],
                 why="I was asked for next questions",
             )
         if query := QuestionInfoQuery.parse(text, self.last_question_id):
             return Response(
                 confidence=8,
-                callback=self.message_get_question_info,
+                callback=self.cb_get_question_info,
                 args=[query, message],
                 why="I was asked to post info about a message",
             )
         if query := SetQuestionQuery.parse(text, self.last_question_id):
             return Response(
                 confidence=8,
-                callback=self.message_set_status,
+                callback=self.cb_set_status,
                 args=[query, message],
-                why=f"I was asked to set status of question `{query.id}` to `{query.status}`",
+                why=f"I was asked to set status of questions with ids `{query.ids}` to `{query.status}`",
             )
         return Response(
             why="Left QuestionManager without matching to any possible response"
@@ -111,10 +119,7 @@ class Questions(Module):
     def is_review_request(self, message: ServiceMessage) -> Optional[SetQuestionQuery]:
         """Is this message a review request with link do GDoc?"""
         text = message.clean_content
-        if (gdoc_link := parse_gdoc_link(text)) is None:
-            return
-        if (question := self.get_question_by_gdoc_link(gdoc_link)) is None:
-            return
+
         if "@reviewer" in text:
             new_status = "In review"
         elif "@feedback-sketch" in text:
@@ -123,8 +128,16 @@ class Questions(Module):
             new_status = "In progress"
         else:
             return
-        self.review_msg_id2question_id[message.id] = question["id"]
-        return SetQuestionQuery("review-request", question["id"], new_status)
+
+        if not (gdoc_links := parse_gdoc_links(text)):
+            return
+        if not (questions := coda_api.get_questions_by_gdoc_links(gdoc_links)):
+            return
+
+        question_ids = [q["id"] for q in questions]
+        self.review_msg_id2question_ids[message.id] = question_ids
+
+        return SetQuestionQuery("review-request", question_ids, new_status)
 
     def is_response_to_review_request(
         self, message: ServiceMessage
@@ -134,14 +147,14 @@ class Questions(Module):
             return
         if (
             msg_ref_id := str(getattr(msg_ref, "message_id", None))
-        ) not in self.review_msg_id2question_id:
+        ) not in self.review_msg_id2question_ids:
             return
 
         text = message.clean_content
         if any(s in text.lower() for s in ["approved", "accepted", "lgtm"]):
             return SetQuestionQuery(
                 "review-request-approved",
-                self.review_msg_id2question_id[cast(str, msg_ref_id)],
+                self.review_msg_id2question_ids[cast(str, msg_ref_id)],
                 "Live on site",
             )
 
@@ -149,14 +162,14 @@ class Questions(Module):
     # Post question(s) #
     ####################
 
-    async def message_post_question(
+    async def cb_post_question(
         self, query: PostOrCountQuestionQuery, message: ServiceMessage
     ) -> Response:
         """Post message to Discord for least recently asked question.
         It will contain question title and GDoc url.
         """
         # get questions df
-        questions = self.get_questions_df(query)
+        questions = coda_api.get_questions_df(status=query.status)
 
         # if tags were specified, filter questions on those which have at least one of the tags
         if query.tag:
@@ -173,7 +186,7 @@ class Questions(Module):
         msg = query.next_result_info(len(questions))
         if not questions.empty:
             msg += "\n\n" + "\n---\n".join(
-                make_post_question_message(cast(ParsedRow, r.to_dict()))
+                make_post_question_message(cast(CodaQuestion, r.to_dict()))
                 for _, r in questions.iterrows()
             )
 
@@ -184,7 +197,7 @@ class Questions(Module):
         # update Last Asked On Discord column
         current_time = dt.now().isoformat()
         for question_id in questions["id"].tolist():
-            self.update_question_last_asked_date(question_id, current_time)
+            coda_api.update_question_last_asked_date(question_id, current_time)
 
         self.last_question_posted = dt.now()
 
@@ -194,48 +207,37 @@ class Questions(Module):
             why=f"{message.author.name} asked me for next questions",
         )
 
-    def update_question_last_asked_date(self, row_id: str, current_time: str) -> None:
-        """Update the "Last Asked on Discord" field in table for the question"""
-        payload = {
-            "row": {
-                "cells": [
-                    {"column": "Last Asked On Discord", "value": current_time},
-                ],
-            },
-        }
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{row_id}"
-        response = requests.put(uri, headers=utils.get_coda_auth_headers(), json=payload)
-        response.raise_for_status() # Throw if there was an error.
-        log.info(self.class_name, msg=f"Updated question with id {row_id} to time {current_time}")
-
     async def post_random_oldest_question(self, event_type) -> None:
         channel = cast(Thread, self.utils.client.get_channel(int(editing_channel_id)))
         if channel is None:
             return
         q = cast(
-            ParsedRow,
-            get_least_recently_asked_on_discord(self.get_questions_df())
+            CodaQuestion,
+            get_least_recently_asked_on_discord(coda_api.get_questions_df())
             .iloc[0]
             .to_dict(),
         )
         self.last_question_id = q["id"]
         self.last_question_posted = dt.now()
-        self.update_question_last_asked_date(q["id"], dt.now().isoformat())
+        coda_api.update_question_last_asked_date(q["id"], dt.now().isoformat())
         msg = make_post_question_message(q)
-        self.log.info(self.class_name, msg=f"Posting a random oldest question to the `#editing` channel because of {event_type}")
+        self.log.info(
+            self.class_name,
+            msg=f"Posting a random oldest question to the `#editing` channel because of {event_type}",
+        )
         await channel.send(msg)
 
     ###################
     # Count questions #
     ###################
 
-    async def message_count_questions(
+    async def cb_count_questions(
         self, query: PostOrCountQuestionQuery, message: ServiceMessage
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
 
         # get df with questions
-        questions = self.get_questions_df(query)
+        questions = coda_api.get_questions_df(status=query.status)
 
         # if tags were specified, filter for questions which have at least one of these tags
         if query.tag:
@@ -254,7 +256,7 @@ class Questions(Module):
     # Get question info #
     #####################
 
-    async def message_get_question_info(
+    async def cb_get_question_info(
         self, query: QuestionInfoQuery, message: ServiceMessage
     ) -> Response:
         if query.type == "last" and query.query is None:
@@ -263,7 +265,7 @@ class Questions(Module):
                 text="There is no last question ;/",
                 why=f"{message.author.name} asked me for last question but I haven't been asked for (or posted) any questions since I've been started",
             )
-        questions = self.get_questions_df()
+        questions = coda_api.get_questions_df()
         msg = f"Here it is ({query.info()}):\n\n"
         question_row = next(
             (q for _, q in questions.iterrows() if query.matches(q)), None
@@ -284,11 +286,11 @@ class Questions(Module):
     # Set status #
     ##############
 
-    async def message_set_status(
+    async def cb_set_status(
         self, query: SetQuestionQuery, message: ServiceMessage
     ) -> Response:
         # If asked for setting status on last question but there is no last question
-        if query.type == "last" and query.id is None:
+        if query.type == "last" and not query.ids:
             return Response(
                 confidence=8,
                 text='What do you mean by "it"?',
@@ -297,169 +299,52 @@ class Questions(Module):
                 ),
             )
 
-        question_row = self.get_question_by_id(cast(str, query.id))
+        id2question = coda_api.get_questions_by_ids(query.ids)
+        
+        
+        # Things that need handling
+        # 1. calling stampy manually to update last question or 
+        
+        
+        
+        
         # if couldn't find question
-        if question_row is None:
+        if not questions:
             return Response(
                 confidence=8,
-                text=f'I couldn\'t find a question with id "{query.id}"',
-                why=f'{message.author.name} asked me to set the status of question with id "{query.id}" to "{query.status}" but I couldn\'t find it',
+                text=f"I couldn't find question with ids `{query.ids}`",
+                why=f"{message.author.name} asked me to set the status of questions with ids `{query.ids}` to `{query.status}` but I couldn't find them",
             )
 
-        self.last_question_id = query.id
+        if len(query.ids):
+            self.last_question_id = query.ids[0]
 
         # if somebody without `@reviewer` role tried setting question status to "Live on site"
         # case of unauthorized approval is handled separately in update_question_status
         if (
-            response := unauthorized_set_los(query, question_row, message)
+            response := unauthorized_set_los(query, questions, message)
         ) and query.type != "review-request-approved":
             return response
 
-        response_msg = self.update_question_status(query, question_row, message)
-        why = dedent(
-            f'{message.author.name} asked me to set the status of question with id "{query.id}" to "{query.status}"'
+        response_msg = coda_api.update_question_status(
+            query_type=query.type,
+            question_ids=query.ids,
+            status=query.status,
+            questions=questions,
+            message=message,
         )
+        # response_msg = coda_api.update_question_status(query, questions, message)
+        why = f"{message.author.name} asked me to set the status of questions with ids `{query.ids}` to `{query.status}`"
+
         return Response(confidence=8, text=response_msg, why=why)
-
-    def update_question_status(
-        self, query: SetQuestionQuery, question_row: ParsedRow, message: ServiceMessage
-    ) -> str:
-        if query.type == "review-request-approved" and not is_from_reviewer(message):
-            return f"You're not a `@reviewer` {message.author.name}"
-
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{query.id}"
-        payload = {
-            "row": {
-                "cells": [
-                    {"column": "Status", "value": query.status},
-                ],
-            },
-        }
-        req = requests.put(uri, headers=utils.get_coda_auth_headers(), json=payload)
-        if query.type == "review-request":
-            msg = f"Thanks, {message.author.name}!\nI updated this question's status to `{query.status}`"
-        elif query.type == "review-request-approved":
-            msg = f"Question approved! Updated status to `{query.status}`"
-        else:
-            msg = f"Updated question's  status to `{query.status}`"
-            msg += "\n\nPreviously:\n" + pformat_to_codeblock(cast(dict, question_row))
-
-        log.info(msg)
-        return msg
-
-    ############
-    # Coda API #
-    ############
-
-    @classmethod
-    def send_all_answers_table_request(
-        cls, query: Optional[PostOrCountQuestionQuery] = None
-    ) -> dict:
-        """Get rows from "All Answers" table in our coda"""
-        params = {
-            "valueFormat": "simple",
-            "useColumnNames": True,
-            "visibleOnly": False,
-            "limit": 1000,
-        }
-        # optionally query by status
-        if query and query.status:
-            params["query"] = f'"Status":"{query.status}"'
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows"
-        response = requests.get(
-            uri, headers=utils.get_coda_auth_headers(), params=params, timeout=16
-        ).json()
-        return response
-
-    @classmethod
-    def get_questions_df(
-        cls, query: Optional[PostOrCountQuestionQuery] = None
-    ) -> pd.DataFrame:
-        """Get questions from with `status="Not started"`"""
-        request_res = cls.send_all_answers_table_request(query)
-        rows = [parse_row(row) for row in request_res["items"]]
-        return pd.DataFrame(rows)
-
-    def get_question_by_id(self, row_id: str) -> Optional[ParsedRow]:
-        """Get question by id in "All Answers" table.
-        Returns `ParsedRow` or `None` (if question with that id doesn't exist)
-        """
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{row_id}"
-        params = {
-            "valueFormat": "simple",
-            "useColumnNames": True,
-        }
-        req = requests.get(uri, params=params, headers=utils.get_coda_auth_headers())
-        if req.status_code == 200:
-            return parse_row(req.json())
-
-    def get_question_by_gdoc_link(self, url: str) -> Optional[ParsedRow]:
-        """Get question by link to its GDoc.
-        Returns `ParsedRow` or `None` (if question with that id doesn't exist)
-        """
-        questions = self.get_questions_df()
-        questions_queried = questions[questions["url"].str.startswith(url)]
-        if not questions_queried.empty:
-            return cast(ParsedRow, questions_queried.iloc[0].to_dict())
-
-    @classmethod
-    def get_status_shorthand_dict(cls) -> dict[str, str]:
-        """Get dictionary mapping statuses and status shorthands
-        (e.g. "bs" for "Bulletpoint sketch") to valid Status labels.
-        """
-        # Workaround to make mock request during testing
-        if cls.is_in_testing_mode():
-            return {}
-
-        statuses = cls.get_all_statuses()
-        status_shorthand_dict = {}
-        for status in statuses:
-            status_shorthand_dict[status] = status
-            status_shorthand_dict[status.lower()] = status
-            shorthand = "".join(word[0].lower() for word in status.split())
-            status_shorthand_dict[shorthand] = status
-        return status_shorthand_dict
-
-    @classmethod
-    def get_all_tags(cls) -> list[str]:
-        """Get all tags from "All Answers" table"""
-        # Workaround to make mock request during testing
-        if cls.is_in_testing_mode():
-            return []
-
-        response = cls.send_all_answers_table_request()
-        tags = set()
-        for row in response["items"]:
-            if tag_string := row["values"]["Tags"]:
-                tags.update(tag_string.split(","))
-        return sorted(tags)
-
-    @classmethod
-    def get_all_statuses(cls) -> list[str]:
-        """Get all valid Status values from table in admin panel"""
-        params = {
-            "valueFormat": "rich",
-            "useColumnNames": True,
-        }
-
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.STATUSES_GRID_ID}/rows"
-        res = requests.get(
-            uri, params=params, headers=utils.get_coda_auth_headers()
-        ).json()
-        statuses = [r["name"] for r in res["items"]]
-        return sorted(statuses)
 
     #########
     # Other #
     #########
 
-    @classmethod
-    def is_in_testing_mode(cls) -> bool:
-        return utils.CODA_API_TOKEN == "testing"
-
     @property
     def test_cases(self):
-        if self.is_in_testing_mode():
+        if is_in_testing_mode():
             return []
         return [
             self.create_integration_test(
@@ -477,30 +362,6 @@ class Questions(Module):
 
     def __str__(self):
         return "Question Manager module"
-
-    def reset_dates(self) -> None:
-        """Reset all questions' dates (util, not to be used by Stampy)"""
-        questions = self.get_questions_df()
-        questions_with_dt_ids = questions[
-            questions["last_asked_on_discord"] != DEFAULT_DATE
-        ]["id"].tolist()
-        for question_id in questions_with_dt_ids:
-            self.update_question_last_asked_date(question_id, "")
-
-
-class ParsedRow(TypedDict):
-    """Dict representing one row parsed from coda "All Answers" table"""
-
-    id: str
-    title: str
-    url: str
-    status: str
-    tags: list[str]
-    last_asked_on_discord: dt
-
-
-status_shorthands = Questions.get_status_shorthand_dict()
-all_tags = Questions.get_all_tags()
 
 
 ##########################
@@ -679,7 +540,7 @@ class QuestionInfoQuery:
         if self.type == "id" or (self.type == "last" and self.query):
             return question_row["id"].startswith(cast(str, self.query))
         if self.type == "title":
-            return contains(question_row["title"], cast(str, self.query))
+            return fuzzy_contains(question_row["title"], cast(str, self.query))
         return False
 
 
@@ -697,7 +558,7 @@ class SetQuestionQuery:
     - "review-request-approved" - a `@reviewer` responded to a review request with 
     "accepted" or "approved" -> questions's status changes to "Live on site"  
     """
-    id: Optional[str]
+    ids: list[str]  # TODO: adjust description and make comments in `parse`
     status: str
 
     @classmethod
@@ -715,80 +576,15 @@ class SetQuestionQuery:
         status = parse_status(text, require_status_prefix=False)
         if status is None:
             return
-        return cls(query_type, query_id, status)
+        ids = [query_id] if query_id is not None else []
+        return cls(query_type, ids, status)
 
 
 ##################
 # Util functions #
 ##################
 
-
-def contains(container: str, contained: str) -> bool:
-    """Fuzzy-ish version of `contained in container`.
-    Disregards spaces, and punctuation.
-    """
-    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
-        container.casefold().replace(" ", "")
-    )
-
-
-def remove_punct(s: str) -> str:
-    """Remove punctuation from string"""
-    for p in punctuation:
-        s = s.replace(p, "")
-    return s
-
-
-DEFAULT_DATE = dt(1, 1, 1, 0)
-
-
-def adjust_date(date_str: str) -> dt:
-    """If date is in isoformat, parse it.
-    Otherwise, assign earliest date possible.
-    """
-    if not date_str:
-        return DEFAULT_DATE
-    return dt.fromisoformat(date_str.split("T")[0])
-
-
-def shuffle_questions(questions: pd.DataFrame) -> pd.DataFrame:
-    questions_inds = questions.index.tolist()
-    shuffled_inds = random.sample(questions_inds, len(questions_inds))
-    return questions.loc[shuffled_inds]
-
-
-def get_least_recently_asked_on_discord(
-    questions: pd.DataFrame,
-) -> pd.DataFrame:
-    """Get all questions with oldest date and shuffle them"""
-    oldest_date = questions["last_asked_on_discord"].min()
-    return questions.query("last_asked_on_discord == @oldest_date")
-
-
-def make_post_question_message(question_row: ParsedRow) -> str:
-    """Make question message from questions DataFrame row
-
-    <title>\n
-    <url>
-    """
-    return question_row["title"] + "\n" + question_row["url"]
-
-
-def parse_row(row: dict) -> ParsedRow:
-    """Parse a raw row from "All answers" table"""
-    title = row["values"]["Edit Answer"]
-    url = row["values"]["Link"]
-    status = row["values"]["Status"]
-    tags = row["values"]["Tags"].split(",")
-    last_asked_on_discord = adjust_date(row["values"]["Last Asked On Discord"])
-    return {
-        "id": row["id"],
-        "title": title,
-        "url": url,
-        "status": status,
-        "tags": tags,
-        "last_asked_on_discord": last_asked_on_discord,
-    }
+# Parsing
 
 
 def parse_status(text: str, *, require_status_prefix: bool = True) -> Optional[str]:
@@ -807,22 +603,6 @@ def parse_status(text: str, *, require_status_prefix: bool = True) -> Optional[s
     return status_shorthands[val.lower()]
 
 
-def pformat_to_codeblock(d: dict) -> str:
-    """`pformat` a dictionary and embed it in a code block
-    (for nice display in discord message)
-    """
-    return "```\n" + pformat(d, sort_dicts=False) + "\n```"
-
-
-def parse_gdoc_link(text: str) -> Optional[str]:
-    """Extract a link to GDoc from message content.
-    Returns `None` if message doesn't contain GDoc link.
-    """
-    match = re.search(r"https://docs\.google\.com/document/d/[\w_-]+", text)
-    if match:
-        return match.group()
-
-
 def parse_id(text: str) -> Optional[str]:
     """Parse question id from message content"""
     # matches: "id: <question-id>"
@@ -833,34 +613,59 @@ def parse_id(text: str) -> Optional[str]:
         return match.group(1)
 
 
-def is_from_reviewer(message: ServiceMessage) -> bool:
-    """This message is from @reviewer"""
-    return any(role.name == "reviewer" for role in message.author.roles)
+def parse_gdoc_links(text: str) -> list[str]:
+    """Extract GDoc links from message content.
+    Returns `[]` if message doesn't contain any GDoc link.
+    """
+    return re.findall(r"https://docs\.google\.com/document/d/[\w_-]+", text)
+
+
+def shuffle_questions(questions: pd.DataFrame) -> pd.DataFrame:
+    questions_inds = questions.index.tolist()
+    shuffled_inds = random.sample(questions_inds, len(questions_inds))
+    return questions.loc[shuffled_inds]
+
+
+def get_least_recently_asked_on_discord(
+    questions: pd.DataFrame,
+) -> pd.DataFrame:
+    """Get all questions with oldest date and shuffle them"""
+    oldest_date = questions["last_asked_on_discord"].min()
+    return questions.query("last_asked_on_discord == @oldest_date")
+
+
+def make_post_question_message(question_row: CodaQuestion) -> str:
+    """Make question message from questions DataFrame row
+
+    <title>\n
+    <url>
+    """
+    return question_row["title"] + "\n" + question_row["url"]
 
 
 def unauthorized_set_los(
-    query: SetQuestionQuery, question_row: ParsedRow, message: ServiceMessage
+    query: SetQuestionQuery, questions: list[CodaQuestion], message: ServiceMessage
 ) -> Optional[Response]:
     """Somebody tried set questions status "Live on site" but they're not a reviewer"""
+    question_statuses = [q["status"] for q in questions]
     if "Live on site" not in (
         query.status,
-        question_row["status"],
+        *question_statuses,
     ) or is_from_reviewer(message):
         return
     if query.status == "Live on site":
         response_msg = dedent(
             f"""\
-            Sorry, {message.author.name}. You can't set this question's status to `Live on site` because you are not a `@reviewer`. 
-            Only `@reviewer`s can change question status to `Live on site`."""
+            Sorry, {message.author.name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
+            Only `@reviewer`s can do thats."""
         )
         why = dedent(
-            f"{message.author.name} wanted to change status to `Live on site` but they're not a @reviewer"
+            f"{message.author.name} wanted to change question status to `Live on site` but they're not a @reviewer"
         )
-    else:  # question_row["status"] == "Live on site":
+    else:  # "Live on site" in question_statuses:
         response_msg = dedent(
             f"""\
-            Sorry, {message.author.name}. You can't set this question's status  to `{query.status}` because its current status is `Live on site` and you are not
-            a `@reviewer`. 
+            Sorry, {message.author.name}. You can't set status  to `{query.status}` because at least one of them is already `Live on site`. 
             Only `@reviewer`s can change status of questions that are already `Live on site`."""
         )
         why = f"{message.author.name} wanted to change status from `Live on site` but they're not a @reviewer"
