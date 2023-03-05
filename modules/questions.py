@@ -16,9 +16,7 @@ import requests
 from structlog import get_logger
 from typing_extensions import Self
 
-from servicemodules.discordConstants import (
-    editing_channel_id,
-)
+from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
 from utilities import Utilities
 from utilities.serviceutils import ServiceMessage
@@ -204,12 +202,22 @@ class Questions(Module):
             },
         }
         uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.ALL_ANSWERS_TABLE_ID}/rows/{row_id}"
-        response = requests.put(uri, headers=utils.get_coda_auth_headers(), json=payload)
-        response.raise_for_status() # Throw if there was an error.
-        log.info(self.class_name, msg=f"Updated question with id {row_id} to time {current_time}")
+        response = requests.put(
+            uri, headers=utils.get_coda_auth_headers(), json=payload
+        )
+        response.raise_for_status()  # Throw if there was an error.
+        log.info(
+            self.class_name,
+            msg=f"Updated question with id {row_id} to time {current_time}",
+        )
 
     async def post_random_oldest_question(self, event_type) -> None:
-        channel = cast(Thread, self.utils.client.get_channel(int(editing_channel_id)))
+        channel = cast(
+            Thread,
+            self.utils.client.get_channel(
+                int(random.choice([editing_channel_id, general_channel_id]))
+            ),
+        )
         if channel is None:
             return
         q = cast(
@@ -222,7 +230,10 @@ class Questions(Module):
         self.last_question_posted = dt.now()
         self.update_question_last_asked_date(q["id"], dt.now().isoformat())
         msg = make_post_question_message(q)
-        self.log.info(self.class_name, msg=f"Posting a random oldest question to the `#editing` channel because of {event_type}")
+        self.log.info(
+            self.class_name,
+            msg=f"Posting a random oldest question to the `#editing` channel because of {event_type}",
+        )
         await channel.send(msg)
 
     ###################
