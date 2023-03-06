@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -25,10 +26,11 @@ from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage
 from string import punctuation
-from typing import List, Optional
+from typing import Any, List, Optional
 import discord
 import json
 import os
+from pprint import pformat
 import psutil
 import random
 import re
@@ -137,6 +139,10 @@ class Utilities:
         intents.members = True
         intents.message_content = True
         self.client = discord.Client(intents=intents)
+        
+        # async
+        # self.loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(self.loop)
 
     def rate_limit(self, timer_name: str, **kwargs) -> bool:
         """Should I rate-limit? i.e. Has it been less than this length of time since the last time
@@ -686,15 +692,6 @@ def remove_punct(s: str) -> str:
     for p in punctuation:
         s = s.replace(p, "")
     return s
-
-def num_questions(n: int) -> str:
-    """Verbalize number of questions"""
-    if n == 0:
-        return "no questions"
-    if n == 1:
-        return "1 question"
-    return f"{n} questions"
-
 
 class UtilsTests:
     def test_split_message_for_discord(self):

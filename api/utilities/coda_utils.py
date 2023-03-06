@@ -55,8 +55,6 @@ def make_updated_cells(col2val: dict[str, Any]) -> list[Cell]:
     ]
 
 
-
-
 class QuestionRow(TypedDict):
     """Dict representing one row parsed from coda "All Answers" table"""
 

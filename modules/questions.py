@@ -15,16 +15,13 @@ from typing_extensions import Self
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionRow
-from servicemodules.discordConstants import (
-    editing_channel_id,
-)
+from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
 from utilities.utilities import (
     is_in_testing_mode,
     is_from_reviewer,
     fuzzy_contains,
-    num_questions,
-    pformat_to_codeblock
+    pformat_to_codeblock,
 )
 from utilities.serviceutils import ServiceMessage
 
@@ -48,15 +45,19 @@ class Questions(Module):
         super().__init__()
         self.last_question_id: Optional[str] = None
         self.review_msg_id2question_ids: dict[str, list[str]] = {}
-        self.last_question_posted: datetime = datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
+        self.last_question_posted: datetime = (
+            datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
+        )
         self.class_name = "Questions Module"
-        
+
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
-            if self.last_question_posted < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL:
+            if (
+                self.last_question_posted
+                < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
+            ):
                 await self.post_random_oldest_question(event_type)
-
 
     #########################################
     # Core: processing and posting messages #
@@ -81,6 +82,7 @@ class Questions(Module):
                 why=f"{message.author.name} accepted the review",
             )
         if not (text := self.is_at_me(message)):
+            coda_api.update_caches(on_interval=True)
             return Response()
         if query := PostOrCountQuestionQuery.parse(text):
             if query.action == "count":
@@ -173,16 +175,18 @@ class Questions(Module):
         It will contain question title and GDoc url.
         """
         # get questions df
-        questions = coda_api.get_questions_df()
+        questions_df = coda_api.questions_df
 
         # if tags were specified, filter questions on those which have at least one of the tags
         if query.status:
-            questions = questions.query("status == @query.status")
+            questions_df = questions_df.query("status == @query.status")
+        else:
+            questions_df = questions_df.query("status != 'Live on site'")
         if query.tag:
-            questions = query.filter_on_tag(questions)
+            questions = query.filter_on_tag(questions_df)
 
         # get all the oldest ones and shuffle them
-        questions = shuffle_questions(questions)
+        questions = shuffle_questions(questions_df)
         questions = get_least_recently_asked_on_discord(questions)
 
         # get exactly n questions (default is 1)
@@ -200,6 +204,8 @@ class Questions(Module):
         if len(questions) == 1:
             self.last_question_id = questions.iloc[0]["id"]
 
+        await message.channel.send(msg)
+
         # update Last Asked On Discord column
         current_time = datetime.now().isoformat()
         for question_id in questions["id"].tolist():
@@ -207,19 +213,27 @@ class Questions(Module):
 
         self.last_question_posted = datetime.now()
 
+        coda_api.update_caches()
         return Response(
             confidence=8,
-            text=msg,
+            # text=msg,
             why=f"{message.author.name} asked me for next questions",
         )
 
     async def post_random_oldest_question(self, event_type) -> None:
-        channel = cast(Thread, self.utils.client.get_channel(int(editing_channel_id)))
+        channel = cast(
+            Thread,
+            self.utils.client.get_channel(
+                int(random.choice([editing_channel_id, general_channel_id]))
+            ),
+        )
         if channel is None:
             return
         q = cast(
             QuestionRow,
-            get_least_recently_asked_on_discord(coda_api.get_questions_df())
+            get_least_recently_asked_on_discord(
+                coda_api.questions_df.query("status == 'Not started'")
+            )
             .iloc[0]
             .to_dict(),
         )
@@ -232,6 +246,7 @@ class Questions(Module):
             msg=f"Posting a random oldest question to the `#editing` channel because of {event_type}",
         )
         await channel.send(msg)
+        coda_api.update_caches()
 
     ###################
     # Count questions #
@@ -243,7 +258,7 @@ class Questions(Module):
         """Post message to Discord about number of questions matching the query"""
 
         # get df with questions
-        questions = coda_api.get_questions_df()
+        questions = coda_api.questions_df
 
         # if tags were specified, filter for questions which have at least one of these tags
         if query.status:
@@ -273,7 +288,7 @@ class Questions(Module):
                 text="There is no last question ;/",
                 why=f"{message.author.name} asked me for last question but I haven't been asked for (or posted) any questions since I've been started",
             )
-        questions = coda_api.get_questions_df()
+        questions = coda_api.questions_df
         msg = f"Here it is ({query.info()}):\n\n"
         question_row = next(
             (q for _, q in questions.iterrows() if query.matches(q)), None
@@ -310,13 +325,14 @@ class Questions(Module):
         if response := unauthorized_set_los(query, [question], message):
             return response
 
-        coda_api.update_question_status(query_id, query.status)
         msg = f"Updated question's status to `{query.status}`"
         msg += "\n\nPreviously:\n" + pformat_to_codeblock(cast(dict, question))
-
+        await message.channel.send(msg)
+        coda_api.update_question_status(query_id, query.status)
+        coda_api.update_caches()
         return Response(
             confidence=8,
-            text=msg,
+            # text=msg,
             why=f"{message.author.name} asked me to set the status of questions with id `{query_id}` to `{query.status}`",
         )
 
@@ -343,17 +359,26 @@ class Questions(Module):
         else:
             msg_los = ""
 
+        msg = f"Thanks, {message.author.name}!\n"
+        if not id2question:
+            msg += "I didn't updated any questions to "
+        elif len(id2question) == 1:
+            msg += "I updated status of 1 question to "
+        else:
+            msg += f"I updated status of {len(id2question)} questions to "
+        msg += f"`{query.status}`" + msg_los
+
+        await message.channel.send(msg)
+        
         for qid, q in id2question.items():
             coda_api.update_question_status(qid, q["status"])
 
-        msg = (
-            f"Thanks, {message.author.name}!\nI updated status of {num_questions(len(id2question))} to `{query.status}`\n\n"
-            + msg_los
-        )
-
         self.log.info(self.class_name, msg=msg)
+        coda_api.update_caches()
         return Response(
-            confidence=8, text=msg, why=f"{message.author.name} kindly asked for review"
+            confidence=8,
+            # text=msg,
+            why=f"{message.author.name} kindly asked for review"
         )
 
     async def cb_set_status_by_approved(
@@ -361,14 +386,24 @@ class Questions(Module):
     ) -> Response:
         if not is_from_reviewer(message):
             await message.channel.send(
-                YOURE_NOT_A_REVIEWER.format(author_name=message.author.name)
+                YOU_NOT_REVIEWER.format(author_name=message.author.name)
             )
+        response_text = (
+            "Approved! "
+            + (
+                "1 more question"
+                if len(query.ids) == 1
+                else f"{len(query.ids)} more questions"
+            )
+            + " `Live on site`"
+        )
+        await message.channel.send(response_text)
         for qid in query.ids:
             coda_api.update_question_status(qid, query.status)
-        response_text = f"Approved! {num_questions(len(query.ids))} to `Live on site`"
+        coda_api.update_caches()
         return Response(
             confidence=8,
-            text=response_text,
+            # text=response_text,
             why=f"{message.author.name} approved the questions posted for review",
         )
 
@@ -618,12 +653,13 @@ class SetQuestionByAtOrReplyQuery:
     - Review request
         - Somebody mentions one of the roles (`@reviewer`, `@feedback`, `@feedback-sketch`)
         and posts a link to GDoc, triggering Stampy to change status of that question
-        (to `In review`, `In progress`, `Bulletpoint sketch`, respectively)  
+        (to `In review`, `In progress`, `Bulletpoint sketch`, respectively)
     - Review approval
         - A user with `@reviewer` role responds to a review request with a message containing
-        "accepted", "approved", or "lgtm" (case insensitive) 
-        -> questions's status changes to "Live on site"  
+        "accepted", "approved", or "lgtm" (case insensitive)
+        -> questions's status changes to "Live on site"
     """
+
     ids: list[str]
     status: str
 
@@ -824,4 +860,4 @@ NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE = """\
 Sorry, {author_name}. You can't set status  to `{query_status}` because at least one of them is already `Live on site`. 
 Only `@reviewer`s can change status of questions that are already `Live on site`."""
 
-YOURE_NOT_A_REVIEWER = "You're not a `@reviewer` {author_name}"
+YOU_NOT_REVIEWER = "You're not a `@reviewer` {author_name}"
