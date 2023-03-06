@@ -674,6 +674,11 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
         container.casefold().replace(" ", "")
     )
+def pformat_to_codeblock(d: dict[str, Any]) -> str:
+    """`pformat` a dictionary and embed it in a code block
+    (for nice display in discord message)
+    """
+    return "```\n" + pformat(d, sort_dicts=False) + "\n```"
 
 
 def remove_punct(s: str) -> str:
@@ -681,6 +686,14 @@ def remove_punct(s: str) -> str:
     for p in punctuation:
         s = s.replace(p, "")
     return s
+
+def num_questions(n: int) -> str:
+    """Verbalize number of questions"""
+    if n == 0:
+        return "no questions"
+    if n == 1:
+        return "1 question"
+    return f"{n} questions"
 
 
 class UtilsTests:

@@ -3,30 +3,32 @@
 """
 from __future__ import annotations
 
-from datetime import datetime as dt
 import os
 from typing import cast, Optional
 
+from codaio import Coda, Document
 import pandas as pd
-import requests
 from structlog import get_logger
 
 
 from api.utilities.coda_utils import (
-    parse_coda_question,
-    CodaQuestion,
+    parse_question_row,
+    QuestionRow,
     DEFAULT_DATE,
-    request_succesful
+    make_updated_cells
 )
+from utilities import is_in_testing_mode
 
 log = get_logger()
 
 
-class Coda:
+class CodaAPI:
     """Gathers everything for interacting with coda"""
 
-    __instance: Optional[Coda] = None
+    # Singleton instance
+    __instance: Optional[CodaAPI] = None
 
+    # Constance
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
     DOC_ID = (
         "ah62XEPvpG" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
@@ -36,11 +38,8 @@ class Coda:
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     REQUEST_TIMEOUT = 5
 
-    # Caching tables
     users_df: pd.DataFrame
-    users_last_fetched: dt
     questions_df: pd.DataFrame
-    questions_last_fetched: dt
 
     def __init__(self):
         assert self.__instance is None
@@ -48,222 +47,104 @@ class Coda:
         self.class_name = "Coda API"
         self.log = get_logger()
 
-        # Caching tables
-        self.users_last_fetched = DEFAULT_DATE
-        self.questions_last_fetched = DEFAULT_DATE
-        self.get_users_df(use_cache=False)
-        self.get_questions_df(use_cache=False)
+        # Coda API library
+        os.environ["CODA_API_KEY"] = self.CODA_API_TOKEN
+        self.coda = Coda.from_environment()
+        self.users = self.doc.get_table(self.TEAM_GRID_ID)
+        self.fetch_users_df()
+        self.questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        self.fetch_questions_df()
 
     @classmethod
-    def get_instance(cls) -> Coda:
+    def get_instance(cls) -> CodaAPI:
         if cls.__instance:
             return cls.__instance
         return cls()
 
     @property
-    def auth_headers(self) -> dict[str, str]:
-        """Get authorization headers for coda requests"""
-        return {"Authorization": f"Bearer {self.CODA_API_TOKEN}"}
+    def doc(self) -> Document:
+        return Document.from_environment(self.DOC_ID)
 
     #######################
     #   Getters - Users   #
     #######################
 
-    def get_users_df(self, *, use_cache: bool = True) -> pd.DataFrame:
+    def fetch_users_df(self) -> None:
+        self.user_df = pd.DataFrame(self.users.to_dict())
+
+    def get_users_df(self) -> pd.DataFrame:
         """Get the [Team grid](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#Team_tu_Rc/r5) with info about users"""
-        if use_cache and self.users_cache_up_to_date():
-            return self.users_df
-
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
-        params = {"valueFormat": "simple", "useColumnNames": True}
-        response = requests.get(
-            uri,
-            params=params,
-            headers=self.auth_headers,
-            timeout=self.REQUEST_TIMEOUT,
-        )
-        if not request_succesful(response):
-            self.log.error(
-                self.class_name,
-                msg="couldn't get users table",
-                uri=uri,
-                params=params,
-                response=response,
-            )
-            response.raise_for_status()
-
-        self.users_last_fetched = dt.now()
-        users_df = pd.DataFrame(item["values"] for item in response.json()["items"])
-        self.users_df = users_df
-        return users_df
+        if not self.users_df_up_to_date():
+            self.fetch_users_df()
+        return self.users_df
 
     def get_user_row(self, field: str, value: str) -> Optional[dict]:
         """Get user row from the users table using a query with the following form
 
         `"<field/column name>":"<value>"`
         """
-        if self.users_cache_up_to_date():
-            query_expr = f"{field} == @value"
-            users_filtered = self.users_df.query(query_expr)
-            if not users_filtered.empty:
-                return users_filtered.iloc[0].to_dict()
-
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
-        params = {
-            "valueFormat": "simple",
-            "useColumnNames": True,
-            "query": f'"{field}":"{value}"',
-            "limit": 1,
-        }
-        response = requests.get(
-            uri, headers=self.auth_headers, params=params, timeout=self.REQUEST_TIMEOUT
-        )
-        if not request_succesful(response):
-            self.log.error(
-                self.class_name,
-                msg="couldn't get user row, unsuccessful request",
-                field=field,
-                value=value,
-                uri=uri,
-                params=params,
-                response=response,
-            )
-            return
-        if users := response.json()["items"]:
-            return users[0]
+        users_df = self.get_users_df()
+        users_df_filtered = users_df[users_df[field] == value]
+        if not users_df_filtered.empty:
+            return users_df_filtered.iloc[0].to_dict()
 
     ###########################
     #   Getters - Questions   #
     ###########################
 
+    def fetch_questions_df(self) -> None:
+        """#TODO docstring"""
+        question_rows = [parse_question_row(row) for row in self.questions.rows()]
+        self.questions_df = pd.DataFrame(question_rows)
+
     def get_questions_df(
-        self, *, status: Optional[str] = None, use_cache: bool = False
+        self,
     ) -> pd.DataFrame:
         """Get questions from with `status="Not started"`"""
-        if use_cache and self.questions_cache_up_to_date():
-            return self.questions_df
-
-        request_res = self.send_all_answers_rows_request(status)
-        rows = [parse_coda_question(row) for row in request_res["items"]]
-        questions = pd.DataFrame(rows)
-        self.questions_df = questions
-        return questions
+        if not self.questions_df_up_to_date():
+            self.fetch_questions_df()
+        return self.questions_df
 
     def get_questions_by_ids(
         self, question_ids: list[str]
-    ) -> dict[str, CodaQuestion]: #TODO: handle questions that couldn't be found?
+    ) -> dict[str, QuestionRow]:  # TODO: handle questions that couldn't be found?
         """Get many question by their ids in "All Answers" table.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
         """
-        questions = self.get_questions_df()
-        id2question = cast(
-            dict[str, CodaQuestion], questions.set_index("id").to_dict(orient="records")
-        )
-        return {qid: id2question[qid] for qid in question_ids if qid in id2question}
+        id2question = {
+            qid: parse_question_row(self.questions[qid]) for qid in question_ids
+        }
+        return id2question
 
-    def get_question_by_id(
-        self, questions_id: str, *, use_cache: bool = True
-    ) -> CodaQuestion:
+    def get_question_by_id(self, question_id: str) -> QuestionRow:
         """Get question by id in "All Answers" table.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
         """
-        if use_cache and self.questions_cache_up_to_date():
-            if questions_id in self.questions_df["id"].tolist():
-                return cast(
-                    CodaQuestion,
-                    self.questions_df.query("id == @row_id").iloc[0].to_dict(),
-                )
+        return parse_question_row(self.questions[question_id])
 
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.ALL_ANSWERS_TABLE_ID}/rows/{questions_id}"
-        params = {
-            "valueFormat": "simple",
-            "useColumnNames": True,
-        }
-        response = requests.get(
-            uri, params=params, headers=self.auth_headers, timeout=self.REQUEST_TIMEOUT
-        )
-        if not request_succesful(response):
-            self.log.error(
-                self.class_name,
-                msg="Couldn't get question by ID",
-                questions_id=questions_id,
-                uri=uri,
-                params=params,
-                response=response,
-            )
-
-        return parse_coda_question(response.json())
-
-    def get_questions_by_gdoc_links(self, urls: list[str]) -> list[CodaQuestion]:
+    def get_questions_by_gdoc_links(self, urls: list[str]) -> list[QuestionRow]:
         """Get question by link to its GDoc.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
         """
-        questions = self.get_questions_df()
-        questions_queried = questions[
-            questions["url"].map(lambda qurl: any(qurl.startswith(url) for url in urls))
+        questions_df = self.get_questions_df()
+        questions_df_queried = questions_df[
+            questions_df["url"].map(
+                lambda qurl: any(qurl.startswith(url) for url in urls)
+            )
         ]
-        if questions_queried.empty:
+        if questions_df_queried.empty:
             return []
-        return cast(list[CodaQuestion], questions_queried.to_dict(orient="records"))
-
-    def send_all_answers_rows_request(self, status: Optional[str] = None) -> dict:
-        """Get rows from "All Answers" table in our coda"""
-        params = {
-            "valueFormat": "simple",
-            "useColumnNames": True,
-            "visibleOnly": False,
-            "limit": 1000,
-        }
-        # optionally query by status
-        if status:
-            params["query"] = f'"Status":"{status}"'
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.ALL_ANSWERS_TABLE_ID}/rows"
-        response = requests.get(
-            uri, headers=self.auth_headers, params=params, timeout=self.REQUEST_TIMEOUT
-        )
-        if not request_succesful(response):
-            self.log.response(
-                self.class_name,
-                msg="Couldn't get All Answers table",
-                params=params,
-                uri=uri,
-                response=response,
-            )
-            response.raise_for_status()
-
-        return response.json()
-
-    #####################
-    #   Getters - Doc   #
-    #####################
-
-    def get_doc(self) -> dict:
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}"
-        response = requests.get(
-            uri, headers=self.auth_headers, timeout=self.REQUEST_TIMEOUT
-        )
-        if not request_succesful(response):
-            self.log.error(
-                self.class_name, msg="Couldn't get coda doc", uri=uri, response=response
-            )
-            response.raise_for_status()
-        return response.json()
+        return cast(list[QuestionRow], questions_df_queried.to_dict(orient="records"))
 
     #####################
     #   Caching utils   #
     #####################
 
-    def get_coda_last_update_time(self) -> dt:
-        # this is a bit hacky, but should work (?)
-        coda_doc = self.get_doc()
-        last_update_time = dt.fromisoformat(coda_doc["updatedAt"].replace("Z", ""))
-        return last_update_time
+    def users_df_up_to_date(self) -> bool:  # TODO docstrings to both
+        return self.doc.updated_at <= self.users.updated_at
 
-    def users_cache_up_to_date(self) -> bool:
-        return self.get_coda_last_update_time() <= self.users_last_fetched
-
-    def questions_cache_up_to_date(self) -> bool:
-        return self.get_coda_last_update_time() <= self.questions_last_fetched
+    def questions_df_up_to_date(self) -> bool:
+        return self.doc.updated_at <= self.questions.updated_at
 
     #######################
     #   Getters - Other   #
@@ -292,33 +173,16 @@ class Coda:
         if is_in_testing_mode():
             return []
 
-        response = self.send_all_answers_rows_request()
         tags = set()
-        for row in response["items"]:
-            if tag_string := row["values"]["Tags"]:
-                tags.update(tag_string.split(","))
+        for row_tags in self.questions_df["tags"]:
+            tags.update(row_tags)
         return sorted(tags)
 
     def get_all_statuses(self) -> list[str]:
         """Get all valid Status values from table in admin panel"""
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.STATUSES_GRID_ID}/rows"
-        params = {
-            "valueFormat": "rich",
-            "useColumnNames": True,
-        }
-
-        response = requests.get(
-            uri, params=params, headers=self.auth_headers, timeout=self.REQUEST_TIMEOUT
-        )
-        if not request_succesful(response):
-            self.log.error(
-                self.class_name,
-                msg="Couldn't get statuses from statuses table",
-                uri=uri,
-                params=params,
-                response=response,
-            )
-        return sorted(r["name"] for r in response.json()["items"])
+        statuses_table = self.doc.get_table(self.STATUSES_GRID_ID)
+        statuses_df = pd.DataFrame(statuses_table.to_dict())
+        return sorted(statuses_df["Status"].unique())
 
     ##########################
     #   Updating questions   #
@@ -328,49 +192,19 @@ class Coda:
         self,
         question_id: str,
         status: str,
-    ) -> None: # Optional[str]: # response message (?)
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.ALL_ANSWERS_TABLE_ID}/rows/{question_id}"
-        payload = {
-            "row": {
-                "cells": [
-                    {"column": "Status", "value": status},
-                ],
-            },
-        }
-        requests.put(
-            uri,
-            headers=self.auth_headers,
-            json=payload,
-            timeout=self.REQUEST_TIMEOUT,
-        )
-
-
-    def update_questions_last_asked_date(self, question_ids: list[str]) -> None:
-        """Update the "Last Asked on Discord" field in "All Answers" table for many questions"""
-        current_time = dt.now().isoformat()
-        for q_id in question_ids:
-            self.update_question_last_asked_date(q_id, current_time)
+    ) -> None:  
+        # Optional[str]: # response message (?)
+        row = self.questions[question_id]
+        updated_cells = make_updated_cells({"Status": status})
+        self.questions.update_row(row, updated_cells)
 
     def update_question_last_asked_date(
         self, question_id: str, current_time: str
     ) -> None:
         """Update the "Last Asked on Discord" field in table for the question"""
-        payload = {
-            "row": {
-                "cells": [
-                    {"column": "Last Asked On Discord", "value": current_time},
-                ],
-            },
-        }
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.ALL_ANSWERS_TABLE_ID}/rows/{question_id}"
-        response = requests.put(
-            uri, headers=self.auth_headers, json=payload, timeout=self.REQUEST_TIMEOUT
-        )
-        response.raise_for_status()  # Throw if there was an error.
-        log.info(
-            self.class_name,
-            msg=f"Updated question with id {question_id} to time {current_time}",
-        )
+        row = self.questions[question_id]
+        updated_cells = make_updated_cells({"Last Asked On Discord": current_time})
+        self.questions.update_row(row, updated_cells)
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""

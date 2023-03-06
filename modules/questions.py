@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime as dt, timedelta
+from datetime import datetime, timedelta
 import random
 import re
 from textwrap import dedent
@@ -13,8 +13,8 @@ import pandas as pd
 from structlog import get_logger
 from typing_extensions import Self
 
-from api.coda import Coda
-from api.utilities.coda_utils import CodaQuestion, pformat_to_codeblock
+from api.coda import CodaAPI
+from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import (
     editing_channel_id,
 )
@@ -23,6 +23,8 @@ from utilities.utilities import (
     is_in_testing_mode,
     is_from_reviewer,
     fuzzy_contains,
+    num_questions,
+    pformat_to_codeblock
 )
 from utilities.serviceutils import ServiceMessage
 
@@ -30,7 +32,7 @@ from utilities.serviceutils import ServiceMessage
 log = get_logger()
 load_dotenv()
 
-coda_api = Coda.get_instance()
+coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()
 all_tags = coda_api.get_all_tags()
 
@@ -46,13 +48,15 @@ class Questions(Module):
         super().__init__()
         self.last_question_id: Optional[str] = None
         self.review_msg_id2question_ids: dict[str, list[str]] = {}
-        self.last_question_posted: dt = dt.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
-
+        self.last_question_posted: datetime = datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
+        self.class_name = "Questions Module"
+        
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
-            if self.last_question_posted < dt.now() - self.AUTOPOST_QUESTION_INTERVAL:
+            if self.last_question_posted < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL:
                 await self.post_random_oldest_question(event_type)
+
 
     #########################################
     # Core: processing and posting messages #
@@ -169,9 +173,11 @@ class Questions(Module):
         It will contain question title and GDoc url.
         """
         # get questions df
-        questions = coda_api.get_questions_df(status=query.status)
+        questions = coda_api.get_questions_df()
 
         # if tags were specified, filter questions on those which have at least one of the tags
+        if query.status:
+            questions = questions.query("status == @query.status")
         if query.tag:
             questions = query.filter_on_tag(questions)
 
@@ -186,7 +192,7 @@ class Questions(Module):
         msg = query.next_result_info(len(questions))
         if not questions.empty:
             msg += "\n\n" + "\n---\n".join(
-                make_post_question_message(cast(CodaQuestion, r.to_dict()))
+                make_post_question_message(cast(QuestionRow, r.to_dict()))
                 for _, r in questions.iterrows()
             )
 
@@ -195,11 +201,11 @@ class Questions(Module):
             self.last_question_id = questions.iloc[0]["id"]
 
         # update Last Asked On Discord column
-        current_time = dt.now().isoformat()
+        current_time = datetime.now().isoformat()
         for question_id in questions["id"].tolist():
             coda_api.update_question_last_asked_date(question_id, current_time)
 
-        self.last_question_posted = dt.now()
+        self.last_question_posted = datetime.now()
 
         return Response(
             confidence=8,
@@ -212,14 +218,14 @@ class Questions(Module):
         if channel is None:
             return
         q = cast(
-            CodaQuestion,
+            QuestionRow,
             get_least_recently_asked_on_discord(coda_api.get_questions_df())
             .iloc[0]
             .to_dict(),
         )
         self.last_question_id = q["id"]
-        self.last_question_posted = dt.now()
-        coda_api.update_question_last_asked_date(q["id"], dt.now().isoformat())
+        self.last_question_posted = datetime.now()
+        coda_api.update_question_last_asked_date(q["id"], datetime.now().isoformat())
         msg = make_post_question_message(q)
         self.log.info(
             self.class_name,
@@ -237,9 +243,11 @@ class Questions(Module):
         """Post message to Discord about number of questions matching the query"""
 
         # get df with questions
-        questions = coda_api.get_questions_df(status=query.status)
+        questions = coda_api.get_questions_df()
 
         # if tags were specified, filter for questions which have at least one of these tags
+        if query.status:
+            questions = questions.query("status == @query.status")
         if query.tag:
             questions = query.filter_on_tag(questions)
 
@@ -321,10 +329,11 @@ class Questions(Module):
             ids_los = [
                 qid for qid, status in id2status.items() if status == "Live on site"
             ]
+            one_los = len(ids_los) == 1
             msg_los = (
-                f"{len(ids_los)} of these questions are already `Live on site`. You can't change their status, {message.author.name} because you're not a `@reviewer`.\n\nThese are:\n"
+                f"{len(ids_los)} of these questions {'is' if one_los else 'are'} already `Live on site`. You can't change {'its' if one_los else 'their'} status because you're not a `@reviewer`.\n\nThese are:\n"
                 + "\n".join(
-                    f'"{id2question[qid]["title"]}" - {id2question[qid]["url"]}'
+                    f"{id2question[qid]['title']} ({id2question[qid]['url']})"
                     for qid in ids_los
                 )
             )
@@ -347,7 +356,6 @@ class Questions(Module):
             confidence=8, text=msg, why=f"{message.author.name} kindly asked for review"
         )
 
-
     async def cb_set_status_by_approved(
         self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
     ) -> Response:
@@ -361,9 +369,8 @@ class Questions(Module):
         return Response(
             confidence=8,
             text=response_text,
-            why=f"{message.author.name} approved the questions posted for review"
+            why=f"{message.author.name} approved the questions posted for review",
         )
-        
 
     #########
     # Other #
@@ -388,7 +395,7 @@ class Questions(Module):
         ]
 
     def __str__(self):
-        return "Question Manager module"
+        return "Questions Module"
 
 
 ##########################
@@ -430,7 +437,6 @@ class PostOrCountQuestionQuery:
             max_num_of_questions=max_num_of_questions,
             action=action,
         )
-        log.info(f"{question_query=}")
         return question_query
 
     @staticmethod
@@ -540,13 +546,17 @@ class QuestionInfoQuery:
 
     @classmethod
     def parse(cls, text: str, last_question_id: Optional[str]) -> Optional[Self]:
+        # if text contains neither "get", nor "info", it's not a request for getting question info
         if "get" not in text and "info" not in text:
             return
+        # request to get question by ID
         if question_id := parse_id(text):
             return cls("id", question_id)
+        # request to get question by its title (or substring fuzzily contained in title)
         if match := re.search(r"(?:question):?\s+([-\w\s]+)", text, re.I):
             question_title = match.group(1)
             return cls("title", question_title)
+        # request to get last question
         if "get last" in text or "get it" in text:
             return cls("last", last_question_id)
 
@@ -580,10 +590,6 @@ class SetQuestionByMsgQuery:
     - "id" - specified by unique row identifier in "All Answers" table
     - "last" - ordered to get the last row that stampy interacted with
     (changed or posted) in isolation from other rows
-    - "review-request" - somebody mentioned one of the roles and posted a link to GDoc,
-    which triggered Stampy to change status of that question  
-    - "review-request-approved" - a `@reviewer` responded to a review request with 
-    "accepted" or "approved" -> questions's status changes to "Live on site"  
     """
     id: Optional[str]  # TODO: adjust description and make comments in `parse`
     status: str
@@ -608,6 +614,16 @@ class SetQuestionByMsgQuery:
 
 @dataclass(frozen=True)
 class SetQuestionByAtOrReplyQuery:
+    """Sets question status when
+    - Review request
+        - Somebody mentions one of the roles (`@reviewer`, `@feedback`, `@feedback-sketch`)
+        and posts a link to GDoc, triggering Stampy to change status of that question
+        (to `In review`, `In progress`, `Bulletpoint sketch`, respectively)  
+    - Review approval
+        - A user with `@reviewer` role responds to a review request with a message containing
+        "accepted", "approved", or "lgtm" (case insensitive) 
+        -> questions's status changes to "Live on site"  
+    """
     ids: list[str]
     status: str
 
@@ -666,7 +682,7 @@ def get_least_recently_asked_on_discord(
     return questions.query("last_asked_on_discord == @oldest_date")
 
 
-def make_post_question_message(question_row: CodaQuestion) -> str:
+def make_post_question_message(question_row: QuestionRow) -> str:
     """Make question message from questions DataFrame row
 
     <title>\n
@@ -677,7 +693,7 @@ def make_post_question_message(question_row: CodaQuestion) -> str:
 
 def unauthorized_set_los(
     query: Union[SetQuestionByMsgQuery, SetQuestionByAtOrReplyQuery],
-    questions: list[CodaQuestion],
+    questions: list[QuestionRow],
     message: ServiceMessage,
 ) -> Optional[Response]:
     """Somebody tried set questions status "Live on site" but they're not a reviewer"""
@@ -700,9 +716,9 @@ def unauthorized_set_los(
     return Response(confidence=8, text=response_msg, why=why)
 
 
-###############
-# Big regexes #
-###############
+###############################
+#   Big regexes and strings   #
+###############################
 
 PAT_QUESTION_QUERY = r"(\d{,2}\s)?q(uestions?)?(\s?.{,128})"
 re_next_question = re.compile(
@@ -800,21 +816,12 @@ $   # end
 - how many questions (with status X) (and tagged "Y" "Z")
 """
 
-NOT_FROM_REVIEWER_TO_LIVE_ON_SITE = dedent(
-    """\
-        Sorry, {author_name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
-        Only `@reviewer`s can do thats."""
-)
-NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE = dedent(
-    """\
-        Sorry, {author_name}. You can't set status  to `{query_status}` because at least one of them is already `Live on site`. 
-        Only `@reviewer`s can change status of questions that are already `Live on site`."""
-)
-YOURE_NOT_A_REVIEWER = "You're not a `@reviewer` {author_name}"
+NOT_FROM_REVIEWER_TO_LIVE_ON_SITE = """\
+Sorry, {author_name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
+Only `@reviewer`s can do thats."""
 
-def num_questions(n: int) -> str:
-    if n == 0:
-        return "no questions"
-    if n == 1:
-        return "1 question"
-    return f"{n} questions"
+NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE = """\
+Sorry, {author_name}. You can't set status  to `{query_status}` because at least one of them is already `Live on site`. 
+Only `@reviewer`s can change status of questions that are already `Live on site`."""
+
+YOURE_NOT_A_REVIEWER = "You're not a `@reviewer` {author_name}"

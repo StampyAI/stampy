@@ -1,4 +1,4 @@
-from datetime import datetime as dt, timedelta
+from datetime import datetime , timedelta
 import re
 from typing import cast
 import discord
@@ -28,7 +28,7 @@ vote_strengths_per_emoji = {
 class StampsModule(Module):
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
     UNAUTHORIZED_MESSAGE = "You can't do that!"
-    last_total_stamp_update: dt
+    last_total_stamp_update: datetime
 
     def __str__(self):
         return "StampsModule"
@@ -104,7 +104,7 @@ class StampsModule(Module):
             user = self.utils.client.get_user(user_id)
             if user is not None:
                 self.update_stamps_in_users_table(user, stamp_count)
-        self.last_total_stamp_update = dt.now()
+        self.last_total_stamp_update = datetime.now()
 
     def update_utils(self) -> None:
         self.utils.users = self.utils.get_users()
@@ -318,7 +318,7 @@ class StampsModule(Module):
                 negative=(event_type == "REACTION_REMOVE"),
             )
             stamps_after_update = self.get_user_stamps(to_id)
-            if self.last_total_stamp_update < dt.now() - timedelta(hours=23):
+            if self.last_total_stamp_update < datetime.now() - timedelta(hours=23):
                 self.update_all_stamps_in_users_table()
             else:
                 self.update_stamps_in_users_table(

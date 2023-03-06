@@ -1,24 +1,25 @@
 from __future__ import annotations
 
-from datetime import datetime as dt
+from datetime import datetime
 from pprint import pformat
 import requests
 from typing import Any, TypedDict
 
+from codaio import Cell, Row
 
-DEFAULT_DATE = dt(1, 1, 1, 0)
+DEFAULT_DATE = datetime(1, 1, 1, 0)
 
 
-def adjust_date(date_str: str) -> dt:
+def adjust_date(date_str: str) -> datetime:
     """If date is in isoformat, parse it.
     Otherwise, assign earliest date possible.
     """
     if not date_str:
         return DEFAULT_DATE
-    return dt.fromisoformat(date_str.split("T")[0])
+    return datetime.fromisoformat(date_str.split("T")[0])
 
 
-def make_post_question_message(question_row: CodaQuestion) -> str:
+def make_post_question_message(question_row: QuestionRow) -> str:
     """Make question message from questions DataFrame row
 
     <title>\n
@@ -26,15 +27,18 @@ def make_post_question_message(question_row: CodaQuestion) -> str:
     """
     return question_row["title"] + "\n" + question_row["url"]
 
-def parse_coda_question(row: dict) -> CodaQuestion:
+
+def parse_question_row(row: Row) -> QuestionRow:
     """Parse a raw row from "All answers" table"""
-    title = row["values"]["Edit Answer"]
-    url = row["values"]["Link"]
-    status = row["values"]["Status"]
-    tags = row["values"]["Tags"].split(",")
-    last_asked_on_discord = adjust_date(row["values"]["Last Asked On Discord"])
+    row_dict = row.to_dict()
+    title = row_dict["Edit Answer"]
+    url = row_dict["Link"]
+    status = row_dict["Status"]
+    # remove empty strings
+    tags = [tag for tag in row_dict["Tags"].split(",") if row_dict["Tags"]]
+    last_asked_on_discord = adjust_date(row_dict["Last Asked On Discord"])
     return {
-        "id": row["id"],
+        "id": row.id,
         "title": title,
         "url": url,
         "status": status,
@@ -43,18 +47,17 @@ def parse_coda_question(row: dict) -> CodaQuestion:
     }
 
 
+def make_updated_cells(col2val: dict[str, Any]) -> list[Cell]:
+    """#TODO"""
+    return [
+        Cell(column=col, value_storage=val)  # type:ignore
+        for col, val in col2val.items()
+    ]
 
 
 
 
-def pformat_to_codeblock(d: dict[Any, Any]) -> str:
-    """`pformat` a dictionary and embed it in a code block
-    (for nice display in discord message)
-    """
-    return "```\n" + pformat(d, sort_dicts=False) + "\n```"
-
-
-class CodaQuestion(TypedDict):
+class QuestionRow(TypedDict):
     """Dict representing one row parsed from coda "All Answers" table"""
 
     id: str
@@ -62,7 +65,8 @@ class CodaQuestion(TypedDict):
     url: str
     status: str
     tags: list[str]
-    last_asked_on_discord: dt
+    last_asked_on_discord: datetime
+
 
 def request_succesful(response: requests.Response) -> bool:
     return response.status_code in (200, 202)
