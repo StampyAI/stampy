@@ -21,9 +21,6 @@ from utilities.utilities import get_user_handle
 
 log = get_logger()
 
-utils = Utilities.get_instance()
-
-
 class CodaAPI:
     """Gathers everything for interacting with coda"""
 
@@ -48,8 +45,7 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
 
-        os.environ["CODA_API_KEY"] = self.CODA_API_TOKEN
-        self.coda = Coda.from_environment()
+        self.coda = Coda(os.environ["CODA_API_KEY"]) #type:ignore
 
         self.update_questions_cache()
         self.update_users_cache()
