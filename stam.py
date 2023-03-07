@@ -19,7 +19,7 @@ log_type = "stam.py"
 log = get_logger()
 
 
-def get_stampy_modules():
+def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")

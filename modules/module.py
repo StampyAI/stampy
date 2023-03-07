@@ -115,18 +115,16 @@ class Response:
 
 
 class Module:
-    utils: Utilities
+    """Informal Interface specification for modules
+    These represent packets of functionality. For each message,
+    we show it to each module and ask if it can process the message,
+    then give it to the module that's most confident"""
 
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.class_name = "BaseModule"
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
-
-    """Informal Interface specification for modules
-    These represent packets of functionality. For each message,
-    we show it to each module and ask if it can process the message,
-    then give it to the module that's most confident"""
 
     def process_message(self, message: ServiceMessage):
         """Handle the message, return a string which is your response.

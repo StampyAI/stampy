@@ -1,5 +1,30 @@
 from __future__ import annotations
-import asyncio
+
+from datetime import datetime, timezone, timedelta
+from enum import Enum
+import json
+import os
+from pprint import pformat
+import random
+import re
+from string import punctuation
+import sys
+from threading import Event
+from time import time
+from typing import Any, Literal, Optional, Union, cast, TYPE_CHECKING
+
+from database.database import Database
+from discord import Client, ClientUser, Guild, Intents, Role, Thread, utils as discord_utils
+from git import Repo
+from googleapiclient.discovery import build as get_youtube_api
+from googleapiclient.errors import HttpError
+import psutil
+from servicemodules.serviceConstants import Services
+from structlog import get_logger
+import traceback
+from utilities.discordutils import DiscordMessage, DiscordUser
+from utilities.serviceutils import ServiceMessage, ServiceUser
+
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -15,28 +40,10 @@ from servicemodules.discordConstants import (
     stampy_error_log_channel_id,
     wiki_feed_channel_id,
 )
-from database.database import Database
-from datetime import datetime, timezone, timedelta
-from enum import Enum
-from git import Repo
-from googleapiclient.discovery import build as get_youtube_api
-from googleapiclient.errors import HttpError
-from structlog import get_logger
-from time import time
-from utilities.discordutils import DiscordMessage, DiscordUser
-from utilities.serviceutils import ServiceMessage, ServiceUser
-from string import punctuation
-from typing import Any, List, Optional
-import discord
-import json
-import os
-from pprint import pformat
-import psutil
-import random
-import re
-import sys
-from threading import Event
-import traceback
+
+if TYPE_CHECKING:
+    from modules.module import Module
+    
 
 # Sadly some of us run windows...
 if os.name != "nt":
@@ -55,52 +62,50 @@ class OrderType(Enum):
 
 class Utilities:
     __instance: Optional[Utilities] = None
-    db: Database
-    client: discord.Client
-    discord_user: Optional[DiscordUser] = None
-    stop: Optional[Event] = None
-    youtube = None
 
     TOKEN = discord_token
     GUILD = discord_guild
     YOUTUBE_API_KEY = youtube_api_key
     DB_PATH = database_path
 
-    last_message_was_youtube_question: bool = False
-    latest_comment_timestamp: datetime
-    last_check_timestamp: datetime
-    youtube_cooldown: timedelta
-    last_timestamp: dict[str, datetime] = {}
-    last_question_asked_timestamp: datetime
-    latest_question_posted = None
-    error_channel = None
-
-    users = None
-    ids = None
-    index = None
-    scores = None
-
-    modules_dict = {}
-    service_modules_dict = {}
-
-    @staticmethod
-    def get_instance() -> Utilities:
-        if Utilities.__instance is None:
-            return Utilities()
-        return Utilities.__instance
-
     def __init__(self):
         if Utilities.__instance is not None:
-            raise Exception("This class is a singleton!")
-        
+            raise Exception(
+                "This class is a singleton! Access it using `Utilities.get_instance()`"
+            )
+
         Utilities.__instance = self
+
         self.class_name = self.__class__.__name__
         self.start_time = time()
         self.test_mode = False
-        self.people = set("stampy")
+        self.people = {"stampy"}
+
+        self.db = Database(self.DB_PATH)
+        log.info(self.class_name, status=f"Trying to open db - {self.DB_PATH}")
+        intents = Intents.default()
+        intents.members = True
+        intents.message_content = True
+        self.client = Client(intents=intents)
+        self.discord_user: Optional[ServiceUser] = None
+        self.stop: Optional[Event] = None
+
+        self.last_question_asked_timestamp: datetime
+        self.latest_question_posted = None
+        self.error_channel = cast(Thread, self.client.get_channel(int(stampy_error_log_channel_id)))
+
+        self.users: list[int] = []
+        self.ids: list[int] = []
+        self.index: dict[int, int] = {}
+
+        # stamp counts
+        self.scores: list[float] = []
+
+        self.modules_dict: dict[str, Module] = {}
+        self.service_modules_dict: dict[Services, Any] = {}
 
         # dict to keep last timestamps in
-        self.last_timestamp = {}
+        self.last_timestamp: dict[str, datetime] = {}
 
         # when was the most recent comment we saw posted?
         self.latest_comment_timestamp = datetime.now(timezone.utc)
@@ -127,22 +132,15 @@ class Utilities:
             )
         except HttpError:
             if self.YOUTUBE_API_KEY:
-                log.info(
-                    self.class_name, msg="YouTube API Key is set but not correct"
-                )
+                log.info(self.class_name, msg="YouTube API Key is set but not correct")
             else:
                 log.info(self.class_name, msg="YouTube API Key is not set")
 
-        log.info(self.class_name, status="Trying to open db - " + self.DB_PATH)
-        self.db = Database(self.DB_PATH)
-        intents = discord.Intents.default()
-        intents.members = True
-        intents.message_content = True
-        self.client = discord.Client(intents=intents)
-        
-        # async
-        # self.loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(self.loop)
+    @staticmethod
+    def get_instance() -> Utilities:
+        if Utilities.__instance is None:
+            return Utilities()
+        return Utilities.__instance
 
     def rate_limit(self, timer_name: str, **kwargs) -> bool:
         """Should I rate-limit? i.e. Has it been less than this length of time since the last time
@@ -173,22 +171,24 @@ class Utilities:
         # it hasn't been long enough, rate limit
         return True
 
-    def stampy_is_author(self, message: DiscordMessage) -> bool:
+    def stampy_is_author(self, message: Union[ServiceMessage, DiscordMessage]) -> bool:
         return self.is_stampy(message.author)
 
-    def is_stampy(self, user: DiscordUser) -> bool:
+    def is_stampy(self, user: ServiceUser) -> bool:
         if (
             user.id == wiki_feed_channel_id
         ):  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
             return True
         if self.discord_user:
             return user == self.discord_user
-        if user.id == str(self.client.user.id):
+        if user.id == str(cast(ClientUser, self.client.user).id):
             self.discord_user = user
             return True
         return False
 
-    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
+    def is_stampy_mentioned(
+        self, message: Union[DiscordMessage, ServiceMessage]
+    ) -> bool:
         for user in message.mentions:
             if self.is_stampy(user):
                 return True
@@ -386,7 +386,8 @@ class Utilities:
 
         return new_comments
 
-    def clear_votes(self):
+    def clear_votes(self) -> None:
+        """Reset all the votes scores"""
         self.db.query("DELETE FROM uservotes")
         self.db.query(
             "INSERT INTO uservotes (`user`, `votedFor`, `votecount`) VALUES (?, ?, ?)",
@@ -394,43 +395,44 @@ class Utilities:
         )
         self.db.commit()
 
-    def update_ids_list(self):
+    def update_ids_list(self) -> None:
         self.ids = sorted(list(self.users))
         self.index = {0: 0}
         for userid in self.ids:
             self.index[userid] = self.ids.index(userid)
 
-    def index_dammit(self, user):
+    def index_dammit(self, user) -> Optional[int]:
         """Get an index into the scores array from whatever you get"""
 
         if user in self.index:
             # maybe we got given a valid ID?
             return self.index[user]
         elif str(user) in self.index:
-            return self.index[str(user)]
+            return self.index[str(user)] #type:ignore
 
         # maybe we got given a User or Member object that has an ID?
         uid = getattr(user, "id", None)
-        try:
-            uid = int(uid)
-        except (ValueError, TypeError):
-            pass
-        log.info(
-            self.class_name, function_name="index_dammit", uuid=uid, index=self.index
-        )
+        if uid is not None and not isinstance(uid, int):
+            try:
+                uid = int(uid)
+            except (ValueError, TypeError):
+                pass
+            log.info(
+                self.class_name, function_name="index_dammit", uuid=uid, index=self.index
+            )
         if uid:
             return self.index_dammit(uid)
 
         return None
 
-    def get_user_score(self, user):
+    def get_user_score(self, user) -> float:
+        """Get user's number of stamps"""
         index = self.index_dammit(user)
         if index:
             return self.scores[index]
-        else:
-            return 0.0
+        return 0.0
 
-    def update_vote(self, user, voted_for, vote_quantity):
+    def update_vote(self, user: int, voted_for: int, vote_quantity: int) -> None:
         query = (
             "INSERT OR REPLACE INTO uservotes VALUES (:user,:voted_for,IFNULL((SELECT votecount "
             "FROM uservotes WHERE user = :user AND votedFor = :voted_for),0)+:vote_quantity)"
@@ -439,31 +441,36 @@ class Utilities:
         self.db.query(query, args)
         self.db.commit()
 
-    def get_votes_by_user(self, user):
+    def get_votes_by_user(self, user_id: Union[str, int]) -> int:
+        """Get number of votes given **by** that user"""
         query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = ?"
-        args = (user,)
+        args = (user_id,)
         return self.db.query(query, args)[0][0]
 
-    def get_votes_for_user(self, user):
+    def get_votes_for_user(self, user_id: Union[str, int]) -> int:
+        """Get number of votes given **for** that user"""
         query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = ?"
-        args = (user,)
+        args = (user_id,)
         return self.db.query(query, args)[0][0]
 
-    def get_total_votes(self):
+    def get_total_votes(self) -> int:
+        """Get total number of votes"""
         query = "SELECT sum(votecount) from uservotes where user is not 0"
         return self.db.query(query)[0][0]
 
-    def get_all_user_votes(self):
+    def get_all_user_votes(self) -> list[tuple[int, int, int]]:
+        """Get list of triples: `(<user-who-voted>, <user-who-was-voted-for>, <num-votes)`"""
         query = "SELECT user,votedFor,votecount from uservotes;"
         return self.db.query(query)
 
-    def get_users(self):
+    def get_users(self) -> list[int]:
+        """Get list of user IDs"""
         query = "SELECT user from (SELECT user FROM uservotes UNION SELECT votedFor as user FROM uservotes)"
         result = self.db.query(query)
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_youtube_question(self, comment):
+    def add_youtube_question(self, comment: dict):
         # Get the video title from the video URL, without the comment id
         # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
         video_titles = self.get_title(comment["url"].split("&lc=")[0])
@@ -479,7 +486,7 @@ class Utilities:
 
         # TODO: add to Coda
 
-    def get_title(self, url):
+    def get_title(self, url: str) -> Optional[tuple[str, str]]:
         result = self.db.query(
             'select ShortTitle, FullTitle from video_titles where URL="?"', (url,)
         )
@@ -487,13 +494,13 @@ class Utilities:
             return result[0][0], result[0][1]
         return None
 
-    def list_modules(self):
+    def list_modules(self) -> str:
         message = f"I have {len(self.modules_dict)} modules. Here are their names:"
         for module_name in self.modules_dict.keys():
             message += "\n" + module_name
         return message
 
-    def get_time_running(self):
+    def get_time_running(self) -> str:
         message = "I have been running for"
         seconds_running = timedelta(seconds=int(time() - self.start_time))
         time_running = datetime(1, 1, 1) + seconds_running
@@ -513,10 +520,6 @@ class Utilities:
         await self.log_error(error_message)
 
     async def log_error(self, error_message: str) -> None:
-        if self.error_channel is None:
-            self.error_channel = self.client.get_channel(
-                int(stampy_error_log_channel_id)
-            )
         for msg_chunk in Utilities.split_message_for_discord(
             error_message, max_length=discord_message_length_limit - 6
         ):
@@ -525,7 +528,7 @@ class Utilities:
     @staticmethod
     def split_message_for_discord(
         msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit
-    ) -> List[str]:
+    ) -> list[str]:
         """Splitting a message in chunks of maximum 2000, so that the end of each chunk is a newline if possible.
         We can do this greedily, and if a solution exists."""
         msg_len = len(msg)
@@ -550,7 +553,6 @@ class Utilities:
         return output
 
 
-
 def get_github_info() -> str:
     message = (
         "\nThe latest commit was by %(actor)s."
@@ -568,7 +570,7 @@ def get_github_info() -> str:
     }
 
 
-def get_git_branch_info():
+def get_git_branch_info() -> str:
     repo = Repo(".")
     branch = repo.active_branch
     name = repo.config_reader().get_value("user", "name")
@@ -603,14 +605,14 @@ def get_running_user_info() -> str:
         return message % {"username": user_name, "shell": shell, "pid": os.getpid()}
 
 
-def get_memory_usage():
+def get_memory_usage() -> str:
     process = psutil.Process(os.getpid())
     bytes_used = int(process.memory_info().rss) / 1000000
     megabytes_string = f"{bytes_used:,.2f} MegaBytes"
     return "I'm using %s of memory." % megabytes_string
 
 
-def get_question_id(message: ServiceMessage):
+def get_question_id(message: ServiceMessage) -> Union[int, Literal[""]]:
     text = message.clean_content
     first_number_found = re.search(r"\d+", text)
     if first_number_found:
@@ -623,15 +625,15 @@ def contains_prefix_with_number(text: str, prefix: str) -> bool:
     return bool(re.search(rf"^{prefix}\s[0-9]+", text))
 
 
-def is_test_response(text):
+def is_test_response(text: str) -> bool:
     return contains_prefix_with_number(text, TEST_RESPONSE_PREFIX)
 
 
-def is_test_question(text):
+def is_test_question(text: str) -> bool:
     return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
 
 
-def is_test_message(text):
+def is_test_message(text: str) -> bool:
     return is_test_response(text) or is_test_question(text)
 
 
@@ -642,39 +644,37 @@ def randbool(p: float) -> bool:
 
 
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
-    utils = Utilities.get_instance()
-    return utils.service_modules_dict[
-        message.service
-    ].service_utils.is_stampy_mentioned(message)
+    return Utilities.get_instance().is_stampy_mentioned(message)
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
-    utils = Utilities.get_instance()
-    return utils.service_modules_dict[message.service].service_utils.stampy_is_author(
-        message
-    )
+    return Utilities.get_instance().stampy_is_author(message)
 
 
-def get_guild_and_invite_role():
+def get_guild_and_invite_role() -> tuple[Guild, Optional[Role]]:
     utils = Utilities.get_instance()
     guild = utils.client.guilds[0]
-    invite_role = discord.utils.get(guild.roles, name="can-invite")
+    invite_role = discord_utils.get(guild.roles, name="can-invite")
     return guild, invite_role
 
 
 def get_user_handle(user: DiscordUser) -> str:
     return user.name + "#" + user.discriminator
 
+
 def is_from_reviewer(message: ServiceMessage) -> bool:
     """This message is from @reviewer"""
     return is_reviewer(message.author)
 
+
 def is_reviewer(user: ServiceUser) -> bool:
     return any(role.name == "reviewer" for role in user.roles)
+
 
 def is_in_testing_mode() -> bool:
     """Currently running in testing mode on GH?"""
     return "testing" in os.environ.values()
+
 
 def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
@@ -683,6 +683,8 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
         container.casefold().replace(" ", "")
     )
+
+
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
     """`pformat` a dictionary and embed it in a code block
@@ -697,6 +699,7 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
+
 class UtilsTests:
     def test_split_message_for_discord(self):
         test_out = len(
@@ -708,4 +711,3 @@ class UtilsTests:
         self.assertEqual(len(test_out), 4)
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
-
