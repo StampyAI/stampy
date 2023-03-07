@@ -44,6 +44,7 @@ def parse_question_row(row: Row) -> QuestionRow:
         "status": status,
         "tags": tags,
         "last_asked_on_discord": last_asked_on_discord,
+        "row": row
     }
 
 
@@ -64,6 +65,7 @@ class QuestionRow(TypedDict):
     status: str
     tags: list[str]
     last_asked_on_discord: datetime
+    row: Row
 
 
 def request_succesful(response: requests.Response) -> bool:

@@ -43,11 +43,8 @@ class CodaAPI:
     REQUEST_TIMEOUT = 5
 
     users: Table
-    users_df: pd.DataFrame
-    questions: Table
+    id2question_row: dict[str, QuestionRow]
     questions_df: pd.DataFrame
-    last_fetch: datetime
-    FETCH_INTERVAL = timedelta(minutes=2)
 
     def __init__(self):
         assert self.__instance is None
@@ -55,11 +52,10 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
 
-        # Coda API library
         os.environ["CODA_API_KEY"] = self.CODA_API_TOKEN
         self.coda = Coda.from_environment()
-        self.last_fetch = DEFAULT_DATE
-        self.update_caches()
+
+        self.reset_questions_cache()
 
     @property
     def doc(self) -> Document:
@@ -71,23 +67,35 @@ class CodaAPI:
             cls.__instance = cls()
         return cls.__instance
 
-    def update_caches(self, *, on_interval: bool = False) -> None:
-        breakpoint()
-        if on_interval and self.last_fetch >= datetime.now() - self.FETCH_INTERVAL:
-            return
-        self.users = self.doc.get_table(self.TEAM_GRID_ID)
-        self.user_df = pd.DataFrame(self.users.to_dict())
-        self.questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
-        question_rows = [parse_question_row(row) for row in self.questions.rows()]
+    def reset_questions_cache(self) -> None:
+        self.pending_update_question_ids = []
+        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        question_rows = [parse_question_row(row) for row in questions.rows()]
+        self.id2question_row = {row["id"]: row for row in question_rows}
         self.questions_df = pd.DataFrame(question_rows)
-        previous_last_fetch = self.last_fetch
-        self.last_fetch = datetime.now()
+        
+    def update_questions_cache(self) -> None:
+        
+        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+
+        for qid in self.pending_update_question_ids:
+            qrow = parse_question_row(questions.get_row_by_id(qid))
+            breakpoint()
+            self.id2question_row[qid] = qrow
+            #TODO safeguards against failing?
+            df_qid = self.questions_df.query("id == @qid").index[0]
+            self.questions_df.loc[df_qid] = qrow #type:ignore
+
+        self.pending_update_question_ids.clear()
+        
+
+    def reset_users_cache(self) -> None:
+        self.users = self.doc.get_table(self.TEAM_GRID_ID)
         self.log.info(
             self.class_name,
-            msg="Fetched users and questions caches",
-            last_fetch=self.last_fetch,
-            previous_last_fetch=previous_last_fetch,
+            msg="Updated users cache",
         )
+        
 
     #############
     #   Users   #
@@ -98,9 +106,9 @@ class CodaAPI:
 
         `"<field/column name>":"<value>"`
         """
-        users_df_filtered = self.users_df[self.users_df[field] == value]
-        if not users_df_filtered.empty:
-            return users_df_filtered.iloc[0].to_dict()
+        rows = self.users.find_row_by_column_name_and_value(column_name=field, value=value)
+        if rows:
+            return rows[0].to_dict()
 
     def update_user_stamps(self, user: DiscordUser, stamp_count: float) -> None:
         rows = self.users.find_row_by_column_name_and_value(
@@ -117,23 +125,6 @@ class CodaAPI:
     #   Questions   #
     #################
 
-    def get_questions_by_ids(
-        self, question_ids: list[str]
-    ) -> dict[str, QuestionRow]:  # TODO: handle questions that couldn't be found?
-        """Get many question by their ids in "All Answers" table.
-        Returns `ParsedRow` or `None` (if question with that id doesn't exist)
-        """
-        id2question = {
-            qid: parse_question_row(self.questions[qid]) for qid in question_ids
-        }
-        return id2question
-
-    def get_question_by_id(self, question_id: str) -> QuestionRow:
-        """Get question by id in "All Answers" table.
-        Returns `ParsedRow` or `None` (if question with that id doesn't exist)
-        """
-        return parse_question_row(self.questions[question_id])
-
     def get_questions_by_gdoc_links(self, urls: list[str]) -> list[QuestionRow]:
         """Get question by link to its GDoc.
         Returns `ParsedRow` or `None` (if question with that id doesn't exist)
@@ -147,24 +138,23 @@ class CodaAPI:
             return []
         return cast(list[QuestionRow], questions_df_queried.to_dict(orient="records"))
 
-
     def update_question_status(
         self,
         question_id: str,
         status: str,
     ) -> None:  
         # Optional[str]: # response message (?)
-        row = self.questions[question_id]
-        updated_cells = make_updated_cells({"Status": status})
-        self.questions.update_row(row, updated_cells)
+        row = self.id2question_row[question_id]
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(row["row"], make_updated_cells({"Status": status}))
+        self.pending_update_question_ids.append(row["id"])
 
     def update_question_last_asked_date(
         self, question_id: str, current_time: str
     ) -> None:
         """Update the "Last Asked on Discord" field in table for the question"""
-        row = self.questions[question_id]
-        updated_cells = make_updated_cells({"Last Asked On Discord": current_time})
-        self.questions.update_row(row, updated_cells)
+        row = self.id2question_row[question_id]
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(row["row"], make_updated_cells({"Last Asked On Discord": current_time}))
+        self.pending_update_question_ids.append(row["id"])
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""

@@ -1,3 +1,15 @@
+"""Test these functionalities before PR
+- Posting next questions
+    - Vary num, status, and tag
+- Counting questions
+    - Vary status and tag
+- Getting info about questions
+    - Vary id/last/title
+- Asking for feedback
+    - Vary whether you're a `@reviewer`, number of questions, number of already `Live on site` questions
+- Accepting feedback request
+    - Vary whether you're a `@reviewer` and number of questions
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -82,7 +94,7 @@ class Questions(Module):
                 why=f"{message.author.name} accepted the review",
             )
         if not (text := self.is_at_me(message)):
-            coda_api.update_caches(on_interval=True)
+            coda_api.update_questions_cache()
             return Response()
         if query := PostOrCountQuestionQuery.parse(text):
             if query.action == "count":
@@ -213,7 +225,7 @@ class Questions(Module):
 
         self.last_question_posted = datetime.now()
 
-        coda_api.update_caches()
+        coda_api.update_questions_cache()
         return Response(
             confidence=8,
             # text=msg,
@@ -246,7 +258,7 @@ class Questions(Module):
             msg=f"Posting a random oldest question to the `#editing` channel because of {event_type}",
         )
         await channel.send(msg)
-        coda_api.update_caches()
+        coda_api.update_questions_cache()
 
     ###################
     # Count questions #
@@ -282,6 +294,7 @@ class Questions(Module):
     async def cb_get_question_info(
         self, query: QuestionInfoQuery, message: ServiceMessage
     ) -> Response:
+        breakpoint()
         if query.type == "last" and query.query is None:
             return Response(
                 confidence=8,
@@ -321,7 +334,7 @@ class Questions(Module):
                 ),
             )
         query_id = cast(str, query.id)
-        question = coda_api.get_question_by_id(query_id)
+        question = coda_api.id2question_row[query_id]
         if response := unauthorized_set_los(query, [question], message):
             return response
 
@@ -329,7 +342,7 @@ class Questions(Module):
         msg += "\n\nPreviously:\n" + pformat_to_codeblock(cast(dict, question))
         await message.channel.send(msg)
         coda_api.update_question_status(query_id, query.status)
-        coda_api.update_caches()
+        coda_api.update_questions_cache()
         return Response(
             confidence=8,
             # text=msg,
@@ -339,71 +352,76 @@ class Questions(Module):
     async def cb_set_status_by_review_request(
         self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
     ) -> Response:
-        id2question = coda_api.get_questions_by_ids(query.ids)
-        id2status = {qid: q["status"] for qid, q in id2question.items()}
-        if not is_from_reviewer(message) and "Live on site" in id2status.values():
-            ids_los = [
-                qid for qid, status in id2status.items() if status == "Live on site"
-            ]
-            one_los = len(ids_los) == 1
-            msg_los = (
-                f"{len(ids_los)} of these questions {'is' if one_los else 'are'} already `Live on site`. You can't change {'its' if one_los else 'their'} status because you're not a `@reviewer`.\n\nThese are:\n"
-                + "\n".join(
-                    f"{id2question[qid]['title']} ({id2question[qid]['url']})"
-                    for qid in ids_los
+        channel = cast(Thread, message.channel)
+        await channel.send(
+            f"Thanks, {message.author.name}! I'll update their status to `{query.status}`"
+        )
+        id2q = {
+            qid: q for qid, q in coda_api.id2question_row.items() if qid in query.ids
+        }
+        already_los_qids = []
+
+        # update
+        for qid, q in id2q.items():
+            if q["status"] == "Live on site" and not is_from_reviewer(message):
+                # await channel.send(f"\"{title}\" is already `Live on site`. You need to be a `@reviewer` to change its status.")
+                already_los_qids.append(qid)
+            else:
+                coda_api.update_question_status(qid, query.status)
+
+        # make message
+        n_updated = len(id2q) - len(already_los_qids)
+        if n_updated == 0:
+            response_text = "I didn't update any questions"
+        elif n_updated == 1:
+            response_text = "I updated 1 question"
+        else:
+            response_text = f"I updated {n_updated} questions"
+        response_text += f" to `{query.status}`"
+        if already_los_qids:
+            if len(already_los_qids) == 1:
+                response_text += (
+                    "\nThis question was already `Live on site`, so I didn't change it."
                 )
+            else:
+                response_text += f"\nThese {len(already_los_qids)} questions were already `Live on site`, so I didn't change them."
+            response_text += " You need to be a `@reviewer` to change the status of questions that are already `Live on site`.\n\n"
+            response_text += "\n".join(
+                f"- {id2q[qid]['title']} ({id2q[qid]['url']})"
+                for qid in already_los_qids
             )
-            id2question = {
-                qid: q for qid, q in id2question.items() if qid not in ids_los
-            }
-        else:
-            msg_los = ""
 
-        msg = f"Thanks, {message.author.name}!\n"
-        if not id2question:
-            msg += "I didn't updated any questions to "
-        elif len(id2question) == 1:
-            msg += "I updated status of 1 question to "
-        else:
-            msg += f"I updated status of {len(id2question)} questions to "
-        msg += f"`{query.status}`" + msg_los
-
-        await message.channel.send(msg)
-        
-        for qid, q in id2question.items():
-            coda_api.update_question_status(qid, q["status"])
-
-        self.log.info(self.class_name, msg=msg)
-        coda_api.update_caches()
         return Response(
             confidence=8,
-            # text=msg,
-            why=f"{message.author.name} kindly asked for review"
+            text=response_text,
+            why=f"{message.author.name} asked for review",
         )
 
     async def cb_set_status_by_approved(
         self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
     ) -> Response:
         if not is_from_reviewer(message):
-            await message.channel.send(
-                YOU_NOT_REVIEWER.format(author_name=message.author.name)
+            return Response(
+                confidence=8,
+                text=YOU_NOT_REVIEWER.format(author_name=message.author.name),
+                why=f"{message.author.name} tried accepting a review request but they're not a `@reviewer`",
             )
-        response_text = (
-            "Approved! "
-            + (
-                "1 more question"
-                if len(query.ids) == 1
-                else f"{len(query.ids)} more questions"
-            )
-            + " `Live on site`"
-        )
-        await message.channel.send(response_text)
+        
+        channel = cast(Thread, message.channel)
+        await channel.send(f"Approved by {message.author.name}!")
+        
         for qid in query.ids:
             coda_api.update_question_status(qid, query.status)
-        coda_api.update_caches()
+        
+        if len(query.ids) == 1:
+            response_text = "1 more question goes"
+        else:
+            response_text = f"{len(query.ids)} more questions go"
+        response_text += " `Live on site`!"
+        
         return Response(
             confidence=8,
-            # text=response_text,
+            text=response_text,
             why=f"{message.author.name} approved the questions posted for review",
         )
 
@@ -610,7 +628,10 @@ class QuestionInfoQuery:
         match this query?
         """
         if self.type == "id" or (self.type == "last" and self.query):
-            return question_row["id"].startswith(cast(str, self.query))
+            try:
+                return question_row["id"].startswith(cast(str, self.query))
+            except Exception as e:
+                breakpoint()
         if self.type == "title":
             return fuzzy_contains(question_row["title"], cast(str, self.query))
         return False

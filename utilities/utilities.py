@@ -24,7 +24,7 @@ from googleapiclient.errors import HttpError
 from structlog import get_logger
 from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
-from utilities.serviceutils import ServiceMessage
+from utilities.serviceutils import ServiceMessage, ServiceUser
 from string import punctuation
 from typing import Any, List, Optional
 import discord
@@ -667,7 +667,10 @@ def get_user_handle(user: DiscordUser) -> str:
 
 def is_from_reviewer(message: ServiceMessage) -> bool:
     """This message is from @reviewer"""
-    return any(role.name == "reviewer" for role in message.author.roles)
+    return is_reviewer(message.author)
+
+def is_reviewer(user: ServiceUser) -> bool:
+    return any(role.name == "reviewer" for role in user.roles)
 
 def is_in_testing_mode() -> bool:
     """Currently running in testing mode on GH?"""
