@@ -48,8 +48,8 @@ class CodaAPI:
 
         if is_in_testing_mode():
             return
-        self.coda = Coda(os.environ["CODA_API_KEY"]) #type:ignore
 
+        self.coda = Coda(self.CODA_API_TOKEN) #type:ignore
         self.update_questions_cache()
         self.update_users_cache()
 

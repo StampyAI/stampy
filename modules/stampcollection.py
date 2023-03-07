@@ -7,7 +7,7 @@ import requests
 from structlog import get_logger
 
 from api.coda import CodaAPI
-from utilities import get_user_handle, utilities, Utilities
+from utilities import is_in_testing_mode, utilities, Utilities
 from modules.module import Module, Response
 from config import stamp_scores_csv_file_path
 from servicemodules.serviceConstants import Services
@@ -41,6 +41,8 @@ class StampsModule(Module):
         self.gamma = 0.99
         self.total_votes = self.utils.get_total_votes()
         self.calculate_stamps()
+        if is_in_testing_mode():
+            return
         self.update_all_stamps_in_users_table()
 
     def reset_stamps(self):
