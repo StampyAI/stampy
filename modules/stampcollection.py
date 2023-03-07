@@ -78,6 +78,7 @@ class StampsModule(Module):
 
 
     def update_all_stamps_in_users_table(self) -> None:
+        coda_api.update_users_cache()
         users = self.utils.get_users()
         for user_id in users:
             stamp_count = self.get_user_stamps(user_id)

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from typing import cast, Optional
 
-from codaio import Coda, Document, Table
+from codaio import Coda, Document
 import pandas as pd
 from structlog import get_logger
 
@@ -15,11 +15,13 @@ from api.utilities.coda_utils import (
     DEFAULT_DATE,
     make_updated_cells,
 )
-from utilities import is_in_testing_mode
+from utilities import Utilities, is_in_testing_mode
 from utilities.discordutils import DiscordUser
 from utilities.utilities import get_user_handle
 
 log = get_logger()
+
+utils = Utilities.get_instance()
 
 
 class CodaAPI:
@@ -28,7 +30,7 @@ class CodaAPI:
     # Singleton instance
     __instance: Optional[CodaAPI] = None
 
-    # Constance
+    # Constants
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
     DOC_ID = (
         "ah62XEPvpG" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
@@ -38,8 +40,7 @@ class CodaAPI:
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     REQUEST_TIMEOUT = 5
 
-    users: Table
-    questions_df: pd.DataFrame
+    QUESTIONS_CACHE_UPDATE_INTERVAL = timedelta(minutes=10)
 
     def __init__(self):
         assert self.__instance is None
@@ -50,29 +51,42 @@ class CodaAPI:
         os.environ["CODA_API_KEY"] = self.CODA_API_TOKEN
         self.coda = Coda.from_environment()
 
-        self.reset_questions_cache()
-        self.reset_users_cache()
+        self.update_questions_cache()
+        self.update_users_cache()
 
     @property
     def doc(self) -> Document:
+        """As property to make coda document always up-to-date"""
         return Document.from_environment(self.DOC_ID)
 
     @classmethod
     def get_instance(cls) -> CodaAPI:
+        """Get singleton instance"""
         if cls.__instance is None:
             cls.__instance = cls()
         return cls.__instance
 
-    def reset_questions_cache(self) -> None:
+    def update_questions_cache(self) -> None:
+        """Update questions cache, i.e. DataFrame with questions.
+        Gets called upon CodaAPI initialization and every 10 minutes or so by Questions module.
+        """
         questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
         question_rows = [parse_question_row(row) for row in questions.rows()]
         self.questions_df = pd.DataFrame(question_rows).set_index("id", drop=False)
-
-    def reset_users_cache(self) -> None:
-        self.users = self.doc.get_table(self.TEAM_GRID_ID)
+        self.questions_cache_last_update = datetime.now()
         self.log.info(
             self.class_name,
-            msg="Updated users cache",
+            msg="Updated questions cache",
+            num_questions=len(self.questions_df),
+        )
+
+    def update_users_cache(self) -> None:
+        """Update users cache, i.e. codaio Table representing [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#Team_tu_Rc/r5).
+        Gets called upon CodaAPI initialization and every 23 hours or so from within StampCollection module, when all stamps in the coda table are being updated.
+        """
+        self.users = self.doc.get_table(self.TEAM_GRID_ID)
+        self.log.info(
+            self.class_name, msg="Updated users cache", num_users=self.users.row_count
         )
 
     #############
@@ -92,7 +106,7 @@ class CodaAPI:
 
     def update_user_stamps(self, user: DiscordUser, stamp_count: float) -> None:
         """Update stamps count in Coda [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)"""
-        breakpoint()
+        # get row
         rows = self.users.find_row_by_column_name_and_value(
             column_name="Discord handle", value=get_user_handle(user)
         )
@@ -102,6 +116,7 @@ class CodaAPI:
             )
             return
         row = rows[0]
+        # update table
         updated_cells = make_updated_cells({"Stamp count": stamp_count})
         self.users.update_row(row, updated_cells)
 
@@ -110,15 +125,16 @@ class CodaAPI:
     #################
 
     def get_question_row(self, question_id: str) -> QuestionRow:
+        """Get QuestionRow by its ID"""
         return cast(QuestionRow, self.questions_df.loc[question_id].to_dict())
 
     def get_questions_by_gdoc_links(self, urls: list[str]) -> list[QuestionRow]:
-        """Get question by link to its GDoc.
-        Returns `ParsedRow` or `None` (if question with that id doesn't exist)
+        """Get questions by url links to their GDocs.
+        Returns list of `QuestionRow`s. Empty list (`[]`) if couldn't find questions with any of the links.
         """
         questions_df = self.questions_df
-        questions_df_queried = questions_df[
-            questions_df["url"].map(
+        questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
+            questions_df["url"].map(  # pylint:disable=unsubscriptable-object
                 lambda qurl: any(qurl.startswith(url) for url in urls)
             )
         ]
@@ -131,33 +147,39 @@ class CodaAPI:
         question_id: str,
         status: str,
     ) -> None:
-        # Optional[str]: # response message (?)
+        """Update status of a question in [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). Also, update local cache accordingly"""
+        # get row
         row = self.get_question_row(question_id)
+        # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             row["row"], make_updated_cells({"Status": status})
         )
+        # update local cache
         self.questions_df.loc[question_id]["status"] = status
 
     def update_question_last_asked_date(
-        self, question_id: str, current_time: str
+        self, question_id: str, current_time: datetime
     ) -> None:
-        """Update the "Last Asked on Discord" field in table for the question"""
+        """Update "Last Asked On Discord" field of a question in [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). Also, update local cache accordingly"""
+        # get row
         row = self.get_question_row(question_id)
+        # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
-            row["row"], make_updated_cells({"Last Asked On Discord": current_time})
+            row["row"],
+            make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
-        self.questions_df.loc[question_id][
-            "last_asked_on_discord"
-        ] = datetime.fromisoformat(current_time)
+        # update local cache
+        self.questions_df.loc[question_id]["last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
         questions_df = self.questions_df
+        # pylint:disable=unsubscriptable-object
         questions_with_dt_ids = questions_df[
             questions_df["last_asked_on_discord"] != DEFAULT_DATE
         ]["id"].tolist()
         for question_id in questions_with_dt_ids:
-            self.update_question_last_asked_date(question_id, "")
+            self.update_question_last_asked_date(question_id, DEFAULT_DATE)
 
     #############
     #   Other   #
@@ -186,6 +208,7 @@ class CodaAPI:
         if is_in_testing_mode():
             return []
         tags = set()
+        # pylint:disable=unsubscriptable-object
         for row_tags in self.questions_df["tags"]:
             tags.update(row_tags)
         return sorted(tags)
