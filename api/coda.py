@@ -15,11 +15,12 @@ from api.utilities.coda_utils import (
     DEFAULT_DATE,
     make_updated_cells,
 )
-from utilities import Utilities, is_in_testing_mode
+from utilities import is_in_testing_mode
 from utilities.discordutils import DiscordUser
 from utilities.utilities import get_user_handle
 
 log = get_logger()
+
 
 class CodaAPI:
     """Gathers everything for interacting with coda"""
@@ -45,15 +46,16 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
 
-        self.coda = Coda(os.environ["CODA_API_KEY"]) #type:ignore
+        if is_in_testing_mode():
+            self.coda = Coda(os.environ["CODA_API_KEY"]) #type:ignore
 
-        self.update_questions_cache()
-        self.update_users_cache()
+            self.update_questions_cache()
+            self.update_users_cache()
 
     @property
     def doc(self) -> Document:
         """As property to make coda document always up-to-date"""
-        return Document.from_environment(self.DOC_ID)
+        return Document(self.DOC_ID, coda=self.coda) #type:ignore
 
     @classmethod
     def get_instance(cls) -> CodaAPI:
