@@ -47,10 +47,11 @@ class CodaAPI:
         self.log = get_logger()
 
         if is_in_testing_mode():
-            self.coda = Coda(os.environ["CODA_API_KEY"]) #type:ignore
+            return
+        self.coda = Coda(os.environ["CODA_API_KEY"]) #type:ignore
 
-            self.update_questions_cache()
-            self.update_users_cache()
+        self.update_questions_cache()
+        self.update_users_cache()
 
     @property
     def doc(self) -> Document:
