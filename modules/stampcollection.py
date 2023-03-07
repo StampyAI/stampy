@@ -76,27 +76,6 @@ class StampsModule(Module):
         if recalculate:
             self.calculate_stamps()
 
-    def update_stamps_in_users_table(
-        self, user: DiscordUser, stamp_count: float
-    ) -> None:
-        """Update stamps count in Coda [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)"""
-        user_row = coda_api.get_user_row("Discord handle", get_user_handle(user))
-        if user_row is None:
-            return
-        user_id = user_row["id"]
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.TEAM_GRID_ID}/rows/{user_id}"
-        payload = {
-            "row": {
-                "cells": [
-                    {"column": "Stamp count", "value": stamp_count},
-                ],
-            },
-        }
-        response = requests.put(
-            uri, headers=utils.get_coda_auth_headers(), json=payload, timeout=20
-        )
-        response.raise_for_status()
-        log.info(self.class_name, msg=f"Updated {user.name}'s stamp count to {stamp_count} on coda")
 
     def update_all_stamps_in_users_table(self) -> None:
         users = self.utils.get_users()
