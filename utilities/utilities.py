@@ -683,6 +683,7 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
         container.casefold().replace(" ", "")
     )
+
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
     """`pformat` a dictionary and embed it in a code block
     (for nice display in discord message)

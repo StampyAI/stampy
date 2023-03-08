@@ -322,7 +322,7 @@ class Questions(Module):
         if query.query is None:  # possible only when query.type == "last"
             return Response(
                 confidence=8,
-                text="I don't remember dealing any questions since my last reboot",
+                text="I don't remember dealing with any questions since my last reboot",
                 why=f"{message.author.name} asked me for last question but I don't remember dealing any questions since my last reboot",
             )
 
