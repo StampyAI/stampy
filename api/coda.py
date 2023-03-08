@@ -80,8 +80,11 @@ class CodaAPI:
         )
 
     def update_users_cache(self) -> None:
-        """Update users cache, i.e. codaio Table representing [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#Team_tu_Rc/r5).
-        Gets called upon CodaAPI initialization and every 23 hours or so from within StampCollection module, when all stamps in the coda table are being updated.
+        """Update users cache, i.e. codaio Table representing 
+        [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#Team_tu_Rc/r5).
+        Gets called upon CodaAPI initialization and every 23 hours or so 
+        from within StampCollection module, 
+        when all stamps in the coda table are being updated.
         """
         self.users = self.doc.get_table(self.TEAM_GRID_ID)
         self.log.info(
@@ -146,7 +149,9 @@ class CodaAPI:
         question_id: str,
         status: str,
     ) -> None:
-        """Update status of a question in [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). Also, update local cache accordingly"""
+        """Update status of a question in [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). 
+        Also, update local cache accordingly.
+        """
         # get row
         row = self.get_question_row(question_id)
         # update coda table

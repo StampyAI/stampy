@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pprint import pformat
 import requests
 from typing import Any, TypedDict
 
@@ -44,12 +43,14 @@ def parse_question_row(row: Row) -> QuestionRow:
         "status": status,
         "tags": tags,
         "last_asked_on_discord": last_asked_on_discord,
-        "row": row
+        "row": row,
     }
 
 
 def make_updated_cells(col2val: dict[str, Any]) -> list[Cell]:
-    """#TODO"""
+    """Make cells for updating coda Tables.
+    Takes a dictionary mapping fields of a particular row to their new values
+    """
     return [
         Cell(column=col, value_storage=val)  # type:ignore
         for col, val in col2val.items()

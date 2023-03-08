@@ -76,14 +76,14 @@ class Questions(Module):
             ):
                 coda_api.update_questions_cache()
 
-            
-
     #########################################
     # Core: processing and posting messages #
     #########################################
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
+        if message.clean_content == "m":
+            breakpoint()
         # these two options are before `.is_at_me`
         # because they dont' require calling Stampy explicitly ("s, XYZ")
         if query := self.is_review_request(message):
@@ -194,11 +194,13 @@ class Questions(Module):
         """
         # get questions df
         questions_df = coda_api.questions_df
+        # get channel
+        channel = cast(Thread, message.channel)
 
         # if status was specified, filter questions for that status
         if query.status:
             questions_df = questions_df.query("status == @query.status")
-        else: # otherwise, filter for question that ain't Live on site
+        else:  # otherwise, filter for question that ain't Live on site
             questions_df = questions_df.query("status != 'Live on site'")
         # if tag was specified, filter for questions having that tag
         if query.tag:
@@ -209,6 +211,11 @@ class Questions(Module):
         questions_df = shuffle_questions(questions_df)
 
         # get specified number of questions (default [if unspecified] is 1)
+        if query.max_num_of_questions > 5:
+            await channel.send(
+                f"Let's not spam the channel with {query.max_num_of_questions} questions. I'll give you up to 5."
+            )
+
         questions_df = query.filter_on_max_num_of_questions(questions_df)
 
         # make question message and return response
@@ -223,9 +230,6 @@ class Questions(Module):
         if len(questions_df) == 1:
             self.last_question_id = questions_df.iloc[0]["id"]
 
-        # in this particular case, I think it's better to send all the questions in advance, instead of one-by-one
-        await message.channel.send(response_text)
-
         # update Last Asked On Discord column
         current_time = datetime.now()
         for question_id in questions_df["id"].tolist():
@@ -235,12 +239,12 @@ class Questions(Module):
 
         return Response(
             confidence=8,
-            # text=response_text,
+            text=response_text,
             why=f"{message.author.name} asked me for next questions",
         )
 
     async def post_random_oldest_question(self, event_type) -> None:
-        """Post random oldest not started question. 
+        """Post random oldest not started question.
         Triggered automatically six hours after non-posting any question.
         """
         # choose randomly one of the two channels
@@ -251,11 +255,13 @@ class Questions(Module):
             ),
         )
         # get random question with status Not started
+        questions_df_filtered = coda_api.questions_df.query("status == 'Not started'")
+        questions_df_filtered = questions_df_filtered[
+            questions_df_filtered["tags"].map(lambda tags: "Stampy" not in tags)
+        ]
         question = cast(
             QuestionRow,
-            get_least_recently_asked_on_discord(
-                coda_api.questions_df.query("status == 'Not started'")
-            )
+            get_least_recently_asked_on_discord(questions_df_filtered)
             .iloc[0]
             .to_dict(),
         )
@@ -270,8 +276,11 @@ class Questions(Module):
         # log
         self.log.info(
             self.class_name,
-            msg=f"Posting a random oldest question to the `#editing` channel because I haven't posted anything for at least {self.AUTOPOST_QUESTION_INTERVAL}",
-            event_type=event_type
+            msg=(
+                "Posting a random oldest question to the `#editing` channel because "
+                f"I haven't posted anything for at least {self.AUTOPOST_QUESTION_INTERVAL}"
+            ),
+            event_type=event_type,
         )
 
     ###################
@@ -310,13 +319,13 @@ class Questions(Module):
     ) -> Response:
         """Get info about a question and post it as a dict in code block"""
         # early exit if asked for last question but there is no last question
-        if query.query is None: # possible only when query.type == "last"
+        if query.query is None:  # possible only when query.type == "last"
             return Response(
                 confidence=8,
                 text="I don't remember dealing any questions since my last reboot",
                 why=f"{message.author.name} asked me for last question but I don't remember dealing any questions since my last reboot",
             )
-        
+
         response_text = f"Here it is ({query.info()}):\n\n"
         question_row = next(
             (q for _, q in coda_api.questions_df.iterrows() if query.matches(q)), None
@@ -326,7 +335,7 @@ class Questions(Module):
             response_text += pformat_to_codeblock(question_row.to_dict())
         else:
             response_text = "Couldn't find a question matching " + query.info()
-        
+
         return Response(
             confidence=8,
             text=response_text,
@@ -342,7 +351,7 @@ class Questions(Module):
         self, query: SetQuestionByMsgQuery, message: ServiceMessage
     ) -> Response:
         """Set question status by telling Stampy
-        
+
         ```
         s, set it to <some status>
         # or
@@ -350,7 +359,7 @@ class Questions(Module):
         ```
         """
         # early exit if asked for last question but there is no last question
-        if query.id is None: # possible only when query.type == "last"
+        if query.id is None:  # possible only when query.type == "last"
             mention = "it" if "it" in message.clean_content else "last"
             return Response(
                 confidence=8,
@@ -361,7 +370,7 @@ class Questions(Module):
             )
 
         question = coda_api.get_question_row(query.id)
-        
+
         # early exit if a non-`@reviewer` asked for changing status from or to "Live on site"
         if response := unauthorized_set_los(query, question, message):
             return response
@@ -382,7 +391,7 @@ class Questions(Module):
     async def cb_set_status_by_review_request(
         self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
     ) -> Response:
-        """Change question status by posting GDoc link(s) for review 
+        """Change question status by posting GDoc link(s) for review
         along with one of the mentions:
         `@reviewer` or `@feedback` or `@feedback-sketch`
         """
@@ -393,9 +402,7 @@ class Questions(Module):
             f"Thanks, {message.author.name}! I'll update their status to `{query.status}`"
         )
         # map question IDs to QuestionRows
-        id2question = {
-            qid: coda_api.get_question_row(qid) for qid in  query.ids
-        }
+        id2question = {qid: coda_api.get_question_row(qid) for qid in query.ids}
         # store IDs of questions that are already "Live on site" here
         already_los_qids = []
 
@@ -527,7 +534,11 @@ class PostOrCountQuestionQuery:
             return
         status = parse_status(text)
         tag = cls.parse_tag(text)
-        max_num_of_questions = cls.parse_max_num_of_questions(text)
+        if action == "post":
+            max_num_of_questions = cls.parse_max_num_of_questions(text)
+        else:
+            max_num_of_questions = 1
+
         question_query = cls(
             status=status,
             tag=tag,
@@ -577,9 +588,10 @@ class PostOrCountQuestionQuery:
         """Filter on number of questions"""
         if questions.empty:
             return questions
+        n = min(self.max_num_of_questions, 5, len(questions))
         questions = questions.sort_values(
             "last_asked_on_discord", ascending=False
-        ).iloc[: min(self.max_num_of_questions, len(questions))]
+        ).iloc[:n]
         return questions
 
     ########
