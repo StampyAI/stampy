@@ -99,7 +99,7 @@ class YoutubeAPI:
         return True
 
 
-    def get_youtube_comment_replies(self, comment_url: str):
+    def get_youtube_comment_replies(self, comment_url: str) -> list[dict]:
         url_arr = comment_url.split("&lc=")
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.comments().list(part="snippet", parentId=reply_id)
@@ -112,26 +112,30 @@ class YoutubeAPI:
                 )
                 if message:
                     log.error(self.class_name, error=message)
-                    return
+                    return []
             log.error(self.class_name, error="Unknown Google API Error")
-            return
-        items = response.get("items", [])
-        reply = {}
-        for item in items:
-            reply_id = item["id"]
-            username = item["snippet"]["authorDisplayName"]
-            text = item["snippet"]["textOriginal"]
-            timestamp = item["snippet"]["publishedAt"][:-1]
-            likes = item["snippet"]["likeCount"]
-            reply = {
-                "username": username,
-                "reply": reply_id,
-                "text": text,
-                "title": "",
-                "timestamp": timestamp,
-                "likes": likes,
-            }
+            return []
+        items: list[dict] = response.get("items", [])
+        replies = [self.parse_reply(item) for item in items]
+        return replies
+    
+    @staticmethod
+    def parse_reply(item: dict) -> dict:
+        reply_id = item["id"]
+        username = item["snippet"]["authorDisplayName"]
+        text = item["snippet"]["textOriginal"]
+        timestamp = item["snippet"]["publishedAt"][:-1]
+        likes = item["snippet"]["likeCount"]
+        reply = {
+            "username": username,
+            "reply": reply_id,
+            "text": text,
+            "title": "",
+            "timestamp": timestamp,
+            "likes": likes,
+        }
         return reply
+        
 
     def get_youtube_comment(self, comment_url):
         url_arr = comment_url.split("&lc=")
@@ -169,7 +173,7 @@ class YoutubeAPI:
             comment["reply_count"] = 0
         return comment
 
-    def check_for_new_youtube_comments(self):
+    def check_for_new_youtube_comments(self) -> Optional[list[dict]]:
         """Consider getting the latest comments from the channel
         Returns a list of dicts if there are new comments
         Returns [] if it checked and there are no new ones
@@ -248,28 +252,8 @@ class YoutubeAPI:
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
         self.latest_comment_timestamp = newest_timestamp
 
-        new_comments = []
-        for item in new_items:
-            top_level_comment = item["snippet"]["topLevelComment"]
-            video_id = top_level_comment["snippet"]["videoId"]
-            comment_id = top_level_comment["id"]
-            username = top_level_comment["snippet"]["authorDisplayName"]
-            text = top_level_comment["snippet"]["textOriginal"]
-            timestamp = top_level_comment["snippet"]["publishedAt"][:-1]
-            likes = top_level_comment["snippet"]["likeCount"]
-            reply_count = item["snippet"]["totalReplyCount"]
-            comment = {
-                "url": f"https://www.youtube.com/watch?v={video_id}&lc={comment_id}",
-                "username": username,
-                "text": text,
-                "title": "",
-                "timestamp": timestamp,
-                "likes": likes,
-                "reply_count": reply_count,
-            }
-
-            new_comments.append(comment)
-
+        new_comments = [self.parse_comment(item) for item in new_items]
+        
         log.info(
             self.class_name,
             msg=f"Got {len(new_comments)} new comments since last check",
@@ -286,6 +270,31 @@ class YoutubeAPI:
             )
 
         return new_comments
+    
+    
+    
+    @staticmethod
+    def parse_comment(item: dict) -> dict:
+        top_level_comment = item["snippet"]["topLevelComment"]
+        video_id = top_level_comment["snippet"]["videoId"]
+        comment_id = top_level_comment["id"]
+        username = top_level_comment["snippet"]["authorDisplayName"]
+        text = top_level_comment["snippet"]["textOriginal"]
+        timestamp = top_level_comment["snippet"]["publishedAt"][:-1]
+        likes = top_level_comment["snippet"]["likeCount"]
+        reply_count = item["snippet"]["totalReplyCount"]
+        comment = {
+            "url": f"https://www.youtube.com/watch?v={video_id}&lc={comment_id}",
+            "username": username,
+            "text": text,
+            "title": "",
+            "timestamp": timestamp,
+            "likes": likes,
+            "reply_count": reply_count,
+        }
+        return comment
+
+        
 
     def add_youtube_question(self, comment: dict):
         """Get the video title from the video URL, without the comment id
