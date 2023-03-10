@@ -244,7 +244,7 @@ class DiscordHandler:
             if new_comments:
                 for comment in new_comments:
                     if "?" in comment["text"]:
-                        self.utils.add_youtube_question(comment)
+                        youtube_api.add_youtube_question(comment)
  
         @self.utils.client.event
         async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:

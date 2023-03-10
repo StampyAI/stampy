@@ -215,22 +215,6 @@ class Utilities:
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_youtube_question(self, comment: dict):
-        # Get the video title from the video URL, without the comment id
-        # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
-        video_titles = self.get_title(comment["url"].split("&lc=")[0])
-
-        if not video_titles:
-            # this should actually only happen in dev
-            video_titles = ["Video Title Unknown", "Video Title Unknown"]
-
-        display_title = "{0}'s question on {1}".format(
-            comment["username"],
-            video_titles[0],
-        )
-
-        # TODO: add to Coda
-
     def get_title(self, url: str) -> Optional[tuple[str, str]]:
         result = self.db.query(
             'select ShortTitle, FullTitle from video_titles where URL="?"', (url,)

@@ -13,8 +13,10 @@ from config import (
     rob_miles_youtube_channel_id,
     youtube_api_key,
 )
+from utilities import Utilities
 
 log = get_logger()
+utils = Utilities.get_instance()
 
 class YoutubeAPI:
     """Youtube API"""
@@ -288,4 +290,17 @@ class YoutubeAPI:
             )
 
         return new_comments
+
+    def add_youtube_question(self, comment: dict):
+        # Get the video title from the video URL, without the comment id
+        # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
+        video_titles = utils.get_title(comment["url"].split("&lc=")[0])
+
+        if not video_titles:
+            # this should actually only happen in dev
+            video_titles = ["Video Title Unknown", "Video Title Unknown"]
+
+        display_title = f"{comment['username']}'s question on {video_titles[0]}"
+
+        # TODO: add to Coda
 
