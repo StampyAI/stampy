@@ -23,7 +23,6 @@ from typing import Any, Literal, Optional, cast
 from dotenv import load_dotenv
 from discord.threads import Thread
 import pandas as pd
-from structlog import get_logger
 from typing_extensions import Self
 
 from api.coda import CodaAPI
@@ -39,7 +38,6 @@ from utilities.utilities import (
 from utilities.serviceutils import ServiceMessage
 
 
-log = get_logger()
 load_dotenv()
 
 coda_api = CodaAPI.get_instance()
@@ -67,11 +65,12 @@ class Questions(Module):
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
-            if (
+            if not self.last_question_autoposted and (
                 self.last_question_posted
                 < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
-            ) and not self.last_question_autoposted:
+            ):
                 await self.post_random_oldest_question(event_type)
+
             if (
                 coda_api.questions_cache_last_update
                 < datetime.now() - coda_api.QUESTIONS_CACHE_UPDATE_INTERVAL
@@ -84,8 +83,6 @@ class Questions(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
-        if message.clean_content == "m":
-            breakpoint()
         # these two options are before `.is_at_me`
         # because they dont' require calling Stampy explicitly ("s, XYZ")
         if query := self.is_review_request(message):
@@ -215,9 +212,11 @@ class Questions(Module):
         # get specified number of questions (default [if unspecified] is 1)
         if query.max_num_of_questions > 5:
             await channel.send(
-                f"Let's not spam the channel with {query.max_num_of_questions} questions. I'll give you up to 5."
+                f"Let's not spam the channel with {query.max_num_of_questions} "
+                "questions. I'll give you up to 5."
             )
 
+        # filter on max num of questions
         questions_df = query.filter_on_max_num_of_questions(questions_df)
 
         # make question message and return response
@@ -228,16 +227,18 @@ class Questions(Module):
                 for _, r in questions_df.iterrows()
             )
 
-        # if there is only one question, cache its ID
-        if len(questions_df) == 1:
-            self.last_question_id = questions_df.iloc[0]["id"]
 
         # update Last Asked On Discord column
         current_time = datetime.now()
         for question_id in questions_df["id"].tolist():
             coda_api.update_question_last_asked_date(question_id, current_time)
 
+        # update caches
         self.last_question_posted = current_time
+        self.last_question_autoposted = False
+        # if there is only one question, cache its ID
+        if len(questions_df) == 1:
+            self.last_question_id = questions_df.iloc[0]["id"]
 
         return Response(
             confidence=8,
@@ -267,15 +268,19 @@ class Questions(Module):
             .iloc[0]
             .to_dict(),
         )
-        # remember its ID
-        self.last_question_id = question["id"]
-        # update times
+
+        # update in coda
         current_time = datetime.now()
-        self.last_question_posted = current_time
-        self.last_question_autoposted = True
         coda_api.update_question_last_asked_date(question["id"], current_time)
+
         # send to channel
         await channel.send(make_post_question_message(question))
+
+        # update caches
+        self.last_question_id = question["id"]
+        self.last_question_posted = current_time
+        self.last_question_autoposted = True
+
         # log
         self.log.info(
             self.class_name,
@@ -326,7 +331,10 @@ class Questions(Module):
             return Response(
                 confidence=8,
                 text="I don't remember dealing with any questions since my last reboot",
-                why=f"{message.author.name} asked me for last question but I don't remember dealing any questions since my last reboot",
+                why=(
+                    f"{message.author.name} asked me for last question but "
+                    "I don't remember dealing any questions since my last reboot"
+                ),
             )
 
         response_text = f"Here it is ({query.info()}):\n\n"
@@ -368,7 +376,10 @@ class Questions(Module):
                 confidence=8,
                 text=f'What do you mean by "{mention}"?',
                 why=dedent(
-                    f"{message.author.name} asked me to set last question's status to {query.status} but I haven't posted any questions yet"
+                    (
+                        f"{message.author.name} asked me to set last question's status "
+                        f"to {query.status} but I haven't posted any questions yet"
+                    )
                 ),
             )
 
@@ -379,6 +390,8 @@ class Questions(Module):
             return response
 
         coda_api.update_question_status(query.id, query.status)
+        self.last_question_id = query.id
+
         response_text = "Ok!"
         if query.type == "last":
             response_text += f'\n"{question["title"]}" is now `{query.status}`.'
@@ -388,7 +401,10 @@ class Questions(Module):
         return Response(
             confidence=8,
             text=response_text,
-            why=f"{message.author.name} asked to update status of question with id `{query.id}` to `{query.status}`",
+            why=(
+                f"{message.author.name} asked to update status of question "
+                f"with id `{query.id}` to `{query.status}`"
+            ),
         )
 
     async def cb_set_status_by_review_request(
@@ -422,9 +438,15 @@ class Questions(Module):
             response_text = "I didn't update any questions"
         elif n_updated == 1:
             response_text = "I updated 1 question"
+            # update last_question_id if only 1 question was updated
+            updated_question_id = next(
+                qid for qid in id2question if qid not in already_los_qids
+            )
+            self.last_question_id = updated_question_id
         else:
             response_text = f"I updated {n_updated} questions"
         response_text += f" to `{query.status}`"
+
         if already_los_qids:
             if len(already_los_qids) == 1:
                 response_text += (
@@ -456,7 +478,10 @@ class Questions(Module):
             return Response(
                 confidence=8,
                 text=f"You're not a `@reviewer` {message.author.name}",
-                why=f"{message.author.name} tried accepting a review request but they're not a `@reviewer`",
+                why=(
+                    f"{message.author.name} tried accepting a review request "
+                    "but they're not a `@reviewer`"
+                ),
             )
 
         # pre-send message to confirm that you're going to update statuses
@@ -820,12 +845,18 @@ def unauthorized_set_los(
         response_msg = NOT_FROM_REVIEWER_TO_LIVE_ON_SITE.format(
             author_name=message.author.name
         )
-        why = f"{message.author.name} wanted to change question status to `Live on site` but they're not a @reviewer"
+        why = (
+            f"{message.author.name} wanted to change question status "
+            "to `Live on site` but they're not a @reviewer"
+        )
     else:  # "Live on site" in question_statuses:
         response_msg = NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE.format(
             author_name=message.author.name, query_status=query.status
         )
-        why = f"{message.author.name} wanted to change status from `Live on site` but they're not a @reviewer"
+        why = (
+            f"{message.author.name} wanted to change status from "
+            "`Live on site` but they're not a @reviewer"
+        )
     return Response(confidence=8, text=response_msg, why=why)
 
 
