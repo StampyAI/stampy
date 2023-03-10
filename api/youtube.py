@@ -99,7 +99,7 @@ class YoutubeAPI:
         return True
 
 
-    def get_youtube_comment_replies(self, comment_url):
+    def get_youtube_comment_replies(self, comment_url: str):
         url_arr = comment_url.split("&lc=")
         reply_id = url_arr[-1].split(".")[0]
         request = self.youtube.comments().list(part="snippet", parentId=reply_id)
@@ -111,11 +111,11 @@ class YoutubeAPI:
                     json.loads(err.content).get("error").get("errors")[0].get("message")
                 )
                 if message:
-                    log.error(f"{self.class_name}: YouTube", error=message)
+                    log.error(self.class_name, error=message)
                     return
-            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            log.error(self.class_name, error="Unknown Google API Error")
             return
-        items = response.get("items")
+        items = response.get("items", [])
         reply = {}
         for item in items:
             reply_id = item["id"]
@@ -146,9 +146,9 @@ class YoutubeAPI:
                     json.loads(err.content).get("error").get("errors")[0].get("message")
                 )
                 if message:
-                    log.error(f"{self.class_name}: YouTube", error=message)
+                    log.error(self.class_name, error=message)
                     return
-            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            log.error(self.class_name, error="Unknown Google API Error")
             return
         items = response.get("items")
         comment = {"video_url": video_url}
@@ -178,13 +178,12 @@ class YoutubeAPI:
         now = datetime.now(timezone.utc)
 
         if (now - self.last_check_timestamp) > self.youtube_cooldown:
-            log.info(f"{self.class_name}: YouTube", msg="Hitting YT API")
+            log.info(self.class_name, msg="Hitting YT API")
             self.last_check_timestamp = now
         else:
             log.info(
-                f"{self.class_name}: YouTube",
-                msg="YT waiting >%s\t- "
-                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
+                self.class_name,
+                msg=f"YT waiting >{self.youtube_cooldown - (now - self.last_check_timestamp)}\t- "
             )
             return None
 
@@ -207,19 +206,19 @@ class YoutubeAPI:
                     json.loads(err.content).get("error").get("errors")[0].get("message")
                 )
                 if message:
-                    log.error(f"{self.class_name}: YouTube", error=message)
+                    log.error(self.class_name, error=message)
                     return
-            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
+            log.error(self.class_name, error="Unknown Google API Error")
             return
 
         items = response.get("items", None)
         if not items:
             # something broke, slow way down
             log.info(
-                f"{self.class_name}: YouTube",
+                self.class_name,
                 msg="YT comment checking broke. I got this response:",
             )
-            log.info(f"{self.class_name}: YouTube", response=response)
+            log.info(self.class_name, response=response)
             self.youtube_cooldown = self.youtube_cooldown * 10
             return None
 
@@ -242,9 +241,8 @@ class YoutubeAPI:
                 newest_timestamp = published_timestamp
 
         log.info(
-            f"{self.class_name}: YouTube",
-            msg="Got %s items, most recent published at %s"
-            % (len(items), newest_timestamp),
+            self.class_name,
+            msg=f"Got {len(items)} items, most recent published at {newest_timestamp}"
         )
 
         # save the timestamp of the newest comment we found, so next API call knows what's fresh
@@ -261,8 +259,7 @@ class YoutubeAPI:
             likes = top_level_comment["snippet"]["likeCount"]
             reply_count = item["snippet"]["totalReplyCount"]
             comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
-                % (video_id, comment_id),
+                "url": f"https://www.youtube.com/watch?v={video_id}&lc={comment_id}",
                 "username": username,
                 "text": text,
                 "title": "",
@@ -274,8 +271,8 @@ class YoutubeAPI:
             new_comments.append(comment)
 
         log.info(
-            f"{self.class_name}: YouTube",
-            msg="Got %d new comments since last check" % len(new_comments),
+            self.class_name,
+            msg=f"Got {len(new_comments)} new comments since last check",
         )
 
         if not new_comments:
@@ -284,15 +281,15 @@ class YoutubeAPI:
                 self.youtube_cooldown * 2, timedelta(seconds=1200)
             )
             log.info(
-                f"{self.class_name}: YouTube",
-                msg="No new comments, increasing cooldown timer to %s"
-                % self.youtube_cooldown,
+                self.class_name,
+                msg=f"No new comments, increasing cooldown timer to {self.youtube_cooldown}"
             )
 
         return new_comments
 
     def add_youtube_question(self, comment: dict):
-        # Get the video title from the video URL, without the comment id
+        """Get the video title from the video URL, without the comment id
+        """
         # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
         video_titles = utils.get_title(comment["url"].split("&lc=")[0])
 
@@ -303,4 +300,3 @@ class YoutubeAPI:
         display_title = f"{comment['username']}'s question on {video_titles[0]}"
 
         # TODO: add to Coda
-
