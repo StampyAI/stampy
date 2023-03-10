@@ -794,7 +794,7 @@ def parse_status(text: str, *, require_status_prefix: bool = True) -> Optional[s
 def parse_id(text: str) -> Optional[str]:
     """Parse question id from message content"""
     # matches: "id: <question-id>"
-    if match := re.search(r"id:?\s+([-\w]+)", text, re.I):
+    if match := re.search(r"\sid:?\s+([-\w]+)", text, re.I):
         return match.group(1)
     # matches: "i-<letters-and-numbers-unitl-word-boundary>" (i.e. question id)
     if match := re.search(r"(i-[\w\d]+)\b", text, re.I):
