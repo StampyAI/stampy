@@ -65,10 +65,10 @@ class Questions(Module):
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
-            if not self.last_question_autoposted and (
+            if (
                 self.last_question_posted
                 < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
-            ):
+            ) and not self.last_question_autoposted :
                 await self.post_random_oldest_question(event_type)
 
             if (
@@ -227,7 +227,6 @@ class Questions(Module):
                 for _, r in questions_df.iterrows()
             )
 
-
         # update Last Asked On Discord column
         current_time = datetime.now()
         for question_id in questions_df["id"].tolist():
@@ -273,9 +272,6 @@ class Questions(Module):
         current_time = datetime.now()
         coda_api.update_question_last_asked_date(question["id"], current_time)
 
-        # send to channel
-        await channel.send(make_post_question_message(question))
-
         # update caches
         self.last_question_id = question["id"]
         self.last_question_posted = current_time
@@ -290,6 +286,10 @@ class Questions(Module):
             ),
             event_type=event_type,
         )
+
+        # send to channel
+        await channel.send(make_post_question_message(question))
+
 
     ###################
     # Count questions #
@@ -418,7 +418,9 @@ class Questions(Module):
 
         # pre-send message to confirm that you're going to update statuses
         await channel.send(
-            f"Thanks, {message.author.name}! I'll update their status to `{query.status}`"
+            f"Thanks, {message.author.name}! I'll update "
+            + ("their" if len(query.ids) > 1 else "its")
+            + f" status to `{query.status}`"
         )
         # map question IDs to QuestionRows
         id2question = {qid: coda_api.get_question_row(qid) for qid in query.ids}
