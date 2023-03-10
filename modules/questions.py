@@ -61,6 +61,7 @@ class Questions(Module):
         self.last_question_posted: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
+        self.last_question_autoposted = False
         self.class_name = "Questions Module"
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
@@ -69,7 +70,7 @@ class Questions(Module):
             if (
                 self.last_question_posted
                 < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
-            ):
+            ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
             if (
                 coda_api.questions_cache_last_update
@@ -271,6 +272,7 @@ class Questions(Module):
         # update times
         current_time = datetime.now()
         self.last_question_posted = current_time
+        self.last_question_autoposted = True
         coda_api.update_question_last_asked_date(question["id"], current_time)
         # send to channel
         await channel.send(make_post_question_message(question))
