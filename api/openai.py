@@ -16,7 +16,6 @@ utils = Utilities.get_instance()
 
 class OpenAI:
     def __init__(self):
-        super().__init__()
         self.class_name = self.__class__.__name__
         self.log = get_logger()
 

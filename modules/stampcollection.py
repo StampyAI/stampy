@@ -1,4 +1,4 @@
-from datetime import datetime as dt, timedelta
+from datetime import datetime , timedelta
 import re
 from typing import cast
 import discord
@@ -6,7 +6,8 @@ import numpy as np
 import requests
 from structlog import get_logger
 
-from utilities import get_user_handle, utilities, Utilities
+from api.coda import CodaAPI
+from utilities import is_in_testing_mode, utilities, Utilities
 from modules.module import Module, Response
 from config import stamp_scores_csv_file_path
 from servicemodules.serviceConstants import Services
@@ -24,11 +25,12 @@ vote_strengths_per_emoji = {
     "goldstamp": 5,
 }
 
+coda_api = CodaAPI.get_instance()
 
 class StampsModule(Module):
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
     UNAUTHORIZED_MESSAGE = "You can't do that!"
-    last_total_stamp_update: dt
+    last_total_stamp_update: datetime
 
     def __str__(self):
         return "StampsModule"
@@ -39,6 +41,8 @@ class StampsModule(Module):
         self.gamma = 0.99
         self.total_votes = self.utils.get_total_votes()
         self.calculate_stamps()
+        if is_in_testing_mode():
+            return
         self.update_all_stamps_in_users_table()
 
     def reset_stamps(self):
@@ -74,37 +78,16 @@ class StampsModule(Module):
         if recalculate:
             self.calculate_stamps()
 
-    def update_stamps_in_users_table(
-        self, user: DiscordUser, stamp_count: float
-    ) -> None:
-        """Update stamps count in Coda [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)"""
-        query = f'"Discord handle":"{get_user_handle(user)}"'
-        user_row = utils.get_user_row(query)
-        if user_row is None:
-            return
-        user_id = user_row["id"]
-        uri = f"https://coda.io/apis/v1/docs/{utils.DOC_ID}/tables/{utils.TEAM_GRID_ID}/rows/{user_id}"
-        payload = {
-            "row": {
-                "cells": [
-                    {"column": "Stamp count", "value": stamp_count},
-                ],
-            },
-        }
-        response = requests.put(
-            uri, headers=utils.get_coda_auth_headers(), json=payload, timeout=20
-        )
-        response.raise_for_status()
-        log.info(self.class_name, msg=f"Updated {user.name}'s stamp count to {stamp_count} on coda")
 
     def update_all_stamps_in_users_table(self) -> None:
+        coda_api.update_users_cache()
         users = self.utils.get_users()
         for user_id in users:
             stamp_count = self.get_user_stamps(user_id)
             user = self.utils.client.get_user(user_id)
             if user is not None:
-                self.update_stamps_in_users_table(user, stamp_count)
-        self.last_total_stamp_update = dt.now()
+                coda_api.update_user_stamps(cast(DiscordUser, user), stamp_count)
+        self.last_total_stamp_update = datetime.now()
 
     def update_utils(self) -> None:
         self.utils.users = self.utils.get_users()
@@ -318,10 +301,10 @@ class StampsModule(Module):
                 negative=(event_type == "REACTION_REMOVE"),
             )
             stamps_after_update = self.get_user_stamps(to_id)
-            if self.last_total_stamp_update < dt.now() - timedelta(hours=23):
+            if self.last_total_stamp_update < datetime.now() - timedelta(hours=23):
                 self.update_all_stamps_in_users_table()
             else:
-                self.update_stamps_in_users_table(
+                coda_api.update_user_stamps(
                     cast(DiscordUser, message.author), stamps_after_update
                 )
             self.log.info(

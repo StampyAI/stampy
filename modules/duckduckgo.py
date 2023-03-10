@@ -7,7 +7,7 @@ from modules.module import Module, Response
 class DuckDuckGo(Module):
     # Some types of things we don't really care about
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
-    words = re.compile('[A-Za-z]+')
+    words = re.compile("[A-Za-z]+")
 
     def process_message(self, message):
         text = self.is_at_me(message)
@@ -19,15 +19,13 @@ class DuckDuckGo(Module):
                     args=[text],
                     why="It's a question, we might be able to answer it",
                 )
-            else:
-                return Response(
-                    confidence=2,
-                    callback=self.ask,
-                    args=[text],
-                    why="It's not a question but we might be able to look it up",
-                )
-        else:
-            return Response()
+            return Response(
+                confidence=2,
+                callback=self.ask,
+                args=[text],
+                why="It's not a question but we might be able to look it up",
+            )
+        return Response()
 
     def __str__(self):
         return "DuckDuckGo"

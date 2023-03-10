@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 from config import (
     youtube_api_version,
     youtube_api_service_name,
@@ -23,15 +24,16 @@ from googleapiclient.errors import HttpError
 from structlog import get_logger
 from time import time
 from utilities.discordutils import DiscordMessage, DiscordUser
-from utilities.serviceutils import ServiceMessage
-from typing import List, Optional
+from utilities.serviceutils import ServiceMessage, ServiceUser
+from string import punctuation
+from typing import Any, List, Optional
 import discord
 import json
 import os
+from pprint import pformat
 import psutil
 import random
 import re
-import requests
 import sys
 from threading import Event
 import traceback
@@ -80,15 +82,6 @@ class Utilities:
 
     modules_dict = {}
     service_modules_dict = {}
-
-    # Coda
-    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    DOC_ID = (
-        "ah62XEPvpG" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
-    )
-    ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
-    STATUSES_GRID_ID = "grid-IWDInbu5n2"
-    TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
 
     @staticmethod
     def get_instance() -> Utilities:
@@ -146,6 +139,10 @@ class Utilities:
         intents.members = True
         intents.message_content = True
         self.client = discord.Client(intents=intents)
+        
+        # async
+        # self.loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(self.loop)
 
     def rate_limit(self, timer_name: str, **kwargs) -> bool:
         """Should I rate-limit? i.e. Has it been less than this length of time since the last time
@@ -552,44 +549,6 @@ class Utilities:
         output.append(msg[last_split_index:])
         return output
 
-    ##############
-    # Coda utils #
-    ##############
-
-    def get_coda_auth_headers(self) -> dict[str, str]:
-        """Get authorization headers for coda requests"""
-        return {"Authorization": f"Bearer {self.CODA_API_TOKEN}"}
-
-    def get_user_row(self, query: str) -> Optional[dict]:
-        """Get user row from the users table using a query with the following form
-
-        `"<column name>":"<value>"`
-        """
-        params = {
-            "valueFormat": "simple",
-            "useColumnNames": True,
-            "query": query,
-            "limit": 1,
-        }
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
-        response = requests.get(
-            uri, headers=self.get_coda_auth_headers(), params=params, timeout=10
-        )
-        response.raise_for_status()
-        users = response.json()["items"]
-        if users:
-            return users[0]
-
-    def get_team_grid(self) -> list[dict]:
-        uri = f"https://coda.io/apis/v1/docs/{self.DOC_ID}/tables/{self.TEAM_GRID_ID}/rows"
-        response = requests.get(
-            uri,
-            params={"valueFormat": "simple", "useColumnNames": True},
-            headers=self.get_coda_auth_headers(),
-            timeout=10,
-        )
-        response.raise_for_status()
-        return [item["values"] for item in response.json()["items"]]
 
 
 def get_github_info() -> str:
@@ -706,6 +665,37 @@ def get_guild_and_invite_role():
 def get_user_handle(user: DiscordUser) -> str:
     return user.name + "#" + user.discriminator
 
+def is_from_reviewer(message: ServiceMessage) -> bool:
+    """This message is from @reviewer"""
+    return is_reviewer(message.author)
+
+def is_reviewer(user: ServiceUser) -> bool:
+    return any(role.name == "reviewer" for role in user.roles)
+
+def is_in_testing_mode() -> bool:
+    """Currently running in testing mode on GH?"""
+    return "testing" in os.environ.values()
+
+def fuzzy_contains(container: str, contained: str) -> bool:
+    """Fuzzy-ish version of `contained in container`.
+    Disregards spaces, and punctuation.
+    """
+    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
+        container.casefold().replace(" ", "")
+    )
+
+def pformat_to_codeblock(d: dict[str, Any]) -> str:
+    """`pformat` a dictionary and embed it in a code block
+    (for nice display in discord message)
+    """
+    return "```\n" + pformat(d, sort_dicts=False) + "\n```"
+
+
+def remove_punct(s: str) -> str:
+    """Remove punctuation from string"""
+    for p in punctuation:
+        s = s.replace(p, "")
+    return s
 
 class UtilsTests:
     def test_split_message_for_discord(self):
@@ -718,3 +708,4 @@ class UtilsTests:
         self.assertEqual(len(test_out), 4)
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
+
