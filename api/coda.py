@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import os
 from typing import cast, Optional
 
-from codaio import Coda, Document
+from codaio import Coda, Document, Row
 import pandas as pd
 from structlog import get_logger
 
@@ -95,7 +95,7 @@ class CodaAPI:
     #   Users   #
     #############
 
-    def get_user_row(self, field: str, value: str) -> Optional[dict]:
+    def get_user_row(self, field: str, value: str) -> Optional[Row]:
         """Get user row from the users table using a query with the following form
 
         `"<field/column name>":"<value>"`
@@ -104,20 +104,19 @@ class CodaAPI:
             column_name=field, value=value
         )
         if rows:
-            return rows[0].to_dict()
+            return rows[0]
 
     def update_user_stamps(self, user: DiscordUser, stamp_count: float) -> None:
-        """Update stamps count in Coda [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)"""
+        """Update stamps count in Coda 
+        [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)"""
         # get row
-        rows = self.users.find_row_by_column_name_and_value(
-            column_name="Discord handle", value=get_user_handle(user)
-        )
-        if rows is None:
-            self.log.error(
+        row = self.get_user_row("Discord handle", get_user_handle(user))
+        if row is None:
+            self.log.info(
                 self.class_name, msg="Couldn't find user in table", user=user
             )
             return
-        row = rows[0]
+            
         # update table
         updated_cells = make_updated_cells({"Stamp count": stamp_count})
         self.users.update_row(row, updated_cells)
@@ -132,7 +131,8 @@ class CodaAPI:
 
     def get_questions_by_gdoc_links(self, urls: list[str]) -> list[QuestionRow]:
         """Get questions by url links to their GDocs.
-        Returns list of `QuestionRow`s. Empty list (`[]`) if couldn't find questions with any of the links.
+        Returns list of `QuestionRow`s. Empty list (`[]`) if couldn't find questions
+        with any of the links.
         """
         questions_df = self.questions_df
         questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
@@ -149,7 +149,8 @@ class CodaAPI:
         question_id: str,
         status: str,
     ) -> None:
-        """Update status of a question in [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). 
+        """Update status of a question in 
+        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). 
         Also, update local cache accordingly.
         """
         # get row
@@ -164,7 +165,9 @@ class CodaAPI:
     def update_question_last_asked_date(
         self, question_id: str, current_time: datetime
     ) -> None:
-        """Update "Last Asked On Discord" field of a question in [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). Also, update local cache accordingly"""
+        """Update "Last Asked On Discord" field of a question in 
+        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). 
+        Also, update local cache accordingly"""
         # get row
         row = self.get_question_row(question_id)
         # update coda table
