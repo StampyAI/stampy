@@ -42,19 +42,6 @@ if __name__ == "__main__":
     if not os.path.exists(database_path):
         raise Exception("Couldn't find the stampy database file at " + f"{database_path}")
 
-    if ENVIRONMENT_TYPE == "production":
-        sys.path.insert(0, prod_local_path)
-        import sentience
-    elif ENVIRONMENT_TYPE == "development":
-        pass
-        # from modules.sentience import sentience
-    else:
-        raise Exception(
-            "Please set the ENVIRONMENT_TYPE environment variable "
-            + f"to {acceptable_environment_types[0]} or "
-            + f"{acceptable_environment_types[1]}"
-        )
-
     utils.modules_dict = get_stampy_modules()
 
     utils.service_modules_dict = {
