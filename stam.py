@@ -1,15 +1,15 @@
 import os
 import threading
-from servicemodules.discord import DiscordHandler
-from servicemodules.slack import SlackHandler
-from servicemodules.flask import FlaskHandler
-from utilities import Utilities
+
 from structlog import get_logger
+
+from config import database_path
 from modules.module import Module
-from config import (
-    database_path,
-)
+from servicemodules.discord import DiscordHandler
+from servicemodules.flask import FlaskHandler
 from servicemodules.serviceConstants import Services
+from servicemodules.slack import SlackHandler
+from utilities import Utilities
 
 log_type = "stam.py"
 log = get_logger()
@@ -19,9 +19,10 @@ def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
-    for file_title in [
+    module_filenames = [
         f[:-3] for f in os.listdir(path) if f.endswith(".py") and f != "__init__.py"
-    ]:
+    ]
+    for file_title in module_filenames:
         log.info("import", filename=file_title)
         mod = __import__(".".join(["modules", file_title]), fromlist=[file_title])
         log.info("import", module_name=mod)
@@ -38,7 +39,9 @@ if __name__ == "__main__":
     utils = Utilities.get_instance()
 
     if not os.path.exists(database_path):
-        raise Exception(f"Couldn't find the stampy database file at {database_path}")
+        raise FileNotFoundError(
+            f"Couldn't find the stampy database file at {database_path}"
+        )
 
     utils.modules_dict = get_stampy_modules()
 
