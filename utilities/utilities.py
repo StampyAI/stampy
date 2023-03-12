@@ -258,8 +258,10 @@ class Utilities:
     def split_message_for_discord(
         msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit
     ) -> list[str]:
-        """Splitting a message in chunks of maximum 2000, so that the end of each chunk is a newline if possible.
-        We can do this greedily, and if a solution exists."""
+        """Splitting a message in chunks of maximum 2000,
+        so that the end of each chunk is a newline if possible.
+        We can do this greedily, and if a solution exists.
+        """
         msg_len = len(msg)
         next_split_marker = 0
         last_split_index = 0
@@ -283,20 +285,18 @@ class Utilities:
 
 
 def get_github_info() -> str:
-    message = (
-        "\nThe latest commit was by %(actor)s."
-        + "\nThe commit message was '%(git_message)s'."
-        + "\nThis commit was written on %(date)s."
-    )
     repo = Repo(".")
     master = repo.head.reference
-    return message % {
-        "actor": master.commit.author,
-        "git_message": master.commit.message.strip(),
-        "date": master.commit.committed_datetime.strftime(
+    message = (
+        f"\nThe latest commit was by {master.commit.author}."
+        f"\nThe commit message was `{master.commit.message.strip()}`."
+        f"\nThis commit was written on %(date)s"
+        + master.commit.committed_datetime.strftime(
             "%A, %B %d, %Y at %I:%M:%S %p UTC%z"
-        ),
-    }
+        )
+        + "."
+    )
+    return message
 
 
 def get_git_branch_info() -> str:
@@ -311,34 +311,27 @@ def get_running_user_info() -> str:
         user_info = pwd.getpwuid(os.getuid())
         user_name = user_info.pw_gecos.split(",")[0]
         message = (
-            "The last user to start my server was %(username)s."
-            + "\nThey used the %(shell)s shell."
-            + "\nMy Process ID is %(pid)s on this machine."
+            f"The last user to start my server was {user_name}."
+            f"\nThey used the {user_info.pw_shell} shell."
+            f"\nMy Process ID is {os.getpid()} on this machine."
         )
-        return message % {
-            "username": user_name,
-            "shell": user_info.pw_shell,
-            "pid": os.getpid(),
-        }
-    else:
-        # This should be replaced with a better test down the line.
-        shell = (
-            "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
-        )
-        user_name = os.getlogin()
-        message = (
-            "The last user to start my server was %(username)s."
-            + "\nThey used the %(shell)s shell."
-            + "\nMy Process ID is %(pid)s on this machine."
-        )
-        return message % {"username": user_name, "shell": shell, "pid": os.getpid()}
+        return message
+
+    # This should be replaced with a better test down the line.
+    shell = "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
+    user_name = os.getlogin()
+    message = (
+        f"The last user to start my server was {user_name}."
+        f"\nThey used the {shell} shell."
+        f"\nMy Process ID is {os.getpid()} on this machine."
+    )
+    return message
 
 
 def get_memory_usage() -> str:
     process = psutil.Process(os.getpid())
     bytes_used = int(process.memory_info().rss) / 1000000
-    megabytes_string = f"{bytes_used:,.2f} MegaBytes"
-    return "I'm using %s of memory." % megabytes_string
+    return f"I'm using {bytes_used:,.2f} MegaBytes of memory."
 
 
 def get_question_id(message: ServiceMessage) -> Union[int, Literal[""]]:
@@ -412,7 +405,6 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
         container.casefold().replace(" ", "")
     )
-
 
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:

@@ -1,3 +1,7 @@
+from typing import Optional
+
+import discord
+
 from servicemodules.serviceConstants import Services
 from utilities.serviceutils import (
     ServiceChannel,
@@ -6,8 +10,6 @@ from utilities.serviceutils import (
     ServiceServer,
     ServiceUser,
 )
-from typing import Optional
-import discord
 
 
 class DiscordUser(ServiceUser):
