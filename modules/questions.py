@@ -30,9 +30,10 @@ from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
 from utilities.utilities import (
-    is_in_testing_mode,
-    is_from_reviewer,
     fuzzy_contains,
+    is_from_editor,
+    is_from_reviewer,
+    is_in_testing_mode,
     pformat_to_codeblock,
 )
 from utilities.serviceutils import ServiceMessage
@@ -68,7 +69,7 @@ class Questions(Module):
             if (
                 self.last_question_posted
                 < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
-            ) and not self.last_question_autoposted :
+            ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
 
             if (
@@ -101,6 +102,13 @@ class Questions(Module):
             )
         if not (text := self.is_at_me(message)):
             return Response()
+        if query := self.is_marking_request(message):
+            return Response(
+                confidence=8,
+                callback=self.cb_set_status_by_marking,
+                args=[query, message],
+                why=f"{message.author.name} marked these questions as `{query.status}`",
+            )
         if query := PostOrCountQuestionQuery.parse(text):
             if query.action == "count":
                 return Response(
@@ -180,6 +188,31 @@ class Questions(Module):
                 self.review_msg_id2question_ids[cast(str, msg_ref_id)],
                 "Live on site",
             )
+
+    ###################
+    # Marking request #
+    ###################
+
+    def is_marking_request(
+        self, message: ServiceMessage
+    ) -> Optional[SetQuestionByAtOrReplyQuery]:
+        """#TODO docstring"""
+        text = message.clean_content
+        if text.startswith("s, del"):
+            new_status = "Marked for deletion"
+        elif text.startswith("s, dup"):
+            new_status = "Duplicate"
+        else:
+            return
+
+        if not (gdoc_links := parse_gdoc_links(text)):
+            return
+        if not (questions := coda_api.get_questions_by_gdoc_links(gdoc_links)):
+            return
+
+        question_ids = [q["id"] for q in questions]
+
+        return SetQuestionByAtOrReplyQuery(question_ids, new_status)
 
     ####################
     # Post question(s) #
@@ -289,7 +322,6 @@ class Questions(Module):
 
         # send to channel
         await channel.send(make_post_question_message(question))
-
 
     ###################
     # Count questions #
@@ -504,6 +536,62 @@ class Questions(Module):
             confidence=8,
             text=response_text,
             why=f"{message.author.name} approved the questions posted for review",
+        )
+
+    async def cb_set_status_by_marking(
+        self, query: SetQuestionByAtOrReplyQuery, message: ServiceMessage
+    ) -> Response:
+        if not (is_from_editor(message) or is_from_reviewer(message)):
+            verb = "mark " + (
+                "this question" if len(query.ids) == 1 else "these questions"
+            )
+            if query.status == "Marked for deletion":
+                verb += " for deletion"
+            else:  # duplicate
+                verb += " as " + (
+                    "a duplicate" if len(query.ids) == 1 else "duplicates"
+                )
+            return Response(
+                confidence=8,
+                text=f"You're neither a `@reviewer`, nor an `@editor`, {message.author.name}. You can't {verb}.",
+                why=f"{message.author.name} wanted to {verb} but they don't have necessary permissions.",
+            )
+
+        channel = cast(Thread, message.channel)
+        await channel.send(
+            f"Thanks, {message.author.name}, I'll mark them as `{query.status}`"
+        )
+
+        for qid in query.ids:
+            coda_api.update_question_status(qid, query.status)
+
+        if len(query.ids) == 1:
+            response_text = "The question is now marked " + (
+                "for deletion"
+                if query.status == "Marked for deletion"
+                else "as a duplicate"
+            )
+            self.last_question_id = query.ids[0]
+        else:
+            response_text = "The questions are now marked " + (
+                "for deletion"
+                if query.status == "Marked for deletion"
+                else "as duplicates"
+            )
+        return Response(
+            confidence=8,
+            text=response_text,
+            why=f"{message.author.name} asked me to mark "
+            + (
+                "a question"
+                if len(query.ids) == 1
+                else f"{len(query.ids)} questions as "
+            )
+            + (
+                "for deletion"
+                if query.status == "Marked for deletion"
+                else ("a duplicate" if len(query.ids) == 1 else "duplicates")
+            ),
         )
 
     #########

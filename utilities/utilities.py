@@ -385,12 +385,22 @@ def get_user_handle(user: DiscordUser) -> str:
 
 
 def is_from_reviewer(message: ServiceMessage) -> bool:
-    """This message is from @reviewer"""
+    """Is this message from @reviewer?"""
     return is_reviewer(message.author)
 
 
 def is_reviewer(user: ServiceUser) -> bool:
+    """Is this user `@reviewer`?"""
     return any(role.name == "reviewer" for role in user.roles)
+
+def is_from_editor(message: ServiceMessage) -> bool:
+    """Is this message from `@editor`?"""
+    return is_editor(message.author)
+
+def is_editor(user: ServiceUser) -> bool:
+    """Is this user `@editor`?"""
+    return any(role.name == "editor" for role in user.roles)
+    
 
 
 def is_in_testing_mode() -> bool:
