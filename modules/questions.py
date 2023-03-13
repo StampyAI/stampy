@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 from discord.threads import Thread
 import pandas as pd
 
-from api.coda import CodaAPI
+from api.coda import CodaAPI, QuestionStatus
 from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
@@ -219,8 +219,10 @@ class Questions(Module):
                     "\n\nOne question is already `Live on site`, so I didn't change it."
                 )
             else:
-                response_text += f"\n\n{len(already_los_qids)} questions are already `Live on site`, so I didn't change them."
-            response_text += " You need to be a `@reviewer` to change the status of questions that are already `Live on site`.\n\n"
+                response_text += f"\n\n{len(already_los_qids)} \
+                    questions are already `Live on site`, so I didn't change them."
+            response_text += " You need to be a `@reviewer` \
+                to change the status of questions that are already `Live on site`.\n\n"
             response_text += "\n".join(
                 f"- {id2question[qid]['title']} ({id2question[qid]['url']})"
                 for qid in already_los_qids
@@ -546,14 +548,16 @@ class Questions(Module):
     # Get question info #
     #####################
 
-    def parse_get_question_info_command(self, text: str, last_question_id: Optional[str]) -> GetQuestionInfoCommand | GetLastQuestionInfoCommand | None:
+    def parse_get_question_info_command(
+        self, text: str, last_question_id: Optional[str]
+    ) -> GetQuestionInfoCommand | GetLastQuestionInfoCommand | None:
         """#TODO: docstring"""
         # if text contains neither "get", nor "info", it's not a request for getting question info
         if "get" not in text and "info" not in text:
             return
         # request to get question by ID
         if question_id := parse_id(text):
-            return {"type": "title",  "query": question_id}
+            return {"type": "title", "query": question_id}
         # request to get question by its title (or substring fuzzily contained in title)
         if match := re.search(r"(?:question):?\s+([-\w\s]+)", text, re.I):
             question_title = match.group(1)
@@ -562,9 +566,10 @@ class Questions(Module):
         if "get last" in text or "get it" in text:
             return {"query": last_question_id}
 
-
     async def cb_get_question_info(
-        self, cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand, message: ServiceMessage
+        self,
+        cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand,
+        message: ServiceMessage,
     ) -> Response:
         """Get info about a question and post it as a dict in code block"""
         # early exit if asked for last question but there is no last question
@@ -577,12 +582,17 @@ class Questions(Module):
                     "I don't remember dealing any questions since my last reboot"
                 ),
             )
-            
+
         info = self.get_question_info_cmd_info(cmd)
 
         response_text = f"Here it is ({info}):\n\n"
         question_row = next(
-            (q for _, q in coda_api.questions_df.iterrows() if self.matches_get_q_info_query(cmd, q)), None
+            (
+                q
+                for _, q in coda_api.questions_df.iterrows()
+                if self.matches_get_q_info_query(cmd, q)
+            ),
+            None,
         )
         if question_row is not None:
             self.last_question_id = question_row["id"]
@@ -595,22 +605,27 @@ class Questions(Module):
             text=response_text,
             why=f"{message.author.name} asked me to get the question with {info}",
         )
-        
+
     @staticmethod
-    def get_question_info_cmd_info(cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand) -> str:
+    def get_question_info_cmd_info(
+        cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand,
+    ) -> str:
         query = cmd["query"]
-        
+
         # GetLastQuestionInfoCommand
         if "type" not in cmd:
             if query:
                 return f"last, id: `{query}`"
             return "last, id: missing"
-        
+
         # GetQuestionInfoCommand
         return f"{cmd.get('type')} `{query}`"
-    
+
     @staticmethod
-    def matches_get_q_info_query(cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand, question_row: pd.Series) -> bool:
+    def matches_get_q_info_query(
+        cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand,
+        question_row: pd.Series,
+    ) -> bool:
         """Does this question (row from coda "All Answers" table)
         match this query?
         """
@@ -623,8 +638,10 @@ class Questions(Module):
     ##############
     # Set status #
     ##############
-    
-    def parse_set_question_status_command(self, text: str, last_question_id: Optional[str]) -> Optional[SetQuestionStatusByMsgCommand]:
+
+    def parse_set_question_status_command(
+        self, text: str, last_question_id: Optional[str]
+    ) -> Optional[SetQuestionStatusByMsgCommand]:
         """#TODO: docstring"""
         if "set it" in text or "set last" in text:
             query_type = "last"
@@ -636,11 +653,11 @@ class Questions(Module):
                 return
         else:
             return
-        
+
         status = parse_status(text, require_status_prefix=False)
         if status is None:
             return
-        
+
         return {"type": query_type, "id": query_id, "status": status}
 
     async def cb_set_status_by_msg(
@@ -767,6 +784,7 @@ class Questions(Module):
 #   Command TypedDicts   #
 ##########################
 
+
 class SetQuestionStatusByAtCommand(TypedDict):
     """Set question status on review request
     - Somebody mentions one of the roles (`@reviewer`, `@feedback`, `@feedback-sketch`)
@@ -812,6 +830,7 @@ class CountQuestionsCommand(TypedDict):
     status: Optional[str]
     tag: Optional[str]
 
+
 class GetQuestionInfoCommand(TypedDict):
     """Get info about particular question
 
@@ -841,9 +860,9 @@ class GetLastQuestionInfoCommand(TypedDict):
     query: Optional[str]
 
 
-
 class SetQuestionStatusByMsgCommand(TypedDict):
     """Change status of a particular question."""
+
     type: Literal["id", "last"]
     """
     - "id" - specified by unique row identifier in "All Answers" table
@@ -851,7 +870,7 @@ class SetQuestionStatusByMsgCommand(TypedDict):
     (changed or posted) in isolation from other rows
     """
     id: Optional[str]
-    status: str
+    status: QuestionStatus
 
 
 ##################
@@ -860,7 +879,10 @@ class SetQuestionStatusByMsgCommand(TypedDict):
 
 # Parsing
 
-def parse_status(text: str, *, require_status_prefix: bool = True) -> Optional[str]:
+
+def parse_status(
+    text: str, *, require_status_prefix: bool = True
+) -> Optional[QuestionStatus]:
     re_status = re.compile(
         r"{status_prefix}({status_vals})".format(
             status_prefix=(r"status\s*" if require_status_prefix else ""),
@@ -943,7 +965,7 @@ def make_post_question_message(question_row: QuestionRow) -> str:
 
 
 def unauthorized_set_los(
-    status: str,
+    status: QuestionStatus,
     question: QuestionRow,
     message: ServiceMessage,
 ) -> Optional[Response]:

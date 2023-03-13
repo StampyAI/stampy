@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 import os
-from typing import cast, Optional
+from textwrap import dedent
+from typing import cast, get_args, Optional, Literal
 
 from codaio import Coda, Document, Row
 import pandas as pd
@@ -21,6 +22,18 @@ from utilities.utilities import get_user_handle
 
 log = get_logger()
 
+QuestionStatus = Literal[
+    "Bulletpoint sketch",
+    "Duplicate",
+    "In progress",
+    "In review",
+    "Live on site",
+    "Marked for deletion",
+    "Not started",
+    "Uncategorized",
+    "Withdrawn",
+]
+
 
 class CodaAPI:
     """Gathers everything for interacting with coda"""
@@ -37,7 +50,7 @@ class CodaAPI:
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     TAGS_GRID_ID = "grid-4uOTjz1Rkz"
-    
+
     REQUEST_TIMEOUT = 5
 
     QUESTIONS_CACHE_UPDATE_INTERVAL = timedelta(minutes=10)
@@ -85,10 +98,10 @@ class CodaAPI:
         )
 
     def update_users_cache(self) -> None:
-        """Update users cache, i.e. codaio Table representing 
+        """Update users cache, i.e. codaio Table representing
         [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#Team_tu_Rc/r5).
-        Gets called upon CodaAPI initialization and every 23 hours or so 
-        from within StampCollection module, 
+        Gets called upon CodaAPI initialization and every 23 hours or so
+        from within StampCollection module,
         when all stamps in the coda table are being updated.
         """
         self.users = self.doc.get_table(self.TEAM_GRID_ID)
@@ -112,16 +125,15 @@ class CodaAPI:
             return rows[0]
 
     def update_user_stamps(self, user: DiscordUser, stamp_count: float) -> None:
-        """Update stamps count in Coda 
-        [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)"""
+        """Update stamps count in Coda
+        [users/team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_lu_Rc)
+        """
         # get row
         row = self.get_user_row("Discord handle", get_user_handle(user))
         if row is None:
-            self.log.info(
-                self.class_name, msg="Couldn't find user in table", user=user
-            )
+            self.log.info(self.class_name, msg="Couldn't find user in table", user=user)
             return
-            
+
         # update table
         updated_cells = make_updated_cells({"Stamp count": stamp_count})
         self.users.update_row(row, updated_cells)
@@ -152,10 +164,10 @@ class CodaAPI:
     def update_question_status(
         self,
         question_id: str,
-        status: str,
+        status: QuestionStatus,
     ) -> None:
-        """Update status of a question in 
-        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). 
+        """Update status of a question in
+        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update local cache accordingly.
         """
         # get row
@@ -170,8 +182,8 @@ class CodaAPI:
     def update_question_last_asked_date(
         self, question_id: str, current_time: datetime
     ) -> None:
-        """Update "Last Asked On Discord" field of a question in 
-        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a). 
+        """Update "Last Asked On Discord" field of a question in
+        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update local cache accordingly"""
         # get row
         row = self.get_question_row(question_id)
@@ -197,7 +209,7 @@ class CodaAPI:
     #   Other   #
     #############
 
-    def get_status_shorthand_dict(self) -> dict[str, str]:
+    def get_status_shorthand_dict(self) -> dict[str, QuestionStatus]:
         """Get dictionary mapping statuses and status shorthands
         (e.g. "bs" for "Bulletpoint sketch") to valid Status labels.
         """
@@ -227,4 +239,11 @@ class CodaAPI:
         """Get all valid Status values from table in admin panel"""
         status_table = self.doc.get_table(self.STATUSES_GRID_ID)
         status_vals = {r["Status"].value for r in status_table.rows()}
+        if status_vals != (code_status_vals := set(get_args(QuestionStatus))):
+            msg = dedent(f"""\
+                Status values defined in api/coda.py file don't match the values found in coda table:
+                values in code: {code_status_vals}
+                values in coda table: {status_vals}""")
+            log.error(self.class_name, msg=msg)
+            raise AssertionError(msg)
         return sorted(status_vals)
