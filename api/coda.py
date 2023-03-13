@@ -36,6 +36,8 @@ class CodaAPI:
     ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
+    TAGS_GRID_ID = "grid-4uOTjz1Rkz"
+    
     REQUEST_TIMEOUT = 5
 
     QUESTIONS_CACHE_UPDATE_INTERVAL = timedelta(minutes=10)
@@ -217,11 +219,9 @@ class CodaAPI:
         # Workaround to make mock request during testing
         if is_in_testing_mode():
             return []
-        tags = set()
-        # pylint:disable=unsubscriptable-object
-        for row_tags in self.questions_df["tags"]:
-            tags.update(row_tags)
-        return sorted(tags)
+        tags_table = self.doc.get_table(self.TAGS_GRID_ID)
+        tags_vals = {row["Tag name"] for row in tags_table.to_dict()}
+        return sorted(tags_vals)
 
     def get_all_statuses(self) -> list[str]:
         """Get all valid Status values from table in admin panel"""
