@@ -120,7 +120,6 @@ class StampsModule(Module):
 
         user_count_matrix = np.zeros(user_count)
         user_count_matrix[0] = 1.0  # God has 1 karma
-
         self.utils.scores = list(np.linalg.solve(users_matrix, user_count_matrix))
 
         self.export_scores_csv()
@@ -178,10 +177,8 @@ class StampsModule(Module):
     def get_user_stamps(self, user):
         index = self.utils.index_dammit(user)
         if index:
-            stamps = self.utils.scores[index] * self.total_votes
-        else:
-            stamps = 0.0
-        return stamps
+            return self.utils.scores[index] * self.total_votes
+        return 0.0
 
     def load_votes_from_csv(self, filename: str = "stamps.csv"):
         with open(filename, "r", encoding="utf-8") as stamps_file:

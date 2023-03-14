@@ -1,42 +1,43 @@
 from __future__ import annotations
-import asyncio
+
+import os
+import random
+import re
+import sys
+import traceback
+from datetime import datetime, timedelta
+from enum import Enum
+from pprint import pformat
+from string import punctuation
+from threading import Event
+from time import time
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+
+import psutil
+from discord import Client, ClientUser, Guild, Intents, Role, Thread
+from discord import utils as discord_utils
+from git.repo import Repo
+from structlog import get_logger
+
 from config import (
-    youtube_api_version,
-    youtube_api_service_name,
-    rob_miles_youtube_channel_id,
-    discord_token,
-    discord_guild,
-    youtube_api_key,
-    database_path,
-    TEST_RESPONSE_PREFIX,
     TEST_QUESTION_PREFIX,
+    TEST_RESPONSE_PREFIX,
+    database_path,
+    discord_guild,
+    discord_token,
 )
+from database.database import Database
 from servicemodules.discordConstants import (
     stampy_error_log_channel_id,
     wiki_feed_channel_id,
 )
-from database.database import Database
-from datetime import datetime, timezone, timedelta
-from enum import Enum
-from git import Repo
-from googleapiclient.discovery import build as get_youtube_api
-from googleapiclient.errors import HttpError
-from structlog import get_logger
-from time import time
+from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordMessage, DiscordUser
 from utilities.serviceutils import ServiceMessage, ServiceUser
-from string import punctuation
-from typing import Any, List, Optional
-import discord
-import json
-import os
-from pprint import pformat
-import psutil
-import random
-import re
-import sys
-from threading import Event
-import traceback
+
+if TYPE_CHECKING:
+    from modules.module import Module
+
 
 # Sadly some of us run windows...
 if os.name != "nt":
@@ -55,33 +56,48 @@ class OrderType(Enum):
 
 class Utilities:
     __instance: Optional[Utilities] = None
-    db: Database
-    client: discord.Client
-    discord_user: Optional[DiscordUser] = None
-    stop: Optional[Event] = None
-    youtube = None
 
     TOKEN = discord_token
     GUILD = discord_guild
-    YOUTUBE_API_KEY = youtube_api_key
     DB_PATH = database_path
 
-    last_message_was_youtube_question: bool = False
-    latest_comment_timestamp: datetime
-    last_check_timestamp: datetime
-    youtube_cooldown: timedelta
-    last_timestamp: dict[str, datetime] = {}
-    last_question_asked_timestamp: datetime
-    latest_question_posted = None
-    error_channel = None
+    def __init__(self):
+        if Utilities.__instance is not None:
+            raise Exception(
+                "This class is a singleton! Access it using `Utilities.get_instance()`"
+            )
 
-    users = None
-    ids = None
-    index = None
-    scores = None
+        Utilities.__instance = self
 
-    modules_dict = {}
-    service_modules_dict = {}
+        self.class_name = self.__class__.__name__
+        self.start_time = time()
+        self.test_mode = False
+        self.people = {"stampy"}
+
+        self.db = Database(self.DB_PATH)
+        log.info(self.class_name, status=f"Trying to open db - {self.DB_PATH}")
+        intents = Intents.default()
+        intents.members = True
+        intents.message_content = True
+        self.client = Client(intents=intents)
+        self.discord_user: Optional[ServiceUser] = None
+        self.stop: Optional[Event] = None
+
+        self.last_question_asked_timestamp: datetime
+        self.latest_question_posted = None
+        self.error_channel = cast(
+            Thread, self.client.get_channel(int(stampy_error_log_channel_id))
+        )
+
+        self.users: list[int] = []
+        self.ids: list[int] = []
+        self.index: dict[int, int] = {}
+
+        # stamp counts
+        self.scores: list[float] = []
+
+        self.modules_dict: dict[str, Module] = {}
+        self.service_modules_dict: dict[Services, Any] = {}
 
     @staticmethod
     def get_instance() -> Utilities:
@@ -89,304 +105,31 @@ class Utilities:
             return Utilities()
         return Utilities.__instance
 
-    def __init__(self):
-        if Utilities.__instance is not None:
-            raise Exception("This class is a singleton!")
-        
-        Utilities.__instance = self
-        self.class_name = self.__class__.__name__
-        self.start_time = time()
-        self.test_mode = False
-        self.people = set("stampy")
-
-        # dict to keep last timestamps in
-        self.last_timestamp = {}
-
-        # when was the most recent comment we saw posted?
-        self.latest_comment_timestamp = datetime.now(timezone.utc)
-
-        # when did we last hit the API to check for comments?
-        self.last_check_timestamp = datetime.now(timezone.utc)
-
-        # how many seconds should we wait before we can hit YT API again
-        # this the start value. It doubles every time we don't find anything new
-        self.youtube_cooldown = timedelta(seconds=60)
-
-        # timestamp of last time we asked a youtube question
-        self.last_question_asked_timestamp = datetime.now(timezone.utc)
-
-        # Was the last message posted in #general by anyone, us asking a question from YouTube?
-        # We start off not knowing, but it's better to assume yes than no
-        self.last_message_was_youtube_question = True
-
-        try:
-            self.youtube = get_youtube_api(
-                youtube_api_service_name,
-                youtube_api_version,
-                developerKey=self.YOUTUBE_API_KEY,
-            )
-        except HttpError:
-            if self.YOUTUBE_API_KEY:
-                log.info(
-                    self.class_name, msg="YouTube API Key is set but not correct"
-                )
-            else:
-                log.info(self.class_name, msg="YouTube API Key is not set")
-
-        log.info(self.class_name, status="Trying to open db - " + self.DB_PATH)
-        self.db = Database(self.DB_PATH)
-        intents = discord.Intents.default()
-        intents.members = True
-        intents.message_content = True
-        self.client = discord.Client(intents=intents)
-        
-        # async
-        # self.loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(self.loop)
-
-    def rate_limit(self, timer_name: str, **kwargs) -> bool:
-        """Should I rate-limit? i.e. Has it been less than this length of time since the last time
-        this function was called using the same `timer_name`?
-        Used in a function like Module.tick() to make sure it doesn't run too often.
-        For example, adding this at the top of a function that checks the youtube API:
-
-        if utils.rate_limit("check youtube API", seconds=30):
-            return
-
-        will cause the function to return early if it's been less than 30 seconds since it was last called.
-        The keyword arguments are passed on to the timedelta object,
-        so you can use 'seconds=', 'minutes=', 'hours=' etc, or combinations of them
-        Note that this is all reset when Stampy reboots
-        """
-        tick_cooldown = timedelta(**kwargs)
-        now = datetime.now(timezone.utc)
-
-        # if there's no timestamp stored for that name, store now and don't rate limit
-        if timer_name not in self.last_timestamp:
-            self.last_timestamp[timer_name] = now
-            return False
-
-        # if it's been long enough, update the timestamp and don't rate limit
-        if (now - self.last_timestamp[timer_name]) > tick_cooldown:
-            self.last_timestamp[timer_name] = now
-            return False
-        # it hasn't been long enough, rate limit
-        return True
-
-    def stampy_is_author(self, message: DiscordMessage) -> bool:
+    def stampy_is_author(self, message: Union[ServiceMessage, DiscordMessage]) -> bool:
         return self.is_stampy(message.author)
 
-    def is_stampy(self, user: DiscordUser) -> bool:
+    def is_stampy(self, user: ServiceUser) -> bool:
         if (
             user.id == wiki_feed_channel_id
         ):  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
             return True
         if self.discord_user:
             return user == self.discord_user
-        if user.id == str(self.client.user.id):
+        if user.id == str(cast(ClientUser, self.client.user).id):
             self.discord_user = user
             return True
         return False
 
-    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
+    def is_stampy_mentioned(
+        self, message: Union[DiscordMessage, ServiceMessage]
+    ) -> bool:
         for user in message.mentions:
             if self.is_stampy(user):
                 return True
         return False
 
-    def get_youtube_comment_replies(self, comment_url):
-        url_arr = comment_url.split("&lc=")
-        reply_id = url_arr[-1].split(".")[0]
-        request = self.youtube.comments().list(part="snippet", parentId=reply_id)
-        try:
-            response = request.execute()
-        except HttpError as err:
-            if err.resp.get("content-type", "").startswith("application/json"):
-                message = (
-                    json.loads(err.content).get("error").get("errors")[0].get("message")
-                )
-                if message:
-                    log.error(f"{self.class_name}: YouTube", error=message)
-                    return
-            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
-            return
-        items = response.get("items")
-        reply = {}
-        for item in items:
-            reply_id = item["id"]
-            username = item["snippet"]["authorDisplayName"]
-            text = item["snippet"]["textOriginal"]
-            timestamp = item["snippet"]["publishedAt"][:-1]
-            likes = item["snippet"]["likeCount"]
-            reply = {
-                "username": username,
-                "reply": reply_id,
-                "text": text,
-                "title": "",
-                "timestamp": timestamp,
-                "likes": likes,
-            }
-        return reply
-
-    def get_youtube_comment(self, comment_url):
-        url_arr = comment_url.split("&lc=")
-        video_url = url_arr[0]
-        reply_id = url_arr[-1].split(".")[0]
-        request = self.youtube.commentThreads().list(part="snippet", id=reply_id)
-        try:
-            response = request.execute()
-        except HttpError as err:
-            if err.resp.get("content-type", "").startswith("application/json"):
-                message = (
-                    json.loads(err.content).get("error").get("errors")[0].get("message")
-                )
-                if message:
-                    log.error(f"{self.class_name}: YouTube", error=message)
-                    return
-            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
-            return
-        items = response.get("items")
-        comment = {"video_url": video_url}
-        if items:
-            top_level_comment = items[0]["snippet"]["topLevelComment"]
-            comment["timestamp"] = top_level_comment["snippet"]["publishedAt"][:-1]
-            comment["comment_id"] = top_level_comment["id"]
-            comment["username"] = top_level_comment["snippet"]["authorDisplayName"]
-            comment["likes"] = top_level_comment["snippet"]["likeCount"]
-            comment["text"] = top_level_comment["snippet"]["textOriginal"]
-            comment["reply_count"] = items[0]["snippet"]["totalReplyCount"]
-        else:  # This happens if the comment was deleted from YT
-            comment["timestamp"] = datetime.isoformat(datetime.utcnow())
-            comment["comment_id"] = reply_id
-            comment["username"] = "Unknown"
-            comment["likes"] = 0
-            comment["text"] = ""
-            comment["reply_count"] = 0
-        return comment
-
-    def check_for_new_youtube_comments(self):
-        """Consider getting the latest comments from the channel
-        Returns a list of dicts if there are new comments
-        Returns [] if it checked and there are no new ones
-        Returns None if it didn't check because it's too soon to check again"""
-
-        now = datetime.now(timezone.utc)
-
-        if (now - self.last_check_timestamp) > self.youtube_cooldown:
-            log.info(f"{self.class_name}: YouTube", msg="Hitting YT API")
-            self.last_check_timestamp = now
-        else:
-            log.info(
-                f"{self.class_name}: YouTube",
-                msg="YT waiting >%s\t- "
-                % str(self.youtube_cooldown - (now - self.last_check_timestamp)),
-            )
-            return None
-
-        if self.youtube is None:
-            log.info(
-                f"{self.class_name}: YouTube",
-                msg="WARNING: YouTube API Key is invalid or not set",
-            )
-            self.youtube_cooldown = self.youtube_cooldown * 10
-            return []
-
-        request = self.youtube.commentThreads().list(
-            part="snippet", allThreadsRelatedToChannelId=rob_miles_youtube_channel_id
-        )
-        try:
-            response = request.execute()
-        except HttpError as err:
-            if err.resp.get("content-type", "").startswith("application/json"):
-                message = (
-                    json.loads(err.content).get("error").get("errors")[0].get("message")
-                )
-                if message:
-                    log.error(f"{self.class_name}: YouTube", error=message)
-                    return
-            log.error(f"{self.class_name}: YouTube", error="Unknown Google API Error")
-            return
-
-        items = response.get("items", None)
-        if not items:
-            # something broke, slow way down
-            log.info(
-                f"{self.class_name}: YouTube",
-                msg="YT comment checking broke. I got this response:",
-            )
-            log.info(f"{self.class_name}: YouTube", response=response)
-            self.youtube_cooldown = self.youtube_cooldown * 10
-            return None
-
-        newest_timestamp = self.latest_comment_timestamp
-
-        new_items = []
-        for item in items:
-            # Find when the comment was published
-            timestamp = item["snippet"]["topLevelComment"]["snippet"]["publishedAt"]
-            # For some reason fromisoformat() doesn't like the trailing 'Z' on timestmaps
-            # And we add the "+00:00" so it knows to use UTC
-            published_timestamp = datetime.fromisoformat(timestamp[:-1] + "+00:00")
-
-            # If this comment is newer than the newest one from last time we called API, keep it
-            if published_timestamp > self.latest_comment_timestamp:
-                new_items.append(item)
-
-            # Keep track of which is the newest in this API call
-            if published_timestamp > newest_timestamp:
-                newest_timestamp = published_timestamp
-
-        log.info(
-            f"{self.class_name}: YouTube",
-            msg="Got %s items, most recent published at %s"
-            % (len(items), newest_timestamp),
-        )
-
-        # save the timestamp of the newest comment we found, so next API call knows what's fresh
-        self.latest_comment_timestamp = newest_timestamp
-
-        new_comments = []
-        for item in new_items:
-            top_level_comment = item["snippet"]["topLevelComment"]
-            video_id = top_level_comment["snippet"]["videoId"]
-            comment_id = top_level_comment["id"]
-            username = top_level_comment["snippet"]["authorDisplayName"]
-            text = top_level_comment["snippet"]["textOriginal"]
-            timestamp = top_level_comment["snippet"]["publishedAt"][:-1]
-            likes = top_level_comment["snippet"]["likeCount"]
-            reply_count = item["snippet"]["totalReplyCount"]
-            comment = {
-                "url": "https://www.youtube.com/watch?v=%s&lc=%s"
-                % (video_id, comment_id),
-                "username": username,
-                "text": text,
-                "title": "",
-                "timestamp": timestamp,
-                "likes": likes,
-                "reply_count": reply_count,
-            }
-
-            new_comments.append(comment)
-
-        log.info(
-            f"{self.class_name}: YouTube",
-            msg="Got %d new comments since last check" % len(new_comments),
-        )
-
-        if not new_comments:
-            # we got nothing, double the cooldown period (but not more than 20 minutes)
-            self.youtube_cooldown = min(
-                self.youtube_cooldown * 2, timedelta(seconds=1200)
-            )
-            log.info(
-                f"{self.class_name}: YouTube",
-                msg="No new comments, increasing cooldown timer to %s"
-                % self.youtube_cooldown,
-            )
-
-        return new_comments
-
-    def clear_votes(self):
+    def clear_votes(self) -> None:
+        """Reset all the votes scores"""
         self.db.query("DELETE FROM uservotes")
         self.db.query(
             "INSERT INTO uservotes (`user`, `votedFor`, `votecount`) VALUES (?, ?, ?)",
@@ -394,43 +137,47 @@ class Utilities:
         )
         self.db.commit()
 
-    def update_ids_list(self):
+    def update_ids_list(self) -> None:
         self.ids = sorted(list(self.users))
         self.index = {0: 0}
         for userid in self.ids:
             self.index[userid] = self.ids.index(userid)
 
-    def index_dammit(self, user):
+    def index_dammit(self, user) -> Optional[int]:
         """Get an index into the scores array from whatever you get"""
 
         if user in self.index:
             # maybe we got given a valid ID?
             return self.index[user]
         elif str(user) in self.index:
-            return self.index[str(user)]
+            return self.index[str(user)]  # type:ignore
 
         # maybe we got given a User or Member object that has an ID?
         uid = getattr(user, "id", None)
-        try:
-            uid = int(uid)
-        except (ValueError, TypeError):
-            pass
-        log.info(
-            self.class_name, function_name="index_dammit", uuid=uid, index=self.index
-        )
+        if uid is not None and not isinstance(uid, int):
+            try:
+                uid = int(uid)
+            except (ValueError, TypeError):
+                pass
+            log.info(
+                self.class_name,
+                function_name="index_dammit",
+                uuid=uid,
+                index=self.index,
+            )
         if uid:
             return self.index_dammit(uid)
 
         return None
 
-    def get_user_score(self, user):
+    def get_user_score(self, user) -> float:
+        """Get user's number of stamps"""
         index = self.index_dammit(user)
         if index:
             return self.scores[index]
-        else:
-            return 0.0
+        return 0.0
 
-    def update_vote(self, user, voted_for, vote_quantity):
+    def update_vote(self, user: int, voted_for: int, vote_quantity: int) -> None:
         query = (
             "INSERT OR REPLACE INTO uservotes VALUES (:user,:voted_for,IFNULL((SELECT votecount "
             "FROM uservotes WHERE user = :user AND votedFor = :voted_for),0)+:vote_quantity)"
@@ -439,47 +186,36 @@ class Utilities:
         self.db.query(query, args)
         self.db.commit()
 
-    def get_votes_by_user(self, user):
+    def get_votes_by_user(self, user_id: Union[str, int]) -> int:
+        """Get number of votes given **by** that user"""
         query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where user = ?"
-        args = (user,)
+        args = (user_id,)
         return self.db.query(query, args)[0][0]
 
-    def get_votes_for_user(self, user):
+    def get_votes_for_user(self, user_id: Union[str, int]) -> int:
+        """Get number of votes given **for** that user"""
         query = "SELECT IFNULL(sum(votecount),0) FROM uservotes where votedFor = ?"
-        args = (user,)
+        args = (user_id,)
         return self.db.query(query, args)[0][0]
 
-    def get_total_votes(self):
+    def get_total_votes(self) -> int:
+        """Get total number of votes"""
         query = "SELECT sum(votecount) from uservotes where user is not 0"
         return self.db.query(query)[0][0]
 
-    def get_all_user_votes(self):
+    def get_all_user_votes(self) -> list[tuple[int, int, int]]:
+        """Get list of triples: `(<user-who-voted>, <user-who-was-voted-for>, <num-votes)`"""
         query = "SELECT user,votedFor,votecount from uservotes;"
         return self.db.query(query)
 
-    def get_users(self):
+    def get_users(self) -> list[int]:
+        """Get list of user IDs"""
         query = "SELECT user from (SELECT user FROM uservotes UNION SELECT votedFor as user FROM uservotes)"
         result = self.db.query(query)
         users = [item for sublist in result for item in sublist]
         return users
 
-    def add_youtube_question(self, comment):
-        # Get the video title from the video URL, without the comment id
-        # TODO: do we need to actually parse the URL param properly? Order is hard-coded from get yt comment
-        video_titles = self.get_title(comment["url"].split("&lc=")[0])
-
-        if not video_titles:
-            # this should actually only happen in dev
-            video_titles = ["Video Title Unknown", "Video Title Unknown"]
-
-        display_title = "{0}'s question on {1}".format(
-            comment["username"],
-            video_titles[0],
-        )
-
-        # TODO: add to Coda
-
-    def get_title(self, url):
+    def get_title(self, url: str) -> Optional[tuple[str, str]]:
         result = self.db.query(
             'select ShortTitle, FullTitle from video_titles where URL="?"', (url,)
         )
@@ -487,13 +223,13 @@ class Utilities:
             return result[0][0], result[0][1]
         return None
 
-    def list_modules(self):
+    def list_modules(self) -> str:
         message = f"I have {len(self.modules_dict)} modules. Here are their names:"
         for module_name in self.modules_dict.keys():
             message += "\n" + module_name
         return message
 
-    def get_time_running(self):
+    def get_time_running(self) -> str:
         message = "I have been running for"
         seconds_running = timedelta(seconds=int(time() - self.start_time))
         time_running = datetime(1, 1, 1) + seconds_running
@@ -513,10 +249,6 @@ class Utilities:
         await self.log_error(error_message)
 
     async def log_error(self, error_message: str) -> None:
-        if self.error_channel is None:
-            self.error_channel = self.client.get_channel(
-                int(stampy_error_log_channel_id)
-            )
         for msg_chunk in Utilities.split_message_for_discord(
             error_message, max_length=discord_message_length_limit - 6
         ):
@@ -525,9 +257,11 @@ class Utilities:
     @staticmethod
     def split_message_for_discord(
         msg: str, stop_char: str = "\n", max_length: int = discord_message_length_limit
-    ) -> List[str]:
-        """Splitting a message in chunks of maximum 2000, so that the end of each chunk is a newline if possible.
-        We can do this greedily, and if a solution exists."""
+    ) -> list[str]:
+        """Splitting a message in chunks of maximum 2000,
+        so that the end of each chunk is a newline if possible.
+        We can do this greedily, and if a solution exists.
+        """
         msg_len = len(msg)
         next_split_marker = 0
         last_split_index = 0
@@ -550,25 +284,22 @@ class Utilities:
         return output
 
 
-
 def get_github_info() -> str:
-    message = (
-        "\nThe latest commit was by %(actor)s."
-        + "\nThe commit message was '%(git_message)s'."
-        + "\nThis commit was written on %(date)s."
-    )
     repo = Repo(".")
     master = repo.head.reference
-    return message % {
-        "actor": master.commit.author,
-        "git_message": master.commit.message.strip(),
-        "date": master.commit.committed_datetime.strftime(
+    message = (
+        f"\nThe latest commit was by {master.commit.author}."
+        f"\nThe commit message was `{master.commit.message.strip()}`."
+        f"\nThis commit was written on %(date)s"
+        + master.commit.committed_datetime.strftime(
             "%A, %B %d, %Y at %I:%M:%S %p UTC%z"
-        ),
-    }
+        )
+        + "."
+    )
+    return message
 
 
-def get_git_branch_info():
+def get_git_branch_info() -> str:
     repo = Repo(".")
     branch = repo.active_branch
     name = repo.config_reader().get_value("user", "name")
@@ -580,37 +311,30 @@ def get_running_user_info() -> str:
         user_info = pwd.getpwuid(os.getuid())
         user_name = user_info.pw_gecos.split(",")[0]
         message = (
-            "The last user to start my server was %(username)s."
-            + "\nThey used the %(shell)s shell."
-            + "\nMy Process ID is %(pid)s on this machine."
+            f"The last user to start my server was {user_name}."
+            f"\nThey used the {user_info.pw_shell} shell."
+            f"\nMy Process ID is {os.getpid()} on this machine."
         )
-        return message % {
-            "username": user_name,
-            "shell": user_info.pw_shell,
-            "pid": os.getpid(),
-        }
-    else:
-        # This should be replaced with a better test down the line.
-        shell = (
-            "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
-        )
-        user_name = os.getlogin()
-        message = (
-            "The last user to start my server was %(username)s."
-            + "\nThey used the %(shell)s shell."
-            + "\nMy Process ID is %(pid)s on this machine."
-        )
-        return message % {"username": user_name, "shell": shell, "pid": os.getpid()}
+        return message
+
+    # This should be replaced with a better test down the line.
+    shell = "Command Prompt (DOS)" if os.getenv("PROMPT") == "$P$G" else "PowerShell"
+    user_name = os.getlogin()
+    message = (
+        f"The last user to start my server was {user_name}."
+        f"\nThey used the {shell} shell."
+        f"\nMy Process ID is {os.getpid()} on this machine."
+    )
+    return message
 
 
-def get_memory_usage():
+def get_memory_usage() -> str:
     process = psutil.Process(os.getpid())
     bytes_used = int(process.memory_info().rss) / 1000000
-    megabytes_string = f"{bytes_used:,.2f} MegaBytes"
-    return "I'm using %s of memory." % megabytes_string
+    return f"I'm using {bytes_used:,.2f} MegaBytes of memory."
 
 
-def get_question_id(message: ServiceMessage):
+def get_question_id(message: ServiceMessage) -> Union[int, Literal[""]]:
     text = message.clean_content
     first_number_found = re.search(r"\d+", text)
     if first_number_found:
@@ -623,15 +347,15 @@ def contains_prefix_with_number(text: str, prefix: str) -> bool:
     return bool(re.search(rf"^{prefix}\s[0-9]+", text))
 
 
-def is_test_response(text):
+def is_test_response(text: str) -> bool:
     return contains_prefix_with_number(text, TEST_RESPONSE_PREFIX)
 
 
-def is_test_question(text):
+def is_test_question(text: str) -> bool:
     return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
 
 
-def is_test_message(text):
+def is_test_message(text: str) -> bool:
     return is_test_response(text) or is_test_question(text)
 
 
@@ -642,39 +366,37 @@ def randbool(p: float) -> bool:
 
 
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
-    utils = Utilities.get_instance()
-    return utils.service_modules_dict[
-        message.service
-    ].service_utils.is_stampy_mentioned(message)
+    return Utilities.get_instance().is_stampy_mentioned(message)
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
-    utils = Utilities.get_instance()
-    return utils.service_modules_dict[message.service].service_utils.stampy_is_author(
-        message
-    )
+    return Utilities.get_instance().stampy_is_author(message)
 
 
-def get_guild_and_invite_role():
+def get_guild_and_invite_role() -> tuple[Guild, Optional[Role]]:
     utils = Utilities.get_instance()
     guild = utils.client.guilds[0]
-    invite_role = discord.utils.get(guild.roles, name="can-invite")
+    invite_role = discord_utils.get(guild.roles, name="can-invite")
     return guild, invite_role
 
 
 def get_user_handle(user: DiscordUser) -> str:
     return user.name + "#" + user.discriminator
 
+
 def is_from_reviewer(message: ServiceMessage) -> bool:
     """This message is from @reviewer"""
     return is_reviewer(message.author)
 
+
 def is_reviewer(user: ServiceUser) -> bool:
     return any(role.name == "reviewer" for role in user.roles)
+
 
 def is_in_testing_mode() -> bool:
     """Currently running in testing mode on GH?"""
     return "testing" in os.environ.values()
+
 
 def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
@@ -683,6 +405,7 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
         container.casefold().replace(" ", "")
     )
+
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
     """`pformat` a dictionary and embed it in a code block
@@ -697,6 +420,7 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
+
 class UtilsTests:
     def test_split_message_for_discord(self):
         test_out = len(
@@ -708,4 +432,3 @@ class UtilsTests:
         self.assertEqual(len(test_out), 4)
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
-

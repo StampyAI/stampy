@@ -112,7 +112,7 @@ class Factoids(Module):
             return val
 
     def process_message(self, message):
-        atme = False
+        at_me = False
         self.who = message.author.name
         self.utils.people.add(self.who)
         result = ""
@@ -122,14 +122,14 @@ class Factoids(Module):
             DM = False
         except AttributeError:  # no channel name, it's a DM
             DM = True
-            atme = True  # DMs are always addressed to you
+            at_me = True  # DMs are always addressed to you
             self.log.info(self.class_name, msg="At me because DM")
             room = message.channel.recipient.id
 
         text = message.clean_content
 
         if self.is_at_me(message):
-            atme = True
+            at_me = True
             text = self.is_at_me(message)
 
         factoids = self.db.getall(text)
@@ -151,7 +151,7 @@ class Factoids(Module):
             factoids += self.db.getall(query)
 
         # forgetting factoids
-        if (room in self.prevFactoid) and atme and (text == "forget that"):
+        if (room in self.prevFactoid) and at_me and (text == "forget that"):
             pf = self.prevFactoid[room]
             del self.prevFactoid[room]
             self.db.remove(*pf)
@@ -160,7 +160,7 @@ class Factoids(Module):
             return Response(confidence=10, text=result, why=why)
 
         # if the text is a valid factoid, maybe reply
-        elif factoids and (atme or randbool(0.3)):
+        elif factoids and (at_me or randbool(0.3)):
             verb, rawvalue, by = random.choice(factoids)
 
             value = self.dereference(rawvalue, message.author.name)
@@ -172,7 +172,7 @@ class Factoids(Module):
 
             why = '%s said the factoid "%s" so I said "%s"' % (self.who, key, rawvalue,)
             self.prevFactoid[room] = (key, rawvalue, by, verb)  # key, value, verb
-            if atme:
+            if at_me:
                 return Response(confidence=9, text=result, why=why)
             else:
                 return Response(confidence=8, text=result, why=why)

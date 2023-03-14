@@ -41,7 +41,10 @@ class CodaAPI:
     QUESTIONS_CACHE_UPDATE_INTERVAL = timedelta(minutes=10)
 
     def __init__(self):
-        assert self.__instance is None
+        if CodaAPI.__instance is not None:
+            raise Exception(
+                "This class is a singleton! Access it using `Utilities.get_instance()`"
+            )
         self.__instance = self
         self.class_name = "Coda API"
         self.log = get_logger()
@@ -49,14 +52,14 @@ class CodaAPI:
         if is_in_testing_mode():
             return
 
-        self.coda = Coda(self.CODA_API_TOKEN) #type:ignore
+        self.coda = Coda(self.CODA_API_TOKEN)  # type:ignore
         self.update_questions_cache()
         self.update_users_cache()
 
     @property
     def doc(self) -> Document:
         """As property to make coda document always up-to-date"""
-        return Document(self.DOC_ID, coda=self.coda) #type:ignore
+        return Document(self.DOC_ID, coda=self.coda)  # type:ignore
 
     @classmethod
     def get_instance(cls) -> CodaAPI:
