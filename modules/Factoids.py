@@ -35,8 +35,6 @@ class Factoids(Module):
         self.prev_factoid = {}
 
     def process_message(self, message: DiscordMessage):
-        print(type(message.channel))
-        breakpoint()
         self.who = message.author.name
         self.utils.people.add(self.who)
         result = ""
@@ -80,26 +78,9 @@ class Factoids(Module):
             return response
 
         # if the text is a valid factoid, maybe reply
-        if factoids and (at_me or randbool(0.3)):
-            verb, rawvalue, by = random.choice(factoids)
-
-            value = self.dereference(rawvalue, message.author.name)
-
-            if verb == "reply":
-                result = value
-            else:
-                result = re.sub(f"{self.who}'s", "your", key) + f" {verb} {value}"
-
-            why = '%s said the factoid "%s" so I said "%s"' % (
-                self.who,
-                key,
-                rawvalue,
-            )
-            self.prev_factoid[room] = (key, rawvalue, by, verb)  # key, value, verb
-            if at_me:
-                return Response(confidence=9, text=result, why=why)
-            return Response(confidence=8, text=result, why=why)
-
+        if response := self.parse_factoid_reply(factoids=factoids, at_me=at_me, message=message, key=key, room=room):
+            return response
+        
         # handle adding new factoids
         if text.lower().startswith("remember") or text.startswith("sr "):
             if is_dm and not is_bot_dev(message.author):
@@ -189,20 +170,26 @@ class Factoids(Module):
             pf = self.prev_factoid[room]
             self.prev_factoid.pop(room)
             self.db.remove(*pf)
-            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
-                self.who,
-                pf[0],
-                pf[3],
-                pf[1],
-            )
-            why = """%s told me to forget that "%s" %s "%s"\n""" % (
-                self.who,
-                pf[0],
-                pf[3],
-                pf[1],
-            )
+            result += f'Ok {self.who}, forgetting that "{pf[0]}" {pf[3]} "{pf[1]}"\n'
+            why = f'{self.who} told me to forget that "{pf[0]}" {pf[3]} "{pf[1]}"\n'
             return Response(confidence=10, text=result, why=why)
 
+    def parse_factoid_reply(self, *, factoids: list, at_me: bool, message: DiscordMessage, key: str, room: str) -> Optional[Response]:
+        if factoids and (at_me or randbool(0.3)):
+            verb, raw_value, by = random.choice(factoids)
+
+            value = self.dereference(raw_value, message.author.name)
+
+            if verb == "reply":
+                result = value
+            else:
+                result = re.sub(f"{self.who}'s", "your", key) + f" {verb} {value}"
+
+            why = f'{self.who} said the factoid "{key}" so I said "{raw_value}"'
+            self.prev_factoid[room] = (key, raw_value, by, verb)  # key, value, verb
+            if at_me:
+                return Response(confidence=9, text=result, why=why)
+            return Response(confidence=8, text=result, why=why)
 
     def __str__(self):
         return "Factoids"
