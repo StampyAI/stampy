@@ -1,7 +1,7 @@
 import re
 import random
 import sqlite3
-from typing import cast
+from typing import Optional, cast
 
 from discord import Thread
 
@@ -9,13 +9,15 @@ from modules.module import Module, Response
 from utilities.discordutils import DiscordMessage
 from utilities.utilities import randbool, is_bot_dev
 
+
 class Factoids(Module):
-    """You can tell Stampy 
+    """You can tell Stampy
 
     `remember <x> is <y>`
 
     and he will remember
     """
+
     def __init__(self):
         super().__init__()
         self.class_name = self.__class__.__name__
@@ -25,7 +27,8 @@ class Factoids(Module):
         self.re_replace = re.compile(r".*?({{.+?}})")
         self.re_verb = re.compile(r".*?<([^>]+)>")
         self.re_factoid_request = re.compile(
-            r"""((what)('s| is| are| do you know about| can you tell me about)) (?P<query>.+)\?""", re.I
+            r"""((what)('s| is| are| do you know about| can you tell me about)) (?P<query>.+)\?""",
+            re.I,
         )
 
         # dict of room ids to factoid: (text, value, verb) tuples
@@ -37,7 +40,7 @@ class Factoids(Module):
         self.who = message.author.name
         self.utils.people.add(self.who)
         result = ""
-        
+
         # Check if this message is a DM and/or is directed at Stampy
         if hasattr(message.channel, "name") and message.channel.name is not None:
             is_dm = False
@@ -54,7 +57,7 @@ class Factoids(Module):
         else:
             text = message.clean_content
 
-        # Get factoids from the DB matching this text        
+        # Get factoids from the DB matching this text
         factoids = self.db.getall(text)
         key = text
 
@@ -71,13 +74,10 @@ class Factoids(Module):
             factoids += self.db.getall(query)
 
         # forgetting factoids
-        if (room in self.prev_factoid) and at_me and (text == "forget that"):
-            pf = self.prev_factoid[room]
-            del self.prev_factoid[room]
-            self.db.remove(*pf)
-            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
-            why = """%s told me to forget that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
-            return Response(confidence=10, text=result, why=why)
+        if response := self.parse_forget_factoid(
+            room=room, at_me=at_me, text=text, result=result
+        ):
+            return response
 
         # if the text is a valid factoid, maybe reply
         if factoids and (at_me or randbool(0.3)):
@@ -90,7 +90,11 @@ class Factoids(Module):
             else:
                 result = re.sub(f"{self.who}'s", "your", key) + f" {verb} {value}"
 
-            why = '%s said the factoid "%s" so I said "%s"' % (self.who, key, rawvalue,)
+            why = '%s said the factoid "%s" so I said "%s"' % (
+                self.who,
+                key,
+                rawvalue,
+            )
             self.prev_factoid[room] = (key, rawvalue, by, verb)  # key, value, verb
             if at_me:
                 return Response(confidence=9, text=result, why=why)
@@ -133,8 +137,18 @@ class Factoids(Module):
                     if verb == "am":
                         verb = "is"
 
-                result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
-                why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
+                result = """Ok %s, remembering that "%s" %s "%s" """ % (
+                    self.who,
+                    key,
+                    verb,
+                    value,
+                )
+                why = "%s told me to remember that '%s' %s '%s'" % (
+                    self.who,
+                    key,
+                    verb,
+                    value,
+                )
                 self.log.info(
                     self.class_name,
                     msg="adding factoid %s : %s" % (key, value),
@@ -152,16 +166,43 @@ class Factoids(Module):
             if values:
                 random.shuffle(values)  # is this the right thing to do here?
                 result = "%s values for factoid '%s':" % (len(values), fact)
-                count = 200 if (lword == "listall" and is_bot_dev(message.author)) else 10
+                count = (
+                    200 if (lword == "listall" and is_bot_dev(message.author)) else 10
+                )
                 for value in values[:count]:
                     result += "\n<%s> '%s' by %s" % value
                 if len(values) > count:
                     result += "\n and %s more" % (len(values) - count)
-                why = "%s asked me to list the values for the factoid '%s'" % (self.who, fact,)
+                why = "%s asked me to list the values for the factoid '%s'" % (
+                    self.who,
+                    fact,
+                )
                 return Response(confidence=10, text=result, why=why)
 
         # This is either not at me, or not something we can handle
         return Response(confidence=0, text="")
+
+    def parse_forget_factoid(
+        self, *, room: str, at_me: bool, text: str, result: str
+    ) -> Optional[Response]:
+        if (room in self.prev_factoid) and at_me and (text == "forget that"):
+            pf = self.prev_factoid[room]
+            self.prev_factoid.pop(room)
+            self.db.remove(*pf)
+            result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (
+                self.who,
+                pf[0],
+                pf[3],
+                pf[1],
+            )
+            why = """%s told me to forget that "%s" %s "%s"\n""" % (
+                self.who,
+                pf[0],
+                pf[3],
+                pf[1],
+            )
+            return Response(confidence=10, text=result, why=why)
+
 
     def __str__(self):
         return "Factoids"
@@ -173,12 +214,16 @@ class Factoids(Module):
                 question="remember chriscanal is the person who wrote this test",
                 expected_response='Ok stampy, remembering that "chriscanal" is "the person who wrote this test"',
             ),
-            self.create_integration_test(question="list chriscanal", expected_regex="values for factoid+",),
+            self.create_integration_test(
+                question="list chriscanal",
+                expected_regex="values for factoid+",
+            ),
             self.create_integration_test(
                 question="forget that",
                 expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',
             ),
         ]
+
 
 class FactoidDb:
     """Class to handle the factoid sqlite database"""
@@ -226,7 +271,8 @@ class FactoidDb:
         # con.text_factory = str
         c = con.cursor()
         c.execute(
-            """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """, (key, verb, value),
+            """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """,
+            (key, verb, value),
         )
         con.commit()
         c.close()
@@ -237,7 +283,8 @@ class FactoidDb:
         # con.text_factory = str
         c = con.cursor()
         c.execute(
-            """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""", (key,),
+            """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""",
+            (key,),
         )
 
         vals = c.fetchall()
