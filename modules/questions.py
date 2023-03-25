@@ -106,8 +106,6 @@ class Questions(Module):
 
     def process_message(self, message: DiscordMessage) -> Response:
         """Process message"""
-        # print(type(message.channel))
-        # breakpoint()
         # these two options are before `.is_at_me`
         # because they dont' require calling Stampy explicitly ("s, XYZ")
         if cmd := self.parse_review_request(message):
@@ -465,9 +463,6 @@ class Questions(Module):
         self, cmd: CountQuestionsCommand, message: DiscordMessage
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
-        print(type(message.channel))
-        breakpoint()
-
         # get df with questions
         questions_df = coda_api.questions_df
 
