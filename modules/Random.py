@@ -2,11 +2,7 @@ import re
 import random
 from modules.module import Module, Response
 
-# TODO this should be in utils or somewhere
-def randbool(p):
-    if random.random() < p:
-        return True
-
+from utilities  import randbool
 
 class Random(Module):
     def process_message(self, message):

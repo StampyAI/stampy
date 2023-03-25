@@ -1,15 +1,13 @@
 import re
 import random
+from typing import cast
+
+import discord
 import sqlite3
+
 from servicemodules.discordConstants import rob_id, bot_dev_role_id
 from modules.module import Module, Response
-
-
-def randbool(p):
-    if random.random() < p:
-        return True
-    else:
-        return False
+from utilities  import randbool
 
 
 def is_bot_dev(user):
