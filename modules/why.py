@@ -1,6 +1,4 @@
 import re
-import json
-import urllib
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities.discordutils import DiscordMessage
@@ -47,7 +45,7 @@ class Why(Module):
     def _get_known_messages(self):
         return self.utils.service_modules_dict[Services.DISCORD].messages
 
-    async def _get_message_about(self, message: ServiceMessage) -> str:
+    async def _get_message_about(self, message: DiscordMessage) -> str:
         if message.reference:
             return str(message.reference.message_id)
         async for msg in message.channel.history(oldest_first=False):
@@ -56,7 +54,7 @@ class Why(Module):
                 return str(m.id)
         raise Exception("No message from stampy found")
 
-    async def specific(self, message: ServiceMessage) -> Response:
+    async def specific(self, message: DiscordMessage) -> Response:
         m_id = await self._get_message_about(message)
         messages = self._get_known_messages()
         if m_id not in messages:
@@ -70,7 +68,7 @@ class Why(Module):
             builder += f"{step}\n"
         return Response(confidence=10, text=builder, why="I was asked why I said something.")
 
-    async def general(self, message: ServiceMessage) -> Response:
+    async def general(self, message: DiscordMessage) -> Response:
         m_id = await self._get_message_about(message)
         messages = self._get_known_messages()
         if m_id not in messages:
