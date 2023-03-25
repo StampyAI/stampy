@@ -2,7 +2,7 @@ import re
 import random
 from modules.module import Module, Response
 
-from utilities  import randbool
+from utilities.utilities import randbool
 
 class Random(Module):
     def process_message(self, message):

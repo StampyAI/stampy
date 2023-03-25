@@ -1,6 +1,5 @@
 from utilities.utilities import (
     Utilities,
-    randbool,
     get_github_info,
     get_git_branch_info,
     get_running_user_info,

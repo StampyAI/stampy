@@ -14,8 +14,7 @@ from time import time
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
 
 import psutil
-from discord import Client, ClientUser, Guild, Intents, Role, Thread
-from discord import utils as discord_utils
+import discord
 from git.repo import Repo
 from structlog import get_logger
 
@@ -30,10 +29,12 @@ from database.database import Database
 from servicemodules.discordConstants import (
     stampy_error_log_channel_id,
     wiki_feed_channel_id,
+    rob_id,
+    bot_dev_role_id,
 )
 from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordMessage, DiscordUser
-from utilities.serviceutils import ServiceMessage, ServiceUser
+from utilities.serviceutils import ServiceUser
 
 if TYPE_CHECKING:
     from modules.module import Module
@@ -76,17 +77,17 @@ class Utilities:
 
         self.db = Database(self.DB_PATH)
         log.info(self.class_name, status=f"Trying to open db - {self.DB_PATH}")
-        intents = Intents.default()
+        intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
-        self.client = Client(intents=intents)
-        self.discord_user: Optional[ServiceUser] = None
+        self.client = discord.Client(intents=intents)
+        self.discord_user: Union[DiscordUser, ServiceUser, None] = None
         self.stop: Optional[Event] = None
 
         self.last_question_asked_timestamp: datetime
         self.latest_question_posted = None
         self.error_channel = cast(
-            Thread, self.client.get_channel(int(stampy_error_log_channel_id))
+            discord.Thread, self.client.get_channel(int(stampy_error_log_channel_id))
         )
 
         self.users: list[int] = []
@@ -105,23 +106,23 @@ class Utilities:
             return Utilities()
         return Utilities.__instance
 
-    def stampy_is_author(self, message: Union[ServiceMessage, DiscordMessage]) -> bool:
+    def stampy_is_author(self, message: Union[DiscordMessage, DiscordMessage]) -> bool:
         return self.is_stampy(message.author)
 
-    def is_stampy(self, user: ServiceUser) -> bool:
+    def is_stampy(self, user: Union[DiscordUser, ServiceUser]) -> bool:
         if (
             user.id == wiki_feed_channel_id
         ):  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
             return True
         if self.discord_user:
             return user == self.discord_user
-        if user.id == str(cast(ClientUser, self.client.user).id):
+        if user.id == str(cast(discord.ClientUser, self.client.user).id):
             self.discord_user = user
             return True
         return False
 
     def is_stampy_mentioned(
-        self, message: Union[DiscordMessage, ServiceMessage]
+        self, message: Union[DiscordMessage, DiscordMessage]
     ) -> bool:
         for user in message.mentions:
             if self.is_stampy(user):
@@ -334,7 +335,7 @@ def get_memory_usage() -> str:
     return f"I'm using {bytes_used:,.2f} MegaBytes of memory."
 
 
-def get_question_id(message: ServiceMessage) -> Union[int, Literal[""]]:
+def get_question_id(message: DiscordMessage) -> Union[int, Literal[""]]:
     text = message.clean_content
     first_number_found = re.search(r"\d+", text)
     if first_number_found:
@@ -365,18 +366,24 @@ def randbool(p: float) -> bool:
     return False
 
 
-def is_stampy_mentioned(message: ServiceMessage) -> bool:
+def is_stampy_mentioned(message: DiscordMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
 
 
-def stampy_is_author(message: ServiceMessage) -> bool:
+def is_bot_dev(user: Union[DiscordUser, ServiceUser]):
+    if user.id == rob_id:
+        return True
+    roles = getattr(user, "roles", [])
+    return discord.utils.get(roles, id=bot_dev_role_id)
+
+def stampy_is_author(message: DiscordMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
 
 
-def get_guild_and_invite_role() -> tuple[Guild, Optional[Role]]:
+def get_guild_and_invite_role() -> tuple[discord.Guild, Optional[discord.Role]]:
     utils = Utilities.get_instance()
     guild = utils.client.guilds[0]
-    invite_role = discord_utils.get(guild.roles, name="can-invite")
+    invite_role = discord.utils.get(guild.roles, name="can-invite")
     return guild, invite_role
 
 
@@ -384,23 +391,24 @@ def get_user_handle(user: DiscordUser) -> str:
     return user.name + "#" + user.discriminator
 
 
-def is_from_reviewer(message: ServiceMessage) -> bool:
+def is_from_reviewer(message: DiscordMessage) -> bool:
     """Is this message from @reviewer?"""
     return is_reviewer(message.author)
 
 
-def is_reviewer(user: ServiceUser) -> bool:
+def is_reviewer(user: Union[DiscordUser, ServiceUser]) -> bool:
     """Is this user `@reviewer`?"""
     return any(role.name == "reviewer" for role in user.roles)
 
-def is_from_editor(message: ServiceMessage) -> bool:
+
+def is_from_editor(message: DiscordMessage) -> bool:
     """Is this message from `@editor`?"""
     return is_editor(message.author)
 
-def is_editor(user: ServiceUser) -> bool:
+
+def is_editor(user: Union[DiscordUser, ServiceUser]) -> bool:
     """Is this user `@editor`?"""
     return any(role.name == "editor" for role in user.roles)
-    
 
 
 def is_in_testing_mode() -> bool:

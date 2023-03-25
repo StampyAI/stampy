@@ -20,7 +20,6 @@ from textwrap import dedent
 from typing import Literal, Optional, TypedDict, Union, cast
 
 from dotenv import load_dotenv
-from discord.threads import Thread
 import pandas as pd
 
 from api.coda import CodaAPI, QuestionStatus
@@ -34,7 +33,7 @@ from utilities.utilities import (
     is_in_testing_mode,
     pformat_to_codeblock,
 )
-from utilities.serviceutils import ServiceMessage
+from utilities.discordutils import DiscordChannel, DiscordMessage
 
 
 load_dotenv()
@@ -77,7 +76,7 @@ class Questions(Module):
                 coda_api.update_questions_cache()
 
     async def restore_review_msg_cache(
-        self, channel: Thread, limit: int = 2000
+        self, channel: DiscordChannel, limit: int = 2000
     ) -> None:
         """#TODO: docstring"""
         self.log.info(
@@ -105,8 +104,10 @@ class Questions(Module):
     # Core: processing and posting messages #
     #########################################
 
-    def process_message(self, message: ServiceMessage) -> Response:
+    def process_message(self, message: DiscordMessage) -> Response:
         """Process message"""
+        # print(type(message.channel))
+        # breakpoint()
         # these two options are before `.is_at_me`
         # because they dont' require calling Stampy explicitly ("s, XYZ")
         if cmd := self.parse_review_request(message):
@@ -172,7 +173,7 @@ class Questions(Module):
     ##################
 
     def parse_review_request(
-        self, message: ServiceMessage
+        self, message: DiscordMessage
     ) -> Optional[SetQuestionStatusByAtCommand]:
         """Is this message a review request with link do GDoc?
         If it is, return `SetQuestionStatusByAtCommand`.
@@ -204,7 +205,7 @@ class Questions(Module):
         return {"ids": question_ids, "status": new_status}
 
     async def cb_set_status_by_review_request(
-        self, cmd: SetQuestionStatusByAtCommand, message: ServiceMessage
+        self, cmd: SetQuestionStatusByAtCommand, message: DiscordMessage
     ) -> Response:
         """Change question status by posting GDoc link(s) for review
         along with one of the mentions:
@@ -212,7 +213,7 @@ class Questions(Module):
         """
         q_ids = cmd["ids"]
         status = cmd["status"]
-        channel = cast(Thread, message.channel)
+        channel = cast(DiscordChannel, message.channel)
 
         # pre-send message to confirm that you're going to update statuses
         await channel.send(
@@ -282,7 +283,7 @@ class Questions(Module):
     ##################
 
     def parse_response_to_review_request(
-        self, message: ServiceMessage
+        self, message: DiscordMessage
     ) -> Optional[SetQuestionStatusByApproval]:
         """Is this message a response to review request?
         If it is, return `SetQuestionStatusByApproval`.
@@ -309,14 +310,14 @@ class Questions(Module):
         return {"ids": self.review_msg_id2question_ids.get(str(msg_ref_id), None)}
 
     async def cb_set_status_by_approval_to_review_request(
-        self, cmd: SetQuestionStatusByApproval, message: ServiceMessage
+        self, cmd: SetQuestionStatusByApproval, message: DiscordMessage
     ) -> Response:
         """Approve questions posted as GDoc links for review (see above).
         Their status is changed to "Live on site".
         Works for `@reviewer`s only.
         """
         q_ids = cmd["ids"]
-        channel = cast(Thread, message.channel)
+        channel = cast(DiscordChannel, message.channel)
 
         # if q_ids is None, this means that the message with review request precedes Stampy's last reboot,
         # so the `review_msg_id2question_ids` cache is empty
@@ -370,7 +371,7 @@ class Questions(Module):
     ###################
 
     def parse_mark_question_request(
-        self, message: ServiceMessage
+        self, message: DiscordMessage
     ) -> Optional[SetQuestionStatusByMarking]:
         """Does this message tell Stampy, to change the status of one or more questions to
         "Marked for deletion" ("s, del <gdoc-link(s)>") or to "Duplicate" ("s, dup <gdoc-links>").
@@ -394,7 +395,7 @@ class Questions(Module):
         return {"ids": question_ids, "status": new_status}
 
     async def cb_set_status_by_mark_question_request(
-        self, cmd: SetQuestionStatusByMarking, message: ServiceMessage
+        self, cmd: SetQuestionStatusByMarking, message: DiscordMessage
     ) -> Response:
         """Change status of one or more questions to "Marked for deletion" or "Duplicate"
         upon a request of the following form:
@@ -422,7 +423,7 @@ class Questions(Module):
             )
 
         # send pre-message to the channel
-        channel = cast(Thread, message.channel)
+        channel = cast(DiscordChannel, message.channel)
         await channel.send(f"Thanks, {message.author.name}, I'll {verb}")
 
         # change statuses
@@ -461,9 +462,11 @@ class Questions(Module):
         return {"status": parse_status(text), "tag": parse_tag(text)}
 
     async def cb_count_questions(
-        self, cmd: CountQuestionsCommand, message: ServiceMessage
+        self, cmd: CountQuestionsCommand, message: DiscordMessage
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
+        print(type(message.channel))
+        breakpoint()
 
         # get df with questions
         questions_df = coda_api.questions_df
@@ -516,7 +519,7 @@ class Questions(Module):
         }
 
     async def cb_post_questions(
-        self, cmd: PostQuestionsCommand, message: ServiceMessage
+        self, cmd: PostQuestionsCommand, message: DiscordMessage
     ) -> Response:
         """Post message to Discord for least recently asked question.
         It will contain question title and GDoc url.
@@ -524,7 +527,7 @@ class Questions(Module):
         # get questions df
         questions_df = coda_api.questions_df
         # get channel
-        channel = cast(Thread, message.channel)
+        channel = cast(DiscordChannel, message.channel)
 
         # if status was specified, filter questions for that status
         if status := cmd["status"]:  # pylint:disable=unused-variable
@@ -598,7 +601,7 @@ class Questions(Module):
         """
         # choose randomly one of the two channels
         channel = cast(
-            Thread,
+            DiscordChannel,
             self.utils.client.get_channel(
                 int(random.choice((editing_channel_id, general_channel_id)))
             ),
@@ -674,7 +677,7 @@ class Questions(Module):
     async def cb_get_question_info(
         self,
         cmd: GetQuestionInfoCommand | GetLastQuestionInfoCommand,
-        message: ServiceMessage,
+        message: DiscordMessage,
     ) -> Response:
         """Get info about a question and post it as a dict in code block"""
         
@@ -772,7 +775,7 @@ class Questions(Module):
         return {"type": query_type, "id": query_id, "status": status}
 
     async def cb_set_status_by_msg(
-        self, cmd: SetQuestionStatusByMsgCommand, message: ServiceMessage
+        self, cmd: SetQuestionStatusByMsgCommand, message: DiscordMessage
     ) -> Response:
         """Set question status by telling Stampy
 
@@ -1083,7 +1086,7 @@ def make_post_question_message(question_row: QuestionRow) -> str:
 def unauthorized_set_los(
     status: QuestionStatus,
     question: QuestionRow,
-    message: ServiceMessage,
+    message: DiscordMessage,
 ) -> Optional[Response]:
     """Somebody tried set questions status "Live on site" but they're not a reviewer"""
     if "Live on site" not in (

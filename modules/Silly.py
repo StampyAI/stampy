@@ -5,7 +5,7 @@ import datetime
 import string
 
 from modules.module import Module, Response
-from utilities import randbool
+from utilities.utilities import randbool
 
 
 class Silly(Module):

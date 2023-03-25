@@ -6,7 +6,7 @@ from config import (
     goose_api_key,
 )
 from modules.module import Module, Response
-from utilities.serviceutils import ServiceMessage
+from utilities.discordutils import DiscordMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 from servicemodules.discordConstants import rob_id, stampy_id
 import openai
@@ -54,7 +54,7 @@ class GPT3Module(Module):
                 self.class_name,
                 warning="No API key found in env for any of the GPT3 providers."
             )
-    def process_message(self, message: ServiceMessage) -> Response:
+    def process_message(self, message: DiscordMessage) -> Response:
         self.message_log_append(message)
 
         if message.is_dm:
@@ -146,7 +146,7 @@ class GPT3Module(Module):
     def tokenize(self, engine, data: str) -> int:
         return engine.tokenizer(data)["input_ids"][0]
 
-    def get_engine(self, message: ServiceMessage, force_goose=False):
+    def get_engine(self, message: DiscordMessage, force_goose=False):
         if not force_goose and self.openai and self.openai.is_channel_allowed(message):
             return self.openai.get_engine(message)
 

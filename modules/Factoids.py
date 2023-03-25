@@ -1,144 +1,66 @@
 import re
 import random
+import sqlite3
 from typing import cast
 
-import discord
-import sqlite3
+from discord import Thread
 
-from servicemodules.discordConstants import rob_id, bot_dev_role_id
 from modules.module import Module, Response
-from utilities  import randbool
-
-
-def is_bot_dev(user):
-    if user.id == rob_id:
-        return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id)
-
+from utilities.discordutils import DiscordMessage
+from utilities.utilities import randbool, is_bot_dev
 
 class Factoids(Module):
+    """You can tell Stampy 
+
+    `remember <x> is <y>`
+
+    and he will remember
+    """
     def __init__(self):
         super().__init__()
         self.class_name = self.__class__.__name__
         dbpath = "factoids.db"
-        self.db = self.FactoidDb(dbpath)
+        self.db = FactoidDb(dbpath)
         self.who = "Someone"
         self.re_replace = re.compile(r".*?({{.+?}})")
         self.re_verb = re.compile(r".*?<([^>]+)>")
+        self.re_factoid_request = re.compile(
+            r"""((what)('s| is| are| do you know about| can you tell me about)) (?P<query>.+)\?""", re.I
+        )
 
         # dict of room ids to factoid: (text, value, verb) tuples
-        self.prevFactoid = {}
+        self.prev_factoid = {}
 
-    class FactoidDb:
-        """Class to handle the factoid sqlite database"""
-
-        def __init__(self, dbfile):
-            # in principle this will make a new db if it doesn't exist
-            # that's never actually been tried though
-            self.dict = {}
-            self.dbfile = dbfile
-
-            try:
-                open(dbfile)
-                con = sqlite3.connect(self.dbfile)
-                # c = con.cursor()
-                # c.execute("""SELECT tidbit FROM factoids WHERE fact = ?""",
-                #   ("test",))
-                # c.close()
-                con.close()
-            except Exception:
-                con = sqlite3.connect(self.dbfile)
-                c = con.cursor()
-                c.execute(
-                    """CREATE TABLE factoids
-                    (id INTEGER PRIMARY KEY NOT NULL, fact TEXT, verb TEXT, tidbit TEXT, by TEXT)
-                    """
-                )
-                con.commit()
-                c.close()
-                con.close()
-
-        def add(self, key, value, by, verb="is"):
-            con = sqlite3.connect(self.dbfile)
-            # con.text_factory = str
-            c = con.cursor()
-            c.execute(
-                """INSERT INTO factoids(fact, verb, tidbit, by) VALUES (?, ?, ?, ?)""",
-                (key, verb, value, by),
-            )
-            con.commit()
-            c.close()
-            con.close()
-
-        def remove(self, key, value, by, verb):
-            con = sqlite3.connect(self.dbfile)
-            # con.text_factory = str
-            c = con.cursor()
-            c.execute(
-                """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """, (key, verb, value),
-            )
-            con.commit()
-            c.close()
-            con.close()
-
-        def getall(self, key):
-            con = sqlite3.connect(self.dbfile)
-            # con.text_factory = str
-            c = con.cursor()
-            c.execute(
-                """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""", (key,),
-            )
-
-            vals = c.fetchall()
-
-            c.close()
-            con.close()
-            return vals
-
-        def getrandom(self, key):
-            return random.choice(self.getall(key))
-
-        def __len__(self):
-            con = sqlite3.connect(self.dbfile)
-            c = con.cursor()
-            c.execute("""SELECT Count(*) FROM factoids""")
-            val = c.fetchone()[0]
-
-            c.close()
-            con.close()
-            return val
-
-    def process_message(self, message):
-        at_me = False
+    def process_message(self, message: DiscordMessage):
+        print(type(message.channel))
+        breakpoint()
         self.who = message.author.name
         self.utils.people.add(self.who)
         result = ""
-
-        try:
+        
+        # Check if this message is a DM and/or is directed at Stampy
+        if hasattr(message.channel, "name") and message.channel.name is not None:
+            is_dm = False
+            at_me = False
             room = message.channel.name
-            DM = False
-        except AttributeError:  # no channel name, it's a DM
-            DM = True
-            at_me = True  # DMs are always addressed to you
-            self.log.info(self.class_name, msg="At me because DM")
-            room = message.channel.recipient.id
-
-        text = message.clean_content
-
-        if self.is_at_me(message):
+        else:
+            is_dm = True
             at_me = True
-            text = self.is_at_me(message)
+            room = f"#DM {message.author.name}"
+            self.log.info(self.class_name, msg="At me because DM")
 
+        if text := self.is_at_me(message):
+            at_me = True
+        else:
+            text = message.clean_content
+
+        # Get factoids from the DB matching this text        
         factoids = self.db.getall(text)
         key = text
 
-        re_factoid_request = re.compile(
-            r"""(([Ww]hat)('s| is| are| do you know about| can you tell me about)) (?P<query>.+)\?"""
-        )
-        m = re.match(re_factoid_request, text)
-        if m:
-            query = m.group("query")
+        # process the query from the text
+        if match := self.re_factoid_request.match(text):
+            query = match.group("query")
             query = re.sub(r"\bmy\b", f"{self.who}'s", query)
             query = re.sub(r"\bme\b", self.who, query)
             self.log.info(self.class_name, query=query)
@@ -149,16 +71,16 @@ class Factoids(Module):
             factoids += self.db.getall(query)
 
         # forgetting factoids
-        if (room in self.prevFactoid) and at_me and (text == "forget that"):
-            pf = self.prevFactoid[room]
-            del self.prevFactoid[room]
+        if (room in self.prev_factoid) and at_me and (text == "forget that"):
+            pf = self.prev_factoid[room]
+            del self.prev_factoid[room]
             self.db.remove(*pf)
             result += """Ok %s, forgetting that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
             why = """%s told me to forget that "%s" %s "%s"\n""" % (self.who, pf[0], pf[3], pf[1],)
             return Response(confidence=10, text=result, why=why)
 
         # if the text is a valid factoid, maybe reply
-        elif factoids and (at_me or randbool(0.3)):
+        if factoids and (at_me or randbool(0.3)):
             verb, rawvalue, by = random.choice(factoids)
 
             value = self.dereference(rawvalue, message.author.name)
@@ -166,64 +88,62 @@ class Factoids(Module):
             if verb == "reply":
                 result = value
             else:
-                result = "%s %s %s" % (re.sub(f"{self.who}'s", "your", key), verb, value)
+                result = re.sub(f"{self.who}'s", "your", key) + f" {verb} {value}"
 
             why = '%s said the factoid "%s" so I said "%s"' % (self.who, key, rawvalue,)
-            self.prevFactoid[room] = (key, rawvalue, by, verb)  # key, value, verb
+            self.prev_factoid[room] = (key, rawvalue, by, verb)  # key, value, verb
             if at_me:
                 return Response(confidence=9, text=result, why=why)
-            else:
-                return Response(confidence=8, text=result, why=why)
+            return Response(confidence=8, text=result, why=why)
 
         # handle adding new factoids
-        elif text.lower().startswith("remember") or text.startswith("sr "):
-            if DM and not is_bot_dev(message.author):
+        if text.lower().startswith("remember") or text.startswith("sr "):
+            if is_dm and not is_bot_dev(message.author):
                 return Response(
                     confidence=2,
                     text="Sorry, I don't remember things in DMs",
                     why=f"{message.author} was trying to save a factoid in a DM",
                 )
-            else:
-                isadd = True
-                withbrackets = False
-                verbmatch = self.re_verb.match(text)
-                if verbmatch:
-                    withbrackets = True
-                    verb = verbmatch.group(1)
-                elif " is " in text:
-                    verb = "is"
-                elif " are " in text:
-                    verb = "are"
-                else:  # we don't have a verb, this isn't a valid add command
-                    verb = ""
-                    isadd = False
+            isadd = True
+            withbrackets = False
+            verbmatch = self.re_verb.match(text)
+            if verbmatch:
+                withbrackets = True
+                verb = verbmatch.group(1)
+            elif " is " in text:
+                verb = "is"
+            elif " are " in text:
+                verb = "are"
+            else:  # we don't have a verb, this isn't a valid add command
+                verb = ""
+                isadd = False
 
-                if isadd:
-                    text = text.partition(" ")[2]  # Chop off the 'remember' or 'sr'
-                    if withbrackets:
-                        key, _, value = text.partition(" <%s> " % verb)
-                    else:
-                        key, _, value = text.partition(" %s " % verb)
+            if isadd:
+                text = text.partition(" ")[2]  # Chop off the 'remember' or 'sr'
+                if withbrackets:
+                    key, _, value = text.partition(" <%s> " % verb)
+                else:
+                    key, _, value = text.partition(" %s " % verb)
 
-                    key = re.sub(r"\bmy\b", f"{self.who}'s", key)
+                key = re.sub(r"\bmy\b", f"{self.who}'s", key)
 
-                    new_key = re.sub(r"\bI\b", f"{self.who}", key)
-                    if new_key != key:
-                        key = new_key
-                        if verb == "am":
-                            verb = "is"
+                new_key = re.sub(r"\bI\b", f"{self.who}", key)
+                if new_key != key:
+                    key = new_key
+                    if verb == "am":
+                        verb = "is"
 
-                    result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
-                    why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
-                    self.log.info(
-                        self.class_name,
-                        msg="adding factoid %s : %s" % (key, value),
-                        author=message.author.id,
-                        verb=verb,
-                    )
-                    self.db.add(key, value, message.author.id, verb)
-                    self.prevFactoid[room] = (key, value, message.author.id, verb)
-                    return Response(confidence=10, text=result, why=why)
+                result = """Ok %s, remembering that "%s" %s "%s" """ % (self.who, key, verb, value,)
+                why = "%s told me to remember that '%s' %s '%s'" % (self.who, key, verb, value,)
+                self.log.info(
+                    self.class_name,
+                    msg="adding factoid %s : %s" % (key, value),
+                    author=message.author.id,
+                    verb=verb,
+                )
+                self.db.add(key, value, message.author.id, verb)
+                self.prev_factoid[room] = (key, value, message.author.id, verb)
+                return Response(confidence=10, text=result, why=why)
 
         # some debug stuff, listing all responses for a factoid
         elif text.startswith("list ") or text.startswith("listall "):
@@ -259,3 +179,82 @@ class Factoids(Module):
                 expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',
             ),
         ]
+
+class FactoidDb:
+    """Class to handle the factoid sqlite database"""
+
+    def __init__(self, dbfile: str):
+        # in principle this will make a new db if it doesn't exist
+        # that's never actually been tried though
+        self.dict = {}
+        self.dbfile = dbfile
+
+        try:
+            open(dbfile, encoding="utf-8")
+            con = sqlite3.connect(self.dbfile)
+            # c = con.cursor()
+            # c.execute("""SELECT tidbit FROM factoids WHERE fact = ?""",
+            #   ("test",))
+            # c.close()
+            con.close()
+        except Exception:
+            con = sqlite3.connect(self.dbfile)
+            c = con.cursor()
+            c.execute(
+                """CREATE TABLE factoids
+                (id INTEGER PRIMARY KEY NOT NULL, fact TEXT, verb TEXT, tidbit TEXT, by TEXT)
+                """
+            )
+            con.commit()
+            c.close()
+            con.close()
+
+    def add(self, key, value, by, verb="is"):
+        con = sqlite3.connect(self.dbfile)
+        # con.text_factory = str
+        c = con.cursor()
+        c.execute(
+            """INSERT INTO factoids(fact, verb, tidbit, by) VALUES (?, ?, ?, ?)""",
+            (key, verb, value, by),
+        )
+        con.commit()
+        c.close()
+        con.close()
+
+    def remove(self, key, value, by, verb):
+        con = sqlite3.connect(self.dbfile)
+        # con.text_factory = str
+        c = con.cursor()
+        c.execute(
+            """DELETE FROM factoids WHERE fact LIKE ? AND verb = ? AND tidbit = ? """, (key, verb, value),
+        )
+        con.commit()
+        c.close()
+        con.close()
+
+    def getall(self, key):
+        con = sqlite3.connect(self.dbfile)
+        # con.text_factory = str
+        c = con.cursor()
+        c.execute(
+            """SELECT verb, tidbit, by FROM factoids WHERE fact = ? COLLATE NOCASE""", (key,),
+        )
+
+        vals = c.fetchall()
+
+        c.close()
+        con.close()
+        return vals
+
+    def getrandom(self, key):
+        return random.choice(self.getall(key))
+
+    def __len__(self):
+        con = sqlite3.connect(self.dbfile)
+        c = con.cursor()
+        c.execute("""SELECT Count(*) FROM factoids""")
+        val = c.fetchone()[0]
+
+        c.close()
+        con.close()
+        return val

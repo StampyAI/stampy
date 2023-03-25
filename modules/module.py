@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
 from utilities.utilities import is_stampy_mentioned, stampy_is_author, get_guild_and_invite_role
 from typing import Callable, Iterable, Literal, Optional, Union
-from utilities.serviceutils import ServiceMessage
+from utilities.discordutils import DiscordMessage
 
 log = get_logger()
 
@@ -126,7 +126,7 @@ class Module:
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
 
-    def process_message(self, message: ServiceMessage):
+    def process_message(self, message: DiscordMessage):
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
@@ -204,7 +204,7 @@ class Module:
             return text[len(prefix_with_number) :]
         return text
 
-    def is_at_me(self, message: ServiceMessage) -> Union[str, Literal[False]]:
+    def is_at_me(self, message: DiscordMessage) -> Union[str, Literal[False]]:
         """
         Determine if the message is directed at Stampy
         If it's not, return False. If it is, strip away the
