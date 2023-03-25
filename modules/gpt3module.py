@@ -7,7 +7,6 @@ from config import (
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
-
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 from servicemodules.discordConstants import rob_id, stampy_id
 import openai
