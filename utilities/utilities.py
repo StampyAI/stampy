@@ -121,9 +121,7 @@ class Utilities:
             return True
         return False
 
-    def is_stampy_mentioned(
-        self, message: DiscordMessage
-    ) -> bool:
+    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
         for user in message.mentions:
             if self.is_stampy(user):
                 return True
@@ -375,6 +373,7 @@ def is_bot_dev(user: ServiceUser):
         return True
     roles = getattr(user, "roles", [])
     return discord.utils.get(roles, id=bot_dev_role_id)
+
 
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
