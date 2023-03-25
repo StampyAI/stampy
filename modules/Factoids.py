@@ -196,8 +196,6 @@ class Factoids(Module):
             self.prev_factoid[room] = (key, value, message.author.id, verb)
             return Response(confidence=10, text=result, why=why)
 
-        
-
     def __str__(self):
         return "Factoids"
 
@@ -225,7 +223,6 @@ class FactoidDb:
     def __init__(self, dbfile: str):
         # in principle this will make a new db if it doesn't exist
         # that's never actually been tried though
-        self.dict = {}
         self.dbfile = dbfile
 
         try:
@@ -248,7 +245,7 @@ class FactoidDb:
             c.close()
             con.close()
 
-    def add(self, key, value, by, verb="is"):
+    def add(self, key: str, value: str, by: str, verb: str="is") -> None:
         con = sqlite3.connect(self.dbfile)
         # con.text_factory = str
         c = con.cursor()
@@ -260,7 +257,7 @@ class FactoidDb:
         c.close()
         con.close()
 
-    def remove(self, key, value, by, verb):
+    def remove(self, key: str, value: str, by: str, verb: str) -> None:
         con = sqlite3.connect(self.dbfile)
         # con.text_factory = str
         c = con.cursor()
@@ -272,7 +269,7 @@ class FactoidDb:
         c.close()
         con.close()
 
-    def getall(self, key):
+    def getall(self, key: str) -> list[str]:
         con = sqlite3.connect(self.dbfile)
         # con.text_factory = str
         c = con.cursor()
@@ -287,8 +284,10 @@ class FactoidDb:
         con.close()
         return vals
 
-    def getrandom(self, key):
-        return random.choice(self.getall(key))
+    def getrandom(self, key: str) -> Optional[str]:
+        vals = self.getall(key)
+        if vals:
+            return random.choice(vals)
 
     def __len__(self):
         con = sqlite3.connect(self.dbfile)
