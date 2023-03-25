@@ -46,12 +46,12 @@ class Factoids(Module):
         else:
             is_dm = True
             at_me = True
-            # hashtags are not allowed in channel names, 
+            # hashtags are not allowed in channel names,
             # so we will always see which room is a DM and which is server channel
             if isinstance(message.author, DiscordUser):
                 room = get_user_handle(message.author)
-            else:# Factoids in DMs outside Discord are not supported at the moment
-                return Response() 
+            else:  # Factoids in DMs outside Discord are not supported at the moment
+                return Response()
             self.log.info(self.class_name, msg="At me because DM")
 
         if text := self.is_at_me(message):
@@ -77,20 +77,22 @@ class Factoids(Module):
 
         # forgetting factoids
         if (room in self.prev_factoid) and at_me and (text == "forget that"):
-            if response := self.parse_forget_factoid(room, result):
+            if response := self.parse_forget_factoid(
+                message=message, room=room, result=result, is_dm=is_dm
+            ):
                 return response
 
         # if the text is a valid factoid, maybe reply
         if factoids and (at_me or randbool(0.3)):
             if response := self.parse_factoid_reply(
-                factoids=factoids, at_me=at_me, message=message, key=key, room=room
+                factoids=factoids, message=message, room=room, key=key, at_me=at_me
             ):
                 return response
 
         # handle adding new factoids
         if text.lower().startswith("remember") or text.startswith("sr "):
             if response := self.parse_add_new_factoid(
-                text=text, is_dm=is_dm, message=message, room=room
+                message=message, room=room, text=text, is_dm=is_dm
             ):
                 return response
 
@@ -117,7 +119,16 @@ class Factoids(Module):
         # This is either not at me, or not something we can handle
         return Response()
 
-    def parse_forget_factoid(self, room: str, result: str) -> Optional[Response]:
+    def parse_forget_factoid(
+        self, message: ServiceMessage, room: str, result: str, is_dm: bool
+    ) -> Optional[Response]:
+        if is_dm and not is_bot_dev(message.author):
+            return Response(
+                confidence=2,
+                text="Sorry, I don't accept factoid forget request in DMs",
+                why=f"{message.author} was trying to make me forget a factoid in a DM",
+            )
+
         pf = self.prev_factoid[room]
         self.prev_factoid.pop(room)
         self.db.remove(*pf)
@@ -127,12 +138,11 @@ class Factoids(Module):
 
     def parse_factoid_reply(
         self,
-        *,
         factoids: list,
-        at_me: bool,
         message: ServiceMessage,
-        key: str,
         room: str,
+        key: str,
+        at_me: bool,
     ) -> Optional[Response]:
         verb, raw_value, by = random.choice(factoids)
 
@@ -150,7 +160,11 @@ class Factoids(Module):
         return Response(confidence=8, text=result, why=why)
 
     def parse_add_new_factoid(
-        self, *, text: str, is_dm: bool, message: ServiceMessage, room: str
+        self,
+        message: ServiceMessage,
+        room: str,
+        text: str,
+        is_dm: bool,
     ) -> Optional[Response]:
         if is_dm and not is_bot_dev(message.author):
             return Response(
