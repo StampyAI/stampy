@@ -4,7 +4,7 @@ from config import (
     openai_api_key,
 )
 from modules.module import Module, Response
-from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import ServiceMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 from servicemodules.discordConstants import rob_id, stampy_id
 import openai
@@ -31,7 +31,7 @@ class ChatGPTModule(Module):
                 warning="No OpenAI API key found in env",
             )
 
-    def process_message(self, message: DiscordMessage) -> Response:
+    def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
 
         if message.is_dm:
