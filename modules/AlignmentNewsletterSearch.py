@@ -7,7 +7,7 @@ from io import BytesIO
 from lxml import etree
 from structlog import get_logger
 from modules.module import Module, Response
-from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import ServiceMessage
 
 # this is the URL to Alignment Newsletter's google sheets database.
 SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1PwWbWZ6FPqAgZWOoOcXM8N_tUCuxpEyMbN1NYYC02aM/export?format=zip"
@@ -112,7 +112,7 @@ class AlignmentNewsletterSearch(Module):
         super().__init__()
         self.class_name = self.__class__.__name__
 
-    def process_message(self, message: DiscordMessage) -> Response:
+    def process_message(self, message: ServiceMessage) -> Response:
         """Process a message and return a response if this module can handle it."""
         text = self.is_at_me(message)
 

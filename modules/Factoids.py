@@ -1,13 +1,12 @@
 import re
 import random
 import sqlite3
-from typing import Optional, cast
-
-from discord import Thread
+from typing import Optional
 
 from modules.module import Module, Response
-from utilities.discordutils import DiscordMessage
-from utilities.utilities import randbool, is_bot_dev
+from utilities.serviceutils import ServiceMessage
+from utilities.discordutils import DiscordUser
+from utilities.utilities import get_user_handle, randbool, is_bot_dev
 
 
 class Factoids(Module):
@@ -34,7 +33,7 @@ class Factoids(Module):
         # dict of room ids to factoid: (text, value, verb) tuples
         self.prev_factoid = {}
 
-    def process_message(self, message: DiscordMessage):
+    def process_message(self, message: ServiceMessage):
         self.who = message.author.name
         self.utils.people.add(self.who)
         result = ""
@@ -47,7 +46,12 @@ class Factoids(Module):
         else:
             is_dm = True
             at_me = True
-            room = f"#DM {message.author.name}"
+            # hashtags are not allowed in channel names, 
+            # so we will always see which room is a DM and which is server channel
+            if isinstance(message.author, DiscordUser):
+                room = get_user_handle(message.author)
+            else:# Factoids in DMs outside Discord are not supported at the moment
+                return Response() 
             self.log.info(self.class_name, msg="At me because DM")
 
         if text := self.is_at_me(message):
@@ -89,7 +93,7 @@ class Factoids(Module):
                 text=text, is_dm=is_dm, message=message, room=room
             ):
                 return response
-        
+
         # some debug stuff, listing all responses for a factoid
         elif text.startswith("list ") or text.startswith("listall "):
             lword, _, fact = text.partition(" ")
@@ -109,7 +113,7 @@ class Factoids(Module):
                     fact,
                 )
                 return Response(confidence=10, text=result, why=why)
-                
+
         # This is either not at me, or not something we can handle
         return Response()
 
@@ -126,11 +130,10 @@ class Factoids(Module):
         *,
         factoids: list,
         at_me: bool,
-        message: DiscordMessage,
+        message: ServiceMessage,
         key: str,
         room: str,
     ) -> Optional[Response]:
-    
         verb, raw_value, by = random.choice(factoids)
 
         value = self.dereference(raw_value, message.author.name)
@@ -147,7 +150,7 @@ class Factoids(Module):
         return Response(confidence=8, text=result, why=why)
 
     def parse_add_new_factoid(
-        self, *, text: str, is_dm: bool, message: DiscordMessage, room: str
+        self, *, text: str, is_dm: bool, message: ServiceMessage, room: str
     ) -> Optional[Response]:
         if is_dm and not is_bot_dev(message.author):
             return Response(
@@ -245,7 +248,7 @@ class FactoidDb:
             c.close()
             con.close()
 
-    def add(self, key: str, value: str, by: str, verb: str="is") -> None:
+    def add(self, key: str, value: str, by: str, verb: str = "is") -> None:
         con = sqlite3.connect(self.dbfile)
         # con.text_factory = str
         c = con.cursor()

@@ -4,7 +4,7 @@ from config import openai_api_key
 from structlog import get_logger
 from servicemodules.discordConstants import rob_id
 from servicemodules.serviceConstants import Services, openai_channel_ids
-from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
 import openai
 import discord
@@ -20,7 +20,7 @@ class OpenAI:
         self.class_name = self.__class__.__name__
         self.log = get_logger()
 
-    def is_channel_allowed(self, message: DiscordMessage) -> bool:
+    def is_channel_allowed(self, message: ServiceMessage) -> bool:
         if message.service not in openai_channel_ids:
             return False
         return message.channel.id in openai_channel_ids[message.service]
@@ -98,7 +98,7 @@ class OpenAI:
 
         return int(output_label)
 
-    def get_engine(self, message: DiscordMessage) -> OpenAIEngines:
+    def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
 
         if message.service != Services.DISCORD:

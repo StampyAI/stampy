@@ -2,7 +2,7 @@ import re
 import random
 from modules.module import Module, Response
 from database.eliza_db import psychobabble, reflections
-from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import ServiceMessage
 
 
 class Eliza(Module):
@@ -35,7 +35,7 @@ class Eliza(Module):
                 return response.format(*[self.reflect(g) for g in match.groups()])
         return ""
 
-    def process_message(self, message: DiscordMessage) -> Response:
+    def process_message(self, message: ServiceMessage) -> Response:
         if text := self.is_at_me(message):
             # ELIZA can respond to almost anything, so it only talks if nothing else has, hence 1 confidence
             if text.startswith("is ") and text[-1] != "?":  # stampy is x becomes "you are x"
