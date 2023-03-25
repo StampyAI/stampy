@@ -72,81 +72,31 @@ class Factoids(Module):
             factoids += self.db.getall(query)
 
         # forgetting factoids
-        if response := self.parse_forget_factoid(
-            room=room, at_me=at_me, text=text, result=result
-        ):
-            return response
+        if (room in self.prev_factoid) and at_me and (text == "forget that"):
+            if response := self.parse_forget_factoid(room, result):
+                return response
 
         # if the text is a valid factoid, maybe reply
-        if response := self.parse_factoid_reply(factoids=factoids, at_me=at_me, message=message, key=key, room=room):
-            return response
-        
+        if factoids and (at_me or randbool(0.3)):
+            if response := self.parse_factoid_reply(
+                factoids=factoids, at_me=at_me, message=message, key=key, room=room
+            ):
+                return response
+
         # handle adding new factoids
         if text.lower().startswith("remember") or text.startswith("sr "):
-            if is_dm and not is_bot_dev(message.author):
-                return Response(
-                    confidence=2,
-                    text="Sorry, I don't remember things in DMs",
-                    why=f"{message.author} was trying to save a factoid in a DM",
-                )
-            isadd = True
-            withbrackets = False
-            verbmatch = self.re_verb.match(text)
-            if verbmatch:
-                withbrackets = True
-                verb = verbmatch.group(1)
-            elif " is " in text:
-                verb = "is"
-            elif " are " in text:
-                verb = "are"
-            else:  # we don't have a verb, this isn't a valid add command
-                verb = ""
-                isadd = False
-
-            if isadd:
-                text = text.partition(" ")[2]  # Chop off the 'remember' or 'sr'
-                if withbrackets:
-                    key, _, value = text.partition(" <%s> " % verb)
-                else:
-                    key, _, value = text.partition(" %s " % verb)
-
-                key = re.sub(r"\bmy\b", f"{self.who}'s", key)
-
-                new_key = re.sub(r"\bI\b", f"{self.who}", key)
-                if new_key != key:
-                    key = new_key
-                    if verb == "am":
-                        verb = "is"
-
-                result = """Ok %s, remembering that "%s" %s "%s" """ % (
-                    self.who,
-                    key,
-                    verb,
-                    value,
-                )
-                why = "%s told me to remember that '%s' %s '%s'" % (
-                    self.who,
-                    key,
-                    verb,
-                    value,
-                )
-                self.log.info(
-                    self.class_name,
-                    msg="adding factoid %s : %s" % (key, value),
-                    author=message.author.id,
-                    verb=verb,
-                )
-                self.db.add(key, value, message.author.id, verb)
-                self.prev_factoid[room] = (key, value, message.author.id, verb)
-                return Response(confidence=10, text=result, why=why)
-
+            if response := self.parse_add_new_factoid(
+                text=text, is_dm=is_dm, message=message, room=room
+            ):
+                return response
+        
         # some debug stuff, listing all responses for a factoid
         elif text.startswith("list ") or text.startswith("listall "):
             lword, _, fact = text.partition(" ")
             values = self.db.getall(fact)
             if values:
                 random.shuffle(values)  # is this the right thing to do here?
-                result = "%s values for factoid '%s':" % (len(values), fact)
+                result = f'{len(values)} values for factoid "{fact}":'
                 count = (
                     200 if (lword == "listall" and is_bot_dev(message.author)) else 10
                 )
@@ -159,37 +109,94 @@ class Factoids(Module):
                     fact,
                 )
                 return Response(confidence=10, text=result, why=why)
-
+                
         # This is either not at me, or not something we can handle
-        return Response(confidence=0, text="")
+        return Response()
 
-    def parse_forget_factoid(
-        self, *, room: str, at_me: bool, text: str, result: str
+    def parse_forget_factoid(self, room: str, result: str) -> Optional[Response]:
+        pf = self.prev_factoid[room]
+        self.prev_factoid.pop(room)
+        self.db.remove(*pf)
+        result += f'Ok {self.who}, forgetting that "{pf[0]}" {pf[3]} "{pf[1]}"\n'
+        why = f'{self.who} told me to forget that "{pf[0]}" {pf[3]} "{pf[1]}"\n'
+        return Response(confidence=10, text=result, why=why)
+
+    def parse_factoid_reply(
+        self,
+        *,
+        factoids: list,
+        at_me: bool,
+        message: DiscordMessage,
+        key: str,
+        room: str,
     ) -> Optional[Response]:
-        if (room in self.prev_factoid) and at_me and (text == "forget that"):
-            pf = self.prev_factoid[room]
-            self.prev_factoid.pop(room)
-            self.db.remove(*pf)
-            result += f'Ok {self.who}, forgetting that "{pf[0]}" {pf[3]} "{pf[1]}"\n'
-            why = f'{self.who} told me to forget that "{pf[0]}" {pf[3]} "{pf[1]}"\n'
+    
+        verb, raw_value, by = random.choice(factoids)
+
+        value = self.dereference(raw_value, message.author.name)
+
+        if verb == "reply":
+            result = value
+        else:
+            result = re.sub(f"{self.who}'s", "your", key) + f" {verb} {value}"
+
+        why = f'{self.who} said the factoid "{key}" so I said "{raw_value}"'
+        self.prev_factoid[room] = (key, raw_value, by, verb)  # key, value, verb
+        if at_me:
+            return Response(confidence=9, text=result, why=why)
+        return Response(confidence=8, text=result, why=why)
+
+    def parse_add_new_factoid(
+        self, *, text: str, is_dm: bool, message: DiscordMessage, room: str
+    ) -> Optional[Response]:
+        if is_dm and not is_bot_dev(message.author):
+            return Response(
+                confidence=2,
+                text="Sorry, I don't remember things in DMs",
+                why=f"{message.author} was trying to save a factoid in a DM",
+            )
+        is_add = True
+        with_brackets = False
+        verb_match = self.re_verb.match(text)
+        if verb_match:
+            with_brackets = True
+            verb = verb_match.group(1)
+        elif " is " in text:
+            verb = "is"
+        elif " are " in text:
+            verb = "are"
+        else:  # we don't have a verb, this isn't a valid add command
+            verb = ""
+            is_add = False
+
+        if is_add:
+            text = text.partition(" ")[2]  # Chop off the 'remember' or 'sr'
+            if with_brackets:
+                key, _, value = text.partition(f" <{verb}> ")
+            else:
+                key, _, value = text.partition(f" {verb} ")
+
+            key = re.sub(r"\bmy\b", f"{self.who}'s", key)
+
+            new_key = re.sub(r"\bI\b", f"{self.who}", key)
+            if new_key != key:
+                key = new_key
+                if verb == "am":
+                    verb = "is"
+
+            result = f'Ok {self.who}, remembering that "{key}" {verb} "{value}" '
+            why = f'{self.who} told me to remember that "{key}" {verb} "{value}"'
+            self.log.info(
+                self.class_name,
+                msg=f"adding factoid {key} : {value}",
+                author=message.author.id,
+                verb=verb,
+            )
+            self.db.add(key, value, message.author.id, verb)
+            self.prev_factoid[room] = (key, value, message.author.id, verb)
             return Response(confidence=10, text=result, why=why)
 
-    def parse_factoid_reply(self, *, factoids: list, at_me: bool, message: DiscordMessage, key: str, room: str) -> Optional[Response]:
-        if factoids and (at_me or randbool(0.3)):
-            verb, raw_value, by = random.choice(factoids)
-
-            value = self.dereference(raw_value, message.author.name)
-
-            if verb == "reply":
-                result = value
-            else:
-                result = re.sub(f"{self.who}'s", "your", key) + f" {verb} {value}"
-
-            why = f'{self.who} said the factoid "{key}" so I said "{raw_value}"'
-            self.prev_factoid[room] = (key, raw_value, by, verb)  # key, value, verb
-            if at_me:
-                return Response(confidence=9, text=result, why=why)
-            return Response(confidence=8, text=result, why=why)
+        
 
     def __str__(self):
         return "Factoids"
