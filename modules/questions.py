@@ -425,7 +425,7 @@ class Questions(Module):
             )
 
         # send pre-message to the channel
-        channel = cast(DiscordChannel, message.channel)
+        channel = message.channel
         await channel.send(f"Thanks, {message.author.name}, I'll {verb}")
 
         # change statuses
