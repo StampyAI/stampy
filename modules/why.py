@@ -1,6 +1,4 @@
 import re
-import json
-import urllib
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities.discordutils import DiscordMessage

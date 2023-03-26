@@ -1,12 +1,18 @@
+from dataclasses import dataclass, field
 import re
 import random
+from typing import Callable, Iterable, Literal, Optional, Union
+
 import discord
 from structlog import get_logger
+
 from config import TEST_QUESTION_PREFIX
-from dataclasses import dataclass, field
 from utilities import Utilities, get_question_id
-from utilities.utilities import is_stampy_mentioned, stampy_is_author, get_guild_and_invite_role
-from typing import Callable, Iterable, Literal, Optional, Union
+from utilities.utilities import (
+    is_stampy_mentioned,
+    stampy_is_author,
+    get_guild_and_invite_role,
+)
 from utilities.serviceutils import ServiceMessage
 
 log = get_logger()
@@ -95,7 +101,7 @@ class Response:
         embed = self.embed
         confidence = self.confidence
         text = self.text
-        callback = (self.callback.__name__ if self.callback else None)
+        callback = self.callback.__name__ if self.callback else None
         args = self.args
         kwargs = self.kwargs
         module = str(self.module)
@@ -214,7 +220,9 @@ class Module:
         if self.utils.test_mode:
             if stampy_is_author(message):
                 if TEST_QUESTION_PREFIX in message.clean_content:
-                    text = "stampy " + self.clean_test_prefixes(message, TEST_QUESTION_PREFIX)
+                    text = "stampy " + self.clean_test_prefixes(
+                        message, TEST_QUESTION_PREFIX
+                    )
         at_me = is_stampy_mentioned(message)
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
 
@@ -222,7 +230,9 @@ class Module:
             at_me = True
             text = text.partition(" ")[2]
         elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
-            text = re.sub(",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text)
+            text = re.sub(
+                ",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text
+            )
             at_me = True
 
         if message.is_dm:
@@ -231,7 +241,9 @@ class Module:
 
         if Utilities.get_instance().client.user in message.mentions:
             # regular mentions are already covered above, this covers the case that someone reply @'s Stampy
-            self.log.info(self.class_name, msg="Classified as 'at stampy' because of mention")
+            self.log.info(
+                self.class_name, msg="Classified as 'at stampy' because of mention"
+            )
             at_me = True
 
         if at_me:
@@ -254,9 +266,13 @@ class Module:
 
             # $someone is a random person from the chat
             # only make 1 replace per iteration, so a message can have more than one person chosen
-            string = string.replace("{{$someone}}", random.choice(list(self.utils.people)), 1)
+            string = string.replace(
+                "{{$someone}}", random.choice(list(self.utils.people)), 1
+            )
 
-            if not self.re_replace.match(string):  # If there are no more {{}} to sub, break out
+            if not self.re_replace.match(
+                string
+            ):  # If there are no more {{}} to sub, break out
                 break
 
             tag = self.re_replace.match(string).group(1)

@@ -18,15 +18,16 @@ import random
 import re
 from textwrap import dedent
 from typing import Literal, Optional, TypedDict, Union, cast
+from discord import Thread
 
 from dotenv import load_dotenv
-from discord.threads import Thread
 import pandas as pd
 
 from api.coda import CodaAPI, QuestionStatus
 from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
+from utilities.discordutils import DiscordChannel
 from utilities.utilities import (
     fuzzy_contains,
     is_from_editor,
@@ -77,7 +78,7 @@ class Questions(Module):
                 coda_api.update_questions_cache()
 
     async def restore_review_msg_cache(
-        self, channel: Thread, limit: int = 2000
+        self, channel: DiscordChannel, limit: int = 2000
     ) -> None:
         """#TODO: docstring"""
         self.log.info(
@@ -212,7 +213,7 @@ class Questions(Module):
         """
         q_ids = cmd["ids"]
         status = cmd["status"]
-        channel = cast(Thread, message.channel)
+        channel = message.channel
 
         # pre-send message to confirm that you're going to update statuses
         await channel.send(
@@ -316,12 +317,14 @@ class Questions(Module):
         Works for `@reviewer`s only.
         """
         q_ids = cmd["ids"]
-        channel = cast(Thread, message.channel)
+        channel = message.channel
 
         # if q_ids is None, this means that the message with review request precedes Stampy's last reboot,
         # so the `review_msg_id2question_ids` cache is empty
         # in that case, we restore the cache before proceeding
         if q_ids is None:
+            if not isinstance(channel, DiscordChannel):
+                return Response()
             await channel.send("Eh, I just got rebooted... gimme a moment plz")
             await self.restore_review_msg_cache(channel)
             msg_ref_id = str(getattr(message.reference, "message_id", None))
@@ -422,7 +425,7 @@ class Questions(Module):
             )
 
         # send pre-message to the channel
-        channel = cast(Thread, message.channel)
+        channel = message.channel
         await channel.send(f"Thanks, {message.author.name}, I'll {verb}")
 
         # change statuses
@@ -464,7 +467,6 @@ class Questions(Module):
         self, cmd: CountQuestionsCommand, message: ServiceMessage
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
-
         # get df with questions
         questions_df = coda_api.questions_df
 
@@ -524,7 +526,7 @@ class Questions(Module):
         # get questions df
         questions_df = coda_api.questions_df
         # get channel
-        channel = cast(Thread, message.channel)
+        channel = message.channel
 
         # if status was specified, filter questions for that status
         if status := cmd["status"]:  # pylint:disable=unused-variable

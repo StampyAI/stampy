@@ -1,3 +1,4 @@
+import asyncio
 from api.utilities.openai import OpenAIEngines
 from config import openai_api_key
 from structlog import get_logger

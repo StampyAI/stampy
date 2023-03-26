@@ -3,12 +3,9 @@ import random
 import urllib
 import datetime
 import string
-from modules.module import Module, Response
 
-# TODO this should be in utils or somewhere
-def randbool(p):
-    if random.random() < p:
-        return True
+from modules.module import Module, Response
+from utilities.utilities import randbool
 
 
 class Silly(Module):
