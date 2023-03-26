@@ -5,10 +5,11 @@ from typing import cast
 from jellyfish import jaro_winkler_similarity
 
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
-from modules.module import Module, Response
+from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
 from utilities.serviceutils import ServiceMessage
+from utilities.utilities import is_bot_dev
 
 
 class TestModule(Module):
@@ -26,7 +27,7 @@ class TestModule(Module):
     def __init__(self):
         super().__init__()
         self.class_name = self.__str__()
-        self.sent_test: list[dict] = []
+        self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage):
         if not self.is_at_module(message):
@@ -34,19 +35,15 @@ class TestModule(Module):
         # If this is a message coming from an integration test,
         # add it to the dictionary and update output to the channel
         if is_test_response(message.clean_content):
-            response_id = get_question_id(message)
+            response_id = cast(int, get_question_id(message))
             self.log.info(
                 self.class_name,
                 clean_content=message.clean_content,
                 response_id=response_id,
                 is_at_me=self.is_at_me(message),
             )
-            self.sent_test[cast(int, response_id)].update(
-                {
-                    "received_response": self.clean_test_prefixes(
-                        message, TEST_RESPONSE_PREFIX
-                    )
-                }
+            self.sent_test[response_id]["received_response"] = self.clean_test_prefixes(
+                message, TEST_RESPONSE_PREFIX
             )
             return Response(
                 confidence=8,
@@ -62,6 +59,21 @@ class TestModule(Module):
                 text=self.TEST_MODE_RESPONSE_MESSAGE,
                 why="Test already running",
             )
+
+        if message.channel.name != "talk-to-stampy":
+            return Response(
+                confidence=10,
+                text="Testing is only allowed in #talk-to-stampy",
+                why=f"{message.author.name} wanted to test me outside of the #talk-to-stampy channel which is prohibited!",
+            )
+
+        if not is_bot_dev(message.author):
+            return Response(
+                confidence=10,
+                text=f"You are not a bot dev, {message.author.name}",
+                why=f"{message.author.name} wanted to test me but they are not a bot dev",
+            )
+
         # Otherwise, this is a request for Stampy to run integration tests
         return Response(
             confidence=10, callback=self.run_integration_test, args=[message]
@@ -91,7 +103,7 @@ class TestModule(Module):
         # Get status messages and send them to the channel
         for question_number, question in enumerate(self.sent_test):
             test_status_message = (
-                f"QUESTION # {question_number}: {question['results']}\n"
+                f"QUESTION # {question_number}: {question['result']}\n"
                 f"The sent message was '{question['question'][:200]}'\n"
                 f"the expected message was '{question['expected_response'][:200]}'\n"
                 f"the received message was '{question['received_response'][:200]}'\n\n\n"
@@ -113,11 +125,13 @@ class TestModule(Module):
         for module_name, module in self.utils.modules_dict.items():
             if hasattr(module, "test_cases"):
                 self.log.info(self.class_name, msg=f"testing module {module_name}")
-                for test_case in cast(list[dict], getattr(module, "test_cases")):
+                for test_case in cast(
+                    list[IntegrationTest], getattr(module, "test_cases")
+                ):
                     test_message = (
                         f"{TEST_QUESTION_PREFIX}{question_id}: {test_case['question']}"
                     )
-                    test_case.update({"question": test_message})
+                    test_case["question"] = test_message
                     self.sent_test.append(test_case)
                     question_id += 1
                     await message.channel.send(test_message)
@@ -132,36 +146,40 @@ class TestModule(Module):
                 question_id += 1
 
     def evaluate_test(self) -> float:
-        correct_count = 0
+        passed_tests_count = 0
         for question in self.sent_test:
-            received_response = question[
-                "received_response"
-            ].strip()  # Getting random whitespace errors
+            # Removing random whitespace errors
+            received_response = question["received_response"].strip()
+
+            # Evaluate regex test
             if question["expected_regex"]:
-                question["expected_response"] = (
-                    "REGULAR EXPRESSION: " + question["expected_regex"]
-                )
+                question["expected_response"] = "RegEx: " + question["expected_regex"]
                 if re.search(question["expected_regex"], received_response):
-                    correct_count += 1
-                    question["results"] = "PASSED"
+                    passed_tests_count += 1
+                    question["result"] = "PASSED"
                 else:
-                    question["results"] = "FAILED"
+                    question["result"] = "FAILED"
+
+            # Evaluate "normal" test
             elif question["minimum_allowed_similarity"] == 1.0:
                 if question["expected_response"] == received_response:
-                    correct_count += 1
-                    question["results"] = "PASSED"
+                    passed_tests_count += 1
+                    question["result"] = "PASSED"
                 else:
-                    question["results"] = "FAILED"
+                    question["result"] = "FAILED"
+
+            # Evaluate test which allows less-than-perfect-similarity
             else:
                 text_similarity = jaro_winkler_similarity(
                     question["expected_response"], received_response
                 )
                 if text_similarity >= question["minimum_allowed_similarity"]:
-                    correct_count += 1
-                    question["results"] = "PASSED"
+                    passed_tests_count += 1
+                    question["result"] = "PASSED"
                 else:
-                    question["results"] = "FAILED"
-        score = correct_count / len(self.sent_test)
+                    question["result"] = "FAILED"
+
+        score = passed_tests_count / len(self.sent_test)
         return score
 
     def __str__(self):

@@ -201,6 +201,7 @@ class Module:
             "expected_regex": expected_regex,
             "test_wait_time": test_wait_time,
             "minimum_allowed_similarity": minimum_allowed_similarity,
+            "result": None
         }
 
     @staticmethod
@@ -294,3 +295,4 @@ class IntegrationTest(TypedDict):
     expected_regex: Optional[str]
     test_wait_time: float
     minimum_allowed_similarity: float
+    result: Optional[Literal["PASSED", "FAILED"]]
