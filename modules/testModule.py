@@ -1,5 +1,6 @@
 from asyncio import sleep
 import re
+from typing import cast
 
 from jellyfish import jaro_winkler_similarity
 
@@ -15,6 +16,7 @@ class TestModule(Module):
     This module is the only module that gets stampy to ask its self multiple questions
     In test mode, stampy only responds to itself, whereas in other modes stampy responds only to not itself
     """
+
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
     TEST_MODULE_PROMPTS = {"test yourself", "test modules"}
     TEST_PHRASES = {TEST_RESPONSE_PREFIX} | TEST_MODULE_PROMPTS
@@ -24,11 +26,13 @@ class TestModule(Module):
     def __init__(self):
         super().__init__()
         self.class_name = self.__str__()
-        self.sent_test = []
+        self.sent_test: list[dict] = []
 
     def process_message(self, message: ServiceMessage):
         if not self.is_at_module(message):
             return Response()
+        # If this is a message coming from an integration test,
+        # add it to the dictionary and update output to the channel
         if is_test_response(message.clean_content):
             response_id = get_question_id(message)
             self.log.info(
@@ -37,7 +41,7 @@ class TestModule(Module):
                 response_id=response_id,
                 is_at_me=self.is_at_me(message),
             )
-            self.sent_test[response_id].update(
+            self.sent_test[cast(int, response_id)].update(
                 {
                     "received_response": self.clean_test_prefixes(
                         message, TEST_RESPONSE_PREFIX
@@ -49,12 +53,16 @@ class TestModule(Module):
                 text=test_response_message,
                 why="this was a test",
             )
+
+        # If Stampy is already running tests and this message is a request
+        # to test himself, ignore it and reply accordingly
         if self.utils.test_mode:
             return Response(
                 confidence=9,
                 text=self.TEST_MODE_RESPONSE_MESSAGE,
                 why="Test already running",
             )
+        # Otherwise, this is a request for Stampy to run integration tests
         return Response(
             confidence=10, callback=self.run_integration_test, args=[message]
         )
@@ -64,12 +72,6 @@ class TestModule(Module):
             if message.service not in self.SUPPORTED_SERVICES:
                 return False
         return any([(phrase in message.clean_content) for phrase in self.TEST_PHRASES])
-
-    @staticmethod
-    def get_question_id(message: ServiceMessage):
-        text = message.clean_content
-        first_number_found = re.search(r"\d+", text).group()
-        return int(first_number_found)
 
     async def send_test_questions(self, message: ServiceMessage):
         self.utils.test_mode = True
