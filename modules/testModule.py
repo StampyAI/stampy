@@ -5,6 +5,7 @@ from modules.module import Module, Response
 from jellyfish import jaro_winkler_similarity
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
 from servicemodules.serviceConstants import Services
+from utilities.serviceutils import ServiceMessage
 
 
 class TestModule(Module):
@@ -13,40 +14,75 @@ class TestModule(Module):
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
     TEST_MODULE_PROMPTS = {"test yourself", "test modules"}
     TEST_PHRASES = {TEST_RESPONSE_PREFIX} | TEST_MODULE_PROMPTS
-    TEST_MODE_RESPONSE_MESSAGE = (
-        "I am running my integration test right now and I cannot handle your request until I am finished"
-    )
+    TEST_MODE_RESPONSE_MESSAGE = "I am running my integration test right now and I cannot handle your request until I am finished"
     SUPPORTED_SERVICES = [Services.DISCORD, Services.SLACK]
-
-    def __str__(self):
-        return "TestModule"
 
     def __init__(self):
         super().__init__()
         self.class_name = self.__str__()
         self.sent_test = []
 
-    def is_at_module(self, message):
+    def process_message(self, message: ServiceMessage):
+        if not self.is_at_module(message):
+            return Response()
+        else:
+            if is_test_response(message.clean_content):
+                response_id = get_question_id(message)
+                self.log.info(
+                    self.class_name,
+                    clean_content=message.clean_content,
+                    response_id=response_id,
+                    is_at_me=self.is_at_me(message),
+                )
+                self.sent_test[response_id].update(
+                    {
+                        "received_response": self.clean_test_prefixes(
+                            message, TEST_RESPONSE_PREFIX
+                        )
+                    }
+                )
+                return Response(
+                    confidence=8,
+                    text=test_response_message,
+                    why="this was a test",
+                )
+            elif self.utils.test_mode:
+                return Response(
+                    confidence=9,
+                    text=self.TEST_MODE_RESPONSE_MESSAGE,
+                    why="Test already running",
+                )
+            else:
+                return Response(
+                    confidence=10, callback=self.run_integration_test, args=[message]
+                )
+
+    def is_at_module(self, message: ServiceMessage):
         if hasattr(message, "service"):
             if message.service not in self.SUPPORTED_SERVICES:
                 return False
         return any([(phrase in message.clean_content) for phrase in self.TEST_PHRASES])
 
     @staticmethod
-    def get_question_id(message):
+    def get_question_id(message: ServiceMessage):
         text = message.clean_content
         first_number_found = re.search(r"\d+", text).group()
         return int(first_number_found)
 
-    async def send_test_questions(self, message):
+    async def send_test_questions(self, message: ServiceMessage):
         self.utils.test_mode = True
         self.utils.message_prefix = TEST_RESPONSE_PREFIX
         question_id = 0
         for module_name, module in self.utils.modules_dict.items():
             try:
-                self.log.info(self.class_name, msg="testing module %s" % str(module_name))
+                self.log.info(
+                    self.class_name, msg="testing module %s" % str(module_name)
+                )
                 for test in module.test_cases:
-                    test_message = str(TEST_QUESTION_PREFIX + str(question_id) + ": ") + test["question"]
+                    test_message = (
+                        str(TEST_QUESTION_PREFIX + str(question_id) + ": ")
+                        + test["question"]
+                    )
                     test.update({"question": test_message})
                     self.sent_test.append(test)
                     question_id += 1
@@ -64,9 +100,13 @@ class TestModule(Module):
     def evaluate_test(self):
         correct_count = 0
         for question in self.sent_test:
-            received_response = question["received_response"].strip()  # Getting random whitespace errors
+            received_response = question[
+                "received_response"
+            ].strip()  # Getting random whitespace errors
             if question["expected_regex"]:
-                question["expected_response"] = "REGULAR EXPRESSION: " + question["expected_regex"]
+                question["expected_response"] = (
+                    "REGULAR EXPRESSION: " + question["expected_regex"]
+                )
                 if re.search(question["expected_regex"], received_response):
                     correct_count += 1
                     question["results"] = "PASSED"
@@ -79,7 +119,9 @@ class TestModule(Module):
                 else:
                     question["results"] = "FAILED"
             else:
-                text_similarity = jaro_winkler_similarity(question["expected_response"], received_response)
+                text_similarity = jaro_winkler_similarity(
+                    question["expected_response"], received_response
+                )
                 if text_similarity >= question["minimum_allowed_similarity"]:
                     correct_count += 1
                     question["results"] = "PASSED"
@@ -88,7 +130,7 @@ class TestModule(Module):
         score = correct_count / len(self.sent_test)
         return score
 
-    async def run_integration_test(self, message):
+    async def run_integration_test(self, message: ServiceMessage):
         await self.send_test_questions(message)
         await sleep(3)  # Wait for test messages to go to discord and back to server
         score = self.evaluate_test()
@@ -107,32 +149,14 @@ class TestModule(Module):
         self.utils.message_prefix = ""
         return Response(confidence=10, text=test_message, why="this was a test")
 
-    def process_message(self, message):
-        if not self.is_at_module(message):
-            return Response()
-        else:
-            if is_test_response(message.clean_content):
-                response_id = get_question_id(message)
-                self.log.info(
-                    self.class_name,
-                    clean_content=message.clean_content,
-                    response_id=response_id,
-                    is_at_me=self.is_at_me(message),
-                )
-                self.sent_test[response_id].update(
-                    {"received_response": self.clean_test_prefixes(message, TEST_RESPONSE_PREFIX)}
-                )
-                return Response(confidence=8, text=test_response_message, why="this was a test",)
-            elif self.utils.test_mode:
-                return Response(
-                    confidence=9, text=self.TEST_MODE_RESPONSE_MESSAGE, why="Test already running"
-                )
-            else:
-                return Response(confidence=10, callback=self.run_integration_test, args=[message])
+    def __str__(self):
+        return "TestModule"
 
     @property
     def test_cases(self):
         return [
-            self.create_integration_test(question=prompt, expected_response=self.TEST_MODE_RESPONSE_MESSAGE)
+            self.create_integration_test(
+                question=prompt, expected_response=self.TEST_MODE_RESPONSE_MESSAGE
+            )
             for prompt in self.TEST_MODULE_PROMPTS
         ]

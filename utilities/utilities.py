@@ -440,6 +440,7 @@ def remove_punct(s: str) -> str:
 
 class UtilsTests:
     def test_split_message_for_discord(self):
+        breakpoint()
         test_out = len(
             Utilities.split_message_for_discord(
                 "123456789012345\n1234567890123456789\n10\n10\n10\n01234567890123456789",
