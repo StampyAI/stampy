@@ -25,37 +25,35 @@ class TestModule(Module):
     def process_message(self, message: ServiceMessage):
         if not self.is_at_module(message):
             return Response()
-        else:
-            if is_test_response(message.clean_content):
-                response_id = get_question_id(message)
-                self.log.info(
-                    self.class_name,
-                    clean_content=message.clean_content,
-                    response_id=response_id,
-                    is_at_me=self.is_at_me(message),
-                )
-                self.sent_test[response_id].update(
-                    {
-                        "received_response": self.clean_test_prefixes(
-                            message, TEST_RESPONSE_PREFIX
-                        )
-                    }
-                )
-                return Response(
-                    confidence=8,
-                    text=test_response_message,
-                    why="this was a test",
-                )
-            elif self.utils.test_mode:
-                return Response(
-                    confidence=9,
-                    text=self.TEST_MODE_RESPONSE_MESSAGE,
-                    why="Test already running",
-                )
-            else:
-                return Response(
-                    confidence=10, callback=self.run_integration_test, args=[message]
-                )
+        if is_test_response(message.clean_content):
+            response_id = get_question_id(message)
+            self.log.info(
+                self.class_name,
+                clean_content=message.clean_content,
+                response_id=response_id,
+                is_at_me=self.is_at_me(message),
+            )
+            self.sent_test[response_id].update(
+                {
+                    "received_response": self.clean_test_prefixes(
+                        message, TEST_RESPONSE_PREFIX
+                    )
+                }
+            )
+            return Response(
+                confidence=8,
+                text=test_response_message,
+                why="this was a test",
+            )
+        if self.utils.test_mode:
+            return Response(
+                confidence=9,
+                text=self.TEST_MODE_RESPONSE_MESSAGE,
+                why="Test already running",
+            )
+        return Response(
+            confidence=10, callback=self.run_integration_test, args=[message]
+        )
 
     def is_at_module(self, message: ServiceMessage):
         if hasattr(message, "service"):
