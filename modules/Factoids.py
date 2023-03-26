@@ -39,7 +39,7 @@ class Factoids(Module):
         result = ""
 
         # Check if this message is a DM and/or is directed at Stampy
-        if hasattr(message.channel, "name") and message.channel.name is not None:
+        if getattr(message.channel, "name", None):
             is_dm = False
             at_me = False
             room = message.channel.name
