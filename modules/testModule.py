@@ -1,7 +1,7 @@
 # pylint:disable=no-name-in-module,import-error
 from asyncio import sleep
 import re
-from typing import Optional, cast
+from typing import cast
 
 from jellyfish import jaro_winkler_similarity
 
@@ -117,8 +117,8 @@ class TestModule(Module):
 
     def parse_module_dict(self, message: ServiceMessage) -> dict[str, Module]:
         text = message.clean_content
-        if match := re.search(r"test modules ([\w\s]+)\n", text, re.I):
-            module_name_candidates = match.group(1).lower().split()
+        if re.search(r"test modules ([\w\s]+)", text, re.I):
+            module_name_candidates = re.findall(r"\w+", text, re.I)
             modules_dict = {
                 module_name: module
                 for module_name, module in self.utils.modules_dict.items()
