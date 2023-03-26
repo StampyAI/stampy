@@ -191,7 +191,7 @@ class Module:
         expected_regex=None,
         test_wait_time=0.5,
         minimum_allowed_similarity=1.0,
-    ):
+    ) -> dict:
         return {
             "question": question,
             "expected_response": expected_response,
@@ -284,3 +284,7 @@ class Module:
                 string = string.replace(tag, "{notfound:%s}" % key, 1)
 
         return string
+
+    @property
+    def test_cases(self) -> list[dict]:
+        return []
