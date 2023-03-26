@@ -73,28 +73,43 @@ class TestModule(Module):
                 return False
         return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
-    async def run_integration_test(self, message: ServiceMessage):
+    async def run_integration_test(self, message: ServiceMessage) -> Response:
+        """Run integration tests in all modules with test_cases"""
+        
+        # Set test mode to True and set message prefix
+        self.utils.test_mode = True
+        self.utils.message_prefix = TEST_RESPONSE_PREFIX
+
+        # Run test_cases
         await self.send_test_questions(message)
         await sleep(3)  # Wait for test messages to go to discord and back to server
+
+        # Evaluate tests and generate test message with the score (% of tests that passed)
         score = self.evaluate_test()
-        test_message = "The percentage of tests passed is %.2f%%" % (score * 100)
-        self.utils.test_mode = False
+        test_message = f"The percentage of tests passed is {score:.2%}"
+
+        
+        # Get status messages and send them to the channel
         for question_number, question in enumerate(self.sent_test):
             test_status_message = (
                 f"QUESTION # {question_number}: {question['results']}\n"
-                + f"The sent message was '{question['question'][:200]}'\n"
-                + f"the expected message was '{question['expected_response'][:200]}'\n"
-                + f"the received message was '{question['received_response'][:200]}'\n\n\n"
+                f"The sent message was '{question['question'][:200]}'\n"
+                f"the expected message was '{question['expected_response'][:200]}'\n"
+                f"the received message was '{question['received_response'][:200]}'\n\n\n"
             )
             await message.channel.send(test_status_message)
+        
         await sleep(3)
-        self.sent_test = []  # Delete all test from memory
+        
+        # Delete all test from memory
+        self.sent_test.clear()  
+
+        # Reset test mode and message_prefix
+        self.utils.test_mode = False
         self.utils.message_prefix = ""
         return Response(confidence=10, text=test_message, why="this was a test")
 
     async def send_test_questions(self, message: ServiceMessage) -> None:
-        self.utils.test_mode = True
-        self.utils.message_prefix = TEST_RESPONSE_PREFIX
         question_id = 0
         for module_name, module in self.utils.modules_dict.items():
             try:
