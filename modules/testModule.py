@@ -1,16 +1,20 @@
-import re
 from asyncio import sleep
-from utilities import get_question_id, is_test_response
-from modules.module import Module, Response
+import re
+
 from jellyfish import jaro_winkler_similarity
+
 from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
+from modules.module import Module, Response
 from servicemodules.serviceConstants import Services
+from utilities import get_question_id, is_test_response
 from utilities.serviceutils import ServiceMessage
 
 
 class TestModule(Module):
-    # This module is the only module that gets stampy to ask its self multiple questions
-    # In test mode, stampy only responds to itself, whereas in other modes stampy responds only to not itself
+    """
+    This module is the only module that gets stampy to ask its self multiple questions
+    In test mode, stampy only responds to itself, whereas in other modes stampy responds only to not itself
+    """
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
     TEST_MODULE_PROMPTS = {"test yourself", "test modules"}
     TEST_PHRASES = {TEST_RESPONSE_PREFIX} | TEST_MODULE_PROMPTS
