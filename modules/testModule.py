@@ -67,11 +67,11 @@ class TestModule(Module):
             confidence=10, callback=self.run_integration_test, args=[message]
         )
 
-    def is_at_module(self, message: ServiceMessage):
+    def is_at_module(self, message: ServiceMessage) -> bool:
         if hasattr(message, "service"):
             if message.service not in self.SUPPORTED_SERVICES:
                 return False
-        return any([(phrase in message.clean_content) for phrase in self.TEST_PHRASES])
+        return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
     async def send_test_questions(self, message: ServiceMessage):
         self.utils.test_mode = True
