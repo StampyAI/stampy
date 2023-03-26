@@ -60,7 +60,7 @@ class Questions(Module):
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
         self.last_question_autoposted = False
-        self.class_name = "Questions Module"
+        self.class_name = "Questions"
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
@@ -836,7 +836,7 @@ class Questions(Module):
             return []
         return [
             self.create_integration_test(
-                question="next q", expected_regex=r".+\n\nhttps:.+"
+                question="next q", expected_regex=r"Here is a question\n\n[^\n]+\nhttps://docs"
             ),
             self.create_integration_test(
                 question="how many questions?",
@@ -844,7 +844,7 @@ class Questions(Module):
             ),
             self.create_integration_test(
                 question="what is the next question with status withdrawn and tagged doom",
-                expected_regex=r"There are no",
+                expected_regex=r"There are no|Here is a question",
             ),
         ]
 

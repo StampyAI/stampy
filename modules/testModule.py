@@ -1,6 +1,7 @@
+# pylint:disable=no-name-in-module,import-error
 from asyncio import sleep
 import re
-from typing import cast
+from typing import Optional, cast
 
 from jellyfish import jaro_winkler_similarity
 
@@ -19,7 +20,7 @@ class TestModule(Module):
     """
 
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
-    TEST_MODULE_PROMPTS = {"test yourself", "test modules"}
+    TEST_MODULE_PROMPTS = {"test yourself", "test modules", "test module"}
     TEST_PHRASES = {TEST_RESPONSE_PREFIX} | TEST_MODULE_PROMPTS
     TEST_MODE_RESPONSE_MESSAGE = "I am running my integration test right now and I cannot handle your request until I am finished"
     SUPPORTED_SERVICES = [Services.DISCORD, Services.SLACK]
@@ -75,8 +76,37 @@ class TestModule(Module):
             )
 
         # Otherwise, this is a request for Stampy to run integration tests
+        lowercase_module_names = [
+            module_name.lower() for module_name in self.utils.modules_dict
+        ]
+        if match := re.search(r"test module (\w+)", message.clean_content, re.I):
+            parsed_module_name = match.group(1)
+            if parsed_module_name.lower() not in lowercase_module_names:
+                return Response(
+                    confidence=10,
+                    text=f'I don\'t have a module named "{parsed_module_name}"',
+                    why=f'{message.author.name} asked me to test module "{parsed_module_name}" but I don\'t have such a module',
+                )
+            module_name = next(
+                module_name
+                for module_name in self.utils.modules_dict
+                if module_name.lower() == parsed_module_name.lower()
+            )
+            modules_dict = {module_name: self.utils.modules_dict[module_name]}
+        elif message.clean_content.strip().endswith("test module"):
+            return Response(
+                confidence=10,
+                text="Yeah but what module?",
+                why=f"{message.author.name} asked me to test a module but they didn't specify which one",
+            )
+        else:
+            modules_dict = self.parse_module_dict(message)
+
         return Response(
-            confidence=10, callback=self.run_integration_test, args=[message]
+            confidence=10,
+            callback=self.run_integration_tests,
+            args=[message],
+            kwargs={"modules_dict": modules_dict},
         )
 
     def is_at_module(self, message: ServiceMessage) -> bool:
@@ -85,7 +115,21 @@ class TestModule(Module):
                 return False
         return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
-    async def run_integration_test(self, message: ServiceMessage) -> Response:
+    def parse_module_dict(self, message: ServiceMessage) -> dict[str, Module]:
+        text = message.clean_content
+        if match := re.search(r"test modules ([\w\s]+)\n", text, re.I):
+            module_name_candidates = match.group(1).lower().split()
+            modules_dict = {
+                module_name: module
+                for module_name, module in self.utils.modules_dict.items()
+                if module_name.lower() in module_name_candidates
+            }
+            return modules_dict
+        return self.utils.modules_dict
+
+    async def run_integration_tests(
+        self, message: ServiceMessage, modules_dict: dict[str, Module]
+    ) -> Response:
         """Run integration tests in all modules with test_cases"""
 
         # Set test mode to True and set message prefix
@@ -93,7 +137,7 @@ class TestModule(Module):
         self.utils.message_prefix = TEST_RESPONSE_PREFIX
 
         # Run test_cases
-        await self.send_test_questions(message)
+        await self.send_test_questions(message, modules_dict)
         await sleep(3)  # Wait for test messages to go to discord and back to server
 
         # Evaluate tests and generate test message with the score (% of tests that passed)
@@ -120,9 +164,11 @@ class TestModule(Module):
         self.utils.message_prefix = ""
         return Response(confidence=10, text=test_message, why="this was a test")
 
-    async def send_test_questions(self, message: ServiceMessage) -> None:
+    async def send_test_questions(
+        self, message: ServiceMessage, modules_dict: dict[str, Module]
+    ) -> None:
         question_id = 0
-        for module_name, module in self.utils.modules_dict.items():
+        for module_name, module in modules_dict.items():
             if hasattr(module, "test_cases"):
                 self.log.info(self.class_name, msg=f"testing module {module_name}")
                 for test_case in cast(
