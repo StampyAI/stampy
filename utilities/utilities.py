@@ -97,8 +97,12 @@ class Utilities:
         # stamp counts
         self.scores: list[float] = []
 
+        # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
+        
+        # testing 
+        self.message_prefix: str = ""
 
     @staticmethod
     def get_instance() -> Utilities:

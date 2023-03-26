@@ -73,7 +73,26 @@ class TestModule(Module):
                 return False
         return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
-    async def send_test_questions(self, message: ServiceMessage):
+    async def run_integration_test(self, message: ServiceMessage):
+        await self.send_test_questions(message)
+        await sleep(3)  # Wait for test messages to go to discord and back to server
+        score = self.evaluate_test()
+        test_message = "The percentage of tests passed is %.2f%%" % (score * 100)
+        self.utils.test_mode = False
+        for question_number, question in enumerate(self.sent_test):
+            test_status_message = (
+                f"QUESTION # {question_number}: {question['results']}\n"
+                + f"The sent message was '{question['question'][:200]}'\n"
+                + f"the expected message was '{question['expected_response'][:200]}'\n"
+                + f"the received message was '{question['received_response'][:200]}'\n\n\n"
+            )
+            await message.channel.send(test_status_message)
+        await sleep(3)
+        self.sent_test = []  # Delete all test from memory
+        self.utils.message_prefix = ""
+        return Response(confidence=10, text=test_message, why="this was a test")
+
+    async def send_test_questions(self, message: ServiceMessage) -> None:
         self.utils.test_mode = True
         self.utils.message_prefix = TEST_RESPONSE_PREFIX
         question_id = 0
@@ -101,7 +120,7 @@ class TestModule(Module):
                 )
                 question_id += 1
 
-    def evaluate_test(self):
+    def evaluate_test(self) -> float:
         correct_count = 0
         for question in self.sent_test:
             received_response = question[
@@ -133,25 +152,6 @@ class TestModule(Module):
                     question["results"] = "FAILED"
         score = correct_count / len(self.sent_test)
         return score
-
-    async def run_integration_test(self, message: ServiceMessage):
-        await self.send_test_questions(message)
-        await sleep(3)  # Wait for test messages to go to discord and back to server
-        score = self.evaluate_test()
-        test_message = "The percentage of tests passed is %.2f%%" % (score * 100)
-        self.utils.test_mode = False
-        for question_number, question in enumerate(self.sent_test):
-            test_status_message = (
-                f"QUESTION # {question_number}: {question['results']}\n"
-                + f"The sent message was '{question['question'][:200]}'\n"
-                + f"the expected message was '{question['expected_response'][:200]}'\n"
-                + f"the received message was '{question['received_response'][:200]}'\n\n\n"
-            )
-            await message.channel.send(test_status_message)
-        await sleep(3)
-        self.sent_test = []  # Delete all test from memory
-        self.utils.message_prefix = ""
-        return Response(confidence=10, text=test_message, why="this was a test")
 
     def __str__(self):
         return "TestModule"
