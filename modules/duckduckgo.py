@@ -1,14 +1,22 @@
 import re
 import json
-import urllib
+from urllib.parse import quote_plus
+from urllib.request import urlopen
+
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 
 
 class DuckDuckGo(Module):
+    """DuckDuckGo module"""
+
     # Some types of things we don't really care about
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
-    words = re.compile('[A-Za-z]+')
+    words = re.compile("[A-Za-z]+")
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.class_name = self.__class__.__name__
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message and return a response if this module can handle it."""
@@ -40,12 +48,11 @@ class DuckDuckGo(Module):
         irrelevant_words_in_answer = answer_words & self.IRRELEVANT_WORDS
         if irrelevant_words_in_answer:
             self.log.info(
-                "DuckDuckGo",
-                msg=f"Answer contains {irrelevant_words_in_answer}, downrating",
+                self.class_name,
+                msg=f"Answer contains {irrelevant_words_in_answer}, downrating to 1",
             )
             return 1
-        else:
-            return max_confidence
+        return max_confidence
 
     def ask(self, question: str) -> Response:
         """Ask DuckDuckGo a question and return a response."""
@@ -57,26 +64,36 @@ class DuckDuckGo(Module):
         q = re.sub(r"(what do you know|(what )?(can you)? ?tell me) about", "", q)
 
         # create url which searches DuckDuckGo for the question
-        url = (
-            "https://api.duckduckgo.com/?q=%s&format=json&nohtml=1&skip_disambig=1"
-            % urllib.parse.quote_plus(q)
-        )
+        url = f"https://api.duckduckgo.com/?q={quote_plus(q)}&format=json&nohtml=1&skip_disambig=1"
         try:
-            data = urllib.request.urlopen(url).read()
+            data = urlopen(url).read()
             j = json.loads(data)
 
-            self.log.info("DuckDuckGo", query=q, url=url)
-            self.log.debug("DuckDuckGo", data=json.dumps(j, sort_keys=True, indent=2))
+            self.log.info(self.class_name, query=q, url=url)
+            debug_keys = ["Abstract", "AbstractSource", "AbstractURL", "Entity", "Type"]
+            debug_data = {k: j.get(k) for k in debug_keys}
 
             if j["Abstract"]:
                 answer = j["Abstract"]
+                self.log.debug(
+                    self.class_name,
+                    data=json.dumps(debug_data, sort_keys=True, indent=2),
+                )
                 return Response(
                     confidence=self.get_confidence(answer, 7),
                     text=answer,
                     why="That's what DuckDuckGo suggested",
                 )
-            elif j["Type"] == "D":
-                answer = j["RelatedTopics"][0]["Text"]
+
+            if j["Type"] == "D":
+                answer: str = j["RelatedTopics"][0]["Text"]
+                debug_data["RelatedTopics_texts"] = [
+                    rt["Text"] for rt in j["RelatedTopics"]
+                ]
+                self.log.debug(
+                    self.class_name,
+                    data=json.dumps(debug_data, sort_keys=True, indent=2),
+                )
 
                 # If the response cuts off with ... then throw out the last sentence
                 if answer.endswith("...") and (". " in answer):
@@ -88,7 +105,7 @@ class DuckDuckGo(Module):
                     why="That's what DuckDuckGo suggested",
                 )
         except Exception as e:
-            self.log.error("DuckDuckGo", error=e)
+            self.log.error(self.class_name, error=e)
 
         return Response()
 

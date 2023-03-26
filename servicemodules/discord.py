@@ -6,7 +6,6 @@ import threading
 import unicodedata
 from utilities import (
     Utilities,
-    utilities,
     get_question_id,
     is_test_response,
     is_test_message,
@@ -26,13 +25,15 @@ from config import (
     maximum_recursion_depth,
 )
 from servicemodules.discordConstants import stampy_dev_priv_channel_id, automatic_question_channel_id
+from api.youtube import YoutubeAPI
 
 log = get_logger()
-class_name = "DiscordHandler"
+youtube_api = YoutubeAPI.get_instance()
 
 
 class DiscordHandler:
     def __init__(self):
+        self.class_name = "DiscordHandler"
         self.utils = Utilities.get_instance()
         self.service_utils = self.utils
         self.modules = self.utils.modules_dict.values()
@@ -45,7 +46,7 @@ class DiscordHandler:
         @self.utils.client.event
         async def on_ready() -> None:
             log.info(
-                class_name,
+                self.class_name,
                 status=f"{self.utils.client.user} has connected to Discord!",
                 searching_for_guild=self.utils.GUILD,
                 guilds=self.utils.client.guilds,
@@ -54,22 +55,23 @@ class DiscordHandler:
             if guild is None:
                 raise Exception("Guild Not Found : '%s'" % self.utils.GUILD)
 
-            log.info(class_name, msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id))
+            log.info(self.class_name, msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id))
 
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
-            log.info(class_name, guild_members=members)
+            log.info(self.class_name, guild_members=members)
             await self.utils.client.get_channel(int(stampy_dev_priv_channel_id)).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
 
         @self.utils.client.event
-        async def on_message(message: discord.message.Message) -> None:
-            message = DiscordMessage(message)
+        async def on_message(message: Union[discord.message.Message, DiscordMessage]) -> None:
+            if not isinstance(message, DiscordMessage):
+                message = DiscordMessage(message)
 
             # don't react to our own messages unless running test
-            message_author_is_stampy = utilities.stampy_is_author(message)
+            message_author_is_stampy = self.utils.stampy_is_author(message)
             if is_test_message(message.clean_content) and self.utils.test_mode:
-                log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
+                log.info(self.class_name, type="TEST MESSAGE", message_content=message.clean_content)
             elif message_author_is_stampy:
                 for module in self.modules:
                     module.process_message_from_stampy(message)
@@ -82,7 +84,7 @@ class DiscordHandler:
             if message.reference:
                 message_reference = message.reference
             log.info(
-                class_name,
+                self.class_name,
                 message_id=message.id,
                 message_channel_name=message.channel.name,
                 message_author_name=message.author.name,
@@ -95,18 +97,18 @@ class DiscordHandler:
             )
 
             if hasattr(message.channel, "id") and str(message.channel.id) == automatic_question_channel_id:
-                log.info(class_name, msg="the latest general discord channel message was not from stampy")
+                log.info(self.class_name, msg="the latest general discord channel message was not from stampy")
                 self.utils.last_message_was_youtube_question = False
 
             responses = [Response()]
             why_traceback: List[str] = []
             for module in self.modules:
-                log.info(class_name, msg=f"# Asking module: {module}")
+                log.info(self.class_name, msg=f"# Asking module: {module}")
                 try:
                     response = module.process_message(message)
                 except Exception as e:
                     why_traceback.append(f"There was a(n) {e} asking the {module} module!")
-                    log.error(class_name, error=f"Caught error in {module} module!")
+                    log.error(self.class_name, error=f"Caught error in {module} module!")
                     await self.utils.log_exception(e)
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
@@ -129,7 +131,7 @@ class DiscordHandler:
                                 [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
                             )
                     log.info(
-                        class_name,
+                        self.class_name,
                         response_module=str(response.module),
                         response_confidence=response.confidence,
                         response_is_callback=bool(response.callback),
@@ -145,7 +147,7 @@ class DiscordHandler:
                 why_traceback.append(f"The top response was {top_response}")
                 try:
                     if top_response.callback:
-                        log.info(class_name, msg="Top response is a callback. Calling it")
+                        log.info(self.class_name, msg="Top response is a callback. Calling it")
                         why_traceback.append(f"That response was a callback, so I called it.")
                         
                         # Callbacks can take a while to run, so we tell discord to say "Stampy is typing..."
@@ -175,7 +177,7 @@ class DiscordHandler:
                                             else "".join(list(top_response.text))
                                         )
                                     )
-                            log.info(class_name, top_response=top_response.text)
+                            log.info(self.class_name, top_response=top_response.text)
                             sent: List[discord.message.Message] = []
                             # TODO: check to see if module is allowed to embed via a config?
                             if top_response.embed:
@@ -200,7 +202,7 @@ class DiscordHandler:
                         return
                 except Exception as e:
                     why_traceback.append(f"There was a(n) {e} trying to send or callback the top response!")
-                    log.error(class_name, error=f"Caught error {e}!")
+                    log.error(self.class_name, error=f"Caught error {e}!")
                     await self.utils.log_exception(e)
 
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
@@ -208,7 +210,7 @@ class DiscordHandler:
             sent = await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
             self.messages[str(sent.id)] = {"why": "I detected recursion and killed the response process!", "traceback": why_traceback}
             why_traceback.append("Detected recursion and killed the response process!")
-            log.critical(class_name, error="Hit our recursion limit!")
+            log.critical(self.class_name, error="Hit our recursion limit!")
 
         @self.utils.client.event
         async def on_socket_raw_receive(_) -> None:
@@ -238,21 +240,21 @@ class DiscordHandler:
             now = datetime.now(timezone.utc)
 
             # check for new youtube comments
-            new_comments = self.utils.check_for_new_youtube_comments()
+            new_comments = youtube_api.check_for_new_youtube_comments()
             if new_comments:
                 for comment in new_comments:
                     if "?" in comment["text"]:
-                        self.utils.add_youtube_question(comment)
+                        youtube_api.add_youtube_question(comment)
  
         @self.utils.client.event
         async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:
-            log.info(class_name, msg="RAW REACTION ADD")
+            log.info(self.class_name, msg="RAW REACTION ADD")
             if len(payload.emoji.name) == 1:
                 # if this is an actual unicode emoji
-                log.info(class_name, emoji=unicodedata.name(payload.emoji.name))
+                log.info(self.class_name, emoji=unicodedata.name(payload.emoji.name))
             else:
-                log.info(class_name, emoji=payload.emoji.name.upper())
-            log.info(class_name, payload=payload)
+                log.info(self.class_name, emoji=payload.emoji.name.upper())
+            log.info(self.class_name, payload=payload)
 
             for module in self.modules:
                 try:
@@ -262,8 +264,8 @@ class DiscordHandler:
 
         @self.utils.client.event
         async def on_raw_reaction_remove(payload: discord.raw_models.RawReactionActionEvent) -> None:
-            log.info(class_name, msg="RAW REACTION REMOVE")
-            log.info(class_name, payload=payload)
+            log.info(self.class_name, msg="RAW REACTION REMOVE")
+            log.info(self.class_name, payload=payload)
 
             for module in self.modules:
                 await module.process_raw_reaction_event(payload)

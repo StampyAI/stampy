@@ -1,5 +1,4 @@
 from config import ENVIRONMENT_TYPE
-from typing import Tuple
 
 #################################
 # RAW DATA FOR ALL CHANNEL IDS
@@ -13,9 +12,9 @@ general_channel_id: str = {"production": "677546901339504646", "development": "7
 ai_safety_questions_channel_id: str = {"production": "1036026287459934298", "development": "-2"}[ENVIRONMENT_TYPE]
 aligned_intelligences_only_channel_id: str = {"production": "948354810002944070", "development": "-2"}[ENVIRONMENT_TYPE]
 voice_channel_id: str = {"production": "677546901339504648", "development": "783123903382814724"}[ENVIRONMENT_TYPE]
-
 stampy_category_id: str = {"production": "812043478321987635", "development": "-2"}[ENVIRONMENT_TYPE]
 stampy_dev_channel_id: str = {"production": "758062805810282526", "development": "817518145472299009"}[ENVIRONMENT_TYPE]
+
 wiki_channel_id: str = {"production": "835222827207753748", "development": "871715944114819092"}[ENVIRONMENT_TYPE]
 talk_to_stampy_channel_id: str = {"production": "808138366330994688", "development": "817518440192409621"}[ENVIRONMENT_TYPE]
 wiki_feed_channel_id: str = {"production": "819348467876364288", "development": "818635466478846033"}[ENVIRONMENT_TYPE]
@@ -35,7 +34,7 @@ meta_channel_id: str = {"production": "741332060031156296", "development": "8175
 
 archive_category_id: str = {"production": "929823542818766948", "development": "-2"}[ENVIRONMENT_TYPE]
 voice_context_channel_id: str = {"production": "810261871029387275", "development": "-2"}[ENVIRONMENT_TYPE]
-editing_channel_id: str = {"production": "990947616252657667", "development": "-2"}[ENVIRONMENT_TYPE]
+editing_channel_id: str = {"production": "835222827207753748", "development": "1081612961275187250"}[ENVIRONMENT_TYPE]
 
 test_channel_id: str = {"production": "-99", "development": "803448149946662923"}[ENVIRONMENT_TYPE]
 bot_owner_dms_id: str = {"production": "-1", "development": "736241264856662038"}[ENVIRONMENT_TYPE] #TODO: replace "-1" with the id for robs DM with stampy,
@@ -48,7 +47,7 @@ bot_owner_dms_id: str = {"production": "-1", "development": "736241264856662038"
 
 automatic_question_channel_id = general_channel_id  # TODO: should this be ai_safety_questions_channel_id?
 
-stampy_control_channel_ids: Tuple[str, ...] = (test_channel_id, stampy_dev_priv_channel_id, stampy_dev_channel_id,
+stampy_control_channel_ids: tuple[str, ...] = (test_channel_id, stampy_dev_priv_channel_id, stampy_dev_channel_id,
                                                talk_to_stampy_channel_id, bot_owner_dms_id)
 
 

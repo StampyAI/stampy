@@ -1,3 +1,4 @@
+import asyncio
 from api.utilities.openai import OpenAIEngines
 from config import openai_api_key
 from structlog import get_logger
@@ -16,7 +17,6 @@ utils = Utilities.get_instance()
 
 class OpenAI:
     def __init__(self):
-        super().__init__()
         self.class_name = self.__class__.__name__
         self.log = get_logger()
 
