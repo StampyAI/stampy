@@ -1,4 +1,3 @@
-from collections.abc import Coroutine
 from servicemodules.serviceConstants import Services
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
