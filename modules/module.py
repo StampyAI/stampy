@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 import re
 import random
-from typing import Callable, Iterable, Literal, Optional, Union
+from typing import Callable, Iterable, Literal, Optional, TypedDict, Union
 
 import discord
 from structlog import get_logger
@@ -191,7 +193,7 @@ class Module:
         expected_regex=None,
         test_wait_time=0.5,
         minimum_allowed_similarity=1.0,
-    ) -> dict:
+    ) -> IntegrationTest:
         return {
             "question": question,
             "expected_response": expected_response,
@@ -285,6 +287,10 @@ class Module:
 
         return string
 
-    @property
-    def test_cases(self) -> list[dict]:
-        return []
+class IntegrationTest(TypedDict):
+    question: str
+    expected_response: str
+    received_response: str
+    expected_regex: Optional[str]
+    test_wait_time: float
+    minimum_allowed_similarity: float

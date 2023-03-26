@@ -75,7 +75,7 @@ class TestModule(Module):
 
     async def run_integration_test(self, message: ServiceMessage) -> Response:
         """Run integration tests in all modules with test_cases"""
-        
+
         # Set test mode to True and set message prefix
         self.utils.test_mode = True
         self.utils.message_prefix = TEST_RESPONSE_PREFIX
@@ -88,7 +88,6 @@ class TestModule(Module):
         score = self.evaluate_test()
         test_message = f"The percentage of tests passed is {score:.2%}"
 
-        
         # Get status messages and send them to the channel
         for question_number, question in enumerate(self.sent_test):
             test_status_message = (
@@ -98,11 +97,11 @@ class TestModule(Module):
                 f"the received message was '{question['received_response'][:200]}'\n\n\n"
             )
             await message.channel.send(test_status_message)
-        
+
         await sleep(3)
-        
+
         # Delete all test from memory
-        self.sent_test.clear()  
+        self.sent_test.clear()
 
         # Reset test mode and message_prefix
         self.utils.test_mode = False
@@ -112,24 +111,21 @@ class TestModule(Module):
     async def send_test_questions(self, message: ServiceMessage) -> None:
         question_id = 0
         for module_name, module in self.utils.modules_dict.items():
-            try:
-                self.log.info(
-                    self.class_name, msg="testing module %s" % str(module_name)
-                )
-                for test in module.test_cases:
+            if hasattr(module, "test_cases"):
+                self.log.info(self.class_name, msg=f"testing module {module_name}")
+                for test_case in cast(list[dict], getattr(module, "test_cases")):
                     test_message = (
-                        str(TEST_QUESTION_PREFIX + str(question_id) + ": ")
-                        + test["question"]
+                        f"{TEST_QUESTION_PREFIX}{question_id}: {test_case['question']}"
                     )
-                    test.update({"question": test_message})
-                    self.sent_test.append(test)
+                    test_case.update({"question": test_message})
+                    self.sent_test.append(test_case)
                     question_id += 1
                     await message.channel.send(test_message)
-                    await sleep(test["test_wait_time"])
-            except AttributeError:
+                    await sleep(test_case["test_wait_time"])
+            else:
                 self.sent_test.append(
                     self.create_integration_test(
-                        question="Developers didn't write test for %s" % str(module),
+                        question=f"Developers didn't write test for {module}",
                         expected_response="NEVER RECEIVED A RESPONSE",
                     )
                 )
