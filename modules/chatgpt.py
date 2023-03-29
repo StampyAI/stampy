@@ -141,7 +141,7 @@ class ChatGPTModule(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="ChatGPT api is only hit in production because it is expensive?",
+                test_message="ChatGPT api is only hit in production because it is expensive?",
                 expected_response=CONFUSED_RESPONSE,
             )  # TODO write actual test for this
         ]

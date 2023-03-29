@@ -188,14 +188,14 @@ class Module:
 
     @staticmethod
     def create_integration_test(
-        question="",
+        test_message="",
         expected_response="",
         expected_regex=None,
         test_wait_time=0.5,
         minimum_allowed_similarity=1.0,
     ) -> IntegrationTest:
         return {
-            "question": question,
+            "test_message": test_message,
             "expected_response": expected_response,
             "received_response": "NEVER RECEIVED A RESPONSE",
             "expected_regex": expected_regex,
@@ -289,7 +289,7 @@ class Module:
         return string
 
 class IntegrationTest(TypedDict):
-    question: str
+    test_message: str
     expected_response: str
     received_response: str
     expected_regex: Optional[str]

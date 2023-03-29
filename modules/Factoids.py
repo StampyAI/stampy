@@ -220,15 +220,15 @@ class Factoids(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="remember chriscanal is the person who wrote this test",
+                test_message="remember chriscanal is the person who wrote this test",
                 expected_response='Ok stampy, remembering that "chriscanal" is "the person who wrote this test"',
             ),
             self.create_integration_test(
-                question="list chriscanal",
+                test_message="list chriscanal",
                 expected_regex="values for factoid+",
             ),
             self.create_integration_test(
-                question="forget that",
+                test_message="forget that",
                 expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',
             ),
         ]

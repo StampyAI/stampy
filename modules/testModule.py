@@ -114,12 +114,19 @@ class TestModule(Module):
         )
 
     def is_at_module(self, message: ServiceMessage) -> bool:
+        """The message is directed at this module
+        if its service is supported and it contains one of the test phrases
+        """
         if hasattr(message, "service"):
             if message.service not in self.SUPPORTED_SERVICES:
                 return False
         return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
     def parse_module_dict(self, message: ServiceMessage) -> dict[str, Module]:
+        """Extract module names from the message (containing "test modules" phrase)
+        and return a dictionary containing  modules to be tested. If no modules
+        are mentioned in the message, return a dictionary with all the modules.
+        """
         text = message.clean_content
         if re.search(r"test modules ([\w\s]+)", text, re.I):
             module_name_candidates = re.findall(r"\w+", text, re.I)
@@ -134,7 +141,10 @@ class TestModule(Module):
     async def run_integration_tests(
         self, message: ServiceMessage, modules_dict: dict[str, Module]
     ) -> Response:
-        """Run integration tests in all modules with test_cases"""
+        """Run integration tests in all modules from `modules_dict`
+        with defined `test_cases`
+        """
+        # safeguards before running this function guarantee that modules_dict is not empty
         if len(modules_dict) == len(self.utils.modules_dict):
             channel_msg = "Running tests for all the modules"
         elif len(modules_dict) == 1:
@@ -144,6 +154,7 @@ class TestModule(Module):
                 f"Runnning tests for the following {len(modules_dict)} modules: "
                 + ", ".join(f"`{module_name}`" for module_name in modules_dict)
             )
+        # Send a message about how many tests are being run and for which module
         await message.channel.send(channel_msg)
 
         # Set test mode to True and set message prefix
@@ -153,7 +164,7 @@ class TestModule(Module):
         # Run test_cases
         await self.send_test_questions(message, modules_dict)
         await sleep(3)  # Wait for test messages to go to discord and back to server
-        # await message.channel.send("")
+        await message.channel.send("Finished tests, evaluating the results")
 
         # Evaluate tests and generate test message with the score (% of tests that passed)
         score = self.evaluate_test()
@@ -161,30 +172,38 @@ class TestModule(Module):
 
         # Get status messages and send them to the channel
         for question_number, question in enumerate(self.sent_test):
-            test_status_message = dedent(f"""\
-                QUESTION #{question_number}: {question['result']}
-                The sent message was `{question['question'][:200]}`
-                The expected message was `{question['expected_response'][:200]}`
-                The received message was `{question['received_response'][:200]}`\n\n\n"""
+            test_status_message = dedent(
+                f"""\
+                QUESTION #{question_number}: {question["result"]}
+                The sent message was `{question["test_message"][:200]}`
+                The expected message was `{question["expected_response"][:200]}`
+                The received message was `{question["received_response"][:200]}`\n\n\n"""
             )
             await message.channel.send(test_status_message)
 
         await sleep(3)
 
-        # Delete all test from memory
+        # Delete tests from memory
         self.sent_test.clear()
 
         # Reset test mode and message_prefix
         self.utils.test_mode = False
         self.utils.message_prefix = ""
+
         return Response(confidence=10, text=test_message, why="this was a test")
 
     async def send_test_questions(
         self, message: ServiceMessage, modules_dict: dict[str, Module]
     ) -> None:
+        """Gather tests from modules in `modules_dict` that have `test_cases` defined,
+        save them to memory and send the messages defined on those tests to the channel.
+        """
+        # question index - must be defined outside the loop because modules vary in number of tests
         question_id = 0
         for module_id, (module_name, module) in enumerate(modules_dict.items()):
-            if test_cases := getattr(module, "test_cases", None):
+            if test_cases := cast(
+                list[IntegrationTest], getattr(module, "test_cases", None)
+            ):
                 # make the message about testing that module; log it and send to the channel
                 self.log.info(self.class_name, msg=f"testing module {module_name}")
                 await message.channel.send(
@@ -192,11 +211,9 @@ class TestModule(Module):
                 )
 
                 # run tests
-                for test_case in cast(list[IntegrationTest], test_cases):
-                    test_message = (
-                        f"{TEST_QUESTION_PREFIX}{question_id}: {test_case['question']}"
-                    )
-                    test_case["question"] = test_message
+                for test_case in test_cases:
+                    test_message = f"{TEST_QUESTION_PREFIX}{question_id}: {test_case['test_message']}"
+                    test_case["test_message"] = test_message
                     self.sent_test.append(test_case)
                     question_id += 1
                     await message.channel.send(test_message)
@@ -210,6 +227,7 @@ class TestModule(Module):
                 )
 
     def evaluate_test(self) -> float:
+        """Evaluate tests that were sent and saved to memory using `send_test_questions`."""
         passed_tests_count = 0
         for question in self.sent_test:
             # Removing random whitespace errors
@@ -253,7 +271,7 @@ class TestModule(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question=prompt, expected_response=self.TEST_MODE_RESPONSE_MESSAGE
+                test_message=prompt, expected_response=self.TEST_MODE_RESPONSE_MESSAGE
             )
             for prompt in self.TEST_MODULE_PROMPTS
         ]

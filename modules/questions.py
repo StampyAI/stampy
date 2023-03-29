@@ -836,14 +836,14 @@ class Questions(Module):
             return []
         return [
             self.create_integration_test(
-                question="next q", expected_regex=r"Here is a question\n\n[^\n]+\nhttps://docs"
+                test_message="next q", expected_regex=r"Here is a question\n\n[^\n]+\nhttps://docs"
             ),
             self.create_integration_test(
-                question="how many questions?",
+                test_message="how many questions?",
                 expected_regex=r"There are \d{3,4} questions",
             ),
             self.create_integration_test(
-                question="what is the next question with status withdrawn and tagged doom",
+                test_message="what is the next question with status withdrawn and tagged doom",
                 expected_regex=r"There are no|Here is a question",
             ),
         ]
