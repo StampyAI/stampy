@@ -35,7 +35,7 @@ environment_type_env_variable = "ENVIRONMENT_TYPE"
 openai_env_variable = "OPENAI_API_KEY"
 test_response_message = "LOGGED_TEST_RESPONSE"
 
-TEST_QUESTION_PREFIX = "TEST_QUESTION "
+TEST_MESSAGE_PREFIX = "TEST_MESSAGE "
 TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
 CONFUSED_RESPONSE = "I don't understand"
 

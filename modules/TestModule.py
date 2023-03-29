@@ -6,7 +6,7 @@ from typing import cast
 
 from jellyfish import jaro_winkler_similarity
 
-from config import TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
+from config import TEST_MESSAGE_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
 from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
@@ -28,7 +28,7 @@ class TestModule(Module):
         3. test one module: `s, test module <module-name>`
     """
 
-    TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
+    TEST_PREFIXES = {TEST_MESSAGE_PREFIX, TEST_RESPONSE_PREFIX}
     TEST_MODULE_PROMPTS = {"test yourself", "test modules", "test module"}
     TEST_PHRASES = {TEST_RESPONSE_PREFIX} | TEST_MODULE_PROMPTS
     TEST_MODE_RESPONSE_MESSAGE = "I am running my integration test right now and I cannot handle your request until I am finished"
@@ -170,7 +170,7 @@ class TestModule(Module):
         self.utils.message_prefix = TEST_RESPONSE_PREFIX
 
         # Run test_cases
-        await self.send_test_questions(message, modules_dict)
+        await self.send_test_messages(message, modules_dict)
         await sleep(3)  # Wait for test messages to go to discord and back to server
         await message.channel.send("\n\n`=== Finished tests, evaluating the results ===`\n\n")
 
@@ -179,13 +179,13 @@ class TestModule(Module):
         test_message = f"The percentage of tests passed is {score:.2%}"
 
         # Get status messages and send them to the channel
-        for question_number, question in enumerate(self.sent_test):
+        for test_id, test_case in enumerate(self.sent_test):
             test_status_message = dedent(
                 f"""\
-                `QUESTION #{question_number}: {question["result"]}`
-                The sent message was: "{question["test_message"][:200]}"
-                The expected message was "{question["expected_response"][:200]}"
-                The received message was "{question["received_response"][:200]}"\n\n\n"""
+                `QUESTION #{test_id}: {test_case["result"]}`
+                The sent message was: "{test_case["test_message"][:200]}"
+                The expected message was "{test_case["expected_response"][:200]}"
+                The received message was "{test_case["received_response"][:200]}"\n\n\n"""
             )
             await message.channel.send(test_status_message)
 
@@ -200,14 +200,14 @@ class TestModule(Module):
 
         return Response(confidence=10, text=test_message, why="this was a test")
 
-    async def send_test_questions(
+    async def send_test_messages(
         self, message: ServiceMessage, modules_dict: dict[str, Module]
     ) -> None:
         """Gather tests from modules in `modules_dict` that have `test_cases` defined,
         save them to memory and send the messages defined on those tests to the channel.
         """
-        # question index - must be defined outside the loop because modules vary in number of tests
-        question_id = 0
+        # test index - must be defined outside the loop because modules vary in number of tests
+        test_id = 0
         for module_id, (module_name, module) in enumerate(modules_dict.items()):
             if test_cases := cast(
                 list[IntegrationTest], getattr(module, "test_cases", None)
@@ -220,10 +220,10 @@ class TestModule(Module):
 
                 # run tests
                 for test_case in test_cases:
-                    test_message = f"{TEST_QUESTION_PREFIX}{question_id}: {test_case['test_message']}"
+                    test_message = f"{TEST_MESSAGE_PREFIX}{test_id}: {test_case['test_message']}"
                     test_case["test_message"] = test_message
                     self.sent_test.append(test_case)
-                    question_id += 1
+                    test_id += 1
                     await message.channel.send(test_message)
                     await sleep(test_case["test_wait_time"])
             else:
@@ -237,37 +237,37 @@ class TestModule(Module):
     def evaluate_test(self) -> float:
         """Evaluate tests that were sent and saved to memory using `send_test_questions`."""
         passed_tests_count = 0
-        for question in self.sent_test:
+        for test_case in self.sent_test:
             # Removing random whitespace errors
-            received_response = question["received_response"].strip()
+            received_response = test_case["received_response"].strip()
 
             # Evaluate regex test
-            if question["expected_regex"]:
-                question["expected_response"] = "RegEx: " + question["expected_regex"]
-                if re.search(question["expected_regex"], received_response):
+            if test_case["expected_regex"]:
+                test_case["expected_response"] = "RegEx: " + test_case["expected_regex"]
+                if re.search(test_case["expected_regex"], received_response):
                     passed_tests_count += 1
-                    question["result"] = "PASSED"
+                    test_case["result"] = "PASSED"
                 else:
-                    question["result"] = "FAILED"
+                    test_case["result"] = "FAILED"
 
             # Evaluate "normal" test
-            elif question["minimum_allowed_similarity"] == 1.0:
-                if question["expected_response"] == received_response:
+            elif test_case["minimum_allowed_similarity"] == 1.0:
+                if test_case["expected_response"] == received_response:
                     passed_tests_count += 1
-                    question["result"] = "PASSED"
+                    test_case["result"] = "PASSED"
                 else:
-                    question["result"] = "FAILED"
+                    test_case["result"] = "FAILED"
 
             # Evaluate test which allows less-than-perfect-similarity
             else:
                 text_similarity = jaro_winkler_similarity(
-                    question["expected_response"], received_response
+                    test_case["expected_response"], received_response
                 )
-                if text_similarity >= question["minimum_allowed_similarity"]:
+                if text_similarity >= test_case["minimum_allowed_similarity"]:
                     passed_tests_count += 1
-                    question["result"] = "PASSED"
+                    test_case["result"] = "PASSED"
                 else:
-                    question["result"] = "FAILED"
+                    test_case["result"] = "FAILED"
 
         score = passed_tests_count / len(self.sent_test)
         return score

@@ -8,7 +8,7 @@ from typing import Callable, Iterable, Literal, Optional, TypedDict, Union
 import discord
 from structlog import get_logger
 
-from config import TEST_QUESTION_PREFIX
+from config import TEST_MESSAGE_PREFIX
 from utilities.utilities import (
     Utilities,
     is_stampy_mentioned,
@@ -223,9 +223,9 @@ class Module:
         text = message.clean_content
         if self.utils.test_mode:
             if stampy_is_author(message):
-                if TEST_QUESTION_PREFIX in message.clean_content:
+                if TEST_MESSAGE_PREFIX in message.clean_content:
                     text = "stampy " + self.clean_test_prefixes(
-                        message, TEST_QUESTION_PREFIX
+                        message, TEST_MESSAGE_PREFIX
                     )
         at_me = is_stampy_mentioned(message)
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")

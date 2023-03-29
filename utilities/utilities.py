@@ -19,7 +19,7 @@ from git.repo import Repo
 from structlog import get_logger
 
 from config import (
-    TEST_QUESTION_PREFIX,
+    TEST_MESSAGE_PREFIX,
     TEST_RESPONSE_PREFIX,
     database_path,
     discord_guild,
@@ -355,7 +355,7 @@ def is_test_response(text: str) -> bool:
 
 
 def is_test_question(text: str) -> bool:
-    return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
+    return contains_prefix_with_number(text, TEST_MESSAGE_PREFIX)
 
 
 def is_test_message(text: str) -> bool:
