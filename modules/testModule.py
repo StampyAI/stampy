@@ -131,6 +131,16 @@ class TestModule(Module):
         self, message: ServiceMessage, modules_dict: dict[str, Module]
     ) -> Response:
         """Run integration tests in all modules with test_cases"""
+        if len(modules_dict) == len(self.utils.modules_dict):
+            channel_msg = "Running tests for all the modules"
+        elif len(modules_dict) == 1:
+            channel_msg =f"Running test for the module `{list(modules_dict)[0]}`"
+        else:
+            channel_msg = (
+                f"Runnning tests for the following {len(modules_dict)} modules: "
+                + ", ".join(f"`{module_name}`" for module_name in modules_dict)
+            )
+        await message.channel.send(channel_msg)
 
         # Set test mode to True and set message prefix
         self.utils.test_mode = True
@@ -139,6 +149,7 @@ class TestModule(Module):
         # Run test_cases
         await self.send_test_questions(message, modules_dict)
         await sleep(3)  # Wait for test messages to go to discord and back to server
+        # await message.channel.send("")
 
         # Evaluate tests and generate test message with the score (% of tests that passed)
         score = self.evaluate_test()
@@ -168,12 +179,16 @@ class TestModule(Module):
         self, message: ServiceMessage, modules_dict: dict[str, Module]
     ) -> None:
         question_id = 0
-        for module_name, module in modules_dict.items():
-            if hasattr(module, "test_cases"):
+        for module_id, (module_name, module) in enumerate(modules_dict.items()):
+            if test_cases := getattr(module, "test_cases", None):
+                # make the message about testing that module; log it and send to the channel
                 self.log.info(self.class_name, msg=f"testing module {module_name}")
-                for test_case in cast(
-                    list[IntegrationTest], getattr(module, "test_cases")
-                ):
+                await message.channel.send(
+                    f"`=== [{module_id}] {module_name}: running {len(test_cases)} tests ===`"
+                )
+
+                # run tests
+                for test_case in cast(list[IntegrationTest], test_cases):
                     test_message = (
                         f"{TEST_QUESTION_PREFIX}{question_id}: {test_case['question']}"
                     )
@@ -183,13 +198,12 @@ class TestModule(Module):
                     await message.channel.send(test_message)
                     await sleep(test_case["test_wait_time"])
             else:
-                self.sent_test.append(
-                    self.create_integration_test(
-                        question=f"Developers didn't write test for {module}",
-                        expected_response="NEVER RECEIVED A RESPONSE",
-                    )
+                self.log.info(
+                    self.class_name, msg=f"no tests written for module {module_name}"
                 )
-                question_id += 1
+                await message.channel.send(
+                    f"`=== [{module_id}] {module_name}: no tests have been written ===`"
+                )
 
     def evaluate_test(self) -> float:
         passed_tests_count = 0
