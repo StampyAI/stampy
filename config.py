@@ -66,12 +66,12 @@ discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
 youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
-openai_api_key = getenv("OPENAI_API_KEY", default=None)
-goose_api_key = getenv("GOOSE_API_KEY", default=None)
-wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
+openai_api_key = getenv("OPENAI_API_KEY")
+goose_api_key = getenv("GOOSE_API_KEY")
+wolfram_token = getenv("WOLFRAM_TOKEN")
 # These defaults are just to not break production until slack is set up.
-slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
-slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
+slack_app_token = getenv("SLACK_APP_TOKEN")
+slack_bot_token = getenv("SLACK_BOT_TOKEN")
 
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
