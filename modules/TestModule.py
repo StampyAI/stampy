@@ -156,7 +156,7 @@ class TestModule(Module):
         if len(modules_dict) == len(self.utils.modules_dict):
             channel_msg = "Running tests for all the modules"
         elif len(modules_dict) == 1:
-            channel_msg = f"Running test for the module `{list(modules_dict)[0]}`"
+            channel_msg = f"Running tests for the module `{list(modules_dict)[0]}`"
         else:
             channel_msg = (
                 f"Runnning tests for the following {len(modules_dict)} modules: "
@@ -180,14 +180,14 @@ class TestModule(Module):
 
         # Get status messages and send them to the channel
         for test_id, test_case in enumerate(self.sent_test):
+            received_response = test_case["received_response"][:200].replace("\n", " ")
             test_status_message = dedent(
                 f"""\
                 `TEST #{test_id}: {test_case["result"]}`
                 The sent message was: "{test_case["test_message"][:200]}"
                 The expected message was "{test_case["expected_response"][:200]}"
-                The received message was "{test_case["received_response"][:200]}"\n\n\n"""
+                The received message was "{received_response}"\n\n\n"""
             )
-            breakpoint()
             await message.channel.send(test_status_message)
 
         await sleep(3)
