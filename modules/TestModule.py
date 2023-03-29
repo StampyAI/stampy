@@ -182,11 +182,12 @@ class TestModule(Module):
         for test_id, test_case in enumerate(self.sent_test):
             test_status_message = dedent(
                 f"""\
-                `QUESTION #{test_id}: {test_case["result"]}`
+                `TEST #{test_id}: {test_case["result"]}`
                 The sent message was: "{test_case["test_message"][:200]}"
                 The expected message was "{test_case["expected_response"][:200]}"
                 The received message was "{test_case["received_response"][:200]}"\n\n\n"""
             )
+            breakpoint()
             await message.channel.send(test_status_message)
 
         await sleep(3)

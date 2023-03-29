@@ -1,12 +1,15 @@
 import os
+from typing import Optional
+
 import dotenv
+
 from api.utilities.gooseutils import GooseAIEngines
 
 dotenv.load_dotenv()
 NOT_PROVIDED = '__NOT_PROVIDED__'
 
 
-def getenv(env_var, default=NOT_PROVIDED):
+def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -66,12 +69,12 @@ discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
 youtube_api_key = getenv("YOUTUBE_API_KEY")
 database_path = getenv("DATABASE_PATH")
-openai_api_key = getenv("OPENAI_API_KEY")
-goose_api_key = getenv("GOOSE_API_KEY")
-wolfram_token = getenv("WOLFRAM_TOKEN")
+openai_api_key = getenv("OPENAI_API_KEY", default=None)
+goose_api_key = getenv("GOOSE_API_KEY", default=None)
+wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 # These defaults are just to not break production until slack is set up.
-slack_app_token = getenv("SLACK_APP_TOKEN")
-slack_bot_token = getenv("SLACK_BOT_TOKEN")
+slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
+slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
