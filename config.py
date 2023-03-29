@@ -1,6 +1,6 @@
-from api.utilities.gooseutils import GooseAIEngines
-import dotenv
 import os
+import dotenv
+from api.utilities.gooseutils import GooseAIEngines
 
 dotenv.load_dotenv()
 NOT_PROVIDED = '__NOT_PROVIDED__'
