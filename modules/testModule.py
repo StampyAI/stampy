@@ -1,6 +1,7 @@
 # pylint:disable=no-name-in-module,import-error
 from asyncio import sleep
 import re
+from textwrap import dedent
 from typing import cast
 
 from jellyfish import jaro_winkler_similarity
@@ -85,7 +86,10 @@ class TestModule(Module):
                 return Response(
                     confidence=10,
                     text=f'I don\'t have a module named "{parsed_module_name}"',
-                    why=f'{message.author.name} asked me to test module "{parsed_module_name}" but I don\'t have such a module',
+                    why=(
+                        f"{message.author.name} asked me to test module "
+                        f'"{parsed_module_name}" but I don\'t have such a module'
+                    ),
                 )
             module_name = next(
                 module_name
@@ -134,7 +138,7 @@ class TestModule(Module):
         if len(modules_dict) == len(self.utils.modules_dict):
             channel_msg = "Running tests for all the modules"
         elif len(modules_dict) == 1:
-            channel_msg =f"Running test for the module `{list(modules_dict)[0]}`"
+            channel_msg = f"Running test for the module `{list(modules_dict)[0]}`"
         else:
             channel_msg = (
                 f"Runnning tests for the following {len(modules_dict)} modules: "
@@ -157,11 +161,11 @@ class TestModule(Module):
 
         # Get status messages and send them to the channel
         for question_number, question in enumerate(self.sent_test):
-            test_status_message = (
-                f"QUESTION # {question_number}: {question['result']}\n"
-                f"The sent message was '{question['question'][:200]}'\n"
-                f"the expected message was '{question['expected_response'][:200]}'\n"
-                f"the received message was '{question['received_response'][:200]}'\n\n\n"
+            test_status_message = dedent(f"""\
+                QUESTION #{question_number}: {question['result']}
+                The sent message was `{question['question'][:200]}`
+                The expected message was `{question['expected_response'][:200]}`
+                The received message was `{question['received_response'][:200]}`\n\n\n"""
             )
             await message.channel.send(test_status_message)
 
