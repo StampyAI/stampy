@@ -583,7 +583,7 @@ class Questions(Module):
     def make_post_questions_result_response_text(self, cmd: PostQuestionsCommand, num_found: int) -> str:
         """Generate response text for posting questions request"""
         max_num_of_questions = cmd["max_num_of_questions"]
-        if max_num_of_questions == 1:
+        if num_found == 1:
             s = "Here is a question"
         elif num_found == 0:
             s = "I found no questions"
@@ -844,7 +844,7 @@ class Questions(Module):
             ),
             self.create_integration_test(
                 test_message="what is the next question with status withdrawn and tagged doom",
-                expected_regex=r"There are no|Here is a question",
+                expected_regex=r"I found no|Here is a question",
             ),
         ]
 
