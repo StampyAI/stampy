@@ -9,11 +9,12 @@ import discord
 from structlog import get_logger
 
 from config import TEST_QUESTION_PREFIX
-from utilities import Utilities, get_question_id
 from utilities.utilities import (
+    Utilities,
     is_stampy_mentioned,
     stampy_is_author,
     get_guild_and_invite_role,
+    get_question_id,
 )
 from utilities.serviceutils import ServiceMessage
 
@@ -201,7 +202,7 @@ class Module:
             "expected_regex": expected_regex,
             "test_wait_time": test_wait_time,
             "minimum_allowed_similarity": minimum_allowed_similarity,
-            "result": None
+            "result": None,
         }
 
     @staticmethod
@@ -288,11 +289,14 @@ class Module:
 
         return string
 
+
 class IntegrationTest(TypedDict):
+    """Integration test for testing Stampy modules"""
+
     test_message: str
     expected_response: str
     received_response: str
     expected_regex: Optional[str]
     test_wait_time: float
     minimum_allowed_similarity: float
-    result: Optional[Literal["PASSED", "FAILED"]]
+    result: Literal["PASSED", "FAILED", None]

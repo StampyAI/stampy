@@ -164,7 +164,7 @@ class TestModule(Module):
         # Run test_cases
         await self.send_test_questions(message, modules_dict)
         await sleep(3)  # Wait for test messages to go to discord and back to server
-        await message.channel.send("Finished tests, evaluating the results")
+        await message.channel.send("\n\n`=== Finished tests, evaluating the results ===`\n\n")
 
         # Evaluate tests and generate test message with the score (% of tests that passed)
         score = self.evaluate_test()
@@ -174,10 +174,10 @@ class TestModule(Module):
         for question_number, question in enumerate(self.sent_test):
             test_status_message = dedent(
                 f"""\
-                QUESTION #{question_number}: {question["result"]}
-                The sent message was `{question["test_message"][:200]}`
-                The expected message was `{question["expected_response"][:200]}`
-                The received message was `{question["received_response"][:200]}`\n\n\n"""
+                `QUESTION #{question_number}: {question["result"]}`
+                The sent message was: "{question["test_message"][:200]}"
+                The expected message was "{question["expected_response"][:200]}"
+                The received message was "{question["received_response"][:200]}"\n\n\n"""
             )
             await message.channel.send(test_status_message)
 
