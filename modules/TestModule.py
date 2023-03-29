@@ -16,8 +16,16 @@ from utilities.utilities import is_bot_dev
 
 class TestModule(Module):
     """
-    This module is the only module that gets stampy to ask its self multiple questions
-    In test mode, stampy only responds to itself, whereas in other modes stampy responds only to not itself
+    This module is the only module that gets stampy to ask himself multiple questions.
+    In test mode, stampy only responds to himself, whereas in other modes stampy responds only to not himself.
+    
+    ### How to test Stampy
+    
+    - You can only test Stampy in the #talk-to-stampy channel
+    - You can test Stampy in one of three ways
+        1. test all modules; `s, test yourself` or `s, test modules`
+        2. test a subset of modules `s, test modules <module-name-1> <module-name-2> <module-name-3>
+        3. test one module: `s, test module <module-name>`
     """
 
     TEST_PREFIXES = {TEST_QUESTION_PREFIX, TEST_RESPONSE_PREFIX}
