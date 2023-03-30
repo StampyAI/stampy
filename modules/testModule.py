@@ -1,4 +1,3 @@
-# pylint:disable=no-name-in-module,import-error
 from asyncio import sleep
 import re
 from textwrap import dedent
