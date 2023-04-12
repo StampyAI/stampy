@@ -82,13 +82,12 @@ stamp_scores_csv_file_path = {
 }[ENVIRONMENT_TYPE]
 
 # list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
-# if $STAMPY_MODULES = "ALL", enable everything found in ./modules
+# if STAMPY_MODULES is unset, enable everything found in ./modules
 enabled_modules_var = getenv_unique_set("STAMPY_MODULES")
-if enabled_modules_var == set(["ALL"]):
+if enabled_modules_var == set([NOT_PROVIDED]):
     enabled_modules = All_Stampy_Modules
-    log.info("Loading all modules indiscriminately")
+    log.info("STAMPY_MODULES unset, loading all modules indiscriminately")
 else:
-    assert (enabled_modules_var != set([NOT_PROVIDED])), "Please choose your modules with $STAMPY_MODULES"
     enabled_modules = enabled_modules_var
 
 discord_token = getenv("DISCORD_TOKEN")
