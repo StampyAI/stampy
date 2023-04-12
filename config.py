@@ -34,7 +34,7 @@ def getenv(env_var, default=NOT_PROVIDED):
 def getenv_unique_list(var_name) -> set[str]:
     l = getenv(var_name).split(" ")
     s = set(l)
-    assert (len(l) == len(s)), f"{var_name} has duplicate members! {s}"
+    assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
     return s
 
 maximum_recursion_depth = 30
