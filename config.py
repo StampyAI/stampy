@@ -1,10 +1,25 @@
 from api.utilities.gooseutils import GooseAIEngines
+from structlog import get_logger
 import dotenv
 import os
+
+log_type = "stam.py"
+log = get_logger()
 
 dotenv.load_dotenv()
 NOT_PROVIDED = '__NOT_PROVIDED__'
 
+module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
+
+def get_all_modules() -> set[str]:
+    modules = []
+    for file_name in os.listdir(module_dir):
+        if file_name.endswith('.py') and file_name != '__init__.py':
+            modules.append(file_name[:-3])
+
+    return set(modules)
+
+All_Stampy_Modules = get_all_modules()
 
 def getenv(env_var, default=NOT_PROVIDED):
     """
@@ -16,6 +31,11 @@ def getenv(env_var, default=NOT_PROVIDED):
         raise Exception(f"Environment Variable '{env_var}' not set and no default provided")
     return value
 
+def getenv_unique_list(var_name) -> set[str]:
+    l = getenv(var_name).split(" ")
+    s = set(l)
+    assert (len(l) == len(s)), f"{var_name} has duplicate members! {s}"
+    return s
 
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
@@ -61,10 +81,19 @@ stamp_scores_csv_file_path = {
     "development": "stamps-export.csv",
 }[ENVIRONMENT_TYPE]
 
+# list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
+# if $STAMPY_MODULES = "ALL", enable everything found in ./modules
+enabled_modules_var = getenv_unique_list("STAMPY_MODULES")
+if enabled_modules_var == set(["ALL"]):
+    enabled_modules = All_Stampy_Modules
+    log.info("Loading all modules indiscriminately")
+else:
+    assert (enabled_modules_var != set([NOT_PROVIDED])), "Please choose your modules with $STAMPY_MODULES"
+    enabled_modules = enabled_modules_var
 
 discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
-youtube_api_key = getenv("YOUTUBE_API_KEY")
+youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
 database_path = getenv("DATABASE_PATH")
 openai_api_key = getenv("OPENAI_API_KEY", default=None)
 goose_api_key = getenv("GOOSE_API_KEY", default=None)

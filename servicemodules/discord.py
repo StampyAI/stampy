@@ -24,12 +24,17 @@ from config import (
     discord_token,
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
+    youtube_api_key
 )
 from servicemodules.discordConstants import stampy_dev_priv_channel_id, automatic_question_channel_id
 from api.youtube import YoutubeAPI
 
 log = get_logger()
-youtube_api = YoutubeAPI.get_instance()
+
+if youtube_api_key:
+    youtube_api = YoutubeAPI.get_instance()
+else:
+    youtube_api = None
 
 # An appropriate max for how much text we should be able to give to Discord.
 # Discord messages can be 2000 max, so 20000 allows for 10 max length messages
@@ -255,12 +260,13 @@ class DiscordHandler:
             # this is needed for later checks, which should all be replaced with rate_limit calls (TODO)
             now = datetime.now(timezone.utc)
 
-            # check for new youtube comments
-            new_comments = youtube_api.check_for_new_youtube_comments()
-            if new_comments:
-                for comment in new_comments:
-                    if "?" in comment["text"]:
-                        youtube_api.add_youtube_question(comment)
+            if youtube_api:
+                # check for new youtube comments
+                new_comments = youtube_api.check_for_new_youtube_comments()
+                if new_comments:
+                    for comment in new_comments:
+                        if "?" in comment["text"]:
+                            youtube_api.add_youtube_question(comment)
  
         @self.utils.client.event
         async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:
