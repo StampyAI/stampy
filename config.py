@@ -31,8 +31,10 @@ def getenv(env_var, default=NOT_PROVIDED):
         raise Exception(f"Environment Variable '{env_var}' not set and no default provided")
     return value
 
-def getenv_unique_set(var_name) -> set[str]:
-    l = getenv(var_name).split(" ")
+def getenv_unique_set(var_name, default="EMPTY_SET"):
+    l = getenv(var_name, default=default).split(" ")
+    if l == [default]:
+        return default
     s = set(l)
     assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
     return s
@@ -83,8 +85,8 @@ stamp_scores_csv_file_path = {
 
 # list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
 # if STAMPY_MODULES is unset, enable everything found in ./modules
-enabled_modules_var = getenv_unique_set("STAMPY_MODULES")
-if enabled_modules_var == set([NOT_PROVIDED]):
+enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL")
+if enabled_modules_var == "ALL":
     enabled_modules = All_Stampy_Modules
     log.info("STAMPY_MODULES unset, loading all modules indiscriminately")
 else:
