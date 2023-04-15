@@ -437,6 +437,14 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
+def limit_text(text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")) -> tuple[bool, str]:
+    text_length = len(text)
+    failLength = text_length - limit
+
+    if text_length >= limit:
+        return True, formatFailMessage(failLength) + text[0:limit]
+    else:
+        return False, text
 
 class UtilsTests:
     def test_split_message_for_discord(self):

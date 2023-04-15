@@ -11,6 +11,7 @@ from utilities import (
     is_test_message,
     is_test_question,
     get_git_branch_info,
+    limit_text,
 )
 from utilities.discordutils import DiscordMessage, DiscordUser
 from structlog import get_logger
@@ -30,6 +31,17 @@ from api.youtube import YoutubeAPI
 log = get_logger()
 youtube_api = YoutubeAPI.get_instance()
 
+# An appropriate max for how much text we should be able to give to Discord.
+# Discord messages can be 2000 max, so 20000 allows for 10 max length messages
+discordLimit = 20000
+# TODO: store long responses temporarily for viewing outside of discord
+def limit_text_and_notify(response, why_traceback) -> str:
+    if isinstance(response.text, str):
+        wastrimmed = False
+        wastrimmed, textToReturn = limit_text(response.text, discordLimit)
+        if wastrimmed:
+            why_traceback.append(f"I had to trim the output from {response.module}")
+    return textToReturn
 
 class DiscordHandler:
     def __init__(self):
@@ -117,6 +129,9 @@ class DiscordHandler:
                         response.confidence -= 0.001
 
                     responses.append(response)
+
+                    response.text = limit_text_and_notify(response, why_traceback)
+
                     why_traceback.append(f"I asked the {module} module, and it responded with: {response}")
 
             for i in range(maximum_recursion_depth):  # don't hang if infinite regress
@@ -159,6 +174,7 @@ class DiscordHandler:
                                 new_response = top_response.callback(*top_response.args, **top_response.kwargs)
 
                         new_response.module = top_response.module
+                        new_response.text = limit_text_and_notify(new_response, why_traceback)
                         responses.append(new_response)
                         why_traceback.append(f"The callback responded with: {new_response}")
                     else:
