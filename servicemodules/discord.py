@@ -25,6 +25,7 @@ from config import (
     maximum_recursion_depth,
 )
 from servicemodules.discordConstants import stampy_dev_priv_channel_id, automatic_question_channel_id
+from servicemodules.serviceConstants import Services, openai_channel_ids
 from api.youtube import YoutubeAPI
 
 log = get_logger()
@@ -56,6 +57,8 @@ class DiscordHandler:
                 raise Exception("Guild Not Found : '%s'" % self.utils.GUILD)
 
             log.info(self.class_name, msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id))
+
+            self.test_channel_constants()
 
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(self.class_name, guild_members=members)
@@ -282,3 +285,8 @@ class DiscordHandler:
         t.name = "Discord Thread"
         t.start()
         return t
+
+    def test_channel_constants(self):
+        for channel_id in openai_channel_ids[Services.DISCORD]:
+            if int(channel_id) > 0 and self.utils.client.get_channel(int(channel_id)) is None:
+                log.warning(self.class_name, msg=f"did not find a channel with id {channel_id})")
