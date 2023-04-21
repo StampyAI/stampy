@@ -45,7 +45,7 @@ class Silly(Module):
             return Response(confidence=4, text=text.replace(" ex", " sex"), why="sex sells?")
 
         # Pokemon reference
-        if re.match("^[^\W]+ used ", text) and ("used to" not in text):
+        if re.match(r"^[^\W]+ used ", text) and ("used to" not in text):
             return Response(
                 confidence=4,
                 text=random.choice(
