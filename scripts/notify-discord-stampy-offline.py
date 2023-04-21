@@ -4,7 +4,8 @@ from structlog import get_logger
 from servicemodules.discordConstants import stampy_dev_priv_channel_id
 from config import discord_token
 
-client = discord.Client()
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
 log = get_logger()
 offline_message = (
     "I'm going offline for maintenance. %s is updating me.\n"
