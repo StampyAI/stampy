@@ -27,6 +27,7 @@ do
     fi
 done
 
+# NOTE: safe to delete?
 export DISCORD_TOKEN="$(cat ~/.discordtoken)"
 export DISCORD_GUILD="$(cat ~/.discordguild)"
 export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
