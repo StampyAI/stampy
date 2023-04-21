@@ -1,7 +1,8 @@
 import discord
 from git import Repo, cmd
 from structlog import get_logger
-from config import stampy_dev_priv_channel_id, discord_token
+from servicemodules.discordConstants import stampy_dev_priv_channel_id
+from config import discord_token
 
 client = discord.Client()
 log = get_logger()
