@@ -303,24 +303,9 @@ class DiscordHandler:
         return t
 
     def test_channel_constants(self):
-        extra_channel_ids = (discordConstants.archive_category_id,
-                             discordConstants.bot_owner_dms_id,
-                             discordConstants.editing_channel_id,
-                             discordConstants.introductions_channel_id,
-                             discordConstants.memes_channel_id,
-                             discordConstants.off_topic_channel_id,
-                             discordConstants.stampy_dev_channel_id,
-                             discordConstants.stampy_dev_priv_channel_id,
-                             discordConstants.stampy_error_log_channel_id,
-                             discordConstants.test_channel_id,
-                             discordConstants.voice_channel_id,
-                             discordConstants.voice_context_channel_id,
-                             discordConstants.welcome_channel_id,
-                             discordConstants.wiki_channel_id,
-                             discordConstants.wiki_feed_channel_id)
-
-        for channel_ids_list in (extra_channel_ids, openai_channel_ids[Services.DISCORD]):
-            for channel_id in channel_ids_list:
-                if int(channel_id) > 0 and self.utils.client.get_channel(int(channel_id)) is None:
-                    log.warning(self.class_name, msg=f"Could not find a channel with id {channel_id}")
+        channel_ids = [getattr(discordConstants, name)
+                       for name in dir(discordConstants) if name.endswith('_id')]
+        for channel_id in channel_ids:
+            if int(channel_id) > 0 and self.utils.client.get_channel(int(channel_id)) is None:
+                log.warning(self.class_name, msg=f"Could not find a channel with id {channel_id}")
 
