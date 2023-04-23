@@ -304,7 +304,7 @@ class DiscordHandler:
 
     def test_channel_constants(self):
         channel_ids = [getattr(discordConstants, name)
-                       for name in dir(discordConstants) if name.endswith('_id')]
+                       for name in dir(discordConstants) if name.endswith('channel_id')]
         for channel_id in channel_ids:
             if int(channel_id) > 0 and self.utils.client.get_channel(int(channel_id)) is None:
                 log.warning(self.class_name, msg=f"Could not find a channel with id {channel_id}")
