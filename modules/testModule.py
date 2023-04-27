@@ -171,8 +171,25 @@ class TestModule(Module):
         # Run test_cases
         await self.send_test_messages(message, modules_dict)
         await sleep(3)  # Wait for test messages to go to discord and back to server
-        await message.channel.send("\n\n`=== Finished tests, evaluating the results ===`\n\n")
+        
+        # if no tests were found for given modules, reset stuff and explain why
+        if not self.sent_test:
+            self.utils.test_mode = False
+            self.utils.message_prefix = ""
+            module_names = sorted(modules_dict)
+            if len(module_names) == 1:
+                module_msg_str = f"module `{module_names[0]}`"
+            else:
+                module_msg_str = "modules " + ", ".join(f"`{module_name}`" for module_name in module_names)
 
+            return Response(
+                confidence=10, 
+                text=f"I found no tests for {module_msg_str}",
+                why=f"This was meant to be a test but I found no test cases for {module_msg_str}"
+            )
+
+        await message.channel.send("\n\n`=== Finished tests, evaluating the results ===`\n\n")
+        
         # Evaluate tests and generate test message with the score (% of tests that passed)
         score = self.evaluate_test()
         test_message = f"The percentage of tests passed is {score:.2%}"
@@ -236,6 +253,11 @@ class TestModule(Module):
 
     def evaluate_test(self) -> float:
         """Evaluate tests that were sent and saved to memory using `send_test_questions`."""
+        if not self.sent_test:
+            self.log.error(
+                self.class_name,
+                msg="Tried evaluating integration tests but no integration tests were run"
+            )
         passed_tests_count = 0
         for test_case in self.sent_test:
             # Removing random whitespace errors
