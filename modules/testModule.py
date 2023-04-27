@@ -107,7 +107,7 @@ class TestModule(Module):
         elif message.clean_content.strip().endswith("test module"):
             return Response(
                 confidence=10,
-                text="Yeah but what module?",
+                text="Yeah but which module?",
                 why=f"{message.author.name} asked me to test a module but they didn't specify which one",
             )
         else:
