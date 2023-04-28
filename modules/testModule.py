@@ -112,6 +112,12 @@ class TestModule(Module):
             )
         else:
             modules_dict = self.parse_module_dict(message)
+            if not modules_dict:
+                return Response(
+                    confidence=10,
+                    text="I don't have these modules. Are you sure you wrote their names correctly?",
+                    why=f"{message.author.name} asked me to test some modules but I couldn't recognize their names."
+                )
 
         return Response(
             confidence=10,
@@ -124,9 +130,8 @@ class TestModule(Module):
         """The message is directed at this module
         if its service is supported and it contains one of the test phrases
         """
-        if hasattr(message, "service"):
-            if message.service not in self.SUPPORTED_SERVICES:
-                return False
+        if hasattr(message, "service") and message.service not in self.SUPPORTED_SERVICES:
+            return False
         return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
     def parse_module_dict(self, message: ServiceMessage) -> dict[str, Module]:
@@ -136,7 +141,7 @@ class TestModule(Module):
         """
         text = message.clean_content
         if re.search(r"test modules ([\w\s]+)", text, re.I):
-            module_name_candidates = re.findall(r"\w+", text, re.I)
+            module_name_candidates = re.findall(r"\w+", text.lower())
             modules_dict = {
                 module_name: module
                 for module_name, module in self.utils.modules_dict.items()
