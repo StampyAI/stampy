@@ -178,12 +178,12 @@ class StampyControls(Module):
     @property
     def test_cases(self):
         return [
-            self.create_integration_test(question="reboot", expected_response=self.REBOOT_DENIED_MESSAGE),
+            self.create_integration_test(test_message="reboot", expected_response=self.REBOOT_DENIED_MESSAGE),
             self.create_integration_test(
-                question="resetinviteroles", expected_response=self.RESET_INVITES_MESSAGE
+                test_message="resetinviteroles", expected_response=self.RESET_INVITES_MESSAGE
             ),
             self.create_integration_test(
-                question="stats",
+                test_message="stats",
                 expected_response=self.create_stampy_stats_message(),
                 test_wait_time=2,
                 minimum_allowed_similarity=0.8,

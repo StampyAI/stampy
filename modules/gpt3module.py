@@ -267,7 +267,7 @@ class GPT3Module(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="GPT3 api is only hit in production because it is expensive?",
+                test_message="GPT3 api is only hit in production because it is expensive?",
                 expected_response=CONFUSED_RESPONSE,
             )  # TODO write actual test for this
         ]

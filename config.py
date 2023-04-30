@@ -1,12 +1,15 @@
-from api.utilities.gooseutils import GooseAIEngines
-import dotenv
 import os
+from typing import Optional
+
+import dotenv
+
+from api.utilities.gooseutils import GooseAIEngines
 
 dotenv.load_dotenv()
 NOT_PROVIDED = '__NOT_PROVIDED__'
 
 
-def getenv(env_var, default=NOT_PROVIDED):
+def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -35,7 +38,7 @@ environment_type_env_variable = "ENVIRONMENT_TYPE"
 openai_env_variable = "OPENAI_API_KEY"
 test_response_message = "LOGGED_TEST_RESPONSE"
 
-TEST_QUESTION_PREFIX = "TEST_QUESTION "
+TEST_MESSAGE_PREFIX = "TEST_MESSAGE "
 TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
 CONFUSED_RESPONSE = "I don't understand"
 

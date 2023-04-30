@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 import re
 import random
-from typing import Callable, Iterable, Literal, Optional, Union
+from typing import Callable, Iterable, Literal, Optional, TypedDict, Union
 
 import discord
 from structlog import get_logger
 
-from config import TEST_QUESTION_PREFIX
-from utilities import Utilities, get_question_id
+from config import TEST_MESSAGE_PREFIX
 from utilities.utilities import (
+    Utilities,
     is_stampy_mentioned,
     stampy_is_author,
     get_guild_and_invite_role,
+    get_question_id,
 )
 from utilities.serviceutils import ServiceMessage
 
@@ -186,19 +189,20 @@ class Module:
 
     @staticmethod
     def create_integration_test(
-        question="",
+        test_message="",
         expected_response="",
         expected_regex=None,
         test_wait_time=0.5,
         minimum_allowed_similarity=1.0,
-    ):
+    ) -> IntegrationTest:
         return {
-            "question": question,
+            "test_message": test_message,
             "expected_response": expected_response,
             "received_response": "NEVER RECEIVED A RESPONSE",
             "expected_regex": expected_regex,
             "test_wait_time": test_wait_time,
             "minimum_allowed_similarity": minimum_allowed_similarity,
+            "result": None,
         }
 
     @staticmethod
@@ -219,9 +223,9 @@ class Module:
         text = message.clean_content
         if self.utils.test_mode:
             if stampy_is_author(message):
-                if TEST_QUESTION_PREFIX in message.clean_content:
+                if TEST_MESSAGE_PREFIX in message.clean_content:
                     text = "stampy " + self.clean_test_prefixes(
-                        message, TEST_QUESTION_PREFIX
+                        message, TEST_MESSAGE_PREFIX
                     )
         at_me = is_stampy_mentioned(message)
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
@@ -284,3 +288,15 @@ class Module:
                 string = string.replace(tag, "{notfound:%s}" % key, 1)
 
         return string
+
+
+class IntegrationTest(TypedDict):
+    """Integration test for testing Stampy modules"""
+
+    test_message: str
+    expected_response: str
+    received_response: str
+    expected_regex: Optional[str]
+    test_wait_time: float
+    minimum_allowed_similarity: float
+    result: Literal["PASSED", "FAILED", None]

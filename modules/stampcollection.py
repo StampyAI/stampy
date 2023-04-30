@@ -371,10 +371,10 @@ class StampsModule(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="how many stamps am I worth?",
+                test_message="how many stamps am I worth?",
                 expected_regex=r"^You're worth ?[+-]?\d+(?:\.\d+)? stamps to me$",
             ),
             self.create_integration_test(
-                question="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE
+                test_message="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE
             ),
         ]
