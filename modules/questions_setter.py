@@ -1,27 +1,30 @@
 from __future__ import annotations
 
-import re
-from typing import Literal, Optional, TypedDict, cast
+from typing import Literal, Optional, Union, cast
 
 from api.coda import CodaAPI, QuestionStatus
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
+from utilities.questions_utils import parse_gdoc_links, parse_status
 from utilities.serviceutils import ServiceMessage
-from utilities.utilities import is_from_reviewer
+from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
 
 
 coda_api = CodaAPI.get_instance()
+status_shorthands = coda_api.get_status_shorthand_dict()
+all_tags = coda_api.get_all_tags()
 
 GDocLinks = list[str]
 MsgRefId = str
 ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
+
+
 class QuestionsSetter(Module):
     """Module for editing questions in [coda](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)."""
 
     def __init__(self) -> None:
         super().__init__()
-
         self.class_name = self.__class__.__name__
         self.review_request_id2gdoc_links: dict[str, list[str]] = {}
 
@@ -29,19 +32,19 @@ class QuestionsSetter(Module):
         self, channel: DiscordChannel, limit: int = 2000
     ) -> None:
         """Restore the `review_request_id2gdoc_links` cache."""
-        
+
         await channel.send("Wait a sec, I'm restoring my cache...")
 
         self.log.info(
             self.class_name,
             msg="Empty `review_request_id2gdoc_links` cache after reboot, restoring",
         )
-        
+
         async for msg in channel.history(limit=limit):
             text = msg.clean_content
             if gdoc_links := parse_gdoc_links(text):
                 self.review_request_id2gdoc_links[str(msg.id)] = gdoc_links
-        
+
         self.log.info(
             self.class_name,
             msg=(
@@ -59,12 +62,11 @@ class QuestionsSetter(Module):
 
         # new_status and gdoc_links
         if parsed := self.parse_review_request(message):
-            gdoc_links, review_status = parsed
+            gdoc_links, status = parsed
             return Response(
                 confidence=10,
                 callback=self.cb_review_request,
-                args=[gdoc_links, review_status, message],
-                why=f"{message.author.name} asked for review",
+                args=[gdoc_links, status, message],
             )
 
         if parsed := self.parse_question_approval(message):
@@ -72,18 +74,26 @@ class QuestionsSetter(Module):
                 confidence=10,
                 callback=self.cb_question_approval,
                 args=[parsed, message],
-                why=f"{message.author.name} approved the question",
             )
-        # # status, gdoc_links
-        # if parsed := self.parse_mark_question_request(message):
-        #     return Response(
-        #         confidence=8,
-        #         callback=self.cb_set_status_by_mark_question_request,
-        #         args=[parsed, message],
-        #         why=f"{message.author.name} marked these questions as `{parsed['status']}`",
-        #     )
 
-        # TODO: parse_set_question_status_command
+        if not self.is_at_me(message):
+            return Response()
+
+        # status, gdoc_links
+        if parsed := self.parse_mark_question_del_dup(message):
+            gdoc_links, status = parsed
+            return Response(
+                confidence=10,
+                callback=self.cb_set_question_status,
+                args=[gdoc_links, status, "mark", message],
+            )
+        if parsed := self.parse_set_question_status(message):
+            gdoc_links, status = parsed
+            return Response(
+                confidence=10,
+                callback=self.cb_set_question_status,
+                args=[gdoc_links, status, "set", message],
+            )
 
         if gdoc_links := parse_gdoc_links(message.clean_content):
             self.review_request_id2gdoc_links[str(message.id)] = gdoc_links
@@ -97,8 +107,9 @@ class QuestionsSetter(Module):
     def parse_review_request(
         self, message: ServiceMessage
     ) -> Optional[tuple[GDocLinks, ReviewStatus]]:
-        """Is this message a review request with link do GDoc?
-        If it is, return `SetQuestionStatusByAtCommand`.
+        """Is this message a review request with a link or many links do GDoc?
+        If it is, return the list of parsed GDoc links and a new status
+        to set these questions to.
         If it isn't, return `None`.
         """
         text = message.clean_content
@@ -122,39 +133,22 @@ class QuestionsSetter(Module):
         return gdoc_links, status
 
     async def cb_review_request(
-        self, 
-        gdoc_links: list[str],
-        status: ReviewStatus,
-        message: ServiceMessage
+        self, gdoc_links: list[str], status: ReviewStatus, message: ServiceMessage
     ) -> Response:
-        """"""  # TODO: docstring
-        # 1. get questions from those links
+        """Change status of questions for which an editor requested review or feedback."""
         questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
         n_gdoc_links = len(gdoc_links)
         if not questions:
             return Response(
                 confidence=10,
                 text=f"None of these {n_gdoc_links} links lead to AI Safety Info questions.",
-                why="",
-            )  # TODO: why
-
-        question_urls = {q["url"].split("/edit?")[0] for q in questions}
-        non_question_gdoc_links = [
-            link for link in gdoc_links if link not in question_urls
-        ]
-
-        if non_question_gdoc_links:
-            msg = f"Out of {len(gdoc_links)} GDoc links you mentioned, {{len(non_question_gdoc_links)}} didn't lead to "
-            if len(non_question_gdoc_links) == 1:
-                msg += "an AI Safety Info question."
-            else:
-                msg += "AI Safety Info questions."
-            await message.channel.send(msg)
+                why=f"{message.author.name} sent some GDoc links but I couldn't find them in the database. Maybe they're `Marked for deletion`/`Duplicate`s/`Withdrawn`?",
+            )
 
         msg = (
-            f"Thanks, <@{message.author}>!\nSetting "
-            + ("1 question" if len(questions) == 1 else f"{len(questions)} questions")
-            + f" to `{status}`"
+            f"Thanks, <@{message.author}>!\nI'll update "
+            + ("its" if len(questions) == 1 else f"their")
+            + f" status to `{status}`"
         )
 
         await message.channel.send(msg)
@@ -176,86 +170,200 @@ class QuestionsSetter(Module):
             msg = "1 question updated."
         else:
             msg = "{n_updated} questions updated."
-        
+
         if n_already_los == 1:
             msg += " 1 was already `Live on site`."
         elif n_already_los:
             msg += f" {n_already_los} were already `Live on site` (only reviewers can modify questions that are `Live on site`.)"
 
-        return Response(confidence=10, text=msg, why="")  # TODO: why
+        return Response(
+            confidence=10,
+            text=msg,
+            why=f"{message.author.name} did something useful and I wanted coda to reflect that.",
+        )
 
     #########################
     #   Question approval   #
     #########################
-    
-    def parse_question_approval(self, message: ServiceMessage) -> Optional[tuple[GDocLinks, Optional[MsgRefId]]]:
+
+    def parse_question_approval(
+        self, message: ServiceMessage
+    ) -> Optional[Union[GDocLinks, MsgRefId]]:
+        """Is this a reviewer approving a question?
+        If it is, return GDoc links to the questions being accepted
+        or the ID of the original message that contains them.
+        """
         text = message.clean_content
         if not any(s in text.lower() for s in ("approved", "accepted", "lgtm")):
             return
-        
+
         if gdoc_links := parse_gdoc_links(text):
-            return gdoc_links, None
-        
+            return gdoc_links
+
         if not (msg_ref := message.reference):
             return
-        
-        if not (msg_ref_id := cast(Optional[int], getattr(msg_ref, "message_id", None))):
+
+        if not (
+            msg_ref_id := cast(Optional[int], getattr(msg_ref, "message_id", None))
+        ):
             return
 
         # if msg_ref_id is missing, then it will need to be retrieved
-        gdoc_links = self.review_request_id2gdoc_links.get(str(msg_ref_id), [])
-        return gdoc_links, str(msg_ref_id)
-    
-    async def cb_question_approval(self, gdoc_links: list[str], msg_ref_id: Optional[str], message: ServiceMessage) -> Response:
-        """"""#TODO: docstring
-        
-        if not gdoc_links and isinstance(message.channel, DiscordChannel):
-            assert msg_ref_id is not None
+        msg_ref_id = str(msg_ref_id)
+        if msg_ref_id in self.review_request_id2gdoc_links:
+            gdoc_links = self.review_request_id2gdoc_links[msg_ref_id]
+            return gdoc_links
+        return msg_ref_id
+
+    async def cb_question_approval(
+        self, parsed: Union[GDocLinks, MsgRefId], message: ServiceMessage
+    ) -> Response:
+        """Obtain GDoc links to approved questions and change their status in coda
+        to `Live on site`.
+        """
+        if isinstance(parsed, list):
+            gdoc_links = parsed
+        else:
+            msg_ref_id = parsed
+            assert isinstance(message.channel, DiscordChannel)
             await self.restore_review_msg_cache(message.channel)
             gdoc_links = self.review_request_id2gdoc_links.get(msg_ref_id, [])
-        
+
         questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
-        
+
         if not questions:
-            return Response(confidence=10, text="Nothing found ") #TODO: elaborate
-        
+            return Response(confidence=10, text="Nothing found ")  # TODO: elaborate
+
         if not is_from_reviewer(message):
-            return Response(confidence=10, text=f"You're not a reviewer, <@{message.author}> -_-")
-        
+            return Response(
+                confidence=10, text=f"You're not a reviewer, <@{message.author}> -_-"
+            )
+
         await message.channel.send(f"Approved by <@{message.author}>!")
-        
+
         n_new_los = 0
-        
+
         for q in questions:
             if q["status"] == "Live on site":
-                await message.channel.send(f"`\"{q['title']}\"` is already `Live on site`")
+                await message.channel.send(
+                    f"`\"{q['title']}\"` is already `Live on site`"
+                )
             else:
                 coda_api.update_question_status(q["id"], "Live on site")
                 n_new_los += 1
                 await message.channel.send(f"`\"{q['title']}\"` goes `Live on site`!")
-        
+
         if n_new_los == 0:
             msg = "No new questions `Live on site`, they were already there."
         elif n_new_los == 1:
             msg = "1 more question `Live on site`!"
-        else:        
+        else:
             msg = f"{n_new_los} more questions `Live on site`!"
-        return Response(confidence=10, text=msg, why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.")
-        
-        
-# class QuestionStatutsSetting(TypedDict):
-#     type: Literal["id", "last"]
-#     id: Optional[str]
-#     status: QuestionStatus
+        return Response(
+            confidence=10,
+            text=msg,
+            why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.",
+        )
 
+    ###############################
+    #   Setting question status   #
+    ###############################
 
-#############
-#   Utils   #
-#############
+    def parse_mark_question_del_dup(
+        self, message: ServiceMessage
+    ) -> Optional[tuple[GDocLinks, MarkingStatus]]:
+        """Somebody is tring to mark one or more questions for deletion
+        or as duplicates.
+        """
+        text = message.clean_content
+        if text.startswith("s, del"):
+            status = "Marked for deletion"
+        elif text.startswith("s, dup"):
+            status = "Duplicate"
+        else:
+            return
+        if not (gdoc_links := parse_gdoc_links(text)):
+            return
+        return gdoc_links, status
 
+    def parse_set_question_status(
+        self, message: ServiceMessage
+    ) -> Optional[tuple[GDocLinks, QuestionStatus]]:
+        """Somebody is tring to change status of one or more questions."""
+        text = message.clean_content
+        if not ("set" in text.lower() or "status" in text.lower()):
+            return
+        if not (status := parse_status(text, require_status_prefix=False)):
+            return
+        if not (gdoc_links := parse_gdoc_links(text)):
+            return
+        return gdoc_links, status
 
-def parse_gdoc_links(text: str) -> list[str]:
-    """Extract GDoc links from message content.
-    Returns `[]` if message doesn't contain any GDoc link.
-    """
-    return re.findall(r"https://docs\.google\.com/document/d/[\w_-]+", text)
+    async def cb_set_question_status(
+        self,
+        gdoc_links: list[str],
+        status: QuestionStatus,
+        message: ServiceMessage,
+    ) -> Response:
+        """Change status of one or more questions.
+        Only bot devs, editors, and reviewers can do that.
+        Additionally, only reviewers can change status to and from `Live on site`.
+        """
+        if not (
+            is_from_editor(message)
+            or is_from_reviewer(message)
+            or is_bot_dev(message.author)
+        ):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions to change question status, <@{message.author}>",
+                why=f"{message.author.name} tried changing questions status, but I don't trust them.",
+            )
+
+        if status == "Live on site" and not is_from_reviewer(message):
+            return Response(
+                confidence=10,
+                text=f"You're not a reviewer, <@{message.author}>. Only reviewers can change status of questions to `Live on site`",
+                why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
+            )
+
+        questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
+        if not questions:
+            return Response(
+                confidence=10,
+                text="These GDoc links don't lead to any AI Safety Info questions.",
+                why=f"{message.author.name} gave me some GDoc links to change their status to `{status}` but I couldn't find those links in our database",
+            )
+
+        msg = (
+            f"Ok, <@{message.author}>, setting status of "
+            + ("1 question" if len(questions) == 1 else f"{len(questions)} questions")
+            + f" to `{status}`"
+        )
+        await message.channel.send(msg)
+
+        n_already_los = 0
+
+        for q in questions:
+            prev_status = q["status"]
+            if prev_status == "Live on site" and not is_from_reviewer(message):
+                msg = f"`\"{q['title']}\"` is already `Live on site`."
+                n_already_los += 1
+            else:
+                coda_api.update_question_status(q["id"], status)
+                msg = (
+                    f"`\"{q['title']}\"` is now `{status}` (previously `{prev_status}`)"
+                )
+            await message.channel.send(msg)
+
+        n_changed_status = len(questions) - n_already_los
+        # TODO: nicer handling of different numberings
+        msg = f"Changed status of {n_changed_status} questions to `{status}`."
+        if n_already_los:
+            msg += f" {n_already_los} were already `Live on site`"
+
+        return Response(
+            confidence=10,
+            text=msg,
+            why=f"{message.author.name} asked me set status to `{status}`",
+        )
