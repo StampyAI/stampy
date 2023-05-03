@@ -25,7 +25,7 @@ class QuestionsSetter(Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.class_name = self.__class__.__name__
+        # self.class_name = self.__class__.__name__
         self.review_request_id2gdoc_links: dict[str, list[str]] = {}
 
     async def restore_review_msg_cache(
@@ -147,7 +147,7 @@ class QuestionsSetter(Module):
 
         msg = (
             f"Thanks, <@{message.author}>!\nI'll update "
-            + ("its" if len(questions) == 1 else f"their")
+            + ("its" if len(questions) == 1 else "their")
             + f" status to `{status}`"
         )
 
@@ -166,15 +166,17 @@ class QuestionsSetter(Module):
 
         n_updated = len(questions) - n_already_los
 
-        if n_updated == 1:
-            msg = "1 question updated."
+        if n_updated == 0:
+            msg = "I didn't update any questions."
+        elif n_updated == 1:
+            msg = "I updated 1 question."
         else:
-            msg = "{n_updated} questions updated."
+            msg = f"I updated {n_updated} questions."
 
         if n_already_los == 1:
-            msg += " 1 was already `Live on site`."
+            msg += " One question was already `Live on site`."
         elif n_already_los:
-            msg += f" {n_already_los} were already `Live on site` (only reviewers can modify questions that are `Live on site`.)"
+            msg += f" {n_already_los} questions were already `Live on site` (only reviewers can modify questions that are `Live on site`.)"
 
         return Response(
             confidence=10,
@@ -254,9 +256,9 @@ class QuestionsSetter(Module):
                 await message.channel.send(f"`\"{q['title']}\"` goes `Live on site`!")
 
         if n_new_los == 0:
-            msg = "No new questions `Live on site`, they were already there."
+            msg = "No new `Live on site` questions."
         elif n_new_los == 1:
-            msg = "1 more question `Live on site`!"
+            msg = "One more question `Live on site`!"
         else:
             msg = f"{n_new_los} more questions `Live on site`!"
         return Response(

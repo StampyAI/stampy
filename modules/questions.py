@@ -16,7 +16,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import random
 import re
-from textwrap import dedent
 from typing import Literal, Optional, TypedDict, Union, cast
 from discord import Thread
 
@@ -28,6 +27,7 @@ from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
+from utilities.questions_utils import parse_gdoc_links, parse_status
 from utilities.utilities import (
     fuzzy_contains,
     is_from_editor,
@@ -60,7 +60,6 @@ class Questions(Module):
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
         self.last_question_autoposted = False
-        self.class_name = "Questions"
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
@@ -108,34 +107,10 @@ class Questions(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
-        # these two options are before `.is_at_me`
-        # because they dont' require calling Stampy explicitly ("s, XYZ")
-        if cmd := self.parse_review_request(message):
-            return Response(
-                confidence=8,
-                callback=self.cb_set_status_by_review_request,
-                args=[cmd, message],
-                why=f"{message.author.name} asked for a review",
-            )
-        if cmd := self.parse_response_to_review_request(message):
-            return Response(
-                confidence=8,
-                callback=self.cb_set_status_by_approval_to_review_request,
-                args=[cmd, message],
-                why=f"{message.author.name} accepted the review",
-            )
 
-        # past that point, we require the message to be directed to Stampy explicitly
         if not (text := self.is_at_me(message)):
             return Response()
 
-        if cmd := self.parse_mark_question_request(message):
-            return Response(
-                confidence=8,
-                callback=self.cb_set_status_by_mark_question_request,
-                args=[cmd, message],
-                why=f"{message.author.name} marked these questions as `{cmd['status']}`",
-            )
         if cmd := self.parse_count_questions_command(text):
             return Response(
                 confidence=8,
@@ -157,296 +132,10 @@ class Questions(Module):
                 args=[cmd, message],
                 why="I was asked to post info about a message",
             )
-        if cmd := self.parse_set_question_status_command(text, self.last_question_id):
-            return Response(
-                confidence=8,
-                callback=self.cb_set_status_by_msg,
-                args=[cmd, message],
-                why=f"I was asked to set status of question with id `{cmd['id']}` to `{cmd['status']}`",
-            )
         return Response(
             why="Left QuestionManager without matching to any possible response"
         )
 
-    ##################
-    # Review request #
-    ##################
-
-    def parse_review_request(
-        self, message: ServiceMessage
-    ) -> Optional[SetQuestionStatusByAtCommand]:
-        """Is this message a review request with link do GDoc?
-        If it is, return `SetQuestionStatusByAtCommand`.
-        If it isn't, return `None`.
-        """
-        text = message.clean_content
-
-        # get new status for questions
-        if "@reviewer" in text:
-            new_status = "In review"
-        elif "@feedback-sketch" in text:
-            new_status = "Bulletpoint sketch"
-        elif "@feedback" in text:
-            new_status = "In progress"
-        else:  # if neither of these three roles is mentioned, this is not a review request
-            return
-
-        # try parsing gdoc links and questions that have these gdoc links
-        # if you fail, assume this is not a review request
-        if not (gdoc_links := parse_gdoc_links(text)):
-            return
-        if not (questions := coda_api.get_questions_by_gdoc_links(gdoc_links)):
-            return
-
-        # cache ids of these questions under the ID of this message
-        question_ids = [q["id"] for q in questions]
-        self.review_msg_id2question_ids[message.id] = question_ids
-
-        return {"ids": question_ids, "status": new_status}
-
-    async def cb_set_status_by_review_request(
-        self, cmd: SetQuestionStatusByAtCommand, message: ServiceMessage
-    ) -> Response:
-        """Change question status by posting GDoc link(s) for review
-        along with one of the mentions:
-        `@reviewer` or `@feedback` or `@feedback-sketch`
-        """
-        q_ids = cmd["ids"]
-        status = cmd["status"]
-        channel = message.channel
-
-        # pre-send message to confirm that you're going to update statuses
-        await channel.send(
-            f"Thanks, {message.author.name}! I'll update "
-            + ("their" if len(q_ids) > 1 else "its")
-            + f" status to `{status}`"
-        )
-        # map question IDs to QuestionRows
-        id2question = {q_id: coda_api.get_question_row(q_id) for q_id in q_ids}
-        # store IDs of questions that are already "Live on site" (unless message author is `@reviewer`)
-        already_los_q_ids = []
-
-        # update
-        for q_id, question in id2question.items():
-            if question["status"] == "Live on site" and not is_from_reviewer(message):
-                already_los_q_ids.append(q_id)
-            else:
-                coda_api.update_question_status(q_id, status)
-
-        # make message
-        # number of questions that were updated
-        n_updated = len(id2question) - len(already_los_q_ids)
-        if n_updated == 0:
-            response_text = "I didn't update any questions"
-        elif n_updated == 1:
-            response_text = "I updated 1 question"
-            # update last_question_id if only 1 question was updated
-            only_updated_question_id = next(
-                q_id for q_id in id2question if q_id not in already_los_q_ids
-            )
-            self.last_question_id = only_updated_question_id
-        else:
-            response_text = f"I updated {n_updated} questions"
-        response_text += f" to `{status}`"
-
-        # if message author is not `@reviewer` and they tried setting some questions to "Live on site"
-        # inform them that their statuses were not changed
-        if already_los_q_ids:
-            if len(already_los_q_ids) == 1:
-                response_text += (
-                    "\n\nOne question is already `Live on site`, so I didn't change it."
-                )
-            else:
-                response_text += (
-                    f"\n\n{len(already_los_q_ids)} questions are already `Live on site`, "
-                    "so I didn't change them."
-                )
-            # explain why
-            response_text += (
-                " You need to be a `@reviewer` to change the status of "
-                "questions that are already `Live on site`.\n\n"
-            )
-            # list these questions in the format: `- title (url)`
-            response_text += "\n".join(
-                f"- {id2question[q_id]['title']} ({id2question[q_id]['url']})"
-                for q_id in already_los_q_ids
-            )
-
-        return Response(
-            confidence=8,
-            text=response_text,
-            why=f"{message.author.name} asked for review",
-        )
-
-    ##################
-    # Review approval #
-    ##################
-
-    def parse_response_to_review_request(
-        self, message: ServiceMessage
-    ) -> Optional[SetQuestionStatusByApproval]:
-        """Is this message a response to review request?
-        If it is, return `SetQuestionStatusByApproval`.
-        If it isn't, return `None`.
-        """
-        text = message.clean_content
-        # if it doesn't contain any of these three, it is not review approval
-        if not any(s in text.lower() for s in ["approved", "accepted", "lgtm"]):
-            return
-
-        # ...same if it doesn't reply to any previous message
-        if (msg_ref := message.reference) is None:
-            return
-
-        # ...or if its reference doesn't have a `message_id`
-        # (which shouldn't happen in theory but just in case)
-        msg_ref_id = cast(Optional[int], getattr(msg_ref, "message_id", None))
-        if msg_ref_id is None:
-            return
-
-        # at this point, we know that this message replies to an approval request
-        # so if the ID is missing, we will need to recover it later in the callback
-
-        return {"ids": self.review_msg_id2question_ids.get(str(msg_ref_id), None)}
-
-    async def cb_set_status_by_approval_to_review_request(
-        self, cmd: SetQuestionStatusByApproval, message: ServiceMessage
-    ) -> Response:
-        """Approve questions posted as GDoc links for review (see above).
-        Their status is changed to "Live on site".
-        Works for `@reviewer`s only.
-        """
-        q_ids = cmd["ids"]
-        channel = message.channel
-
-        # if q_ids is None, this means that the message with review request precedes Stampy's last reboot,
-        # so the `review_msg_id2question_ids` cache is empty
-        # in that case, we restore the cache before proceeding
-        if q_ids is None:
-            if not isinstance(channel, DiscordChannel):
-                return Response()
-            await channel.send("Eh, I just got rebooted... gimme a moment plz")
-            await self.restore_review_msg_cache(channel)
-            msg_ref_id = str(getattr(message.reference, "message_id", None))
-            if msg_ref_id not in self.review_msg_id2question_ids:
-                return Response(
-                    confidence=8,
-                    text="But the message you replied wasn't among them",
-                    why=f"{message.author.name} approved a review request but I couldn't find it in the channel history",
-                )
-            q_ids = self.review_msg_id2question_ids[msg_ref_id]
-
-        # early exit if it's not from a `@reviewer`
-        if not is_from_reviewer(message):
-            return Response(
-                confidence=8,
-                text=f"You're not a `@reviewer` {message.author.name}",
-                why=(
-                    f"{message.author.name} tried accepting a review request "
-                    "but they're not a `@reviewer`"
-                ),
-            )
-
-        # pre-send message to confirm that you're going to update statuses
-        await channel.send(f"Approved by {message.author.name}!")
-
-        # update question statuses
-        for q_id in q_ids:
-            coda_api.update_question_status(q_id, "Live on site")
-
-        if len(q_ids) == 1:
-            response_text = "1 more question goes"
-            # if the review request contains only one question, we save its ID to the cache
-            self.last_question_id = q_ids[0]
-        else:
-            response_text = f"{len(q_ids)} more questions go"
-        response_text += " `Live on site`!"
-
-        return Response(
-            confidence=8,
-            text=response_text,
-            why=f"{message.author.name} approved the questions posted for review",
-        )
-
-    ###################
-    # Marking request #
-    ###################
-
-    def parse_mark_question_request(
-        self, message: ServiceMessage
-    ) -> Optional[SetQuestionStatusByMarking]:
-        """Does this message tell Stampy, to change the status of one or more questions to
-        "Marked for deletion" ("s, del <gdoc-link(s)>") or to "Duplicate" ("s, dup <gdoc-links>").
-        If it does, return `SetQuestionStatusByMarking`. If it doesn't, return `None`.
-        """
-        text = message.clean_content
-        if text.startswith("s, del"):
-            new_status = "Marked for deletion"
-        elif text.startswith("s, dup"):
-            new_status = "Duplicate"
-        else:
-            return
-
-        if not (gdoc_links := parse_gdoc_links(text)):
-            return
-        if not (questions := coda_api.get_questions_by_gdoc_links(gdoc_links)):
-            return
-
-        question_ids = [q["id"] for q in questions]
-
-        return {"ids": question_ids, "status": new_status}
-
-    async def cb_set_status_by_mark_question_request(
-        self, cmd: SetQuestionStatusByMarking, message: ServiceMessage
-    ) -> Response:
-        """Change status of one or more questions to "Marked for deletion" or "Duplicate"
-        upon a request of the following form:
-
-        `s, <del/dup> <gdoc-link(s)>`
-        """
-
-        q_ids = cmd["ids"]
-        status = cmd["status"]
-
-        # verb - what exactly this request is supposed to do (for messaging)
-        verb = "mark " + ("this question" if len(q_ids) == 1 else "these questions")
-        if status == "Marked for deletion":
-            verb += " for deletion"
-        else:  # status == "Duplicate"
-            verb += " as " + ("a duplicate" if len(q_ids) == 1 else "duplicates")
-
-        # if this message is not from `@editor`, explain why you can't execute the command
-        # (i.e. change questions' status)
-        if not is_from_editor(message):
-            return Response(
-                confidence=8,
-                text=f"You're not an `@editor`, {message.author.name}. You can't {verb}.",
-                why=f"{message.author.name} wanted to {verb} but they don't have necessary permissions.",
-            )
-
-        # send pre-message to the channel
-        channel = message.channel
-        await channel.send(f"Thanks, {message.author.name}, I'll {verb}")
-
-        # change statuses
-        for q_id in q_ids:
-            coda_api.update_question_status(q_id, status)
-
-        # if there was only one question, save it to the cache
-        if len(q_ids) == 1:
-            self.last_question_id = q_ids[0]
-
-        response_text = (
-            "I changed "
-            + ("its" if len(q_ids) == 1 else "their")
-            + f" status to `{status}`"
-        )
-
-        return Response(
-            confidence=8,
-            text=response_text,
-            why=f"{message.author.name} asked me to {verb}",
-        )
 
     ###################
     # Count questions #
@@ -744,87 +433,6 @@ class Questions(Module):
             return question_row["id"].startswith(cmd["query"])
         return False
 
-    ##############
-    # Set status #
-    ##############
-
-    def parse_set_question_status_command(
-        self, text: str, last_question_id: Optional[str]
-    ) -> Optional[SetQuestionStatusByMsgCommand]:
-        """Return `SetQuestionStatusByMsgCommand` if it asks Stampy to change status 
-        of a particular question. Return `None` otherwise.
-        """
-        # set status of last question
-        if "set it" in text or "set last" in text:
-            query_type = "last"
-            query_id = last_question_id
-        # set status of question with specified ID
-        elif "set i-" in text:
-            query_type = "id"
-            query_id = parse_id(text)
-            if query_id is None:
-                return
-        else:
-            return
-
-        status = parse_status(text, require_status_prefix=False)
-        if status is None:
-            return
-
-        return {"type": query_type, "id": query_id, "status": status}
-
-    async def cb_set_status_by_msg(
-        self, cmd: SetQuestionStatusByMsgCommand, message: ServiceMessage
-    ) -> Response:
-        """Set question status by telling Stampy
-
-        ```
-        s, set it to <some status>
-        # or
-        s, set <question id> to <some status>
-        ```
-        """
-        q_id = cmd["id"]
-        status = cmd["status"]
-
-        # early exit if asked for last question but there is no last question
-        if q_id is None:  # possible only when cmd is SetLastQuestionStatusCommand
-            mention = "it" if "it" in message.clean_content else "last"
-            return Response(
-                confidence=8,
-                text=f'What do you mean by "{mention}"?',
-                why=dedent(
-                    (
-                        f"{message.author.name} asked me to set last question's status "
-                        f"to `{status}` but I haven't posted any questions yet"
-                    )
-                ),
-            )
-
-        # get that question
-        question = coda_api.get_question_row(q_id)
-
-        # early exit if a non-`@reviewer` asked for changing status from or to "Live on site"
-        if response := unauthorized_set_los(status, question, message):
-            return response
-
-        coda_api.update_question_status(q_id, status)
-        self.last_question_id = q_id
-
-        response_text = "Ok!"
-        if cmd["type"] == "last":
-            response_text += f'\n"{question["title"]}" is now `{status}`.'
-        else:  # query.type == "id":
-            response_text += f" It's `{status}` now."
-
-        return Response(
-            confidence=8,
-            text=response_text,
-            why=(
-                f"{message.author.name} asked to update status of question "
-                f"with id `{q_id}` to `{status}`"
-            ),
-        )
 
     #########
     # Other #
@@ -900,38 +508,6 @@ class Questions(Module):
 ##########################
 
 
-class SetQuestionStatusByAtCommand(TypedDict):
-    """Set question status on review request
-    - Somebody mentions one of the roles (`@reviewer`, `@feedback`, `@feedback-sketch`)
-    and posts a link to GDoc, triggering Stampy to change status of that question
-    (to `In review`, `In progress`, `Bulletpoint sketch`, respectively)
-    """
-
-    ids: list[str]
-    status: Literal["In review", "Bulletpoint sketch", "In progress"]
-
-
-class SetQuestionStatusByApproval(TypedDict):
-    """Set question status on review approval
-    - A user with `@reviewer` role responds to a review request with a message containing
-    "accepted", "approved", or "lgtm" (case insensitive)
-    -> questions's status changes to "Live on site"
-    """
-
-    ids: Optional[list[str]]
-    """IDs of questions taken from the cache. Is `None` when the cache was found empty, 
-    e.g. when the question to which the reply was directed was sent before the last reboot.
-    """
-
-
-class SetQuestionStatusByMarking(TypedDict):
-    """Set question status on marking
-    - "s, del <gdoc-link(s)>" - question(s) get(s) status "Marked for deletion"
-    - "s, dup <gdoc-link(s)>" - question(s) get(s) status "Duplicate"
-    """
-
-    ids: list[str]
-    status: Literal["Marked for deletion", "Duplicate"]
 
 
 class PostQuestionsCommand(TypedDict):
@@ -978,18 +554,6 @@ class GetLastQuestionInfoCommand(TypedDict):
     query: Optional[str]
 
 
-class SetQuestionStatusByMsgCommand(TypedDict):
-    """Change status of a particular question."""
-
-    type: Literal["id", "last"]
-    """
-    - "id" - specified by unique row identifier in "All Answers" table
-    - "last" - ordered to get the last row that stampy interacted with
-    (changed or posted) in isolation from other rows
-    """
-    id: Optional[str]
-    status: QuestionStatus
-
 
 ##################
 # Util functions #
@@ -997,23 +561,6 @@ class SetQuestionStatusByMsgCommand(TypedDict):
 
 # Parsing
 
-
-def parse_status(
-    text: str, *, require_status_prefix: bool = True
-) -> Optional[QuestionStatus]:
-    re_status = re.compile(
-        r"{status_prefix}({status_vals})".format(
-            status_prefix=(r"status\s*" if require_status_prefix else ""),
-            status_vals="|".join(rf"\b{s}\b" for s in status_shorthands).replace(
-                " ", r"\s"
-            ),
-        ),
-        re.I | re.X,
-    )
-    if (match := re_status.search(text)) is None:
-        return None
-    val = match.group(1)
-    return status_shorthands[val.lower()]
 
 
 def parse_tag(text: str) -> Optional[str]:
@@ -1049,14 +596,6 @@ def parse_id(text: str) -> Optional[str]:
     # matches: "i-<letters-and-numbers-unitl-word-boundary>" (i.e. question id)
     if match := re.search(r"(i-[\w\d]+)\b", text, re.I):
         return match.group(1)
-
-
-def parse_gdoc_links(text: str) -> list[str]:
-    """Extract GDoc links from message content.
-    Returns `[]` if message doesn't contain any GDoc link.
-    """
-    return re.findall(r"https://docs\.google\.com/document/d/[\w_-]+", text)
-
 
 def shuffle_questions(questions: pd.DataFrame) -> pd.DataFrame:
     questions_inds = questions.index.tolist()

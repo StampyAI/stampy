@@ -16,7 +16,6 @@ def parse_status(
     re_status = re.compile(fr"{status_prefix}({status_pat})", re.I | re.X,)
     if not (match := re_status.search(text)):
         return
-    breakpoint()
     val = match.group(1)
     return status_shorthands[val.lower()]
 
