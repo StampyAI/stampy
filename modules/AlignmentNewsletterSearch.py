@@ -108,10 +108,6 @@ class AlignmentNewsletterSearch(Module):
     A module that searches the Alignment Newsletter database for relevant papers/articles etc.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.class_name = self.__class__.__name__
-
     def process_message(self, message: ServiceMessage) -> Response:
         """Process a message and return a response if this module can handle it."""
         text = self.is_at_me(message)

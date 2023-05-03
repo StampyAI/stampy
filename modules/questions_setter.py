@@ -25,7 +25,6 @@ class QuestionsSetter(Module):
 
     def __init__(self) -> None:
         super().__init__()
-        # self.class_name = self.__class__.__name__
         self.review_request_id2gdoc_links: dict[str, list[str]] = {}
 
     async def restore_review_msg_cache(

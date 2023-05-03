@@ -17,7 +17,6 @@ class StampyControls(Module):
 
     def __init__(self):
         super().__init__()
-        self.class_name = "StampyControls"
         self.routines = {
             "reboot": self.reboot,
             "resetinviteroles": self.resetinviteroles,
