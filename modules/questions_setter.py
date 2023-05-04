@@ -60,39 +60,19 @@ class QuestionsSetter(Module):
         """Process message"""
 
         # new_status and gdoc_links
-        if parsed := self.parse_review_request(message):
-            gdoc_links, status = parsed
-            return Response(
-                confidence=10,
-                callback=self.cb_review_request,
-                args=[gdoc_links, status, message],
-            )
-
-        if parsed := self.parse_question_approval(message):
-            return Response(
-                confidence=10,
-                callback=self.cb_question_approval,
-                args=[parsed, message],
-            )
+        if response := self.parse_review_request(message):
+            return response
+        if response := self.parse_question_approval(message):
+            return response
 
         if not self.is_at_me(message):
             return Response()
 
         # status, gdoc_links
-        if parsed := self.parse_mark_question_del_dup(message):
-            gdoc_links, status = parsed
-            return Response(
-                confidence=10,
-                callback=self.cb_set_question_status,
-                args=[gdoc_links, status, "mark", message],
-            )
-        if parsed := self.parse_set_question_status(message):
-            gdoc_links, status = parsed
-            return Response(
-                confidence=10,
-                callback=self.cb_set_question_status,
-                args=[gdoc_links, status, "set", message],
-            )
+        if response := self.parse_mark_question_del_dup(message):
+            return response
+        if response := self.parse_set_question_status(message):
+            return response
 
         if gdoc_links := parse_gdoc_links(message.clean_content):
             self.review_request_id2gdoc_links[str(message.id)] = gdoc_links
@@ -103,9 +83,7 @@ class QuestionsSetter(Module):
     #   Review request   #
     ######################
 
-    def parse_review_request(
-        self, message: ServiceMessage
-    ) -> Optional[tuple[GDocLinks, ReviewStatus]]:
+    def parse_review_request(self, message: ServiceMessage) -> Optional[Response]:
         """Is this message a review request with a link or many links do GDoc?
         If it is, return the list of parsed GDoc links and a new status
         to set these questions to.
@@ -129,7 +107,11 @@ class QuestionsSetter(Module):
             return
         self.review_request_id2gdoc_links[message.id] = gdoc_links
 
-        return gdoc_links, status
+        return Response(
+            confidence=10,
+            callback=self.cb_review_request,
+            args=[gdoc_links, status, message],
+        )
 
     async def cb_review_request(
         self, gdoc_links: list[str], status: ReviewStatus, message: ServiceMessage
@@ -187,9 +169,7 @@ class QuestionsSetter(Module):
     #   Question approval   #
     #########################
 
-    def parse_question_approval(
-        self, message: ServiceMessage
-    ) -> Optional[Union[GDocLinks, MsgRefId]]:
+    def parse_question_approval(self, message: ServiceMessage) -> Optional[Response]:
         """Is this a reviewer approving a question?
         If it is, return GDoc links to the questions being accepted
         or the ID of the original message that contains them.
@@ -199,7 +179,11 @@ class QuestionsSetter(Module):
             return
 
         if gdoc_links := parse_gdoc_links(text):
-            return gdoc_links
+            return Response(
+                confidence=10,
+                callback=self.cb_question_approval,
+                args=[gdoc_links, message],
+            )
 
         if not (msg_ref := message.reference):
             return
@@ -213,8 +197,14 @@ class QuestionsSetter(Module):
         msg_ref_id = str(msg_ref_id)
         if msg_ref_id in self.review_request_id2gdoc_links:
             gdoc_links = self.review_request_id2gdoc_links[msg_ref_id]
-            return gdoc_links
-        return msg_ref_id
+            response_arg = gdoc_links
+        else:
+            response_arg = msg_ref_id
+        return Response(
+            confidence=10,
+            callback=self.cb_question_approval,
+            args=[response_arg, message],
+        )
 
     async def cb_question_approval(
         self, parsed: Union[GDocLinks, MsgRefId], message: ServiceMessage
@@ -272,7 +262,7 @@ class QuestionsSetter(Module):
 
     def parse_mark_question_del_dup(
         self, message: ServiceMessage
-    ) -> Optional[tuple[GDocLinks, MarkingStatus]]:
+    ) -> Optional[Response]:
         """Somebody is tring to mark one or more questions for deletion
         or as duplicates.
         """
@@ -285,11 +275,13 @@ class QuestionsSetter(Module):
             return
         if not (gdoc_links := parse_gdoc_links(text)):
             return
-        return gdoc_links, status
+        return Response(
+            confidence=10,
+            callback=self.cb_set_question_status,
+            args=[gdoc_links, status, "mark", message],
+        )
 
-    def parse_set_question_status(
-        self, message: ServiceMessage
-    ) -> Optional[tuple[GDocLinks, QuestionStatus]]:
+    def parse_set_question_status(self, message: ServiceMessage) -> Optional[Response]:
         """Somebody is tring to change status of one or more questions."""
         text = message.clean_content
         if not ("set" in text.lower() or "status" in text.lower()):
@@ -298,7 +290,11 @@ class QuestionsSetter(Module):
             return
         if not (gdoc_links := parse_gdoc_links(text)):
             return
-        return gdoc_links, status
+        return Response(
+            confidence=10,
+            callback=self.cb_set_question_status,
+            args=[gdoc_links, status, "set", message],
+        )
 
     async def cb_set_question_status(
         self,
