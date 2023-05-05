@@ -16,6 +16,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import random
 import re
+from tkinter.messagebox import askquestion
 from typing import cast, Optional
 
 from discord import Thread
@@ -27,6 +28,12 @@ from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
 from utilities.questions_utils import (
+    QuestionGDocLinks,
+    QuestionId,
+    QuestionLast,
+    QuestionNext,
+    QuestionPostRequestData,
+    QuestionTitle,
     parse_question_filter_data,
     parse_question_request_data,
     QuestionFilterData,
@@ -121,19 +128,17 @@ class Questions(Module):
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
         # get df with questions
-        status = filter_data["status"]
-        tag = filter_data["tag"]
         questions_df = coda_api.questions_df
 
         # if status and/or tags were specified, filter accordingly
-        if status:
+        if filter_data.status:
             questions_df = questions_df.query("status == @status")
-        if tag:
-            questions_df = filter_on_tag(questions_df, tag)
+        if filter_data.tag:
+            questions_df = filter_on_tag(questions_df, filter_data.tag)
 
         # Make message and respond
         response_text = make_count_questions_response_text(
-            status, tag, len(questions_df)
+            filter_data.status, filter_data.tag, len(questions_df)
         )
 
         return Response(
@@ -153,9 +158,13 @@ class Questions(Module):
         optionally, filtering for status and/or tag and/or maximum number of questions (capped at 5).
         Returns `None` otherwise.
         """
-        if not re_next_question.search(text):
+        request_data: QuestionPostRequestData
+        if re_post_q.search(text):
+            request_data = parse_question_request_data(text)
+        elif re_next_question.search(text):
+            request_data = QuestionNext()
+        else:
             return
-        request_data = parse_question_request_data(text)
         return Response(
             confidence=8,
             callback=self.cb_post_questions,
@@ -275,11 +284,9 @@ class Questions(Module):
         Stampy interacted with
         - Return `None` otherwise
         """
-
-        # if text contains neither "get", nor "info", it's not a request for getting question info
-        if "info" not in text:  # TODO: better regex for this command
+        # if text contains neither "get", nor "info", it's not a request for getting question info #TODO: update
+        if not re_info_q.search(text):
             return
-
         request_data = parse_question_request_data(text)
         return Response(
             confidence=10,
@@ -302,7 +309,7 @@ class Questions(Module):
         for q in questions:
             text += f"\n{pformat_to_codeblock(cast(dict, q))}"
 
-        if "mention" in request_data:
+        if isinstance(request_data, QuestionLast):
             text += "\n\nquery: `last question`"
         else:
             text += f"\n\nquery: {pformat_to_codeblock(cast(dict, request_data))}"
@@ -326,7 +333,8 @@ class Questions(Module):
         # get questions df
         questions_df = coda_api.questions_df
 
-        if question_id := request_data.get("question_id"):
+        if isinstance(request_data, QuestionId):
+            question_id = request_data.id
             question = coda_api.get_question_row(question_id)
             if question is None:
                 return (
@@ -339,8 +347,8 @@ class Questions(Module):
                 "Here it is!",
                 f"{message.author.name} wanted me to get a question matching ID `{question_id}`",
             )
-        if gdoc_links := request_data.get("gdoc_links", []):
-            questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
+        if isinstance(request_data, QuestionGDocLinks):
+            questions = coda_api.get_questions_by_gdoc_links(request_data.links)
             if not questions:
                 return (
                     [],
@@ -352,24 +360,24 @@ class Questions(Module):
                 "Here it is:" if len(questions) == 1 else "Here they are:",
                 f"{message.author.name} wanted me to get these questions",
             )
-        if question_title := request_data.get("question_title"):
-            question = coda_api.get_question_by_title(question_title)
+        if isinstance(request_data, QuestionTitle):
+            question = coda_api.get_question_by_title(request_data.title)
             if question is None:
                 return (
                     [],
                     "I found no question matching that title",
-                    f'{message.author.name} asked for a question with title matching "{question_title}" but I found nothing ;_;',
+                    f'{message.author.name} asked for a question with title matching "{request_data.title}" but I found nothing ;_;',
                 )
             return (
                 [question],
                 f"Here it is:\n\"{question['title']}\"",
-                f'{message.author.name} wanted me to get a question with title matching "{question_title}"',
+                f'{message.author.name} wanted me to get a question with title matching "{request_data.title}"',
             )
-        if mention := request_data.get("mention"):
+        if isinstance(request_data, QuestionLast):
             if coda_api.last_question_id is None:
                 return (
                     [],
-                    f'What do you mean by "{mention}"?',
+                    f'What do you mean by "{request_data.mention}"?',
                     f"{message.author.name} asked me to post the last question but I don't know what they're talking about",
                 )
             question = cast(
@@ -378,6 +386,16 @@ class Questions(Module):
             text = f"The last question was:\n\"{question['title']}\""
             why = f"{message.author.name} wanted me to get the last question"
             return [question], text, why
+        if isinstance(request_data, QuestionNext):
+            question = cast(
+                QuestionRow,
+                get_least_recently_asked_on_discord(questions_df).iloc[0].to_dict(),
+            )
+            return (
+                [question],
+                "Here it is",
+                f"{message.author.name} asked me for next question",
+            )
 
         ######################
         # QuestionFilterData #
@@ -385,21 +403,21 @@ class Questions(Module):
 
         filter_data = cast(QuestionFilterData, request_data)
         # if status was specified, filter questions for that status
-        if status := filter_data["status"]:  # pylint:disable=unused-variable
+        if status := filter_data.status:  # pylint:disable=unused-variable
             questions_df = questions_df.query("status == @status")
         else:  # otherwise, filter for question that ain't Live on site
             questions_df = questions_df.query("status != 'Live on site'")
         # if tag was specified, filter for questions having that tag
-        questions_df = filter_on_tag(questions_df, filter_data["tag"])
+        questions_df = filter_on_tag(questions_df, filter_data.tag)
 
         # get all the oldest ones and shuffle them
         questions_df = get_least_recently_asked_on_discord(questions_df)
         questions_df = shuffle_df(questions_df)
 
-        limit = min(filter_data["limit"], 5)
+        limit = min(filter_data.limit, 5)
 
         # get specified number of questions (default [if unspecified] is 1)
-        if (limit := filter_data["limit"]) > 5:
+        if (limit := filter_data.limit) > 5:
             await message.channel.send(f"{limit} is to much. I'll give you up to 5.")
 
         n = min(limit, 5)
@@ -408,7 +426,7 @@ class Questions(Module):
             "last_asked_on_discord", ascending=False
         ).iloc[:n]
         status_and_tags_response_text = make_status_and_tags_response_text(
-            status, filter_data["tag"]
+            status, filter_data.tag
         )
         if questions_df.empty:
             return (
@@ -543,7 +561,7 @@ re_next_question = re.compile(
         [pP]ost
     )
     \s
-    ({question_query}),? # next question (please)
+    question,? # next question (please)
     (\splease)?\??
     |
     (
@@ -557,14 +575,11 @@ re_next_question = re.compile(
     |
         \sanother
     )
-    \s({question_query})?
+    \s(question)?
     (\sfor\sus)?\??
 )
 !?
-""".format(
-        question_query=PAT_QUESTION_QUERY
-    ),
-    re.I | re.X,
+"""
 )
 """Exemplary questions that trigger this regex:
 - Can you give us another question?
@@ -576,13 +591,20 @@ Suggested:
 - next N questions (with status X) (and tagged "Y" "Z")
 """
 
+
+re_post_q = re.compile(r"(?:get|post|next) questions?", re.I)
+re_info_q = re.compile(r"info|get info", re.I)
+re_count_q = re.compile(
+    r"(?:count|how many|number of|n of|#) (?:questions|answers)", re.I
+)
+
 re_count_questions = re.compile(
     r"""
 (   
-    (count\s+({question_query}))
+    (count\s+questions)
     |
     ( # how many questions are there left in ...
-    how\s+many\s+({question_query})\s*
+    how\s+many\s+questions)\s*
     (are\s*(there\s*)?)?
     (left\s*)?
     (in\s+(your\s+|the\s+)?queue\s*)?

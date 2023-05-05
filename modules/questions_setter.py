@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union, cast
+from typing import Literal, Optional, Union
 
 from api.coda import CodaAPI, QuestionStatus
 from api.utilities.coda_utils import QuestionRow
@@ -19,7 +19,7 @@ re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({status_pat})"
 
 all_tags = coda_api.get_all_tags()
 
-GDocLinks = list[str]
+QuestionGDocLinks = list[str]
 MsgRefId = str
 ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
@@ -79,6 +79,7 @@ class QuestionsSetter(Module):
         if response := self.parse_set_question_status(text, message):
             return response
 
+        # even if message is not `at me`, it may contain GDoc links
         if gdoc_links := parse_gdoc_links(text):
             self.review_request_id2gdoc_links[str(message.id)] = gdoc_links
 
@@ -191,10 +192,7 @@ class QuestionsSetter(Module):
 
         if not (msg_ref := message.reference):
             return
-
-        if not (
-            msg_ref_id := cast(Optional[int], getattr(msg_ref, "message_id", None))
-        ):
+        if not (msg_ref_id := getattr(msg_ref, "message_id", None)):
             return
 
         # if msg_ref_id is missing, then it will need to be retrieved
@@ -211,7 +209,7 @@ class QuestionsSetter(Module):
         )
 
     async def cb_question_approval(
-        self, parsed: Union[GDocLinks, MsgRefId], message: ServiceMessage
+        self, parsed: Union[QuestionGDocLinks, MsgRefId], message: ServiceMessage
     ) -> Response:
         """Obtain GDoc links to approved questions and change their status in coda
         to `Live on site`.

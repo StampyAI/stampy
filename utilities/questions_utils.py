@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import re
-from typing import cast, Literal, Optional, TypedDict, Union
+from typing import cast, Literal, Optional, Union
 
 from api.coda import CodaAPI, QuestionStatus
 
@@ -80,11 +81,11 @@ def parse_question_title(text: str) -> Optional[str]:
 
 
 def parse_question_filter_data(text: str) -> QuestionFilterData:
-    return {
-        "status": parse_status(text),
-        "tag": parse_tag(text),
-        "limit": parse_questions_limit(text),
-    }
+    return QuestionFilterData(
+        status=parse_status(text),
+        tag=parse_tag(text),
+        limit=parse_questions_limit(text),
+    )
 
 
 ###########################
@@ -94,38 +95,55 @@ def parse_question_filter_data(text: str) -> QuestionFilterData:
 
 def parse_question_request_data(text: str) -> QuestionRequestData:
     if match := re.search(r"(?:get|post) (last|it)", text, re.I):
-        return {"mention": cast(Literal["last", "it"], match.group(0))}
+        mention = cast(Literal["last", "it"], match.group(1))
+        return QuestionLast(mention)
     if question_id := parse_question_id(text):
-        return {"question_id": question_id}
+        return QuestionId(question_id)
     if gdoc_links := parse_gdoc_links(text):
-        return {"gdoc_links": gdoc_links}
+        return QuestionGDocLinks(gdoc_links)
     if question_title := parse_question_title(text):
-        return {"question_title": question_title}
+        return QuestionTitle(question_title)
     return parse_question_filter_data(text)
 
 
-class QuestionId(TypedDict):
-    question_id: str
+@dataclass(frozen=True)
+class QuestionId:
+    id: str
 
 
-class GDocLinks(TypedDict):
-    gdoc_links: list[str]
+@dataclass(frozen=True)
+class QuestionGDocLinks:
+    links: list[str]
 
 
-class QuestionTitle(TypedDict):
-    question_title: str
+@dataclass(frozen=True)
+class QuestionTitle:
+    title: str
 
 
-class QuestionLast(TypedDict):
+@dataclass(frozen=True)
+class QuestionLast:
     mention: Literal["last", "it"]
 
 
-class QuestionFilterData(TypedDict):
+@dataclass(frozen=True)
+class QuestionNext:
+    pass
+
+
+@dataclass(frozen=True)
+class QuestionFilterData:
     status: Optional[QuestionStatus]
     tag: Optional[str]
     limit: int
 
 
 QuestionRequestData = Union[
-    QuestionId, GDocLinks, QuestionTitle, QuestionLast, QuestionFilterData
+    QuestionId,
+    QuestionGDocLinks,
+    QuestionTitle,
+    QuestionLast,
+    QuestionFilterData,
 ]
+
+QuestionPostRequestData = Union[QuestionRequestData, QuestionNext]
