@@ -276,10 +276,11 @@ class QuestionsSetter(Module):
             return
         if not (gdoc_links := parse_gdoc_links(text)):
             return
+
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[gdoc_links, status, "mark", message],
+            args=[gdoc_links, status, text, message],
         )
 
     def parse_set_question_status(
@@ -292,16 +293,18 @@ class QuestionsSetter(Module):
             return
         if not (gdoc_links := parse_gdoc_links(text)):
             return
+
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[gdoc_links, status, "set", message],
+            args=[gdoc_links, status, text, message],
         )
 
     async def cb_set_question_status(
         self,
         gdoc_links: list[str],
         status: QuestionStatus,
+        text: str,
         message: ServiceMessage,
     ) -> Response:
         """Change status of one or more questions.
@@ -333,12 +336,27 @@ class QuestionsSetter(Module):
                 text="These GDoc links don't lead to any AI Safety Info questions.",
                 why=f"{message.author.name} gave me some GDoc links to change their status to `{status}` but I couldn't find those links in our database",
             )
-
-        msg = (
-            f"Ok, <@{message.author}>, setting status of "
-            + ("1 question" if len(questions) == 1 else f"{len(questions)} questions")
-            + f" to `{status}`"
-        )
+        if text[:3] in ("del", "dup"):
+            msg = f"Ok, <@{message.author}>, I'll mark " + (
+                "it" if len(gdoc_links) == 1 else "them"
+            )
+            if status == "Marked for deletion":
+                msg += " for deletion."
+            else:
+                if len(gdoc_links) == 1:
+                    msg += " as a duplicate."
+                else:
+                    msg += " as duplicates."
+        else:
+            msg = (
+                f"Ok, <@{message.author}>, setting status of "
+                + (
+                    "1 question"
+                    if len(questions) == 1
+                    else f"{len(questions)} questions"
+                )
+                + f" to `{status}`"
+            )
         await message.channel.send(msg)
 
         n_already_los = 0
@@ -357,7 +375,11 @@ class QuestionsSetter(Module):
 
         n_changed_status = len(questions) - n_already_los
         # TODO: nicer handling of different numberings
-        msg = f"Changed status of {n_changed_status} questions to `{status}`."
+        msg = (
+            f"Changed status of {n_changed_status} question"
+            + ("s" if len(questions) > 1 else "")
+            + f" to `{status}`."
+        )
         if n_already_los:
             msg += f" {n_already_los} were already `Live on site`"
 
