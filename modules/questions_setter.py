@@ -119,12 +119,11 @@ class QuestionsSetter(Module):
     ) -> Response:
         """Change status of questions for which an editor requested review or feedback."""
         questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
-        n_gdoc_links = len(gdoc_links)
         if not questions:
             return Response(
                 confidence=10,
-                text=f"None of these {n_gdoc_links} links lead to AI Safety Info questions.",
-                why=f"{message.author.name} sent some GDoc links but I couldn't find them in the database. Maybe they're `Marked for deletion`/`Duplicate`s/`Withdrawn`?",
+                text="These links don't seem to lead to any AI Safety Info questions",
+                why="I queried my database for these GDoc links and none matched any question",
             )
 
         msg = (
@@ -213,6 +212,13 @@ class QuestionsSetter(Module):
         """Obtain GDoc links to approved questions and change their status in coda
         to `Live on site`.
         """
+        if not is_from_reviewer(message):
+            return Response(
+                confidence=10,
+                text=f"You're not a reviewer, <@{message.author}> -_-",
+                why="Only, reviewers can accept questions",
+            )
+
         if isinstance(parsed, list):
             gdoc_links = parsed
         else:
@@ -224,11 +230,10 @@ class QuestionsSetter(Module):
         questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
 
         if not questions:
-            return Response(confidence=10, text="Nothing found ")  # TODO: elaborate
-
-        if not is_from_reviewer(message):
             return Response(
-                confidence=10, text=f"You're not a reviewer, <@{message.author}> -_-"
+                confidence=10,
+                text="These links don't seem to lead to any AI Safety Info questions",
+                why="I queried my database for these GDoc links and none matched any question",
             )
 
         await message.channel.send(f"Approved by <@{message.author}>!")
@@ -311,15 +316,11 @@ class QuestionsSetter(Module):
         Only bot devs, editors, and reviewers can do that.
         Additionally, only reviewers can change status to and from `Live on site`.
         """
-        if not (
-            is_from_editor(message)
-            or is_from_reviewer(message)
-            or is_bot_dev(message.author)
-        ):
+        if lacks_permissions(message):
             return Response(
                 confidence=10,
-                text=f"You don't have permissions to change question status, <@{message.author}>",
-                why=f"{message.author.name} tried changing questions status, but I don't trust them.",
+                text=f"You don't have permissions to changing question status, <@{message.author}>",
+                why=f"{message.author.name} tried changing question status, but I don't trust them.",
             )
 
         if status == "Live on site" and not is_from_reviewer(message):
@@ -380,14 +381,24 @@ class QuestionsSetter(Module):
             + ("s" if len(questions) > 1 else "")
             + f" to `{status}`."
         )
-        if n_already_los:
-            msg += f" {n_already_los} were already `Live on site`"
+        if n_already_los == 1:
+            msg += " one was already `Live on site`."
+        elif n_already_los > 1:
+            msg += f" {n_already_los} were already `Live on site`."
 
         return Response(
             confidence=10,
             text=msg,
-            why=f"{message.author.name} asked me set status to `{status}`",
+            why=f"{message.author.name} asked me to change status to `{status}`.",
         )
+
+
+def lacks_permissions(message: ServiceMessage) -> bool:
+    return not (
+        is_from_editor(message)
+        or is_from_reviewer(message)
+        or is_bot_dev(message.author)
+    )
 
 
 # TODO: reuse it here
@@ -423,7 +434,7 @@ def unauthorized_set_los(
 
 NOT_FROM_REVIEWER_TO_LIVE_ON_SITE = """\
 Sorry, {author_name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
-Only `@reviewer`s can do thats."""
+Only `@reviewer`s can do that."""
 
 NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE = """\
 Sorry, {author_name}. You can't set status  to `{query_status}` because at least one of them is already `Live on site`. 

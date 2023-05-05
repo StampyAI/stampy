@@ -8,6 +8,12 @@ Whenever you add a new feature to Stampy or meaningfully modify some feature in 
 
 ## QuestionsSetter
 
+**Permissions:**
+
+- All server members can contribute to AI Safety Questions and [ask for feedback](#review-request).
+- Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands ([1](#marking-questions-for-deletion-or-as-duplicates) [2](#setting-question-status)).
+- Only `@reviewers` can change status of questions to and from  `Live on site` (including [accepting](#review-acceptance) [review requests](#review-request)).
+
 ### Review request
 
 On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@reviewer`s to give them feedback or review their changes to AI Safety Info questions. You just put one or more links to appropriate GDocs and mention one of: `@reviewer`, `@feedback`, or `@feedback-sketch`. Stampy will spot this and update their statuses in the [coda table with answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a) appropriately.
@@ -16,7 +22,7 @@ On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@revie
 - `@feedback` -> `In progress`
 - `@feedback-sketch` -> `Bulletpoint sketch`
 
-![](images/Screenshot%20from%202023-05-05%2011-46-41.png)
+![](images/command-review-request.png)
 
 Some remarks:
 
@@ -34,4 +40,13 @@ The keywords are (case-insensitive):
 - lgtm
   - stands for "looks good to me"
 
-![](images/Screenshot%20from%202023-05-05%2012-03-28.png)
+![](images/command-review-acceptance.png)
+
+### Marking questions for deletion or as duplicates
+
+Use `s, <del/dup>` (or `stampy, <del/dup>`) to change status of questions to `Marked for deletion` or `Duplicate`
+
+![](images/command-del-dup.png)
+
+### Setting question status
+
