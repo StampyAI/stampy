@@ -18,7 +18,7 @@ from api.utilities.coda_utils import (
 )
 from utilities import is_in_testing_mode
 from utilities.discordutils import DiscordUser
-from utilities.utilities import get_user_handle
+from utilities.utilities import fuzzy_contains, get_user_handle
 
 log = get_logger()
 
@@ -44,8 +44,7 @@ class CodaAPI:
     # Constants
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
     DOC_ID = (
-        "bmMz5rbOHi" #  "ah62XEPvpG" 
-        if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
+        "bmMz5rbOHi" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
     )
     ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
@@ -61,9 +60,10 @@ class CodaAPI:
             raise Exception(
                 "This class is a singleton! Access it using `Utilities.get_instance()`"
             )
-        self.__instance = self
+        self.__instance = self  # pylint:disable=unused-private-member
         self.class_name = "Coda API"
         self.log = get_logger()
+        self.last_question_id: Optional[str] = None
 
         if is_in_testing_mode():
             return
@@ -143,8 +143,10 @@ class CodaAPI:
     #   Questions   #
     #################
 
-    def get_question_row(self, question_id: str) -> QuestionRow:
+    def get_question_row(self, question_id: str) -> Optional[QuestionRow]:
         """Get QuestionRow by its ID"""
+        if question_id not in self.questions_df.index.tolist():
+            return
         return cast(QuestionRow, self.questions_df.loc[question_id].to_dict())
 
     def get_questions_by_gdoc_links(self, urls: list[str]) -> list[QuestionRow]:
@@ -162,6 +164,24 @@ class CodaAPI:
             return []
         return cast(list[QuestionRow], questions_df_queried.to_dict(orient="records"))
 
+    def get_question_by_title(self, searched_title: str) -> Optional[QuestionRow]:
+        questions_df = self.questions_df
+        questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
+            questions_df["title"].map(  # pylint:disable=unsubscriptable-object
+                lambda title: fuzzy_contains(title, searched_title)
+            )
+        ]
+        if questions_df_queried.empty:
+            return
+        if len(questions_df_queried) > 1:
+            self.log.warning(
+                self.class_name,
+                msg=f"Found {len(questions_df_queried)} matching title {searched_title}. Returning first.",
+                results=questions_df_queried["title"].tolist(),
+            )
+        question = questions_df_queried["title"][0]
+        return question
+
     def update_question_status(
         self,
         question_id: str,
@@ -173,6 +193,8 @@ class CodaAPI:
         """
         # get row
         row = self.get_question_row(question_id)
+        if row is None:
+            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             row["row"], make_updated_cells({"Status": status})
@@ -188,6 +210,8 @@ class CodaAPI:
         Also, update local cache accordingly"""
         # get row
         row = self.get_question_row(question_id)
+        if row is None:
+            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             row["row"],
@@ -241,10 +265,12 @@ class CodaAPI:
         status_table = self.doc.get_table(self.STATUSES_GRID_ID)
         status_vals = {r["Status"].value for r in status_table.rows()}
         if status_vals != (code_status_vals := set(get_args(QuestionStatus))):
-            msg = dedent(f"""\
+            msg = dedent(
+                f"""\
                 Status values defined in api/coda.py file don't match the values found in coda table:
                 values in code: {code_status_vals}
-                values in coda table: {status_vals}""")
+                values in coda table: {status_vals}"""
+            )
             log.error(self.class_name, msg=msg)
             raise AssertionError(msg)
         return sorted(status_vals)

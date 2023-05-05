@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal, Optional, Union, cast
 
 from api.coda import CodaAPI, QuestionStatus
+from api.utilities.coda_utils import QuestionRow
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.questions_utils import parse_gdoc_links, parse_status
@@ -65,16 +66,16 @@ class QuestionsSetter(Module):
         if response := self.parse_question_approval(message):
             return response
 
-        if not self.is_at_me(message):
+        if not (text := self.is_at_me(message)):
             return Response()
 
         # status, gdoc_links
-        if response := self.parse_mark_question_del_dup(message):
+        if response := self.parse_mark_question_del_dup(text, message):
             return response
-        if response := self.parse_set_question_status(message):
+        if response := self.parse_set_question_status(text, message):
             return response
 
-        if gdoc_links := parse_gdoc_links(message.clean_content):
+        if gdoc_links := parse_gdoc_links(text):
             self.review_request_id2gdoc_links[str(message.id)] = gdoc_links
 
         return Response()
@@ -261,15 +262,15 @@ class QuestionsSetter(Module):
     ###############################
 
     def parse_mark_question_del_dup(
-        self, message: ServiceMessage
+        self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         """Somebody is tring to mark one or more questions for deletion
         or as duplicates.
         """
-        text = message.clean_content
-        if text.startswith("s, del"):
+        # TODO: check if this works with text from is_at_me
+        if text.startswith("del"):
             status = "Marked for deletion"
-        elif text.startswith("s, dup"):
+        elif text.startswith("dup"):
             status = "Duplicate"
         else:
             return
@@ -281,9 +282,10 @@ class QuestionsSetter(Module):
             args=[gdoc_links, status, "mark", message],
         )
 
-    def parse_set_question_status(self, message: ServiceMessage) -> Optional[Response]:
+    def parse_set_question_status(
+        self, text: str, message: ServiceMessage
+    ) -> Optional[Response]:
         """Somebody is tring to change status of one or more questions."""
-        text = message.clean_content
         if not ("set" in text.lower() or "status" in text.lower()):
             return
         if not (status := parse_status(text, require_status_prefix=False)):
@@ -364,3 +366,43 @@ class QuestionsSetter(Module):
             text=msg,
             why=f"{message.author.name} asked me set status to `{status}`",
         )
+
+
+# TODO: reuse it here
+def unauthorized_set_los(
+    status: QuestionStatus,
+    question: QuestionRow,
+    message: ServiceMessage,
+) -> Optional[Response]:
+    """Somebody tried set questions status "Live on site" but they're not a reviewer"""
+    if "Live on site" not in (
+        status,
+        question["status"],
+    ) or is_from_reviewer(message):
+        return
+    if status == "Live on site":
+        response_msg = NOT_FROM_REVIEWER_TO_LIVE_ON_SITE.format(
+            author_name=message.author.name
+        )
+        why = (
+            f"{message.author.name} wanted to change question status "
+            "to `Live on site` but they're not a @reviewer"
+        )
+    else:  # "Live on site" in question_statuses:
+        response_msg = NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE.format(
+            author_name=message.author.name, query_status=status
+        )
+        why = (
+            f"{message.author.name} wanted to change status from "
+            "`Live on site` but they're not a @reviewer"
+        )
+    return Response(confidence=8, text=response_msg, why=why)
+
+
+NOT_FROM_REVIEWER_TO_LIVE_ON_SITE = """\
+Sorry, {author_name}. You can't set question status to `Live on site` because you are not a `@reviewer`. 
+Only `@reviewer`s can do thats."""
+
+NOT_FROM_REVIEWER_FROM_LIVE_ON_SITE = """\
+Sorry, {author_name}. You can't set status  to `{query_status}` because at least one of them is already `Live on site`. 
+Only `@reviewer`s can change status of questions that are already `Live on site`."""

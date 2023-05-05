@@ -13,6 +13,7 @@ from threading import Event
 from time import time
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
 
+import pandas as pd
 import psutil
 import discord
 from git.repo import Repo
@@ -100,8 +101,8 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
-        
-        # testing 
+
+        # testing
         self.message_prefix: str = ""
 
     @staticmethod
@@ -441,7 +442,10 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
-def limit_text(text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")) -> tuple[bool, str]:
+
+def limit_text(
+    text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")
+) -> tuple[bool, str]:
     text_length = len(text)
     failLength = text_length - limit
 
@@ -449,6 +453,13 @@ def limit_text(text, limit, formatFailMessage=(lambda x: f"Cut {x} characters fr
         return True, formatFailMessage(failLength) + text[0:limit]
     else:
         return False, text
+
+
+def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
+    inds = df.index.tolist()
+    shuffled_inds = random.sample(inds, len(inds))
+    return df.loc[shuffled_inds]
+
 
 class UtilsTests:
     def test_split_message_for_discord(self):
