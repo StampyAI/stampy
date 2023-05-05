@@ -1,18 +1,22 @@
 from __future__ import annotations
 
+import re
 from typing import Literal, Optional, Union, cast
 
 from api.coda import CodaAPI, QuestionStatus
 from api.utilities.coda_utils import QuestionRow
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.questions_utils import parse_gdoc_links, parse_status
+from utilities.questions_utils import parse_gdoc_links
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
 
 
 coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()
+status_pat = "|".join(status_shorthands)
+re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({status_pat})", re.I)
+
 all_tags = coda_api.get_all_tags()
 
 GDocLinks = list[str]
@@ -197,13 +201,13 @@ class QuestionsSetter(Module):
         msg_ref_id = str(msg_ref_id)
         if msg_ref_id in self.review_request_id2gdoc_links:
             gdoc_links = self.review_request_id2gdoc_links[msg_ref_id]
-            response_arg = gdoc_links
+            parsed = gdoc_links
         else:
-            response_arg = msg_ref_id
+            parsed = msg_ref_id
         return Response(
             confidence=10,
             callback=self.cb_question_approval,
-            args=[response_arg, message],
+            args=[parsed, message],
         )
 
     async def cb_question_approval(
@@ -272,7 +276,6 @@ class QuestionsSetter(Module):
         """Somebody is tring to mark one or more questions for deletion
         or as duplicates.
         """
-        # TODO: check if this works with text from is_at_me
         if text.startswith("del"):
             status = "Marked for deletion"
         elif text.startswith("dup"):
@@ -292,10 +295,9 @@ class QuestionsSetter(Module):
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         """Somebody is tring to change status of one or more questions."""
-        if not ("set" in text.lower() or "status" in text.lower()):
+        if not (match := re_status.search(text)):
             return
-        if not (status := parse_status(text, require_status_prefix=False)):
-            return
+        status = status_shorthands[match.group(1).lower()]
         if not (gdoc_links := parse_gdoc_links(text)):
             return
 
@@ -382,7 +384,7 @@ class QuestionsSetter(Module):
             + f" to `{status}`."
         )
         if n_already_los == 1:
-            msg += " one was already `Live on site`."
+            msg += " One was already `Live on site`."
         elif n_already_los > 1:
             msg += f" {n_already_los} were already `Live on site`."
 

@@ -50,3 +50,8 @@ Use `s, <del/dup>` (or `stampy, <del/dup>`) to change status of questions to `Ma
 
 ### Setting question status
 
+Question status can be changed more flexibly, using the command: `<set/change> <status/to/status to> <status>`, followed by appropriate GDoc links.
+
+Status name is case-insensitive: there is no difference between `Live on site`, `live on site`, or `LIVE ON SITE`. You can also use acronym aliases, e.g., `los` for `Live on site` or `bs` for `Bulletpoint sketch`.
+
+![](images/command-set-status.png)
