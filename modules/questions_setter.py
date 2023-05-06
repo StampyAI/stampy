@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union, cast
+from typing import Literal, Optional, Union
 
 from api.coda import CodaAPI, QuestionStatus
 from api.utilities.coda_utils import QuestionRow
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.questions_utils import QuestionRequestData, parse_gdoc_links
+from utilities.questions_utils import (
+    QuestionSetData,
+    parse_gdoc_links,
+    parse_question_request_data,
+)
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
 
@@ -280,13 +284,13 @@ class QuestionsSetter(Module):
             status = "Duplicate"
         else:
             return
-        if not (gdoc_links := parse_gdoc_links(text)):
+        if not (set_data := parse_question_request_data(text, parse_filter_data=False)):
             return
 
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[gdoc_links, status, text, message],
+            args=[set_data, status, text, message],
         )
 
     def parse_set_question_status(
@@ -296,18 +300,18 @@ class QuestionsSetter(Module):
         if not (match := re_status.search(text)):
             return
         status = status_shorthands[match.group(1).lower()]
-        if not (gdoc_links := parse_gdoc_links(text)):
+        if not (set_data := parse_question_request_data(text, parse_filter_data=False)):
             return
 
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[gdoc_links, status, text, message],
+            args=[set_data, status, text, message],
         )
 
     async def cb_set_question_status(
         self,
-        request_data: QuestionRequestData,
+        set_data: QuestionSetData,
         status: QuestionStatus,
         text: str,
         message: ServiceMessage,
@@ -329,25 +333,26 @@ class QuestionsSetter(Module):
                 text=f"You're not a reviewer, <@{message.author}>. Only reviewers can change status of questions to `Live on site`",
                 why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
             )
-            
-        #TODO: Maybe this should be processed inside coda api???
 
-        questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
-        if not questions:
-            return Response(
-                confidence=10,
-                text="These GDoc links don't lead to any AI Safety Info questions.",
-                why=f"{message.author.name} gave me some GDoc links to change their status to `{status}` but I couldn't find those links in our database",
+        # TODO: Maybe this should be processed inside coda api???
+
+        questions = await coda_api.query_for_questions(set_data, message)
+        if (
+            not questions
+        ):  # TODO: generalize text and why coming from this method such that they are appropriate for both getting and setting
+            response_text, why = await coda_api.get_questions_text_and_why(
+                questions, set_data, message
             )
+            return Response(confidence=10, text=response_text, why=why)
+
         if text[:3] in ("del", "dup"):
-            gdoc_links = cast(QuestionGDocLinks, request_data).
             msg = f"Ok, <@{message.author}>, I'll mark " + (
-                "it" if len(gdoc_links) == 1 else "them"
+                "it" if len(questions) == 1 else "them"
             )
             if status == "Marked for deletion":
                 msg += " for deletion."
             else:
-                if len(gdoc_links) == 1:
+                if len(questions) == 1:
                     msg += " as a duplicate."
                 else:
                     msg += " as duplicates."

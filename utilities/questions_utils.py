@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import NamedTuple, cast, Literal, Optional, Union
+from typing import cast, overload, Literal, NamedTuple, Optional, Union
 
 from api.coda import CodaAPI, QuestionStatus
 
@@ -80,8 +80,8 @@ def parse_question_title(text: str) -> Optional[str]:
     return question_title
 
 
-def parse_question_filter_data(text: str) -> QuestionFilterDataNT:
-    return QuestionFilterDataNT(
+def parse_question_filter_data(text: str) -> QuestionFilterData:
+    return QuestionFilterData(
         status=parse_status(text),
         tag=parse_tag(text),
         limit=parse_questions_limit(text),
@@ -93,7 +93,23 @@ def parse_question_filter_data(text: str) -> QuestionFilterDataNT:
 ###########################
 
 
+@overload
 def parse_question_request_data(text: str) -> QuestionRequestData:
+    ...
+
+
+@overload
+def parse_question_request_data(
+    text: str, *, parse_filter_data: Literal[False]
+) -> Optional[QuestionSetData]:
+    ...
+
+
+def parse_question_request_data(
+    text: str,
+    *,
+    parse_filter_data: bool = True,  # TODO: this flag also requires renaming
+) -> QuestionRequestData | Optional[QuestionSetData]:
     # QuestionLast
     if match := re.search(r"(?:get|post) (last|it)", text, re.I):
         mention = cast(Literal["last", "it"], match.group(1))
@@ -107,31 +123,44 @@ def parse_question_request_data(text: str) -> QuestionRequestData:
     # QuestionTitle
     if question_title := parse_question_title(text):
         return "Title", question_title
-    return "FilterData", parse_question_filter_data(text)
+    if parse_filter_data:
+        return "FilterData", parse_question_filter_data(text)
 
 
-QuestionId = tuple[Literal["Id"], str]
-QuestionGDocLinks = tuple[Literal["GDocLinks"], list[str]]
-QuestionTitle = tuple[Literal["Title"], str]
-QuestionLast = tuple[Literal["Last"], Literal["last", "it"]]
-QuestionNext = tuple[Literal["Next"],]
-
-
-class QuestionFilterDataNT(NamedTuple):
+class QuestionFilterData(NamedTuple):
     status: Optional[QuestionStatus]
     tag: Optional[str]
     limit: int
 
 
-QuestionFilterData = tuple[Literal["FilterData"], QuestionFilterDataNT]
+# TODO: These must be renamed
 
-
-QuestionRequestData = Union[
-    QuestionId,
-    QuestionGDocLinks,
-    QuestionTitle,
-    QuestionLast,
-    QuestionFilterData,
+QuestionSetData = Union[
+    tuple[Literal["Id"], str],
+    tuple[Literal["GDocLinks"], list[str]],
+    tuple[Literal["Title"], str],
+    tuple[Literal["Last"], Literal["last", "it"]],
 ]
 
-QuestionPostRequestData = Union[QuestionRequestData, QuestionNext]
+QuestionRequestData = Union[
+    QuestionSetData,
+    tuple[Literal["FilterData"], QuestionFilterData],
+]
+
+####################
+#   Text and Why   #
+####################
+
+
+def make_status_and_tag_response_text(
+    status: Optional[QuestionStatus],
+    tag: Optional[str],
+) -> str:
+    """Print info about query's status and/or tags inline"""
+    if status and tag:
+        return f" with status `{status}` and tagged as `{tag}`"
+    if status:
+        return f" with status `{status}`"
+    if tag:
+        return f" tagged as `{tag}`"
+    return ""
