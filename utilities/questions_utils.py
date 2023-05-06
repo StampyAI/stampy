@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
-from typing import cast, Literal, Optional, Union
+from typing import NamedTuple, cast, Literal, Optional, Union
 
 from api.coda import CodaAPI, QuestionStatus
 
@@ -10,11 +9,12 @@ coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()
 all_tags = coda_api.get_all_tags()
 
-status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands).replace(" ", r"\s")
 
 ###################################################
 #   Parsing query information from message text   #
 ###################################################
+
+status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands).replace(" ", r"\s")
 
 
 def parse_status(
@@ -80,8 +80,8 @@ def parse_question_title(text: str) -> Optional[str]:
     return question_title
 
 
-def parse_question_filter_data(text: str) -> QuestionFilterData:
-    return QuestionFilterData(
+def parse_question_filter_data(text: str) -> QuestionFilterDataNT:
+    return QuestionFilterDataNT(
         status=parse_status(text),
         tag=parse_tag(text),
         limit=parse_questions_limit(text),
@@ -94,48 +94,36 @@ def parse_question_filter_data(text: str) -> QuestionFilterData:
 
 
 def parse_question_request_data(text: str) -> QuestionRequestData:
+    # QuestionLast
     if match := re.search(r"(?:get|post) (last|it)", text, re.I):
         mention = cast(Literal["last", "it"], match.group(1))
-        return QuestionLast(mention)
+        return "Last", mention
+    # QuestionId
     if question_id := parse_question_id(text):
-        return QuestionId(question_id)
+        return "Id", question_id
+    # QuestionGDocLinks
     if gdoc_links := parse_gdoc_links(text):
-        return QuestionGDocLinks(gdoc_links)
+        return "GDocLinks", gdoc_links
+    # QuestionTitle
     if question_title := parse_question_title(text):
-        return QuestionTitle(question_title)
-    return parse_question_filter_data(text)
+        return "Title", question_title
+    return "FilterData", parse_question_filter_data(text)
 
 
-@dataclass(frozen=True)
-class QuestionId:
-    id: str
+QuestionId = tuple[Literal["Id"], str]
+QuestionGDocLinks = tuple[Literal["GDocLinks"], list[str]]
+QuestionTitle = tuple[Literal["Title"], str]
+QuestionLast = tuple[Literal["Last"], Literal["last", "it"]]
+QuestionNext = tuple[Literal["Next"],]
 
 
-@dataclass(frozen=True)
-class QuestionGDocLinks:
-    links: list[str]
-
-
-@dataclass(frozen=True)
-class QuestionTitle:
-    title: str
-
-
-@dataclass(frozen=True)
-class QuestionLast:
-    mention: Literal["last", "it"]
-
-
-@dataclass(frozen=True)
-class QuestionNext:
-    pass
-
-
-@dataclass(frozen=True)
-class QuestionFilterData:
+class QuestionFilterDataNT(NamedTuple):
     status: Optional[QuestionStatus]
     tag: Optional[str]
     limit: int
+
+
+QuestionFilterData = tuple[Literal["FilterData"], QuestionFilterDataNT]
 
 
 QuestionRequestData = Union[

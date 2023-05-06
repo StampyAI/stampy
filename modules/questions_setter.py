@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, cast
 
 from api.coda import CodaAPI, QuestionStatus
 from api.utilities.coda_utils import QuestionRow
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.questions_utils import parse_gdoc_links
+from utilities.questions_utils import QuestionRequestData, parse_gdoc_links
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
 
@@ -19,7 +19,7 @@ re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({status_pat})"
 
 all_tags = coda_api.get_all_tags()
 
-QuestionGDocLinks = list[str]
+GDocLinks = list[str]
 MsgRefId = str
 ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
@@ -209,7 +209,7 @@ class QuestionsSetter(Module):
         )
 
     async def cb_question_approval(
-        self, parsed: Union[QuestionGDocLinks, MsgRefId], message: ServiceMessage
+        self, parsed: Union[GDocLinks, MsgRefId], message: ServiceMessage
     ) -> Response:
         """Obtain GDoc links to approved questions and change their status in coda
         to `Live on site`.
@@ -307,7 +307,7 @@ class QuestionsSetter(Module):
 
     async def cb_set_question_status(
         self,
-        gdoc_links: list[str],
+        request_data: QuestionRequestData,
         status: QuestionStatus,
         text: str,
         message: ServiceMessage,
@@ -329,6 +329,8 @@ class QuestionsSetter(Module):
                 text=f"You're not a reviewer, <@{message.author}>. Only reviewers can change status of questions to `Live on site`",
                 why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
             )
+            
+        #TODO: Maybe this should be processed inside coda api???
 
         questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
         if not questions:
@@ -338,6 +340,7 @@ class QuestionsSetter(Module):
                 why=f"{message.author.name} gave me some GDoc links to change their status to `{status}` but I couldn't find those links in our database",
             )
         if text[:3] in ("del", "dup"):
+            gdoc_links = cast(QuestionGDocLinks, request_data).
             msg = f"Ok, <@{message.author}>, I'll mark " + (
                 "it" if len(gdoc_links) == 1 else "them"
             )
@@ -402,6 +405,7 @@ def lacks_permissions(message: ServiceMessage) -> bool:
 
 
 # TODO: reuse it here
+# TODO: this should be only FROM LOS
 def unauthorized_set_los(
     status: QuestionStatus,
     question: QuestionRow,
