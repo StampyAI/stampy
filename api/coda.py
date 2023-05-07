@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import os
 from textwrap import dedent
-from typing import cast, get_args, Optional, Literal
+from typing import cast, get_args, Optional, Literal, TYPE_CHECKING
 
 from codaio import Coda, Document, Row
 import pandas as pd
@@ -18,12 +18,14 @@ from api.utilities.coda_utils import (
 )
 from utilities import is_in_testing_mode
 from utilities.discordutils import DiscordUser
-from utilities.questions_utils import (
-    QuestionRequestData,
-    make_status_and_tag_response_text,
-)
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
+
+if TYPE_CHECKING:
+    from utilities.questions_utils import (
+        QuestionRequestData,
+    )
+
 
 log = get_logger()
 
@@ -184,7 +186,7 @@ class CodaAPI:
                 msg=f"Found {len(questions_df_queried)} matching title {searched_title}. Returning first.",
                 results=questions_df_queried["title"].tolist(),
             )
-        question = questions_df_queried["title"][0]
+        question = cast(QuestionRow, questions_df_queried.iloc[0].to_dict())
         return question
 
     def update_question_status(
@@ -244,14 +246,6 @@ class CodaAPI:
     ) -> list[QuestionRow]:
         """Finds questions based on request data"""
         questions_df = self.questions_df
-
-        # QuestionId
-        if request_data[0] == "Id":
-            question_id = request_data[1]
-            question = self.get_question_row(question_id)
-            if question is None:
-                return []
-            return [question]
 
         # QuestionGDocLinks
         if request_data[0] == "GDocLinks":
@@ -317,17 +311,8 @@ class CodaAPI:
         request_data: QuestionRequestData,
         message: ServiceMessage,
     ) -> tuple[Text, Why]:
-        # QuestionId
+        # breakpoint()
         FOUND_NOTHING = " but I found nothing"
-        if request_data[0] == "Id":
-            question_id = request_data[1]
-            why = f"{message.author.name} queried for a question with ID matching `{question_id}`"
-            if not questions:
-                return (
-                    f"There are no questions matching ID `{question_id}`",
-                    why + FOUND_NOTHING,
-                )
-            return "Here it is!", why
 
         # QuestionGDocLinks
         if request_data[0] == "GDocLinks":
@@ -343,7 +328,7 @@ class CodaAPI:
             why = f'{message.author.name} asked for a question with title matching "{question_title}"'
             if not questions:
                 return ("I found no question matching that title", why + FOUND_NOTHING)
-            return f'Here it is:\n"{questions[0]["title"]}"', why
+            return "Here it is:", why
 
         # QuestionLast
         if request_data[0] == "Last":
@@ -438,3 +423,22 @@ def get_least_recently_asked_on_discord(
     # pylint:disable=unused-variable
     oldest_date = questions["last_asked_on_discord"].min()
     return questions.query("last_asked_on_discord == @oldest_date")
+
+
+####################
+#   Text and Why   #
+####################
+
+
+def make_status_and_tag_response_text(
+    status: Optional[QuestionStatus],
+    tag: Optional[str],
+) -> str:
+    """Print info about query's status and/or tags inline"""
+    if status and tag:
+        return f" with status `{status}` and tagged as `{tag}`"
+    if status:
+        return f" with status `{status}`"
+    if tag:
+        return f" tagged as `{tag}`"
+    return ""

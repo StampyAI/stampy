@@ -26,16 +26,17 @@ from api.coda import (
     QuestionStatus,
     filter_on_tag,
     get_least_recently_asked_on_discord,
+    make_status_and_tag_response_text,
 )
 from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import editing_channel_id, general_channel_id
 from modules.module import Module, Response
 from utilities.questions_utils import (
-    QuestionFilterData,
-    make_status_and_tag_response_text,
+    QuestionFilterDataNT,
     parse_question_filter_data,
     parse_question_request_data,
     QuestionRequestData,
+    parse_question_spec_data,
 )
 from utilities.utilities import is_in_testing_mode, pformat_to_codeblock
 from utilities.serviceutils import ServiceMessage
@@ -80,18 +81,15 @@ class Questions(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message"""
-
         if not (text := self.is_at_me(message)):
             return Response()
         if response := self.parse_count_questions_command(text, message):
             return response
         if response := self.parse_post_questions_command(text, message):
             return response
-        if response := self.parse_get_question_info_command(text, message):
+        if response := self.parse_get_question_info(text, message):
             return response
-        return Response(
-            why="Left QuestionManager without matching to any possible response"
-        )
+        return Response()
 
     ###################
     # Count questions #
@@ -119,7 +117,7 @@ class Questions(Module):
 
     async def cb_count_questions(
         self,
-        filter_data: QuestionFilterData,
+        filter_data: QuestionFilterDataNT,
         message: ServiceMessage,
     ) -> Response:
         """Post message to Discord about number of questions matching the query"""
@@ -159,7 +157,7 @@ class Questions(Module):
         if re_post_question.search(text):
             request_data = parse_question_request_data(text)
         elif re_big_next_question.search(text):
-            request_data = "FilterData", QuestionFilterData(None, None, 1)
+            request_data = "FilterData", QuestionFilterDataNT(None, None, 1)
         else:
             return
         return Response(
@@ -176,7 +174,17 @@ class Questions(Module):
         """Post message to Discord for least recently asked question.
         It will contain question title and GDoc url.
         """
-
+        if request_data[0] == "GDocLinks":
+            text = (
+                "Why don't you post "
+                + ("it" if len(request_data[1]) == 1 else "them")
+                + f" yourself, <@{message.author}>?"
+            )
+            return Response(
+                confidence=10,
+                text=text,
+                why=f"If {message.author.name} has these links, they can surely post these question themselves",
+            )
         # get questions (can be emptylist)
         questions = await coda_api.query_for_questions(request_data, message)
 
@@ -230,12 +238,7 @@ class Questions(Module):
         (unless the last was already posted automatically using this method).
         """
         # choose randomly one of the two channels
-        channel = cast(
-            Thread,
-            self.utils.client.get_channel(
-                int(random.choice((editing_channel_id, general_channel_id)))
-            ),
-        )
+        channel = cast(Thread, self.utils.client.get_channel(int(general_channel_id)))
 
         # get random question with status Not started
         questions_df_filtered = coda_api.questions_df.query("status == 'Not started'")
@@ -276,7 +279,7 @@ class Questions(Module):
     #   Get question info   #
     #########################
 
-    def parse_get_question_info_command(
+    def parse_get_question_info(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         """
@@ -287,13 +290,15 @@ class Questions(Module):
         - Return `None` otherwise
         """
         # if text contains neither "get", nor "info", it's not a request for getting question info #TODO: update
+        # breakpoint()
         if not re_get_question_info.search(text):
             return
-        request_data = parse_question_request_data(text)
+        if not (spec_data := parse_question_spec_data(text)):
+            return
         return Response(
             confidence=10,
             callback=self.cb_get_question_info,
-            args=[request_data, message],
+            args=[spec_data, message],
         )
 
     async def cb_get_question_info(
@@ -389,10 +394,10 @@ Text = Why = str
 ###########################
 
 # TODO: update Commands.md after getting these regexes to their final form
-re_post_question = re.compile(r"(?:get|post|next) questions?", re.I)
-re_get_question_info = re.compile(r"info|get info", re.I)
+re_post_question = re.compile(r"(?:get|post|next)\s(?:q|questions?|a|answers?)", re.I)
+re_get_question_info = re.compile(r"i|info", re.I)
 re_count_questions = re.compile(
-    r"(?:count|how many|number of|n of|#) (?:questions|answers)", re.I
+    r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
 )
 
 

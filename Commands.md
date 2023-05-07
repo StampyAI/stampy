@@ -31,26 +31,21 @@ The general pattern for that command is: `s, <get/post/next> <q/question/questio
 
 You can query questions by:
 
-#### 1. ID
-
-`s, get question <question_id>`
-
-#### 2. Title
+#### 1. Title
 
 `s, get question <question_title>`
 
-#### 3. GDOc links
+#### 2. GDoc links
 
 `s, get questions <gdoc_link1> <gdoc_link2> ...`
 
-
-#### 4. Filtering by status on tags
+#### 3. Filtering by status on tags
 
 `s, get 3 question with status in in progress and tagged definitions ...` (like [above](#counting-questions))
 
 If you say, `s, next question`, then Stampy will query all questions, and post the least recently asked one.
 
-#### 5. Last
+#### 4. Last
 
 Stampy will post last question he interacted with.
 

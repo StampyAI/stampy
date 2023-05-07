@@ -4,13 +4,13 @@ import re
 from typing import Literal, Optional, Union
 
 from api.coda import CodaAPI, QuestionStatus
-from api.utilities.coda_utils import QuestionRow
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.questions_utils import (
-    QuestionSetData,
+    QuestionSpecData,
     parse_gdoc_links,
     parse_question_request_data,
+    parse_question_spec_data,
 )
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
@@ -18,8 +18,8 @@ from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
 
 coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()
-status_pat = "|".join(status_shorthands)
-re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({status_pat})", re.I)
+_status_pat = "|".join(status_shorthands)
+re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({_status_pat})", re.I)
 
 all_tags = coda_api.get_all_tags()
 
@@ -284,13 +284,13 @@ class QuestionsSetter(Module):
             status = "Duplicate"
         else:
             return
-        if not (set_data := parse_question_request_data(text, parse_filter_data=False)):
+        if not (spec_data := parse_question_spec_data(text)):
             return
 
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[set_data, status, text, message],
+            args=[spec_data, status, text, message],
         )
 
     def parse_set_question_status(
@@ -300,18 +300,18 @@ class QuestionsSetter(Module):
         if not (match := re_status.search(text)):
             return
         status = status_shorthands[match.group(1).lower()]
-        if not (set_data := parse_question_request_data(text, parse_filter_data=False)):
+        if not (spec_data := parse_question_spec_data(text)):
             return
 
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[set_data, status, text, message],
+            args=[spec_data, status, text, message],
         )
 
     async def cb_set_question_status(
         self,
-        set_data: QuestionSetData,
+        spec_data: QuestionSpecData,
         status: QuestionStatus,
         text: str,
         message: ServiceMessage,
@@ -336,12 +336,12 @@ class QuestionsSetter(Module):
 
         # TODO: Maybe this should be processed inside coda api???
 
-        questions = await coda_api.query_for_questions(set_data, message)
+        questions = await coda_api.query_for_questions(spec_data, message)
         if (
             not questions
         ):  # TODO: generalize text and why coming from this method such that they are appropriate for both getting and setting
             response_text, why = await coda_api.get_questions_text_and_why(
-                questions, set_data, message
+                questions, spec_data, message
             )
             return Response(confidence=10, text=response_text, why=why)
 
