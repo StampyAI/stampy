@@ -233,9 +233,9 @@ class Module:
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
             text = text.partition(" ")[2]
-        elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
+        elif re.search(r",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
             text = re.sub(
-                ",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text
+                r",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", r"\g<punctuation>", text
             )
             at_me = True
 
