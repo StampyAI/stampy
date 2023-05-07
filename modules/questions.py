@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-import random
 import re
 from typing import cast, Optional
 
@@ -29,7 +28,7 @@ from api.coda import (
     make_status_and_tag_response_text,
 )
 from api.utilities.coda_utils import QuestionRow
-from servicemodules.discordConstants import editing_channel_id, general_channel_id
+from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
 from utilities.questions_utils import (
     QuestionFilterDataNT,
@@ -104,10 +103,13 @@ class Questions(Module):
         optionally, filtering for status and/or a tag.
         Returns `None` otherwise.
         """
-        if not re_count_questions.search(text):
+        if re_big_count_questions.search(text):
+            filter_data = QuestionFilterDataNT(None, None, 1)
+        elif re_count_questions.search(text):
+            filter_data = parse_question_filter_data(text)
+        else:
             return
 
-        filter_data = parse_question_filter_data(text)
         return Response(
             confidence=8,
             callback=self.cb_count_questions,
@@ -186,7 +188,9 @@ class Questions(Module):
                 why=f"If {message.author.name} has these links, they can surely post these question themselves",
             )
         # get questions (can be emptylist)
-        questions = await coda_api.query_for_questions(request_data, message)
+        questions = await coda_api.query_for_questions(
+            request_data, message, get_least_recently_asked_unpublished=True
+        )
 
         # get text and why (requires handling failures)
         text, why = await coda_api.get_questions_text_and_why(
@@ -341,17 +345,101 @@ class Questions(Module):
         if is_in_testing_mode():
             return []
         return [
-            self.create_integration_test(
-                test_message="next q",
-                expected_regex=r"Here is a question\n\n[^\n]+\nhttps://docs",
-            ),
+            #########
+            # Count #
+            #########
             self.create_integration_test(
                 test_message="how many questions?",
                 expected_regex=r"There are \d{3,4} questions",
             ),
             self.create_integration_test(
+                test_message="how many questions with status los?",
+                expected_regex=r"There are \d{3} questions",
+            ),
+            self.create_integration_test(
+                test_message="count questions tagged hedonium",
+                expected_regex=r"There are \d\d? questions",
+            ),
+            ########
+            # Info #
+            ########
+            self.create_integration_test(
+                test_message="info t is it unethical", expected_regex="Here it is"
+            ),
+            self.create_integration_test(
+                test_message="info https://docs.google.com/document/d/1Nzjn-Q_u44KMPzrg_fYE3B-7AqRFJOCfbYQ5HOp8svY/edit",
+                expected_regex="Here it is",
+            ),
+            self.create_integration_test(
+                test_message="i last", expected_regex="The last question"
+            ),
+            self.create_integration_test(
+                test_message="info question hedonium",
+                expected_regex="Here it is",
+            ),
+            # the next few should fail
+            self.create_integration_test(
+                test_message="info question asfdasdfasdfasdfasdasdasd",
+                expected_regex="I found no question matching that title",
+            ),
+            self.create_integration_test(
+                test_message="info https://docs.google.com/document/d/1Nzasdrg_fYE3B",
+                expected_regex="These links don't lead",
+            ),
+            ########
+            # Post #
+            ########
+            self.create_integration_test(
+                test_message="get q https://docs.google.com/document/d/1Nzjn-Q_u44KMPzrg_fYE3B-7AqRFJOCfbYQ5HOp8svY/edit",
+                expected_regex="Why don't you post it yourself,",
+            ),
+            self.create_integration_test(
+                test_message="get questions https://docs.google.com/document/d/1Nzjn-Q_u44KMPzrg_fYE3B-7AqRFJOCfbYQ5HOp8svY/edit\nhttps://docs.google.com/document/d/1bnxJIy_iXOSjFw5UJUW1wfwwMAg5hUFNqDMq1T7Vrc0/edit",
+                expected_regex="Why don't you post them yourself,",
+            ),
+            self.create_integration_test(
+                test_message="post 5 questions tagged decision theory",
+                expected_regex="Here are 5 questions tagged as `Decision Theory`",
+            ),
+            self.create_integration_test(
+                test_message="post 5 questions with status los",
+                expected_regex="Here are 5 questions with status `Live on site`",
+            ),
+            self.create_integration_test(
+                test_message="post 5 questions tagged hedonium and with status w",
+                expected_regex="I found no",
+            ),
+            self.create_integration_test(
+                test_message="get question hedonium", expected_regex="Here it is"
+            ),
+            # This should fail
+            self.create_integration_test(
+                test_message="get questions https://docs.google.com/document/d/blablabla1\nhttps://docs.google.com/document/d/blablablabla2",
+                expected_regex="Why don't you",
+            ),
+            # Next
+            self.create_integration_test(
+                test_message="next q",
+                expected_regex=r"Here is a question\n\n[^\n]+\nhttps://docs",
+            ),
+            self.create_integration_test(
                 test_message="what is the next question with status withdrawn and tagged doom",
                 expected_regex=r"I found no|Here is a question",
+            ),
+            self.create_integration_test(
+                test_message="next 2 questions tagged hedonium",
+                expected_regex="Here are 2",
+            ),
+            ###############
+            # Big regexes #
+            ###############
+            self.create_integration_test(
+                test_message="give is another question",
+                expected_regex="Here is a question",
+            ),
+            self.create_integration_test(
+                test_message="how long is the question queue",
+                expected_regex=r"There are \d{3,4} questions",
             ),
         ]
 
@@ -394,7 +482,15 @@ Text = Why = str
 ###########################
 
 # TODO: update Commands.md after getting these regexes to their final form
-re_post_question = re.compile(r"(?:get|post|next)\s(?:q|questions?|a|answers?)", re.I)
+re_post_question = re.compile(
+    r"""
+    (?:get|post|next) # get / post / next
+    \s # whitespace char (obligatory)
+    (?:\d+\s)? # optional number of questions
+    (?:q|questions?|a|answers?) # q / question / questions / a / answer / answers
+    """,
+    re.I | re.X,
+)
 re_get_question_info = re.compile(r"i|info", re.I)
 re_count_questions = re.compile(
     r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I

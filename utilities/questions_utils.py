@@ -34,12 +34,9 @@ def parse_question_filter_data(text: str) -> QuestionFilterDataNT:
 _status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands).replace(" ", r"\s")
 
 
-def parse_status(
-    text: str, *, require_status_prefix: bool = True
-) -> Optional[QuestionStatus]:
-    status_prefix = r"status\s*" if require_status_prefix else ""
+def parse_status(text: str) -> Optional[QuestionStatus]:
     re_status = re.compile(
-        rf"{status_prefix}({_status_pat})",
+        rf"status\s*({_status_pat})",
         re.I | re.X,
     )
     if not (match := re_status.search(text)):
@@ -78,11 +75,10 @@ def parse_questions_limit(text: str) -> int:
 ########################
 
 
-_re_last = re.compile(r"(?:get|post) (last|it)", re.I)
+_re_last = re.compile(r"(?:i|info|get|post)\s(last|it)", re.I)
 
 
 def parse_question_last(text: str) -> Optional[Literal["last", "it"]]:
-    breakpoint()
     if match := _re_last.search(text):
         mention = match.group(1)
         return cast(Literal["last", "it"], mention)
@@ -95,7 +91,6 @@ def parse_gdoc_links(text: str) -> list[str]:
     """Extract GDoc links from message content.
     Returns `[]` if message doesn't contain any GDoc link.
     """
-    breakpoint()
     return _re_gdoc_link.findall(text)
 
 
@@ -103,7 +98,6 @@ _re_title = re.compile(r"\b(?:q|question|t|titled?)\s+([-\w\s]+)", re.I)
 
 
 def parse_question_title(text: str) -> Optional[str]:
-    breakpoint()
     if match := _re_title.search(text):
         question_title = match.group(1)
         return question_title

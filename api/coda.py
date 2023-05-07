@@ -242,7 +242,11 @@ class CodaAPI:
     ###############
 
     async def query_for_questions(
-        self, request_data: QuestionRequestData, message: ServiceMessage
+        self,
+        request_data: QuestionRequestData,
+        message: ServiceMessage,
+        *,
+        get_least_recently_asked_unpublished: bool = False,
     ) -> list[QuestionRow]:
         """Finds questions based on request data"""
         questions_df = self.questions_df
@@ -274,34 +278,40 @@ class CodaAPI:
         # QuestionFilterData #
         ######################
         status, tag, limit = request_data[1]
+        # TODO: explain this
+        get_least_recently_asked_unpublished = (
+            get_least_recently_asked_unpublished and status is None and tag is None
+        )
 
-        # if status was specified, filter questions for that status
-        if status:  # pylint:disable=unused-variable
-            questions_df = questions_df.query("status == @status")
-        else:  # otherwise, filter for question that ain't Live on site
+        # if status and tag were not specified, look for unpublished questions
+        if get_least_recently_asked_unpublished:
             questions_df = questions_df.query("status != 'Live on site'")
+        elif status is not None:
+            questions_df = questions_df.query("status == @status")
+
         # if tag was specified, filter for questions having that tag
         questions_df = filter_on_tag(questions_df, tag)
 
-        # get all the oldest ones and shuffle them
-        questions_df = get_least_recently_asked_on_discord(questions_df)
-        questions_df = shuffle_df(questions_df)
+        if get_least_recently_asked_unpublished:
+            # get all the oldest ones and shuffle them
+            questions_df = get_least_recently_asked_on_discord(questions_df)
+            questions_df = shuffle_df(questions_df)
 
-        limit = min(limit, 5)
+            limit = min(limit, 5)
 
         # get specified number of questions (default [if unspecified] is 1)
         if limit > 5:
             await message.channel.send(f"{limit} is to much. I'll give you up to 5.")
 
-        n = min(limit, 5)
+        limit = min(limit, 5)
         # filter on max num of questions
         questions_df = questions_df.sort_values(
             "last_asked_on_discord", ascending=False
-        ).iloc[:n]
+        ).iloc[:limit]
         if questions_df.empty:
             return []
-        questions = cast(list[QuestionRow], questions_df.to_dict(orient="records"))
-        return questions
+        questions = questions_df.to_dict(orient="records")
+        return cast(list[QuestionRow], questions)
 
     Text = Why = str
 
@@ -346,7 +356,7 @@ class CodaAPI:
         # QuestionFilterData #
         ######################
 
-        status, tag = request_data[1][:2]
+        status, tag, limit = request_data[1]
         status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
         why = f"{message.author.name} asked me for questions{status_and_tag_response_text}"
         if not questions:
@@ -354,10 +364,14 @@ class CodaAPI:
                 f"I found no questions{status_and_tag_response_text}",
                 why + FOUND_NOTHING,
             )
-        if len(questions) == 1:
+        if len(questions) == limit == 1:
+            text = f"Here is a question{status_and_tag_response_text}"
+        elif len(questions) == 1:
             text = f"I found one question{status_and_tag_response_text}"
-        else:
+        elif len(questions) < limit:
             text = f"I found {len(questions)} questions{status_and_tag_response_text}"
+        else:
+            text = f"Here are {len(questions)} questions{status_and_tag_response_text}"
         return text, why + f" and I found {len(questions)}"
 
     #############

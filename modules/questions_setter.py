@@ -9,7 +9,6 @@ from utilities.discordutils import DiscordChannel
 from utilities.questions_utils import (
     QuestionSpecData,
     parse_gdoc_links,
-    parse_question_request_data,
     parse_question_spec_data,
 )
 from utilities.serviceutils import ServiceMessage
@@ -337,14 +336,13 @@ class QuestionsSetter(Module):
         # TODO: Maybe this should be processed inside coda api???
 
         questions = await coda_api.query_for_questions(spec_data, message)
-        if (
-            not questions
-        ):  # TODO: generalize text and why coming from this method such that they are appropriate for both getting and setting
+        if not questions:
             response_text, why = await coda_api.get_questions_text_and_why(
                 questions, spec_data, message
             )
             return Response(confidence=10, text=response_text, why=why)
 
+        # Different response if triggered with `s, del` or `s, dup`
         if text[:3] in ("del", "dup"):
             msg = f"Ok, <@{message.author}>, I'll mark " + (
                 "it" if len(questions) == 1 else "them"
@@ -373,7 +371,7 @@ class QuestionsSetter(Module):
         for q in questions:
             prev_status = q["status"]
             if prev_status == "Live on site" and not is_from_reviewer(message):
-                msg = f"`\"{q['title']}\"` is already `Live on site`."
+                msg = f'`"{q["title"]}"` is already `Live on site`.'
                 n_already_los += 1
             else:
                 coda_api.update_question_status(q["id"], status)
@@ -386,13 +384,13 @@ class QuestionsSetter(Module):
         # TODO: nicer handling of different numberings
         msg = (
             f"Changed status of {n_changed_status} question"
-            + ("s" if len(questions) > 1 else "")
+            + ("s" if n_changed_status > 1 else "")
             + f" to `{status}`."
         )
         if n_already_los == 1:
-            msg += " One was already `Live on site`."
+            msg += " One question was already `Live on site`."
         elif n_already_los > 1:
-            msg += f" {n_already_los} were already `Live on site`."
+            msg += f" {n_already_los} questions were already `Live on site`."
 
         return Response(
             confidence=10,
