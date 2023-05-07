@@ -318,56 +318,44 @@ class CodaAPI:
         message: ServiceMessage,
     ) -> tuple[Text, Why]:
         # QuestionId
+        FOUND_NOTHING = " but I found nothing"
         if request_data[0] == "Id":
             question_id = request_data[1]
+            why = f"{message.author.name} queried for a question with ID matching `{question_id}`"
             if not questions:
                 return (
                     f"There are no questions matching ID `{question_id}`",
-                    f"{message.author.name} wanted me to get a question matching ID `{question_id}` but I found nothing",
+                    why + FOUND_NOTHING,
                 )
-            return (
-                "Here it is!",
-                f"{message.author.name} wanted me to get a question matching ID `{question_id}`",
-            )
+            return "Here it is!", why
 
         # QuestionGDocLinks
         if request_data[0] == "GDocLinks":
+            why = f"{message.author.name} queried for questions matching one or more GDoc links"
             if not questions:
-                return (
-                    "These links don't lead to any questions",
-                    f"{message.author.name} gave me some links but they don't lead to any questions in my database",
-                )
+                return ("These links don't lead to any questions", why + FOUND_NOTHING)
             text = "Here it is:" if len(questions) == 1 else "Here they are:"
-            return (
-                text,
-                f"{message.author.name} wanted me to get these questions",
-            )
+            return text, why
 
         # QuestionTitle
         if request_data[0] == "Title":
             question_title = request_data[1]
+            why = f'{message.author.name} asked for a question with title matching "{question_title}"'
             if not questions:
-                return (
-                    "I found no question matching that title",
-                    f'{message.author.name} asked for a question with title matching "{question_title}" but I found nothing ;_;',
-                )
-            return (
-                f'Here it is:\n"{questions[0]["title"]}"',
-                f'{message.author.name} wanted me to get a question with title matching "{question_title}"',
-            )
+                return ("I found no question matching that title", why + FOUND_NOTHING)
+            return f'Here it is:\n"{questions[0]["title"]}"', why
 
         # QuestionLast
         if request_data[0] == "Last":
             mention = request_data[1]
+            why = f"{message.author.name} asked about the last question"
             if not questions:
                 return (
                     f'What do you mean by "{mention}"?',
-                    f"{message.author.name} asked me to post the last question but I don't know what they're talking about",
+                    why
+                    + " but I don't remember what it was because I recently rebooted",
                 )
-            return (
-                f"The last question was:\n\"{questions[0]['title']}\"",
-                f"{message.author.name} wanted me to get the last question",
-            )
+            return f'The last question was:\n"{questions[0]["title"]}"', why
 
         ######################
         # QuestionFilterData #
@@ -375,19 +363,17 @@ class CodaAPI:
 
         status, tag = request_data[1][:2]
         status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
+        why = f"{message.author.name} asked me for questions{status_and_tag_response_text}"
         if not questions:
             return (
                 f"I found no questions{status_and_tag_response_text}",
-                f"{message.author.name} asked me for questions{status_and_tag_response_text} but I found nothing",
+                why + FOUND_NOTHING,
             )
         if len(questions) == 1:
             text = f"I found one question{status_and_tag_response_text}"
         else:
             text = f"I found {len(questions)} questions{status_and_tag_response_text}"
-        return (
-            text,
-            f"{message.author.name} asked me for questions{status_and_tag_response_text} and I found {len(questions)}",
-        )
+        return text, why + f" and I found {len(questions)}"
 
     #############
     #   Other   #
