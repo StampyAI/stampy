@@ -381,13 +381,13 @@ class CodaAPI:
             text = f"Here are {len(questions)} questions"
         return text, why + f" and I found {len(questions)}"
 
-    #############
-    #   Other   #
-    #############
+    ######################################
+    #   Getters for valid field values   #
+    ######################################
 
     def get_status_shorthand_dict(self) -> dict[str, QuestionStatus]:
-        """Get dictionary mapping statuses and status shorthands
-        (e.g. "bs" for "Bulletpoint sketch") to valid Status labels.
+        """Get dictionary mapping question statuses and status shorthands
+        (e.g. "bs" for "Bulletpoint sketch") to valid `Status` field values.
         """
         # Workaround to make mock request during testing
         if is_in_testing_mode():
@@ -396,14 +396,19 @@ class CodaAPI:
         statuses = self.get_all_statuses()
         status_shorthand_dict = {}
         for status in statuses:
+            # map default status name
             status_shorthand_dict[status] = status
+            # map lowercased status name
             status_shorthand_dict[status.lower()] = status
+            # map acronym shorthand
             shorthand = "".join(word[0].lower() for word in status.split())
             status_shorthand_dict[shorthand] = status
         return status_shorthand_dict
 
     def get_all_tags(self) -> list[str]:
-        """Get all tags from "All Answers" table"""
+        """Get all valid
+        [question Tags](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Tags_su-dP#_luAhW).
+        """
         # Workaround to make mock request during testing
         if is_in_testing_mode():
             return []
@@ -412,19 +417,28 @@ class CodaAPI:
         return sorted(tags_vals)
 
     def get_all_statuses(self) -> list[str]:
-        """Get all valid Status values from table in admin panel"""
+        """Get all valid values for the question `Status` field
+        from the table in
+        [Admin Panel](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Admin-Panel_su93i#_luy_h).
+        """
+        # get coda table
         status_table = self.doc.get_table(self.STATUSES_GRID_ID)
-        status_vals = {r["Status"].value for r in status_table.rows()}
-        if status_vals != (code_status_vals := set(get_args(QuestionStatus))):
-            msg = dedent(
-                f"""\
-                Status values defined in api/coda.py file don't match the values found in coda table:
-                values in code: {code_status_vals}
-                values in coda table: {status_vals}"""
+        # load status values from it
+        coda_status_vals = {r["Status"].value for r in status_table.rows()}
+        # load status values defined in code
+        code_status_vals = set(get_args(QuestionStatus))
+        # if mismatch, log and raise errory
+        if coda_status_vals != code_status_vals:
+            msg = "Status values defined in api/utilities/coda_utils.py don't match the values in coda"
+            self.log.error(
+                self.class_name,
+                msg="Status values defined in api/utilities/coda_utils.py don't match the values in coda",
+                code_status_vals=code_status_vals,
+                coda_status_vals=coda_status_vals,
             )
-            log.error(self.class_name, msg=msg)
+            msg += f"; {code_status_vals=}; {coda_status_vals=}"
             raise AssertionError(msg)
-        return sorted(status_vals)
+        return sorted(coda_status_vals)
 
 
 def filter_on_tag(questions_df: pd.DataFrame, tag: Optional[str]) -> pd.DataFrame:
