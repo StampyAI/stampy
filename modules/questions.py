@@ -97,18 +97,15 @@ all_tags = coda_api.get_all_tags()
 
 
 class Questions(Module):
-    """Fetches not started questions from
-    [All Answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
-    """
-
     AUTOPOST_QUESTION_INTERVAL = timedelta(hours=6)
 
     def __init__(self) -> None:
         super().__init__()
-        self.review_msg_id2question_ids: dict[str, list[str]] = {}
+        # Time when last question was posted
         self.last_question_posted: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
+        # Was the last question that was posted, automatically posted by Stampy?
         self.last_question_autoposted = False
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
@@ -127,7 +124,6 @@ class Questions(Module):
                 coda_api.update_questions_cache()
 
     def process_message(self, message: ServiceMessage) -> Response:
-        """Process message"""
         if not (text := self.is_at_me(message)):
             return Response()
         if response := self.parse_count_questions_command(text, message):
@@ -151,12 +147,9 @@ class Questions(Module):
         optionally, filtering for status and/or a tag.
         Returns `None` otherwise.
         """
-        if re_big_count_questions.search(text):
-            filter_data = QuestionFilterDataNT(None, None, 1)
-        elif re_count_questions.search(text):
-            filter_data = parse_question_filter_data(text)
-        else:
+        if not (re_big_count_questions.search(text) or re_count_questions.search(text)):
             return
+        filter_data = parse_question_filter_data(text)
 
         return Response(
             confidence=8,
@@ -170,26 +163,29 @@ class Questions(Module):
         filter_data: QuestionFilterDataNT,
         message: ServiceMessage,
     ) -> Response:
-        """Post message to Discord about number of questions matching the query"""
-        # get df with questions
         questions_df = coda_api.questions_df
         status, tag, _limit = filter_data
 
-        # if status and/or tags were specified, filter accordingly
+        # if status and/or tag specified, filter accordingly
         if status:
             questions_df = questions_df.query("status == @status")
         if tag:
             questions_df = filter_on_tag(questions_df, tag)
 
         # Make message and respond
-        response_text = make_count_questions_response_text(
-            status, tag, len(questions_df)
-        )
+        if len(questions_df) == 1:
+            response_text = "There is 1 question"
+        elif len(questions_df) > 1:
+            response_text = f"There are {len(questions_df)} questions"
+        else:  # n_questions == 0:
+            response_text = "There are no questions"
+        status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
+        response_text += status_and_tag_response_text
 
         return Response(
             confidence=8,
             text=response_text,
-            why=f"{message.author.name} asked me to count questions",
+            why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
         )
 
     ######################
@@ -498,19 +494,6 @@ class Questions(Module):
 ##################
 # Util functions #
 ##################
-
-
-def make_count_questions_response_text(
-    status: Optional[QuestionStatus], tag: Optional[str], num_found: int
-) -> str:
-    """Generate response text for counting questions request"""
-    if num_found == 1:
-        s = "There is 1 question"
-    elif num_found > 1:
-        s = f"There are {num_found} questions"
-    else:  # n_questions == 0:
-        s = "There are no questions"
-    return s + make_status_and_tag_response_text(status, tag)
 
 
 def make_post_question_message(question_row: QuestionRow) -> str:
