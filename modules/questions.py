@@ -1,15 +1,63 @@
-"""Test these functionalities before PR
-- Posting next questions
-    - Vary num, status, and tag
-- Counting questions
-    - Vary status and tag
-- Getting info about questions
-    - Vary id/last/title
-- Asking for feedback
-    - Vary whether you're a `@reviewer`, number of questions, 
-    number of already `Live on site` questions
-- Accepting feedback request
-    - Vary whether you're a `@reviewer` and number of questions
+"""
+Querying the question database. No special permissions required.
+
+### Counting questions
+
+Stampy can count questions in the database. You can narrow down the counting using a particular status or tag. Use commands like these:
+
+- `s, count questions` - counts all questions
+- `s, count questions with status live on site` - counts only questions with status `Live on site`
+- `s, count questions tagged decision theory` - counts only questions with the tag `Decision theory`
+- `s, count questions with status live on site and tagged decision theory` - counts only questions that **both** have status `Live on site` **and** the tag `Decision theory`
+
+put screenshot here
+
+---
+
+Status name is case-insensitive: there is no difference between `Live on site`, `live on site`, or `LIVE ON SITE`. Similarly for tags. You can also use acronym aliases for status (but not for tags), e.g., `los` for `Live on site` or `bs` for `Bulletpoint sketch`.
+
+### Posting questions
+
+You can use Stampy to query the database of questions. Stampy will put links to questions that match your query into the channel.
+
+The general pattern for that command is: `s, <get/post/next> <q/question/questions> <ADDITIONAL_INFO>`.
+
+You can query questions by:
+
+#### 1. Title
+
+`s, get question <question_title>`
+
+#### 2. GDoc links
+
+`s, get questions <gdoc_link1> <gdoc_link2> ...`
+
+#### 3. Filtering by status on tags
+
+`s, get 3 question with status in in progress and tagged definitions ...` (like [above](#counting-questions))
+
+If you say, `s, next question`, then Stampy will query all questions, and post the least recently asked one.
+
+#### 4. Last
+
+Stampy will post last question he interacted with.
+
+`s, post last question` / `s, post it`
+
+put screenshot here
+
+---
+
+#### Autoposting (Rob Miles' server only)
+
+On Rob Miles' Discord server, Stampy posts a random least recently asked question, if the last question was posted on somebody's request **and** more than 6 hours passed since then. Stampy posts either to the `#editing` channel or the `#general`
+
+### Getting question info
+
+`s, get info <ADDITIONAL_INFO>` (with basically the same filtering as above, except `next`) can be used to get detailed information about the question as an entity in the database.
+
+Put screenshot here.
+
 """
 from __future__ import annotations
 
