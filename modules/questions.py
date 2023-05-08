@@ -460,28 +460,22 @@ class Questions(Module):
         return "Questions Module"
 
 
-##################
-# Util functions #
-##################
-
-
 def make_post_question_message(question_row: QuestionRow) -> str:
-    """Make question message from questions DataFrame row
+    """Make message for posting a question into a Discord channel
 
-    <title>\n
-    <url>
+    ```
+    "<QUESTION_TITLE>"
+    <GDOC_URL>
+    ```
     """
-    return question_row["title"] + "\n" + question_row["url"]
+    return '"' + question_row["title"] + '"' + "\n" + question_row["url"]
 
 
-Text = Why = str
+###############
+#   Regexes   #
+###############
 
-
-###########################
-#   Regexes and strings   #
-###########################
-
-# TODO: update Commands.md after getting these regexes to their final form
+# TODO: update help docstrings
 re_post_question = re.compile(
     r"""
     (?:get|post|next) # get / post / next
