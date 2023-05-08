@@ -11,7 +11,7 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
 
 import pandas as pd
 import psutil
@@ -424,9 +424,9 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
     Disregards spaces, and punctuation.
     """
-    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
-        container.casefold().replace(" ", "")
-    )
+    contained = remove_punct(contained.casefold().replace(" ", ""))
+    container = remove_punct(container.casefold().replace(" ", ""))
+    return contained in container
 
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
@@ -444,15 +444,18 @@ def remove_punct(s: str) -> str:
 
 
 def limit_text(
-    text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")
+    text: str,
+    limit: int,
+    format_fail_message: Callable[[int], str] = (
+        lambda x: f"Cut {x} characters from response\n"
+    ),
 ) -> tuple[bool, str]:
     text_length = len(text)
-    failLength = text_length - limit
+    fail_length = text_length - limit
 
     if text_length >= limit:
-        return True, formatFailMessage(failLength) + text[0:limit]
-    else:
-        return False, text
+        return True, format_fail_message(fail_length) + text[0:limit]
+    return False, text
 
 
 def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
