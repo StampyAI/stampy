@@ -346,7 +346,7 @@ class CodaAPI:
 
     ResponseText = ResponseWhy = str
 
-    async def get_questions_text_and_why(
+    async def get_response_text_and_why(
         self,
         questions: list[QuestionRow],
         query: QuestionQuery,

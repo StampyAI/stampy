@@ -23,7 +23,6 @@ def get_module_docstring(fname: str) -> Optional[tuple[ModuleName, DocString]]:
     docstring_start = code.find('"""')
     docstring_end = code.find('"""', docstring_start + 3)
     docstring = code[docstring_start + 3 : docstring_end].strip()
-    # breakpoint()
     if not (match := _re_module_name.search(code)):
         return
     module_name = match.group(1)

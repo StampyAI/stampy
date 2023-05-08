@@ -389,7 +389,7 @@ class QuestionsSetter(Module):
 
         questions = await coda_api.query_for_questions(spec_data, message)
         if not questions:
-            response_text, why = await coda_api.get_questions_text_and_why(
+            response_text, why = await coda_api.get_response_text_and_why(
                 questions, spec_data, message
             )
             return Response(confidence=10, text=response_text, why=why)

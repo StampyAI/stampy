@@ -226,7 +226,7 @@ class Questions(Module):
         )
 
         # get text and why (requires handling failures)
-        response_text, why = await coda_api.get_questions_text_and_why(
+        response_text, why = await coda_api.get_response_text_and_why(
             questions, request_data, message
         )
 
@@ -326,7 +326,7 @@ class Questions(Module):
         questions = await coda_api.query_for_questions(request_data, message)
 
         # get text and why (requires handling failures)
-        response_text, why = await coda_api.get_questions_text_and_why(
+        response_text, why = await coda_api.get_response_text_and_why(
             questions, request_data, message
         )
 
