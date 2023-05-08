@@ -304,15 +304,7 @@ class Questions(Module):
     def parse_get_question_info(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        """
-        - Return `GetQuestionInfoCommand` if this a request to print info about a question of specific ID
-        or title matching a specific substring
-        - Return `GetLastQuestionInfoCommand` if this a request to print info about the last question
-        Stampy interacted with
-        - Return `None` otherwise
-        """
-        # if text contains neither "get", nor "info", it's not a request for getting question info #TODO: update
-        # breakpoint()
+        # must match regex and contain query info
         if not re_get_question_info.search(text):
             return
         if not (spec_data := parse_question_spec_data(text)):
@@ -328,29 +320,32 @@ class Questions(Module):
         request_data: QuestionRequestData,
         message: ServiceMessage,
     ) -> Response:
-        """Get info about a question and post it as a dict in code block"""
-
+        # get questions (can be emptylist)
         questions = await coda_api.query_for_questions(request_data, message)
 
-        text, why = await coda_api.get_questions_text_and_why(
+        # get text and why (requires handling failures)
+        response_text, why = await coda_api.get_questions_text_and_why(
             questions, request_data, message
         )
 
-        text += "\n"
+        # add info about each question to response_text
+        response_text += "\n"
         for q in questions:
-            text += f"\n{pformat_to_codeblock(cast(dict, q))}"
+            response_text += f"\n{pformat_to_codeblock(cast(dict, q))}"
 
+        # add info about query
         if request_data[0] == "Last":
-            text += "\n\nquery: `last question`"
+            response_text += "\n\nquery: `last question`"
         else:
-            text += f"\n\nquery: {pformat_to_codeblock(dict([request_data]))}"
+            response_text += f"\n\nquery:\n{pformat_to_codeblock(dict([request_data]))}"
 
+        # if there is exactly one question, remember its ID
         if len(questions) == 1:
             coda_api.last_question_id = questions[0]["id"]
 
         return Response(
             confidence=8,
-            text=text,
+            text=response_text,
             why=why,
         )
 
