@@ -79,11 +79,11 @@ from api.utilities.coda_utils import QuestionRow
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
 from utilities.questions_utils import (
-    QuestionFilterDataNT,
     parse_question_filter_data,
     parse_question_request_data,
-    QuestionRequestData,
     parse_question_spec_data,
+    QuestionFilterDataNT,
+    QuestionRequestData,
 )
 from utilities.utilities import is_in_testing_mode, pformat_to_codeblock
 from utilities.serviceutils import ServiceMessage
@@ -92,8 +92,6 @@ from utilities.serviceutils import ServiceMessage
 load_dotenv()
 
 coda_api = CodaAPI.get_instance()
-status_shorthands = coda_api.get_status_shorthand_dict()
-all_tags = coda_api.get_all_tags()
 
 
 class Questions(Module):
