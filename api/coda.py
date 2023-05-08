@@ -344,19 +344,22 @@ class CodaAPI:
         questions = questions_df.to_dict(orient="records")
         return cast(list[QuestionRow], questions)
 
-    Text = Why = str
+    ResponseText = ResponseWhy = str
 
     async def get_questions_text_and_why(
         self,
         questions: list[QuestionRow],
-        request_data: QuestionQuery,
+        query: QuestionQuery,
         message: ServiceMessage,
-    ) -> tuple[Text, Why]:
-        # breakpoint()
+    ) -> tuple[ResponseText, ResponseWhy]:
+        """Get `text` and `why` arguments for `Response` for questions returned by
+        `query_for_questions` using `query`.
+        """
+
         FOUND_NOTHING = " but I found nothing"
 
         # QuestionGDocLinks
-        if request_data[0] == "GDocLinks":
+        if query[0] == "GDocLinks":
             why = f"{message.author.name} queried for questions matching one or more GDoc links"
             if not questions:
                 return ("These links don't lead to any questions", why + FOUND_NOTHING)
@@ -364,16 +367,16 @@ class CodaAPI:
             return text, why
 
         # QuestionTitle
-        if request_data[0] == "Title":
-            question_title = request_data[1]
+        if query[0] == "Title":
+            question_title = query[1]
             why = f'{message.author.name} asked for a question with title matching "{question_title}"'
             if not questions:
                 return ("I found no question matching that title", why + FOUND_NOTHING)
             return "Here it is:", why
 
         # QuestionLast
-        if request_data[0] == "Last":
-            mention = request_data[1]
+        if query[0] == "Last":
+            mention = query[1]
             why = f"{message.author.name} asked about the last question"
             if not questions:
                 return (
@@ -387,8 +390,8 @@ class CodaAPI:
         # QuestionFilterData #
         ######################
 
-        _status, _tag, limit = request_data[1]
-        # status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
+        _status, _tag, limit = query[1]
+
         why = f"{message.author.name} asked me for questions{FOUND_NOTHING}"
         if not questions:
             return "I found no questions", why
@@ -400,6 +403,7 @@ class CodaAPI:
             text = f"I found {len(questions)} questions"
         else:
             text = f"Here are {len(questions)} questions"
+
         return text, why + f" and I found {len(questions)}"
 
     ######################################
