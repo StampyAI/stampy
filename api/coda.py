@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import os
 from textwrap import dedent
-from typing import cast, get_args, Optional, Literal, TYPE_CHECKING
+from typing import cast, get_args, Optional, TYPE_CHECKING
 
 from codaio import Coda, Document, Row
 import pandas as pd
@@ -11,10 +11,11 @@ from structlog import get_logger
 
 
 from api.utilities.coda_utils import (
+    make_updated_cells,
     parse_question_row,
     QuestionRow,
+    QuestionStatus,
     DEFAULT_DATE,
-    make_updated_cells,
 )
 from utilities import is_in_testing_mode
 from utilities.discordutils import DiscordUser
@@ -29,21 +30,10 @@ if TYPE_CHECKING:
 
 log = get_logger()
 
-QuestionStatus = Literal[
-    "Bulletpoint sketch",
-    "Duplicate",
-    "In progress",
-    "In review",
-    "Live on site",
-    "Marked for deletion",
-    "Not started",
-    "Uncategorized",
-    "Withdrawn",
-]
-
 
 class CodaAPI:
-    """Gathers everything for interacting with coda"""
+    """Gathers everything for interacting with
+    [coda](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Get-involved_susRF#_lufSr)."""
 
     # Singleton instance
     __instance: Optional[CodaAPI] = None
@@ -356,22 +346,19 @@ class CodaAPI:
         # QuestionFilterData #
         ######################
 
-        status, tag, limit = request_data[1]
-        status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
-        why = f"{message.author.name} asked me for questions{status_and_tag_response_text}"
+        _status, _tag, limit = request_data[1]
+        # status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
+        why = f"{message.author.name} asked me for questions{FOUND_NOTHING}"
         if not questions:
-            return (
-                f"I found no questions{status_and_tag_response_text}",
-                why + FOUND_NOTHING,
-            )
+            return "I found no questions", why
         if len(questions) == limit == 1:
-            text = f"Here is a question{status_and_tag_response_text}"
+            text = "Here is a question"
         elif len(questions) == 1:
-            text = f"I found one question{status_and_tag_response_text}"
+            text = "I found one question"
         elif len(questions) < limit:
-            text = f"I found {len(questions)} questions{status_and_tag_response_text}"
+            text = f"I found {len(questions)} questions"
         else:
-            text = f"Here are {len(questions)} questions{status_and_tag_response_text}"
+            text = f"Here are {len(questions)} questions"
         return text, why + f" and I found {len(questions)}"
 
     #############
@@ -437,22 +424,3 @@ def get_least_recently_asked_on_discord(
     # pylint:disable=unused-variable
     oldest_date = questions["last_asked_on_discord"].min()
     return questions.query("last_asked_on_discord == @oldest_date")
-
-
-####################
-#   Text and Why   #
-####################
-
-
-def make_status_and_tag_response_text(
-    status: Optional[QuestionStatus],
-    tag: Optional[str],
-) -> str:
-    """Print info about query's status and/or tags inline"""
-    if status and tag:
-        return f" with status `{status}` and tagged as `{tag}`"
-    if status:
-        return f" with status `{status}`"
-    if tag:
-        return f" tagged as `{tag}`"
-    return ""

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import requests
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 from codaio import Cell, Row
 
@@ -67,6 +67,20 @@ class QuestionRow(TypedDict):
     tags: list[str]
     last_asked_on_discord: datetime
     row: Row
+
+
+# Status of question in coda table
+QuestionStatus = Literal[
+    "Bulletpoint sketch",
+    "Duplicate",
+    "In progress",
+    "In review",
+    "Live on site",
+    "Marked for deletion",
+    "Not started",
+    "Uncategorized",
+    "Withdrawn",
+]
 
 
 def request_succesful(response: requests.Response) -> bool:

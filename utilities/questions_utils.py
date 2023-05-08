@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import re
 from typing import cast, Literal, NamedTuple, Optional, Union
-from api.coda import CodaAPI, QuestionStatus
+
+from api.coda import CodaAPI
+from api.utilities.coda_utils import QuestionStatus
 
 coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()

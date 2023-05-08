@@ -54,7 +54,8 @@ from __future__ import annotations
 import re
 from typing import Literal, Optional, Union
 
-from api.coda import CodaAPI, QuestionStatus
+from api.coda import CodaAPI
+from api.utilities.coda_utils import QuestionStatus
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.questions_utils import (

@@ -73,9 +73,8 @@ from api.coda import (
     CodaAPI,
     filter_on_tag,
     get_least_recently_asked_on_discord,
-    make_status_and_tag_response_text,
 )
-from api.utilities.coda_utils import QuestionRow
+from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
 from utilities.questions_utils import (
@@ -174,7 +173,7 @@ class Questions(Module):
             response_text = "There is 1 question"
         elif len(questions_df) > 1:
             response_text = f"There are {len(questions_df)} questions"
-        else:  # n_questions == 0:
+        else:  # len(questions_df) == 0
             response_text = "There are no questions"
         status_and_tag_response_text = make_status_and_tag_response_text(status, tag)
         response_text += status_and_tag_response_text
@@ -230,6 +229,11 @@ class Questions(Module):
         response_text, why = await coda_api.get_questions_text_and_why(
             questions, request_data, message
         )
+
+        # If FilterData, add additional info about status and/or tag queried for
+        if request_data[0] == "FilterData":
+            status, tag, _limit = request_data[1]
+            response_text += make_status_and_tag_response_text(status, tag)
 
         # get current time for updating when these questions were last asked on Discord
         current_time = datetime.now()
@@ -458,6 +462,11 @@ class Questions(Module):
         return "Questions Module"
 
 
+#############
+#   Utils   #
+#############
+
+
 def make_post_question_message(question_row: QuestionRow) -> str:
     """Make message for posting a question into a Discord channel
 
@@ -467,6 +476,20 @@ def make_post_question_message(question_row: QuestionRow) -> str:
     ```
     """
     return '"' + question_row["title"] + '"' + "\n" + question_row["url"]
+
+
+def make_status_and_tag_response_text(
+    status: Optional[QuestionStatus],
+    tag: Optional[str],
+) -> str:
+    """Generate additional info about status and/or tag queried for"""
+    if status and tag:
+        return f" with status `{status}` and tagged as `{tag}`"
+    if status:
+        return f" with status `{status}`"
+    if tag:
+        return f" tagged as `{tag}`"
+    return ""
 
 
 ###############
