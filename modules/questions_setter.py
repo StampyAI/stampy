@@ -59,7 +59,7 @@ from api.utilities.coda_utils import QuestionStatus
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.questions_utils import (
-    QuestionSpecData,
+    QuestionSpecQuery,
     parse_gdoc_links,
     parse_question_spec_data,
 )
@@ -362,7 +362,7 @@ class QuestionsSetter(Module):
 
     async def cb_set_question_status(
         self,
-        spec_data: QuestionSpecData,
+        spec_data: QuestionSpecQuery,
         status: QuestionStatus,
         text: str,
         message: ServiceMessage,

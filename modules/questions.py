@@ -81,8 +81,8 @@ from utilities.questions_utils import (
     parse_question_filter_data,
     parse_question_request_data,
     parse_question_spec_data,
-    QuestionFilterDataNT,
-    QuestionRequestData,
+    QuestionFilter,
+    QuestionQuery,
 )
 from utilities.utilities import is_in_testing_mode, pformat_to_codeblock
 from utilities.serviceutils import ServiceMessage
@@ -156,7 +156,7 @@ class Questions(Module):
 
     async def cb_count_questions(
         self,
-        filter_data: QuestionFilterDataNT,
+        filter_data: QuestionFilter,
         message: ServiceMessage,
     ) -> Response:
         questions_df = coda_api.questions_df
@@ -191,7 +191,7 @@ class Questions(Module):
     def parse_post_questions_command(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        request_data: QuestionRequestData
+        request_data: QuestionQuery
         if not (re_post_question.search(text) or re_big_next_question.search(text)):
             return
         request_data = parse_question_request_data(text)
@@ -203,7 +203,7 @@ class Questions(Module):
 
     async def cb_post_questions(
         self,
-        request_data: QuestionRequestData,
+        request_data: QuestionQuery,
         message: ServiceMessage,
     ) -> Response:
         # Dispatch on every possible type of QuestionRequestData
@@ -222,7 +222,7 @@ class Questions(Module):
 
         # get questions (can be emptylist)
         questions = await coda_api.query_for_questions(
-            request_data, message, get_least_recently_asked_unpublished=True
+            request_data, message, least_recently_asked_unpublished=True
         )
 
         # get text and why (requires handling failures)
@@ -231,7 +231,7 @@ class Questions(Module):
         )
 
         # If FilterData, add additional info about status and/or tag queried for
-        if request_data[0] == "FilterData":
+        if request_data[0] == "Filter":
             status, tag, _limit = request_data[1]
             response_text += make_status_and_tag_response_text(status, tag)
 
@@ -319,7 +319,7 @@ class Questions(Module):
 
     async def cb_get_question_info(
         self,
-        request_data: QuestionRequestData,
+        request_data: QuestionQuery,
         message: ServiceMessage,
     ) -> Response:
         # get questions (can be emptylist)

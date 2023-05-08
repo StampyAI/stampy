@@ -24,7 +24,7 @@ from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
 
 if TYPE_CHECKING:
     from utilities.questions_utils import (
-        QuestionRequestData,
+        QuestionQuery,
     )
 
 
@@ -253,48 +253,72 @@ class CodaAPI:
 
     async def query_for_questions(
         self,
-        request_data: QuestionRequestData,
+        query: QuestionQuery,
         message: ServiceMessage,
         *,
-        get_least_recently_asked_unpublished: bool = False,
+        least_recently_asked_unpublished: bool = False,
     ) -> list[QuestionRow]:
-        """Finds questions based on request data"""
+        """Finds questions based on request data
+
+        Args
+        ----------
+        query: QuestionQuery
+            - A 2-tuple where the first value is a string indicating the type of the second value. Possible variants are:
+                - ("Last", "last" or "it") - requesting the last question (e.g., `s, get last question`, `s, post it`)
+                - ("GDocLinks", list of strings) - links to GDocs of particular answers
+                - ("Title", question title) - doesn't have to be the exact, perfectly matching title, fuzzily matching substring is enough
+                - ("Filter", QuestionFilterQuery) - a NamedTuple containing
+                    - status: Optional[QuestionStatus] - optional query for questions
+                    - tag: Optional[str] - optional query for questions
+                    - limit: int - how many questions at most should be returned
+
+        message: ServiceMessage
+            - The original message from which that request was parsed.
+
+        least_recently_asked_unpublished: bool, default=False
+            - If `True` and `query` is of type "Filter" with `status=None` and `tag=None`, then questions will be filtered for those which are not `Live on site` and choose randomly from them
+            - Should be set to `True` when querying for questions for posting
+
+        Returns
+        ----------
+        A list of question rows matching the query.
+        """
         questions_df = self.questions_df
 
         # QuestionGDocLinks
-        if request_data[0] == "GDocLinks":
-            gdoc_links = request_data[1]
+        if query[0] == "GDocLinks":
+            gdoc_links = query[1]
             questions = self.get_questions_by_gdoc_links(gdoc_links)
             if not questions:
                 return []
             return questions
 
         # QuestionTitle
-        if request_data[0] == "Title":
-            question_title = request_data[1]
+        if query[0] == "Title":
+            question_title = query[1]
             question = self.get_question_by_title(question_title)
             if question is None:
                 return []
             return [question]
 
         # QuestionLast
-        if request_data[0] == "Last":
+        if query[0] == "Last":
             if self.last_question_id is None:
                 return []
             question = cast(QuestionRow, self.get_question_by_id(self.last_question_id))
             return [question]
 
-        ######################
-        # QuestionFilterData #
-        ######################
-        status, tag, limit = request_data[1]
-        # TODO: explain this
-        get_least_recently_asked_unpublished = (
-            get_least_recently_asked_unpublished and status is None and tag is None
+        ##############
+        #   Filter   #
+        ##############
+
+        status, tag, limit = query[1]
+        least_recently_asked_unpublished = (
+            least_recently_asked_unpublished and status is None and tag is None
         )
 
-        # if status and tag were not specified, look for unpublished questions
-        if get_least_recently_asked_unpublished:
+        # (explained in this method's docstring)
+        if least_recently_asked_unpublished:
             questions_df = questions_df.query("status != 'Live on site'")
         elif status is not None:
             questions_df = questions_df.query("status == @status")
@@ -302,22 +326,19 @@ class CodaAPI:
         # if tag was specified, filter for questions having that tag
         questions_df = filter_on_tag(questions_df, tag)
 
-        if get_least_recently_asked_unpublished:
-            # get all the oldest ones and shuffle them
+        if least_recently_asked_unpublished:
+            # get the least recently asked and shuffle them
             questions_df = get_least_recently_asked_on_discord(questions_df)
             questions_df = shuffle_df(questions_df)
-
-            limit = min(limit, 5)
 
         # get specified number of questions (default [if unspecified] is 1)
         if limit > 5:
             await message.channel.send(f"{limit} is to much. I'll give you up to 5.")
 
-        limit = min(limit, 5)
         # filter on max num of questions
         questions_df = questions_df.sort_values(
             "last_asked_on_discord", ascending=False
-        ).iloc[:limit]
+        ).iloc[: min(limit, 5)]
         if questions_df.empty:
             return []
         questions = questions_df.to_dict(orient="records")
@@ -328,7 +349,7 @@ class CodaAPI:
     async def get_questions_text_and_why(
         self,
         questions: list[QuestionRow],
-        request_data: QuestionRequestData,
+        request_data: QuestionQuery,
         message: ServiceMessage,
     ) -> tuple[Text, Why]:
         # breakpoint()

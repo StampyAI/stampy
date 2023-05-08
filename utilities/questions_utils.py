@@ -16,17 +16,17 @@ all_tags = coda_api.get_all_tags()
 ##########################
 
 
-class QuestionFilterDataNT(NamedTuple):
+class QuestionFilter(NamedTuple):
     status: Optional[QuestionStatus]
     tag: Optional[str]
     limit: int
 
 
-QuestionFilterData = tuple[Literal["FilterData"], QuestionFilterDataNT]
+QuestionFilterQuery = tuple[Literal["Filter"], QuestionFilter]
 
 
-def parse_question_filter_data(text: str) -> QuestionFilterDataNT:
-    return QuestionFilterDataNT(
+def parse_question_filter_data(text: str) -> QuestionFilter:
+    return QuestionFilter(
         status=parse_status(text),
         tag=parse_tag(text),
         limit=parse_questions_limit(text),
@@ -105,7 +105,7 @@ def parse_question_title(text: str) -> Optional[str]:
         return question_title
 
 
-def parse_question_spec_data(text: str) -> Optional[QuestionSpecData]:
+def parse_question_spec_data(text: str) -> Optional[QuestionSpecQuery]:
     # QuestionLast
     if mention := parse_question_last(text):
         return "Last", mention
@@ -117,17 +117,17 @@ def parse_question_spec_data(text: str) -> Optional[QuestionSpecData]:
         return "Title", question_title
 
 
-def parse_question_request_data(text: str) -> QuestionRequestData:
+def parse_question_request_data(text: str) -> QuestionQuery:
     if spec_data := parse_question_spec_data(text):
         return spec_data
-    return "FilterData", parse_question_filter_data(text)
+    return "Filter", parse_question_filter_data(text)
 
 
-QuestionSpecData = Union[
+QuestionSpecQuery = Union[
     tuple[Literal["Last"], Literal["last", "it"]],
     tuple[Literal["GDocLinks"], list[str]],
     tuple[Literal["Title"], str],
 ]
 
 
-QuestionRequestData = Union[QuestionSpecData, QuestionFilterData]
+QuestionQuery = Union[QuestionSpecQuery, QuestionFilterQuery]
