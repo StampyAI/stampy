@@ -150,31 +150,33 @@ class CodaAPI:
         )
 
     def get_question_row(self, question_id: str) -> Optional[QuestionRow]:
-        """Get QuestionRow by its ID"""
+        """Get QuestionRow from questions cache by its ID"""
         if question_id not in self.questions_df.index.tolist():
             return
         return cast(QuestionRow, self.questions_df.loc[question_id].to_dict())
 
     def get_questions_by_gdoc_links(self, urls: list[str]) -> list[QuestionRow]:
         """Get questions by url links to their GDocs.
-        Returns list of `QuestionRow`s. Empty list (`[]`) if couldn't find questions
-        with any of the links.
+        Returns list of `QuestionRow`s.
+        Empty list (`[]`) if couldn't find questions with any of the links.
         """
         questions_df = self.questions_df
+        # query for questions whose url starts with any of the urls that were passed
         questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
             questions_df["url"].map(  # pylint:disable=unsubscriptable-object
-                lambda qurl: any(qurl.startswith(url) for url in urls)
+                lambda question_url: any(question_url.startswith(url) for url in urls)
             )
         ]
         if questions_df_queried.empty:
             return []
-        return cast(list[QuestionRow], questions_df_queried.to_dict(orient="records"))
+        questions = questions_df_queried.to_dict(orient="records")
+        return cast(list[QuestionRow], questions)
 
-    def get_question_by_title(self, searched_title: str) -> Optional[QuestionRow]:
+    def get_question_by_title(self, title: str) -> Optional[QuestionRow]:
         questions_df = self.questions_df
         questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
             questions_df["title"].map(  # pylint:disable=unsubscriptable-object
-                lambda title: fuzzy_contains(title, searched_title)
+                lambda question_title: fuzzy_contains(question_title, title)
             )
         ]
         if questions_df_queried.empty:
@@ -182,11 +184,11 @@ class CodaAPI:
         if len(questions_df_queried) > 1:
             self.log.warning(
                 self.class_name,
-                msg=f"Found {len(questions_df_queried)} matching title {searched_title}. Returning first.",
+                msg=f'Found {len(questions_df_queried)} matching title query "{title}". Returning first.',
                 results=questions_df_queried["title"].tolist(),
             )
-        question = cast(QuestionRow, questions_df_queried.iloc[0].to_dict())
-        return question
+        question = questions_df_queried.iloc[0].to_dict()
+        return cast(QuestionRow, question)
 
     def update_question_status(
         self,
