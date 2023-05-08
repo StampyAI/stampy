@@ -62,6 +62,7 @@ Put screenshot here.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import random
 import re
 from typing import cast, Optional
 
@@ -70,7 +71,6 @@ from dotenv import load_dotenv
 
 from api.coda import (
     CodaAPI,
-    QuestionStatus,
     filter_on_tag,
     get_least_recently_asked_on_discord,
     make_status_and_tag_response_text,
@@ -102,7 +102,7 @@ class Questions(Module):
     def __init__(self) -> None:
         super().__init__()
         # Time when last question was posted
-        self.last_question_posted: datetime = (
+        self.last_posted_time: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
         # Was the last question that was posted, automatically posted by Stampy?
@@ -112,8 +112,7 @@ class Questions(Module):
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
             if (
-                self.last_question_posted
-                < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
+                self.last_posted_time < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
             ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
 
@@ -210,67 +209,51 @@ class Questions(Module):
         request_data: QuestionRequestData,
         message: ServiceMessage,
     ) -> Response:
-        """Post message to Discord for least recently asked question.
-        It will contain question title and GDoc url.
-        """
+        # Dispatch on every possible type of QuestionRequestData
         if request_data[0] == "GDocLinks":
-            text = (
+            # it doesn't make any sense to ask Stampy to post questions to which we already have links
+            response_text = (
                 "Why don't you post "
                 + ("it" if len(request_data[1]) == 1 else "them")
                 + f" yourself, <@{message.author}>?"
             )
             return Response(
                 confidence=10,
-                text=text,
+                text=response_text,
                 why=f"If {message.author.name} has these links, they can surely post these question themselves",
             )
+
         # get questions (can be emptylist)
         questions = await coda_api.query_for_questions(
             request_data, message, get_least_recently_asked_unpublished=True
         )
 
         # get text and why (requires handling failures)
-        text, why = await coda_api.get_questions_text_and_why(
+        response_text, why = await coda_api.get_questions_text_and_why(
             questions, request_data, message
         )
 
+        # get current time for updating when these questions were last asked on Discord
         current_time = datetime.now()
-        text += "\n"
+        # add each question to response_text
+        response_text += "\n"
         for q in questions:
-            text += f"\n{make_post_question_message(q)}"
+            response_text += f"\n{make_post_question_message(q)}"
             coda_api.update_question_last_asked_date(q["id"], current_time)
 
         # update caches
-        self.last_question_posted = current_time
+        self.last_posted_time = current_time
         self.last_question_autoposted = False
 
-        # if there is only one question, cache its ID
+        # if there is exactly one question, remember its ID
         if len(questions) == 1:
             coda_api.last_question_id = questions[0]["id"]
 
         return Response(
             confidence=10,
-            text=text,
+            text=response_text,
             why=why,
         )
-
-    def make_post_questions_result_response_text(
-        self,
-        status: Optional[QuestionStatus],
-        tag: Optional[str],
-        max_num_of_questions: int,
-        num_found: int,
-    ) -> str:
-        """Generate response text for posting questions request"""
-        if num_found == 1:
-            s = "Here is a question"
-        elif num_found == 0:
-            s = "I found no questions"
-        elif num_found < max_num_of_questions:
-            s = f"I found only {num_found} questions"
-        else:
-            s = f"Here are {max_num_of_questions} questions"
-        return s + make_status_and_tag_response_text(status, tag)
 
     # TODO: this should be on Rob's discord only
     async def post_random_oldest_question(self, event_type) -> None:
@@ -278,19 +261,22 @@ class Questions(Module):
         Triggered automatically six hours after non-posting any question
         (unless the last was already posted automatically using this method).
         """
-        # choose randomly one of the two channels
+        # get channel #general
         channel = cast(Thread, self.utils.client.get_channel(int(general_channel_id)))
 
-        # get random question with status Not started
+        # query for questions with status "Not started" and not tagged as "Stampy"
         questions_df_filtered = coda_api.questions_df.query("status == 'Not started'")
         questions_df_filtered = questions_df_filtered[
             questions_df_filtered["tags"].map(lambda tags: "Stampy" not in tags)
         ]
+        # choose at random from least recently asked ones
         question = cast(
             QuestionRow,
-            get_least_recently_asked_on_discord(questions_df_filtered)
-            .iloc[0]
-            .to_dict(),
+            random.choice(
+                get_least_recently_asked_on_discord(questions_df_filtered).to_dict(
+                    orient="records"
+                ),
+            ),
         )
 
         # update in coda
@@ -299,18 +285,13 @@ class Questions(Module):
 
         # update caches
         coda_api.last_question_id = question["id"]
-        self.last_question_posted = current_time
+        self.last_posted_time = current_time
         self.last_question_autoposted = True
 
         # log
         self.log.info(
             self.class_name,
-            msg=(
-                "Posting a random oldest question to the channel because "
-                f"Stampy hasn't posted anything for at least {self.AUTOPOST_QUESTION_INTERVAL}"
-            ),
-            channel_name=channel.name,
-            event_type=event_type,
+            msg="Posting a random, least recent, not started question to #general",
         )
 
         # send to channel
