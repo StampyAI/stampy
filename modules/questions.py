@@ -195,17 +195,10 @@ class Questions(Module):
     def parse_post_questions_command(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        """Returns `PostQuestionsCommand` if this message asks Stampy to post questions,
-        optionally, filtering for status and/or tag and/or maximum number of questions (capped at 5).
-        Returns `None` otherwise.
-        """
         request_data: QuestionRequestData
-        if re_post_question.search(text):
-            request_data = parse_question_request_data(text)
-        elif re_big_next_question.search(text):
-            request_data = "FilterData", QuestionFilterDataNT(None, None, 1)
-        else:
+        if not (re_post_question.search(text) or re_big_next_question.search(text)):
             return
+        request_data = parse_question_request_data(text)
         return Response(
             confidence=8,
             callback=self.cb_post_questions,
