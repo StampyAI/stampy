@@ -149,7 +149,7 @@ class CodaAPI:
             num_questions=len(self.questions_df),
         )
 
-    def get_question_row(self, question_id: str) -> Optional[QuestionRow]:
+    def get_question_by_id(self, question_id: str) -> Optional[QuestionRow]:
         """Get QuestionRow from questions cache by its ID"""
         if question_id not in self.questions_df.index.tolist():
             return
@@ -195,17 +195,23 @@ class CodaAPI:
         question_id: str,
         status: QuestionStatus,
     ) -> None:
-        """Update status of a question in
-        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
-        Also, update local cache accordingly.
+        """Update the status of a question in the
+        [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
+        Also, update the local cache accordingly.
         """
-        # get row
-        row = self.get_question_row(question_id)
-        if row is None:
+        # get question row
+        question = self.get_question_by_id(question_id)
+        if question is None:
+            self.log.warning(
+                self.class_name,
+                msg="Tried updating a question's status but couldn't find a question with that ID",
+                question_id=question_id,
+                status=status,
+            )
             return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
-            row["row"], make_updated_cells({"Status": status})
+            question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
         self.questions_df.loc[question_id]["status"] = status
@@ -213,16 +219,22 @@ class CodaAPI:
     def update_question_last_asked_date(
         self, question_id: str, current_time: datetime
     ) -> None:
-        """Update "Last Asked On Discord" field of a question in
-        [coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
-        Also, update local cache accordingly"""
-        # get row
-        row = self.get_question_row(question_id)
-        if row is None:
+        """Update the `Last Asked On Discord` field of a question in the
+        [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
+        Also, update the local cache accordingly"""
+        # get question row
+        question = self.get_question_by_id(question_id)
+        if question is None:
+            self.log.warning(
+                self.class_name,
+                msg="Tried updating a question's `Last Asked On Discord` field but couldn't find a question with that ID",
+                question_id=question_id,
+                current_time=current_time,
+            )
             return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
-            row["row"],
+            question["row"],
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
         # update local cache
@@ -230,13 +242,10 @@ class CodaAPI:
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
-        questions_df = self.questions_df
-        # pylint:disable=unsubscriptable-object
-        questions_with_dt_ids = questions_df[
-            questions_df["last_asked_on_discord"] != DEFAULT_DATE
-        ]["id"].tolist()
-        for question_id in questions_with_dt_ids:
-            self.update_question_last_asked_date(question_id, DEFAULT_DATE)
+        for _, r in self.questions_df.iterrows():
+            if r["last_asked_on_discord"] != DEFAULT_DATE:
+                question_id = cast(str, r["question_id"])
+                self.update_question_last_asked_date(question_id, DEFAULT_DATE)
 
     ###############
     #   Finding   #
@@ -272,7 +281,7 @@ class CodaAPI:
         if request_data[0] == "Last":
             if self.last_question_id is None:
                 return []
-            question = cast(QuestionRow, self.get_question_row(self.last_question_id))
+            question = cast(QuestionRow, self.get_question_by_id(self.last_question_id))
             return [question]
 
         ######################
