@@ -81,35 +81,23 @@ class CodaAPI:
             cls.__instance = cls()
         return cls.__instance
 
-    def update_questions_cache(self) -> None:
-        """Update questions cache, i.e. DataFrame with questions.
-        Gets called upon CodaAPI initialization and every 10 minutes or so by Questions module.
-        """
-        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
-        question_rows = [parse_question_row(row) for row in questions.rows()]
-        self.questions_df = pd.DataFrame(question_rows).set_index("id", drop=False)
-        self.questions_cache_last_update = datetime.now()
-        self.log.info(
-            self.class_name,
-            msg="Updated questions cache",
-            num_questions=len(self.questions_df),
-        )
-
-    def update_users_cache(self) -> None:
-        """Update users cache, i.e. codaio Table representing
-        [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#Team_tu_Rc/r5).
-        Gets called upon CodaAPI initialization and every 23 hours or so
-        from within StampCollection module,
-        when all stamps in the coda table are being updated.
-        """
-        self.users = self.doc.get_table(self.TEAM_GRID_ID)
-        self.log.info(
-            self.class_name, msg="Updated users cache", num_users=self.users.row_count
-        )
-
     #############
     #   Users   #
     #############
+
+    def update_users_cache(self) -> None:
+        """Update the cache of the
+        [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_luBnC).
+
+        Gets called during initialization and every ~23 hours by StampCollection module,
+        during updating all stamps in the coda table.
+        """
+        # get coda table
+        self.users = self.doc.get_table(self.TEAM_GRID_ID)
+        # log
+        self.log.info(
+            self.class_name, msg="Updated users cache", num_users=self.users.row_count
+        )
 
     def get_user_row(self, field: str, value: str) -> Optional[Row]:
         """Get user row from the users table using a query with the following form
@@ -139,6 +127,27 @@ class CodaAPI:
     #################
     #   Questions   #
     #################
+
+    def update_questions_cache(self) -> None:
+        """Update the cache of the
+        [All answers coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
+
+        Gets called during initialization and every ~10 minutes by Questions module.
+        """
+        # get coda table
+        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        # parse its rows
+        question_rows = [parse_question_row(row) for row in questions.rows()]
+        # convert into dataframe
+        self.questions_df = pd.DataFrame(question_rows).set_index("id", drop=False)
+        # store date of update
+        self.questions_cache_last_update = datetime.now()
+        # log
+        self.log.info(
+            self.class_name,
+            msg="Updated questions cache",
+            num_questions=len(self.questions_df),
+        )
 
     def get_question_row(self, question_id: str) -> Optional[QuestionRow]:
         """Get QuestionRow by its ID"""

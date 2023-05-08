@@ -258,7 +258,7 @@ class Questions(Module):
         )
 
     # TODO: this should be on Rob's discord only
-    async def post_random_oldest_question(self, event_type) -> None:
+    async def post_random_oldest_question(self, _event_type) -> None:
         """Post random oldest not started question.
         Triggered automatically six hours after non-posting any question
         (unless the last was already posted automatically using this method).
