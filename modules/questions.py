@@ -10,7 +10,7 @@ Stampy can count questions in the database. You can narrow down the counting usi
 - `s, count questions tagged decision theory` - counts only questions with the tag `Decision theory`
 - `s, count questions with status live on site and tagged decision theory` - counts only questions that **both** have status `Live on site` **and** the tag `Decision theory`
 
-put screenshot here
+![](images/help/Questions-count-questions.png)
 
 ---
 
@@ -22,29 +22,35 @@ You can use Stampy to query the database of questions. Stampy will put links to 
 
 The general pattern for that command is: `s, <get/post/next> <q/question/questions> <ADDITIONAL_INFO>`.
 
-You can query questions by:
+You can query in three ways
 
 #### 1. Title
 
-`s, get question <question_title>`
+Stampy returns first question matching that title
 
-#### 2. GDoc links
+`s, get <q/question/title/titled> <question_title>`
 
-`s, get questions <gdoc_link1> <gdoc_link2> ...`
+![](/images/help/Questions-get-adversarial.png)
 
-#### 3. Filtering by status on tags
+#### 2. Filtering by status on tags
 
-`s, get 3 question with status in in progress and tagged definitions ...` (like [above](#counting-questions))
+Stampy returns the specified number of questions (max 5, default 1) matching (optional) status and tag
+
+`s, get 3 questions with status in progress and tagged definitions` (like [above](#counting-questions))
+
+![](images/help/Questions-get-3-questions-status-tagged.png)
 
 If you say, `s, next question`, then Stampy will query all questions, and post the least recently asked one.
 
-#### 4. Last
+![](images/help/Questions-next.png)
+
+#### 3. Last
 
 Stampy will post last question he interacted with.
 
 `s, post last question` / `s, post it`
 
-put screenshot here
+![](/images/help/Questions-get-last.png)
 
 ---
 
@@ -54,10 +60,9 @@ On Rob Miles' Discord server, Stampy posts a random least recently asked questio
 
 ### Getting question info
 
-`s, get info <ADDITIONAL_INFO>` (with basically the same filtering as above, except `next`) can be used to get detailed information about the question as an entity in the database.
+`s, get info <ADDITIONAL_INFO>` (with any filtering option mentioned so far, except `next`) can be used to get detailed information about the question as an entity in the database.
 
-Put screenshot here.
-
+![](images/help/Questions-get-info-babyagi.png)
 """
 from __future__ import annotations
 
@@ -380,7 +385,7 @@ class Questions(Module):
             # Info #
             ########
             self.create_integration_test(
-                test_message="info t is it unethical", expected_regex="Here it is"
+                test_message="info q is it unethical", expected_regex="Here it is"
             ),
             self.create_integration_test(
                 test_message="info https://docs.google.com/document/d/1Nzjn-Q_u44KMPzrg_fYE3B-7AqRFJOCfbYQ5HOp8svY/edit",
@@ -497,13 +502,13 @@ def make_status_and_tag_response_text(
 #   Regexes   #
 ###############
 
-# TODO: update help docstrings
 re_post_question = re.compile(
     r"""
     (?:get|post|next) # get / post / next
     \s # whitespace char (obligatory)
     (?:\d+\s)? # optional number of questions
-    (?:q|questions?|a|answers?) # q / question / questions / a / answer / answers
+    (?:q|questions?|a|answers?|itlast)
+    # q / question / questions / a / answer / answers / it / last
     """,
     re.I | re.X,
 )

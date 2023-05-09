@@ -15,7 +15,7 @@ On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@revie
 - `@feedback` -> `In progress`
 - `@feedback-sketch` -> `Bulletpoint sketch`
 
-![](images/command-review-request.png)
+![](images/help/QuestionsSetter-review-request.png)
 
 Some remarks:
 
@@ -33,21 +33,21 @@ The keywords are (case-insensitive):
 - lgtm
   - stands for "looks good to me"
 
-![](images/command-review-acceptance.png)
+![](images/help/QuestionsSetter-review-acceptance.png)
 
 ### Marking questions for deletion or as duplicates
 
 Use `s, <del/dup>` (or `stampy, <del/dup>`) to change status of questions to `Marked for deletion` or `Duplicate`
 
-![](images/command-del-dup.png)
+![](images/help/QuestionsSetter-del-dup.png)
 
 ### Setting question status
 
 Question status can be changed more flexibly, using the command: `<set/change> <status/to/status to> <status>`, followed by appropriate GDoc links.
 
-Like [previously](#counting-questions), status name is case-insensitive and you can use status aliases.
+Status name is case-insensitive and you can use status aliases.
 
-![](images/command-set-status.png)
+![](images/help/QuestionsSetter-set-status.png)
 """
 from __future__ import annotations
 
@@ -80,7 +80,7 @@ ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
 
 
-class QuestionsSetter(Module):
+class QuestionSetter(Module):
     """Module for editing questions in [coda](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)."""
 
     def __init__(self) -> None:
@@ -384,8 +384,6 @@ class QuestionsSetter(Module):
                 text=f"You're not a reviewer, <@{message.author}>. Only reviewers can change status of questions to `Live on site`",
                 why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
             )
-
-        # TODO: Maybe this should be processed inside coda api???
 
         questions = await coda_api.query_for_questions(q_spec_query, message)
         if not questions:

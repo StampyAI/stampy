@@ -52,6 +52,9 @@ def main() -> None:
             module_name, docstring = result
             help_file_text += f"\n\n## {module_name}\n\n{docstring}"
 
+    # final newline for markdown pedancy
+    help_file_text += "\n"
+
     # save it
     with open("help.md", "w", encoding="utf-8") as f:
         f.write(help_file_text)

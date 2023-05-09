@@ -383,7 +383,7 @@ class CodaAPI:
                     why
                     + " but I don't remember what it was because I recently rebooted",
                 )
-            return f'The last question was:\n"{questions[0]["title"]}"', why
+            return "The last question was:", why
 
         ######################
         # QuestionFilterData #

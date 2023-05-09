@@ -102,7 +102,7 @@ def parse_gdoc_links(text: str) -> list[str]:
     return _re_gdoc_link.findall(text)
 
 
-_re_title = re.compile(r"\b(?:q|question|t|titled?)\s+([-\w\s]+)", re.I)
+_re_title = re.compile(r"\b(?:q|question|titled?)\s+([-\w\s]+)", re.I)
 
 
 def parse_question_title(text: str) -> Optional[str]:
