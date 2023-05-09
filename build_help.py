@@ -1,3 +1,4 @@
+"""Run this script to update help.md file"""
 import os
 import re
 from typing import Optional
