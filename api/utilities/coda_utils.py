@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-import requests
 from typing import Any, Literal, TypedDict
 
 from codaio import Cell, Row
+import requests
 
 DEFAULT_DATE = datetime(1, 1, 1, 0)
 
@@ -18,17 +18,10 @@ def adjust_date(date_str: str) -> datetime:
     return datetime.fromisoformat(date_str.split("T")[0])
 
 
-def make_post_question_message(question_row: QuestionRow) -> str:
-    """Make question message from questions DataFrame row
-
-    <title>\n
-    <url>
-    """
-    return question_row["title"] + "\n" + question_row["url"]
-
-
 def parse_question_row(row: Row) -> QuestionRow:
-    """Parse a raw row from "All answers" table"""
+    """Parse a raw row from
+    [All answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
+    """
     row_dict = row.to_dict()
     title = row_dict["Edit Answer"]
     url = row_dict["Link"]
@@ -58,7 +51,7 @@ def make_updated_cells(col2val: dict[str, Any]) -> list[Cell]:
 
 
 class QuestionRow(TypedDict):
-    """Dict representing one row parsed from coda "All Answers" table"""
+    """Dictionary representing one row parsed from coda "All Answers" table"""
 
     id: str
     title: str
@@ -81,7 +74,3 @@ QuestionStatus = Literal[
     "Uncategorized",
     "Withdrawn",
 ]
-
-
-def request_succesful(response: requests.Response) -> bool:
-    return response.status_code in (200, 202)
