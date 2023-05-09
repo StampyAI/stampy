@@ -512,78 +512,89 @@ re_count_questions = re.compile(
     r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
 )
 
-
 re_big_next_question = re.compile(
-    r"""
-(
-    (
-        [wW]hat
-        (’|'|\si)?s
-    |
-        ([Cc]an|[Mm]ay)\s
-        (we|[iI])\s
-        (have|get)
-    |
-        [Ll]et[’']?s\shave
-    |
-        [gG]ive\sus
-    )?  # Optional: what's / can we have / let's have / give us
-    (
-        \s?[Aa](nother)? # a / another
-    |
-        (\sthe)?\s?
-        [nN]ext
-    |
-        [pP]ost
-    )
-    \s
-    question,? # next question (please)
-    (\splease)?\??
-    |
-    (
-        [Dd]o\syou\shave
-        |
-        ([Hh]ave\syou\s)?
-        [gG]ot
-    )
-    (
-        \s?[Aa]ny(\smore|\sother)?
-    |
-        \sanother
-    )
-    \s(question)?
-    (\sfor\sus)?\??
+    r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
+    r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
+    r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
 )
-!?
-"""
-)
-
 
 re_big_count_questions = re.compile(
-    r"""
-(
-    ( # how many questions are there left in ...
-    how\s+many\s+questions\s*
-    (are\s*(there\s*)?)?
-    (left\s*)?
-    (in\s+(your\s+|the\s+)?queue\s*)?
-    )
-|
-    ( # how long is/'s the/your questions queue now
-    how\s+
-    (long\s+is|long's)\s+
-    (the\s+|your\s+)?
-    (question\s+)?
-    queue
-    (\s+now)?
-    )
-|
-    (
-    (\#|n|num)\s+(of\s+)?questions
-    )
+    r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
+    r"(long is|long's)) (the|your)( question)? queue( now)?\??",
 )
-\?* # optional question mark
-$   # end
-""",
-    re.X | re.I,
-)
+
+
+# re_big_next_question = re.compile(
+#     r"""
+# (
+#     (
+#         [wW]hat
+#         (’|'|\si)?s
+#     |
+#         ([Cc]an|[Mm]ay)\s
+#         (we|[iI])\s
+#         (have|get)
+#     |
+#         [Ll]et[’']?s\shave
+#     |
+#         [gG]ive\sus
+#     )?  # Optional: what's / can we have / let's have / give us
+#     (
+#         \s?[Aa](nother)? # a / another
+#     |
+#         (\sthe)?\s?
+#         [nN]ext
+#     |
+#         [pP]ost
+#     )
+#     \s
+#     question,? # next question (please)
+#     (\splease)?\??
+#     |
+#     (
+#         [Dd]o\syou\shave
+#         |
+#         ([Hh]ave\syou\s)?
+#         [gG]ot
+#     )
+#     (
+#         \s?[Aa]ny(\smore|\sother)?
+#     |
+#         \sanother
+#     )
+#     \s(question)?
+#     (\sfor\sus)?\??
+# )
+# !?
+# """
+# )
+
+
+# re_big_count_questions = re.compile(
+#     r"""
+# (
+#     ( # how many questions are there left in ...
+#     how\s+many\s+questions\s*
+#     (are\s*(there\s*)?)?
+#     (left\s*)?
+#     (in\s+(your\s+|the\s+)?queue\s*)?
+#     )
+# |
+#     ( # how long is/'s the/your questions queue now
+#     how\s+
+#     (long\s+is|long's)\s+
+#     (the\s+|your\s+)?
+#     (question\s+)?
+#     queue
+#     (\s+now)?
+#     )
+# |
+#     (
+#     (\#|n|num)\s+(of\s+)?questions
+#     )
+# )
+# \?* # optional question mark
+# $   # end
+# """,
+#     re.X | re.I,
+# )
