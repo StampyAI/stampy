@@ -16,17 +16,17 @@ all_tags = coda_api.get_all_tags()
 ##########################
 
 
-class QuestionFilter(NamedTuple):
+class QuestionFilterNT(NamedTuple):
     status: Optional[QuestionStatus]
     tag: Optional[str]
     limit: int
 
 
-QuestionFilterQuery = tuple[Literal["Filter"], QuestionFilter]
+QuestionFilterQuery = tuple[Literal["Filter"], QuestionFilterNT]
 
 
-def parse_question_filter_data(text: str) -> QuestionFilter:
-    return QuestionFilter(
+def parse_question_filter(text: str) -> QuestionFilterNT:
+    return QuestionFilterNT(
         status=parse_status(text),
         tag=parse_tag(text),
         limit=parse_questions_limit(text),
@@ -34,41 +34,47 @@ def parse_question_filter_data(text: str) -> QuestionFilter:
 
 
 _status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands).replace(" ", r"\s")
+_re_status = re.compile(
+    rf"status\s*({_status_pat})",
+    re.I | re.X,
+)
 
 
 def parse_status(text: str) -> Optional[QuestionStatus]:
-    re_status = re.compile(
-        rf"status\s*({_status_pat})",
-        re.I | re.X,
-    )
-    if not (match := re_status.search(text)):
+    """Parse valid question status value from message text for querying questions database."""
+    if not (match := _re_status.search(text)):
         return
-    val = match.group(1)
-    return status_shorthands[val.lower()]
+    status_val = match.group(1)
+    return status_shorthands[status_val.lower()]
+
+
+_tag_pat = "|".join(all_tags).replace(" ", r"\s")
+_re_tag = re.compile(rf"tag(?:s|ged(?:\sas)?)?\s+({_tag_pat})", re.I)
 
 
 def parse_tag(text: str) -> Optional[str]:
-    """Parse string of tags extracted from message"""
-    tag_group = (
-        "(" + "|".join(all_tags).replace(" ", r"\s") + ")"
-    )  # this \s may not be necessary (?)
-    re_tag = re.compile(r"tag(?:s|ged(?:\sas)?)?\s+" + tag_group, re.I)
-    if (match := re_tag.search(text)) is None:
+    """Parse valid tag from message text for querying questions database"""
+    # tag_group = (
+    #     "(" + "|".join(all_tags).replace(" ", r"\s") + ")"
+    # )  # this \s may not be necessary (?)
+    # re_tag = re.compile(r"tag(?:s|ged(?:\sas)?)?\s+" + tag_group, re.I)
+    if (match := _re_tag.search(text)) is None:
         return None
-    tag = match.group(1)
-    tag_group = tag_group.replace(r"\s", " ")
-    tag_idx = tag_group.lower().find(tag.lower())
-    tag = tag_group[tag_idx : tag_idx + len(tag)]
-    return tag
+    tag_val = match.group(1)
+    tag_pat = _tag_pat.replace(r"\s", " ")
+    tag_idx = tag_pat.lower().find(tag_val.lower())
+    tag_val = tag_pat[tag_idx : tag_idx + len(tag_val)]
+    return tag_val
+
+
+_re_limit = re.compile(r"(\d\d?)\sq(?:uestions?)?", re.I)
 
 
 def parse_questions_limit(text: str) -> int:
-    re_pre = re.compile(r"(\d{1,2})\sq(?:uestions?)?", re.I)
-    re_post = re.compile(r"n\s?=\s?(\d{1,2})", re.I)
-    if (match := (re_pre.search(text) or re_post.search(text))) and (
-        num := match.group(1)
-    ).isdigit():
-        return int(num)
+    """Parse limit/number of questions for querying questions database"""
+    if match := _re_limit.search(text):
+        if (num := match.group(1)).isdigit():
+            return int(num)
     return 1
 
 
@@ -81,6 +87,7 @@ _re_last = re.compile(r"(?:i|info|get|post)\s(last|it)", re.I)
 
 
 def parse_question_last(text: str) -> Optional[Literal["last", "it"]]:
+    """Parse the word referring to the last question, if somebody referred to it."""
     if match := _re_last.search(text):
         mention = match.group(1)
         return cast(Literal["last", "it"], mention)
@@ -120,7 +127,7 @@ def parse_question_spec_data(text: str) -> Optional[QuestionSpecQuery]:
 def parse_question_request_data(text: str) -> QuestionQuery:
     if spec_data := parse_question_spec_data(text):
         return spec_data
-    return "Filter", parse_question_filter_data(text)
+    return "Filter", parse_question_filter(text)
 
 
 QuestionSpecQuery = Union[

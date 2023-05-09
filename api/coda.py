@@ -23,7 +23,7 @@ from utilities.serviceutils import ServiceMessage
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
 
 if TYPE_CHECKING:
-    from utilities.questions_utils import (
+    from utilities.question_querying_utils import (
         QuestionQuery,
     )
 

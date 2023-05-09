@@ -58,7 +58,7 @@ from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
 from modules.module import Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.questions_utils import (
+from utilities.question_querying_utils import (
     QuestionSpecQuery,
     parse_gdoc_links,
     parse_question_spec_data,

@@ -77,11 +77,11 @@ from api.coda import (
 from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
-from utilities.questions_utils import (
-    parse_question_filter_data,
+from utilities.question_querying_utils import (
+    parse_question_filter,
     parse_question_request_data,
     parse_question_spec_data,
-    QuestionFilter,
+    QuestionFilterNT,
     QuestionQuery,
 )
 from utilities.utilities import is_in_testing_mode, pformat_to_codeblock
@@ -145,7 +145,7 @@ class Questions(Module):
         """
         if not (re_big_count_questions.search(text) or re_count_questions.search(text)):
             return
-        filter_data = parse_question_filter_data(text)
+        filter_data = parse_question_filter(text)
 
         return Response(
             confidence=8,
@@ -156,7 +156,7 @@ class Questions(Module):
 
     async def cb_count_questions(
         self,
-        filter_data: QuestionFilter,
+        filter_data: QuestionFilterNT,
         message: ServiceMessage,
     ) -> Response:
         questions_df = coda_api.questions_df
@@ -191,7 +191,7 @@ class Questions(Module):
     def parse_post_questions_command(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        request_data: QuestionQuery
+        breakpoint()
         if not (re_post_question.search(text) or re_big_next_question.search(text)):
             return
         request_data = parse_question_request_data(text)
@@ -207,6 +207,7 @@ class Questions(Module):
         message: ServiceMessage,
     ) -> Response:
         # Dispatch on every possible type of QuestionRequestData
+        breakpoint()
         if request_data[0] == "GDocLinks":
             # it doesn't make any sense to ask Stampy to post questions to which we already have links
             response_text = (
@@ -449,7 +450,7 @@ class Questions(Module):
             # Big regexes #
             ###############
             self.create_integration_test(
-                test_message="give is another question",
+                test_message="give us another question",
                 expected_regex="Here is a question",
             ),
             self.create_integration_test(
