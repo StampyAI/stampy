@@ -11,9 +11,9 @@ status_shorthands = coda_api.get_status_shorthand_dict()
 all_tags = coda_api.get_all_tags()
 
 
-##########################
-#   QuestionFilterData   #
-##########################
+###########################
+#   QuestionFilterQuery   #
+###########################
 
 
 class QuestionFilterNT(NamedTuple):
@@ -26,6 +26,9 @@ QuestionFilterQuery = tuple[Literal["Filter"], QuestionFilterNT]
 
 
 def parse_question_filter(text: str) -> QuestionFilterNT:
+    """Parse query specifying properties of questions we're looking for
+    (status and tag) + limit (how many questions we want max)
+    """
     return QuestionFilterNT(
         status=parse_status(text),
         tag=parse_tag(text),
@@ -54,10 +57,6 @@ _re_tag = re.compile(rf"tag(?:s|ged(?:\sas)?)?\s+({_tag_pat})", re.I)
 
 def parse_tag(text: str) -> Optional[str]:
     """Parse valid tag from message text for querying questions database"""
-    # tag_group = (
-    #     "(" + "|".join(all_tags).replace(" ", r"\s") + ")"
-    # )  # this \s may not be necessary (?)
-    # re_tag = re.compile(r"tag(?:s|ged(?:\sas)?)?\s+" + tag_group, re.I)
     if (match := _re_tag.search(text)) is None:
         return None
     tag_val = match.group(1)
@@ -107,12 +106,14 @@ _re_title = re.compile(r"\b(?:q|question|t|titled?)\s+([-\w\s]+)", re.I)
 
 
 def parse_question_title(text: str) -> Optional[str]:
+    """Parse a substring of the message which we want to match to question title"""
     if match := _re_title.search(text):
         question_title = match.group(1)
         return question_title
 
 
 def parse_question_spec_data(text: str) -> Optional[QuestionSpecQuery]:
+    """Parse data specifying concrete questions"""
     # QuestionLast
     if mention := parse_question_last(text):
         return "Last", mention
@@ -125,6 +126,10 @@ def parse_question_spec_data(text: str) -> Optional[QuestionSpecQuery]:
 
 
 def parse_question_request_data(text: str) -> QuestionQuery:
+    """Parse `QuestionSpecQuery` (specifying concrete question)
+    or `QuestionFilterQuery` (specifying properties of questions
+    we're looking for)
+    """
     if spec_data := parse_question_spec_data(text):
         return spec_data
     return "Filter", parse_question_filter(text)

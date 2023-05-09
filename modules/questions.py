@@ -77,7 +77,7 @@ from api.coda import (
 from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
-from utilities.question_querying_utils import (
+from utilities.question_query_utils import (
     parse_question_filter,
     parse_question_request_data,
     parse_question_spec_data,
