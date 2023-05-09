@@ -79,8 +79,8 @@ from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
 from utilities.question_query_utils import (
     parse_question_filter,
-    parse_question_request_data,
-    parse_question_spec_data,
+    parse_question_query,
+    parse_question_spec_query,
     QuestionFilterNT,
     QuestionQuery,
 )
@@ -156,11 +156,11 @@ class Questions(Module):
 
     async def cb_count_questions(
         self,
-        filter_data: QuestionFilterNT,
+        question_filter: QuestionFilterNT,
         message: ServiceMessage,
     ) -> Response:
         questions_df = coda_api.questions_df
-        status, tag, _limit = filter_data
+        status, tag, _limit = question_filter
 
         # if status and/or tag specified, filter accordingly
         if status:
@@ -191,10 +191,9 @@ class Questions(Module):
     def parse_post_questions_command(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        breakpoint()
         if not (re_post_question.search(text) or re_big_next_question.search(text)):
             return
-        request_data = parse_question_request_data(text)
+        request_data = parse_question_query(text)
         return Response(
             confidence=8,
             callback=self.cb_post_questions,
@@ -203,16 +202,15 @@ class Questions(Module):
 
     async def cb_post_questions(
         self,
-        request_data: QuestionQuery,
+        question_query: QuestionQuery,
         message: ServiceMessage,
     ) -> Response:
-        # Dispatch on every possible type of QuestionRequestData
-        breakpoint()
-        if request_data[0] == "GDocLinks":
+        # Dispatch on every possible type of QuestionQuery
+        if question_query[0] == "GDocLinks":
             # it doesn't make any sense to ask Stampy to post questions to which we already have links
             response_text = (
                 "Why don't you post "
-                + ("it" if len(request_data[1]) == 1 else "them")
+                + ("it" if len(question_query[1]) == 1 else "them")
                 + f" yourself, <@{message.author}>?"
             )
             return Response(
@@ -223,17 +221,17 @@ class Questions(Module):
 
         # get questions (can be emptylist)
         questions = await coda_api.query_for_questions(
-            request_data, message, least_recently_asked_unpublished=True
+            question_query, message, least_recently_asked_unpublished=True
         )
 
         # get text and why (requires handling failures)
         response_text, why = await coda_api.get_response_text_and_why(
-            questions, request_data, message
+            questions, question_query, message
         )
 
         # If FilterData, add additional info about status and/or tag queried for
-        if request_data[0] == "Filter":
-            status, tag, _limit = request_data[1]
+        if question_query[0] == "Filter":
+            status, tag, _limit = question_query[1]
             response_text += make_status_and_tag_response_text(status, tag)
 
         # get current time for updating when these questions were last asked on Discord
@@ -310,7 +308,7 @@ class Questions(Module):
         # must match regex and contain query info
         if not re_get_question_info.search(text):
             return
-        if not (spec_data := parse_question_spec_data(text)):
+        if not (spec_data := parse_question_spec_query(text)):
             return
         return Response(
             confidence=10,
@@ -320,15 +318,15 @@ class Questions(Module):
 
     async def cb_get_question_info(
         self,
-        request_data: QuestionQuery,
+        question_query: QuestionQuery,
         message: ServiceMessage,
     ) -> Response:
         # get questions (can be emptylist)
-        questions = await coda_api.query_for_questions(request_data, message)
+        questions = await coda_api.query_for_questions(question_query, message)
 
         # get text and why (requires handling failures)
         response_text, why = await coda_api.get_response_text_and_why(
-            questions, request_data, message
+            questions, question_query, message
         )
 
         # add info about each question to response_text
@@ -337,10 +335,12 @@ class Questions(Module):
             response_text += f"\n{pformat_to_codeblock(cast(dict, q))}"
 
         # add info about query
-        if request_data[0] == "Last":
+        if question_query[0] == "Last":
             response_text += "\n\nquery: `last question`"
         else:
-            response_text += f"\n\nquery:\n{pformat_to_codeblock(dict([request_data]))}"
+            response_text += (
+                f"\n\nquery:\n{pformat_to_codeblock(dict([question_query]))}"
+            )
 
         # if there is exactly one question, remember its ID
         if len(questions) == 1:

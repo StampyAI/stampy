@@ -464,6 +464,14 @@ def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[shuffled_inds]
 
 
+def lacks_permissions(message: ServiceMessage) -> bool:
+    return not (
+        is_from_editor(message)
+        or is_from_reviewer(message)
+        or is_bot_dev(message.author)
+    )
+
+
 class UtilsTests:
     def test_split_message_for_discord(self):
         test_out = len(

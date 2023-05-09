@@ -112,7 +112,7 @@ def parse_question_title(text: str) -> Optional[str]:
         return question_title
 
 
-def parse_question_spec_data(text: str) -> Optional[QuestionSpecQuery]:
+def parse_question_spec_query(text: str) -> Optional[QuestionSpecQuery]:
     """Parse data specifying concrete questions"""
     # QuestionLast
     if mention := parse_question_last(text):
@@ -125,12 +125,12 @@ def parse_question_spec_data(text: str) -> Optional[QuestionSpecQuery]:
         return "Title", question_title
 
 
-def parse_question_request_data(text: str) -> QuestionQuery:
+def parse_question_query(text: str) -> QuestionQuery:
     """Parse `QuestionSpecQuery` (specifying concrete question)
     or `QuestionFilterQuery` (specifying properties of questions
     we're looking for)
     """
-    if spec_data := parse_question_spec_data(text):
+    if spec_data := parse_question_spec_query(text):
         return spec_data
     return "Filter", parse_question_filter(text)
 

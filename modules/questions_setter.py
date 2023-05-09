@@ -61,10 +61,10 @@ from utilities.discordutils import DiscordChannel
 from utilities.question_query_utils import (
     QuestionSpecQuery,
     parse_gdoc_links,
-    parse_question_spec_data,
+    parse_question_spec_query,
 )
 from utilities.serviceutils import ServiceMessage
-from utilities.utilities import is_from_editor, is_from_reviewer, is_bot_dev
+from utilities.utilities import is_from_reviewer, lacks_permissions
 
 
 coda_api = CodaAPI.get_instance()
@@ -276,9 +276,9 @@ class QuestionsSetter(Module):
                 why="Only, reviewers can accept questions",
             )
 
-        if isinstance(parsed, list):
+        if isinstance(parsed, list):  # is GDocLinks (list of strings)
             gdoc_links = parsed
-        else:
+        else:  # is MsgRefId (string)
             msg_ref_id = parsed
             assert isinstance(message.channel, DiscordChannel)
             await self.restore_review_msg_cache(message.channel)
@@ -335,13 +335,13 @@ class QuestionsSetter(Module):
             status = "Duplicate"
         else:
             return
-        if not (spec_data := parse_question_spec_data(text)):
+        if not (spec := parse_question_spec_query(text)):
             return
 
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[spec_data, status, text, message],
+            args=[spec, status, text, message],
         )
 
     def parse_set_question_status(
@@ -351,18 +351,18 @@ class QuestionsSetter(Module):
         if not (match := re_status.search(text)):
             return
         status = status_shorthands[match.group(1).lower()]
-        if not (spec_data := parse_question_spec_data(text)):
+        if not (q_spec_query := parse_question_spec_query(text)):
             return
 
         return Response(
             confidence=10,
             callback=self.cb_set_question_status,
-            args=[spec_data, status, text, message],
+            args=[q_spec_query, status, text, message],
         )
 
     async def cb_set_question_status(
         self,
-        spec_data: QuestionSpecQuery,
+        q_spec_query: QuestionSpecQuery,
         status: QuestionStatus,
         text: str,
         message: ServiceMessage,
@@ -387,10 +387,10 @@ class QuestionsSetter(Module):
 
         # TODO: Maybe this should be processed inside coda api???
 
-        questions = await coda_api.query_for_questions(spec_data, message)
+        questions = await coda_api.query_for_questions(q_spec_query, message)
         if not questions:
             response_text, why = await coda_api.get_response_text_and_why(
-                questions, spec_data, message
+                questions, q_spec_query, message
             )
             return Response(confidence=10, text=response_text, why=why)
 
@@ -433,7 +433,7 @@ class QuestionsSetter(Module):
             await message.channel.send(msg)
 
         n_changed_status = len(questions) - n_already_los
-        # TODO: nicer handling of different numberings
+
         msg = (
             f"Changed status of {n_changed_status} question"
             + ("s" if n_changed_status > 1 else "")
@@ -449,11 +449,3 @@ class QuestionsSetter(Module):
             text=msg,
             why=f"{message.author.name} asked me to change status to `{status}`.",
         )
-
-
-def lacks_permissions(message: ServiceMessage) -> bool:
-    return not (
-        is_from_editor(message)
-        or is_from_reviewer(message)
-        or is_bot_dev(message.author)
-    )
