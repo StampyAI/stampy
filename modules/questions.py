@@ -365,6 +365,7 @@ class Questions(Module):
     def test_cases(self):
         if is_in_testing_mode():
             return []
+        # TODO: write some tests that are expected to fail and ensure they fail in the way we expected
         return [
             #########
             # Count #
@@ -527,79 +528,3 @@ re_big_count_questions = re.compile(
     r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
     r"(long is|long's)) (the|your)( question)? queue( now)?\??",
 )
-
-
-# re_big_next_question = re.compile(
-#     r"""
-# (
-#     (
-#         [wW]hat
-#         (’|'|\si)?s
-#     |
-#         ([Cc]an|[Mm]ay)\s
-#         (we|[iI])\s
-#         (have|get)
-#     |
-#         [Ll]et[’']?s\shave
-#     |
-#         [gG]ive\sus
-#     )?  # Optional: what's / can we have / let's have / give us
-#     (
-#         \s?[Aa](nother)? # a / another
-#     |
-#         (\sthe)?\s?
-#         [nN]ext
-#     |
-#         [pP]ost
-#     )
-#     \s
-#     question,? # next question (please)
-#     (\splease)?\??
-#     |
-#     (
-#         [Dd]o\syou\shave
-#         |
-#         ([Hh]ave\syou\s)?
-#         [gG]ot
-#     )
-#     (
-#         \s?[Aa]ny(\smore|\sother)?
-#     |
-#         \sanother
-#     )
-#     \s(question)?
-#     (\sfor\sus)?\??
-# )
-# !?
-# """
-# )
-
-
-# re_big_count_questions = re.compile(
-#     r"""
-# (
-#     ( # how many questions are there left in ...
-#     how\s+many\s+questions\s*
-#     (are\s*(there\s*)?)?
-#     (left\s*)?
-#     (in\s+(your\s+|the\s+)?queue\s*)?
-#     )
-# |
-#     ( # how long is/'s the/your questions queue now
-#     how\s+
-#     (long\s+is|long's)\s+
-#     (the\s+|your\s+)?
-#     (question\s+)?
-#     queue
-#     (\s+now)?
-#     )
-# |
-#     (
-#     (\#|n|num)\s+(of\s+)?questions
-#     )
-# )
-# \?* # optional question mark
-# $   # end
-# """,
-#     re.X | re.I,
-# )
