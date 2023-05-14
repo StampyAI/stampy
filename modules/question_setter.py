@@ -117,8 +117,6 @@ class QuestionSetter(Module):
     #########################################
 
     def process_message(self, message: ServiceMessage) -> Response:
-        """Process message"""
-
         # new_status and gdoc_links
         if response := self.parse_review_request(message):
             return response
