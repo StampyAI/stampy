@@ -60,6 +60,17 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
         self.last_question_id: Optional[str] = None
+        self.questions_df = pd.DataFrame(
+            columns=[
+                "id",
+                "title",
+                "url",
+                "status",
+                "tags",
+                "last_asked_on_discord",
+                "row",
+            ]
+        )
 
         if is_in_testing_mode():
             return
@@ -161,8 +172,8 @@ class CodaAPI:
         """
         questions_df = self.questions_df
         # query for questions whose url starts with any of the urls that were passed
-        questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
-            questions_df["url"].map(  # pylint:disable=unsubscriptable-object
+        questions_df_queried = questions_df[
+            questions_df["url"].map(
                 lambda question_url: any(question_url.startswith(url) for url in urls)
             )
         ]
@@ -173,8 +184,8 @@ class CodaAPI:
 
     def get_question_by_title(self, title: str) -> Optional[QuestionRow]:
         questions_df = self.questions_df
-        questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
-            questions_df["title"].map(  # pylint:disable=unsubscriptable-object
+        questions_df_queried = questions_df[
+            questions_df["title"].map(
                 lambda question_title: fuzzy_contains(question_title, title)
             )
         ]

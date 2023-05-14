@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Literal, TypedDict
 
 from codaio import Cell, Row
-import requests
+
 
 DEFAULT_DATE = datetime(1, 1, 1, 0)
 
