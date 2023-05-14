@@ -56,7 +56,7 @@ class CodaAPI:
             raise Exception(
                 "This class is a singleton! Access it using `Utilities.get_instance()`"
             )
-        self.__instance = self  # pylint:disable=unused-private-member
+        CodaAPI.__instance = self
         self.class_name = "Coda API"
         self.log = get_logger()
         self.last_question_id: Optional[str] = None
