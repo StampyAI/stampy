@@ -244,6 +244,6 @@ class Reply(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="post this", expected_response=self.POST_MESSAGE % self.comment_posting_threshold()
+                test_message="post this", expected_response=self.POST_MESSAGE % self.comment_posting_threshold()
             )
         ]

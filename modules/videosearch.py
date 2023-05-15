@@ -177,10 +177,10 @@ class VideoSearch(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="Which video did rob play civilization V in?",
+                test_message="Which video did rob play civilization V in?",
                 expected_regex="Superintelligence Mod for Civilization V+",
             ),
             self.create_integration_test(
-                question="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
+                test_message="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
             ),
         ]

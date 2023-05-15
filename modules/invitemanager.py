@@ -101,6 +101,6 @@ class InviteManager(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="can you make me an invite link?", expected_response=self.sorry_message
+                test_message="can you make me an invite link?", expected_response=self.sorry_message
             )
         ]

@@ -60,7 +60,7 @@ class Questions(Module):
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
         self.last_question_autoposted = False
-        self.class_name = "Questions Module"
+        self.class_name = "Questions"
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
@@ -583,7 +583,7 @@ class Questions(Module):
     def make_post_questions_result_response_text(self, cmd: PostQuestionsCommand, num_found: int) -> str:
         """Generate response text for posting questions request"""
         max_num_of_questions = cmd["max_num_of_questions"]
-        if max_num_of_questions == 1:
+        if num_found == 1:
             s = "Here is a question"
         elif num_found == 0:
             s = "I found no questions"
@@ -836,15 +836,15 @@ class Questions(Module):
             return []
         return [
             self.create_integration_test(
-                question="next q", expected_regex=r".+\n\nhttps:.+"
+                test_message="next q", expected_regex=r"Here is a question\n\n[^\n]+\nhttps://docs"
             ),
             self.create_integration_test(
-                question="how many questions?",
+                test_message="how many questions?",
                 expected_regex=r"There are \d{3,4} questions",
             ),
             self.create_integration_test(
-                question="what is the next question with status withdrawn and tagged doom",
-                expected_regex=r"There are no",
+                test_message="what is the next question with status withdrawn and tagged doom",
+                expected_regex=r"I found no|Here is a question",
             ),
         ]
 

@@ -17,7 +17,7 @@ class Sentience(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="If I asked you what 2+2 was and you answered incorrectly what would you have said?",
+                test_message="If I asked you what 2+2 was and you answered incorrectly what would you have said?",
                 expected_response=CONFUSED_RESPONSE,
             )
         ]

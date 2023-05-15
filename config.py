@@ -1,7 +1,10 @@
-from api.utilities.gooseutils import GooseAIEngines
 from structlog import get_logger
-import dotenv
 import os
+from typing import Optional
+
+import dotenv
+
+from api.utilities.gooseutils import GooseAIEngines
 
 log_type = "stam.py"
 log = get_logger()
@@ -21,7 +24,7 @@ def get_all_modules() -> set[str]:
 
 All_Stampy_Modules = get_all_modules()
 
-def getenv(env_var, default=NOT_PROVIDED):
+def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -57,7 +60,7 @@ environment_type_env_variable = "ENVIRONMENT_TYPE"
 openai_env_variable = "OPENAI_API_KEY"
 test_response_message = "LOGGED_TEST_RESPONSE"
 
-TEST_QUESTION_PREFIX = "TEST_QUESTION "
+TEST_MESSAGE_PREFIX = "TEST_MESSAGE "
 TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
 CONFUSED_RESPONSE = "I don't understand"
 

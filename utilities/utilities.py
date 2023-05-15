@@ -19,7 +19,7 @@ from git.repo import Repo
 from structlog import get_logger
 
 from config import (
-    TEST_QUESTION_PREFIX,
+    TEST_MESSAGE_PREFIX,
     TEST_RESPONSE_PREFIX,
     database_path,
     discord_guild,
@@ -97,8 +97,12 @@ class Utilities:
         # stamp counts
         self.scores: list[float] = []
 
+        # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
+        
+        # testing 
+        self.message_prefix: str = ""
 
     @staticmethod
     def get_instance() -> Utilities:
@@ -121,7 +125,7 @@ class Utilities:
             return True
         return False
 
-    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
+    def is_stampy_mentioned(self, message: ServiceMessage) -> bool:
         for user in message.mentions:
             if self.is_stampy(user):
                 return True
@@ -351,7 +355,7 @@ def is_test_response(text: str) -> bool:
 
 
 def is_test_question(text: str) -> bool:
-    return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
+    return contains_prefix_with_number(text, TEST_MESSAGE_PREFIX)
 
 
 def is_test_message(text: str) -> bool:
@@ -368,11 +372,11 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
 
 
-def is_bot_dev(user: ServiceUser):
+def is_bot_dev(user: ServiceUser) -> bool:
     if user.id == rob_id:
         return True
     roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id)
+    return discord.utils.get(roles, id=bot_dev_role_id) is not None
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
