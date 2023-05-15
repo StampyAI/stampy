@@ -97,8 +97,8 @@ if robmiles_defaults:
     print("Using settings for the Rob Miles Discord server")
     discord_guild = "677546901339504640"
     factoid_database_path = "./factoids.db"
-    bot_dev_roles = frozenset([{"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]])
     bot_vip_ids = frozenset(["181142785259208704"])
+    bot_dev_roles = frozenset([{"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]])
     bot_dev_ids = bot_vip_ids
     bot_control_channel_ids = frozenset([
         {"production": "-99", "development": "803448149946662923"}[ENVIRONMENT_TYPE],
@@ -116,13 +116,18 @@ else:
     # get from dotenv
     discord_guild = getenv("DISCORD_GUILD")
     factoid_database_path = getenv("FACTOID_DATABASE_PATH", "./database/Factoids.db")
-    bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
+    # VIPs have full access + special permission
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
+    # devs have less but can do maintainence like reboot
+    bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
     bot_dev_ids = bot_vip_ids.union(getenv_unique_set("BOT_DEV_IDS", frozenset()))
+    # control channel is where maintainence commands are issued
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
-    can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
+    # private channel is where stampy logging gets printed
     bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", default=None)
+    can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
+    # bot_reboot is how stampy reboots himself
     bot_reboot = getenv("BOT_REBOOT", default=False)
     paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
 
