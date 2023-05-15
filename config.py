@@ -86,6 +86,8 @@ stamp_scores_csv_file_path = {
     "development": "stamps-export.csv",
 }[ENVIRONMENT_TYPE]
 
+# .ENV VARIBLE SETTING
+
 # list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
 # if STAMPY_MODULES is unset, enable everything found in ./modules
 enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL")
