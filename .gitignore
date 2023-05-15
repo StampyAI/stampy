@@ -9,3 +9,4 @@ modules/choose.py
 .pylintrc
 *.ipynb
 *.csv
+.vscode

@@ -11,8 +11,9 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
 
+import pandas as pd
 import psutil
 import discord
 from git.repo import Repo
@@ -100,8 +101,8 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
-        
-        # testing 
+
+        # testing
         self.message_prefix: str = ""
 
     @staticmethod
@@ -423,9 +424,9 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
     Disregards spaces, and punctuation.
     """
-    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
-        container.casefold().replace(" ", "")
-    )
+    contained = remove_punct(contained.casefold().replace(" ", ""))
+    container = remove_punct(container.casefold().replace(" ", ""))
+    return contained in container
 
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
@@ -441,14 +442,35 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
-def limit_text(text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")) -> tuple[bool, str]:
+
+def limit_text(
+    text: str,
+    limit: int,
+    format_fail_message: Callable[[int], str] = (
+        lambda x: f"Cut {x} characters from response\n"
+    ),
+) -> tuple[bool, str]:
     text_length = len(text)
-    failLength = text_length - limit
+    fail_length = text_length - limit
 
     if text_length >= limit:
-        return True, formatFailMessage(failLength) + text[0:limit]
-    else:
-        return False, text
+        return True, format_fail_message(fail_length) + text[0:limit]
+    return False, text
+
+
+def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
+    inds = df.index.tolist()
+    shuffled_inds = random.sample(inds, len(inds))
+    return df.loc[shuffled_inds]
+
+
+def lacks_permissions(message: ServiceMessage) -> bool:
+    return not (
+        is_from_editor(message)
+        or is_from_reviewer(message)
+        or is_bot_dev(message.author)
+    )
+
 
 class UtilsTests:
     def test_split_message_for_discord(self):

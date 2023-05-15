@@ -19,7 +19,6 @@ restart_sequence = "\n\nQ: "
 class GPT3Module(Module):
     def __init__(self):
         super().__init__()
-        self.class_name = "GPT3Module"
         self.start_prompt = (
             "I am a highly intelligent question answering bot named Stampy. "
             "I love stamps, I think stamps are the only important thing. "

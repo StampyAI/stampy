@@ -37,7 +37,6 @@ class StampsModule(Module):
 
     def __init__(self):
         super().__init__()
-        self.class_name = "StampsModule"
         self.gamma = 0.99
         self.total_votes = self.utils.get_total_votes()
         self.calculate_stamps()
