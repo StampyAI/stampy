@@ -13,4 +13,5 @@ from utilities.utilities import (
     is_from_reviewer,
     is_in_testing_mode,
     limit_text,
+    is_bot_dev,
 )

@@ -25,13 +25,14 @@ from config import (
     database_path,
     discord_guild,
     discord_token,
+    bot_dev_roles,
+    bot_dev_ids,
+    bot_vip_ids
 )
 from database.database import Database
 from servicemodules.discordConstants import (
     stampy_error_log_channel_id,
     wiki_feed_channel_id,
-    rob_id,
-    bot_dev_role_id,
 )
 from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordMessage, DiscordUser
@@ -374,10 +375,14 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
 
 
 def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id == rob_id:
+    if user.id in bot_vip_ids:
         return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+    if user.id in bot_dev_ids:
+        return True
+    user_roles = getattr(user, "roles", [])
+    if any(r in bot_dev_roles for r in user_roles):
+        return True
+    return False
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
