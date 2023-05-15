@@ -35,8 +35,8 @@ def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]
     return value
 
 def getenv_unique_set(var_name, default="EMPTY_SET"):
-    l = getenv(var_name, default=default).split(" ")
-    if l == [default]:
+    l = getenv(var_name, default="EMPTY_SET").split(" ")
+    if l == ["EMPTY_SET"]:
         return default
     s = set(l)
     assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
