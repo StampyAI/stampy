@@ -14,13 +14,13 @@ NOT_PROVIDED = '__NOT_PROVIDED__'
 
 module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 
-def get_all_modules() -> set[str]:
-    modules = []
+def get_all_modules() -> frozenset[str, ...]:
+    modules = set()
     for file_name in os.listdir(module_dir):
         if file_name.endswith('.py') and file_name != '__init__.py':
-            modules.append(file_name[:-3])
+            modules.add(file_name[:-3])
 
-    return set(modules)
+    return frozenset(modules)
 
 All_Stampy_Modules = get_all_modules()
 
@@ -38,7 +38,7 @@ def getenv_unique_set(var_name, default="EMPTY_SET"):
     l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
         return default
-    s = set(l)
+    s = frozenset(l)
     assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
     return s
 
