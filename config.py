@@ -133,6 +133,9 @@ wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 
+# valid Stampy reboot options
+bot_reboot_options = frozenset([ "exec", False ])
+assert bot_reboot in bot_reboot_options, f"BOT_REBOOT must be one of {bot_reboot_options}"
 
 goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
     GooseAIEngines.GPT_20B,
@@ -146,3 +149,7 @@ goose_engine_fallback_order = [  # What engine to use in order of preference in 
     GooseAIEngines.FAIRSEQ_1_3B,
     GooseAIEngines.FAIRSEQ_125M,
 ]
+
+Stampy_Path = os.path.abspath("./stam.py")
+if not os.path.exists(Stampy_Path):
+    log.info(f"Didn't find anything at {Stampy_Path}")
