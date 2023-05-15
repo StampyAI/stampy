@@ -52,12 +52,6 @@ youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx
 # Multiply this by the total number of votes made, to get the number of stamps needed to post a reply comment
 comment_posting_threshold_factor = 0.15
 
-discord_token_env_variable = "DISCORD_TOKEN"
-discord_guild_env_variable = "DISCORD_GUILD"
-youtube_api_key_env_variable = "YOUTUBE_API_KEY"
-database_path_env_variable = "DATABASE_PATH"
-environment_type_env_variable = "ENVIRONMENT_TYPE"
-openai_env_variable = "OPENAI_API_KEY"
 test_response_message = "LOGGED_TEST_RESPONSE"
 
 TEST_MESSAGE_PREFIX = "TEST_MESSAGE "
@@ -136,7 +130,6 @@ youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
 openai_api_key = getenv("OPENAI_API_KEY", default=None)
 goose_api_key = getenv("GOOSE_API_KEY", default=None)
 wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
-# These defaults are just to not break production until slack is set up.
 slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 
