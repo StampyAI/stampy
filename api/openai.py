@@ -1,8 +1,7 @@
 import asyncio
 from api.utilities.openai import OpenAIEngines
-from config import openai_api_key
+from config import openai_api_key, paid_service_channel_ids, bot_dev_roles
 from structlog import get_logger
-from servicemodules.discordConstants import rob_id
 from servicemodules.serviceConstants import Services, openai_channel_ids
 from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
@@ -21,10 +20,12 @@ class OpenAI:
         self.log = get_logger()
 
     def is_channel_allowed(self, message: ServiceMessage) -> bool:
-        if message.service not in openai_channel_ids:
+        if message.service in openai_channel_ids and message.channel.id in openai_channel_ids[message.service]:
+            return True
+        elif message.channel.id in paid_service_channel_ids:
+            return True
+        else:
             return False
-        return message.channel.id in openai_channel_ids[message.service]
-
     def cf_risk_level(self, prompt):
         """Ask the openai content filter if the prompt is risky
         Returns:
@@ -101,20 +102,20 @@ class OpenAI:
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
 
-        if message.service != Services.DISCORD:
-            return OpenAIEngines.BABBAGE
+        return OpenAIEngines.GPT_3_5_TURBO
 
-        guild, _ = utilities.get_guild_and_invite_role()
+        # NOTE: leaving this more complicated logic to cannibalize later, when
+        # enabling higher-priced modules
 
-        bot_dev_role = discord.utils.get(guild.roles, name="bot dev")
-        member = guild.get_member(message.author.id)
+        #if message.service != Services.DISCORD:
+        #    return OpenAIEngines.BABBAGE
 
-        if message.author.id == rob_id:
-            return OpenAIEngines.DAVINCI
-        elif member and (bot_dev_role in member.roles):
-            return OpenAIEngines.CURIE
-        else:
-            return OpenAIEngines.BABBAGE
+        #if message.author.id in bot_vip_ids:
+        #    return OpenAIEngines.DAVINCI
+        #elif utilities.is_bot_dev(message.author):
+        #    return OpenAIEngines.CURIE
+        #else:
+        #    return OpenAIEngines.BABBAGE
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
         if self.cf_risk_level(prompt) > 1:

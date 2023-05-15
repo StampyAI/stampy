@@ -13,6 +13,10 @@ class OpenAIEngines(Enum):
         return obj
 
     @property
+    def __str__(self) -> str:
+        return self._value_
+
+    @property
     def name(self) -> str:
         return self._name
 
@@ -56,4 +60,18 @@ class OpenAIEngines(Enum):
         "Babbage 001",
         "Should be used by everyone else.",
         tokenizers.gpt2,
+    )
+
+    GPT_3_5_TURBO = (
+        "gpt-3.5-turbo",
+        "GPT 3.5 Turbo",
+        "Medium-cost, general-purpose model",
+        tokenizers.gpt2
+    )
+
+    GPT_4 = (
+        "gpt-4",
+        "GPT 4",
+        "Only for devs and VIPs",
+        tokenizers.gpt2
     )

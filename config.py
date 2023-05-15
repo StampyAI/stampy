@@ -111,6 +111,7 @@ if robmiles_defaults:
     can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
     member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
     bot_reboot = False
+    paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
 else:
     # get from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -123,6 +124,7 @@ else:
     bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", default=None)
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     bot_reboot = getenv("BOT_REBOOT", default=False)
+    paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")
