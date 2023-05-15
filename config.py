@@ -97,10 +97,42 @@ if enabled_modules_var == "ALL":
 else:
     enabled_modules = enabled_modules_var
 
+robmiles_defaults = getenv("ROBMILES_DEFAULTS", default=False)
+if robmiles_defaults:
+    # use robmiles server defaults
+    print("Using settings for the Rob Miles Discord server")
+    discord_guild = "677546901339504640"
+    factoid_database_path = "./factoids.db"
+    bot_dev_roles = frozenset([{"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]])
+    bot_vip_ids = frozenset(["181142785259208704"])
+    bot_dev_ids = bot_vip_ids
+    bot_control_channel_ids = frozenset([
+        {"production": "-99", "development": "803448149946662923"}[ENVIRONMENT_TYPE],
+        {"production": "736247813616304159", "development": "817518389848309760"}[ENVIRONMENT_TYPE],
+        {"production": "758062805810282526", "development": "817518145472299009"}[ENVIRONMENT_TYPE],
+        {"production": "808138366330994688", "development": "817518440192409621"}[ENVIRONMENT_TYPE],
+        {"production": "-1", "development": "736241264856662038"}[ENVIRONMENT_TYPE]
+        ])
+    bot_private_channel_id = {"production": "736247813616304159", "development": "817518389848309760"}[ENVIRONMENT_TYPE]
+    can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
+    member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
+    bot_reboot = False
+else:
+    # get from dotenv
+    discord_guild = getenv("DISCORD_GUILD")
+    factoid_database_path = getenv("FACTOID_DATABASE_PATH", "./database/Factoids.db")
+    bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
+    bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
+    bot_dev_ids = bot_vip_ids.union(getenv_unique_set("BOT_DEV_IDS", frozenset()))
+    bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
+    can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
+    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", default=None)
+    member_role_id = getenv("MEMBER_ROLE_ID", default=None)
+    bot_reboot = getenv("BOT_REBOOT", default=False)
+
 discord_token = getenv("DISCORD_TOKEN")
-discord_guild = getenv("DISCORD_GUILD")
-youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
 database_path = getenv("DATABASE_PATH")
+youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
 openai_api_key = getenv("OPENAI_API_KEY", default=None)
 goose_api_key = getenv("GOOSE_API_KEY", default=None)
 wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
