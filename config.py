@@ -34,6 +34,10 @@ def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]
         raise Exception(f"Environment Variable '{env_var}' not set and no default provided")
     return value
 
+def getenv_bool(env_var: str) -> bool:
+    e = getenv(env_var, default="UNDEFINED")
+    return e != "UNDEFINED"
+
 def getenv_unique_set(var_name, default="EMPTY_SET"):
     l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
@@ -91,7 +95,7 @@ if enabled_modules_var == "ALL":
 else:
     enabled_modules = enabled_modules_var
 
-robmiles_defaults = getenv("ROBMILES_DEFAULTS", default=False)
+robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
 if robmiles_defaults:
     # use robmiles server defaults
     print("Using settings for the Rob Miles Discord server")
@@ -111,7 +115,7 @@ if robmiles_defaults:
     can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
     member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
     bot_reboot = False
-    paid_service_for_all = "TRUE"
+    paid_service_for_all = True
     paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
     paid_service_whitelist_role_ids: frozenset = frozenset()
     expensive_option_role_ids: frozenset = frozenset()
@@ -131,10 +135,10 @@ else:
     can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
-    bot_reboot = getenv("BOT_REBOOT", default=False)
+    bot_reboot = getenv_bool("BOT_REBOOT")
     paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
     # set to anything for True
-    paid_service_for_all = getenv("PAID_SERVICE_FOR_ALL", default=False)
+    paid_service_for_all = getenv_bool("PAID_SERVICE_FOR_ALL")
     # if above is false, who gets to use paid services?
     paid_service_whitelist_role_ids: frozenset = getenv_unique_set("PAID_SERVICE_WHITELIST_ROLE_IDS", frozenset())
     expensive_option_role_ids: frozenset = bot_vip_ids | getenv_unique_set("EXPENSIVE_OPTION_ROLE_IDS", frozenset())
