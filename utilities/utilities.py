@@ -27,7 +27,9 @@ from config import (
     discord_token,
     bot_dev_roles,
     bot_dev_ids,
-    bot_vip_ids
+    bot_vip_ids,
+    paid_service_for_all,
+    paid_service_whitelist_role_ids
 )
 from database.database import Database
 from servicemodules.discordConstants import (
@@ -488,3 +490,14 @@ class UtilsTests:
         self.assertEqual(len(test_out), 4)
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
+
+def can_use_paid_service(message: ServiceMessage) -> bool:
+    if paid_service_for_all:
+        return True
+    elif message.author.id in bot_vip_ids or is_bot_dev(message.author):
+        return True
+    elif any(discordutils.user_has_role(message.author, x)
+             for x in paid_service_whitelist_role_ids):
+        return True
+    else:
+        return False

@@ -14,4 +14,5 @@ from utilities.utilities import (
     is_in_testing_mode,
     limit_text,
     is_bot_dev,
+    can_use_paid_service
 )

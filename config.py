@@ -111,7 +111,10 @@ if robmiles_defaults:
     can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
     member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
     bot_reboot = False
+    paid_service_for_all = "TRUE"
     paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
+    paid_service_whitelist_role_ids: frozenset = frozenset()
+    expensive_option_role_ids: frozenset = frozenset()
 else:
     # get from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -130,6 +133,11 @@ else:
     # bot_reboot is how stampy reboots himself
     bot_reboot = getenv("BOT_REBOOT", default=False)
     paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
+    # set to anything for True
+    paid_service_for_all = getenv("PAID_SERVICE_FOR_ALL", default=False)
+    # if above is false, who gets to use paid services?
+    paid_service_whitelist_role_ids: frozenset = getenv_unique_set("PAID_SERVICE_WHITELIST_ROLE_IDS", frozenset())
+    expensive_option_role_ids: frozenset = bot_vip_ids | getenv_unique_set("EXPENSIVE_OPTION_ROLE_IDS", frozenset())
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")
