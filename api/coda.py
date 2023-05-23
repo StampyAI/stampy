@@ -430,12 +430,10 @@ class CodaAPI:
 
         statuses = self.get_all_statuses()
         status_shorthand_dict = {}
+        # to find proper status name by either the name itself, lowercase version, or an acronym shorthand
         for status in statuses:
-            # map default status name
             status_shorthand_dict[status] = status
-            # map lowercased status name
             status_shorthand_dict[status.lower()] = status
-            # map acronym shorthand
             shorthand = "".join(word[0].lower() for word in status.split())
             status_shorthand_dict[shorthand] = status
         return status_shorthand_dict
