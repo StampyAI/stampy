@@ -125,6 +125,8 @@ class Questions(Module):
                 coda_api.update_questions_cache()
 
     def process_message(self, message: ServiceMessage) -> Response:
+        if message.clean_content == "z":
+            breakpoint()
         if not (text := self.is_at_me(message)):
             return Response()
         if response := self.parse_count_questions_command(text, message):

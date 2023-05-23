@@ -272,20 +272,20 @@ class CodaAPI:
 
         Args
         ----------
-        query: QuestionQuery
+        query
             - A 2-tuple where the first value is a string indicating the type of the second value. Possible variants are:
                 - ("Last", "last" or "it") - requesting the last question (e.g., `s, get last question`, `s, post it`)
                 - ("GDocLinks", list of strings) - links to GDocs of particular answers
                 - ("Title", question title) - doesn't have to be the exact, perfectly matching title, fuzzily matching substring is enough
                 - ("Filter", QuestionFilterQuery) - a NamedTuple containing
-                    - status: Optional[QuestionStatus] - optional query for questions
-                    - tag: Optional[str] - optional query for questions
-                    - limit: int - how many questions at most should be returned
+                    - status - optional query for questions
+                    - tag - optional query for questions
+                    - limit - how many questions at most should be returned
 
-        message: ServiceMessage
+        message
             - The original message from which that request was parsed.
 
-        least_recently_asked_unpublished: bool, default=False
+        least_recently_asked_unpublished
             - If `True` and `query` is of type "Filter" with `status=None` and `tag=None`, then questions will be filtered for those which are not `Live on site` and choose randomly from them
             - Should be set to `True` when querying for questions for posting
 
