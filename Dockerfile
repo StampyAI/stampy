@@ -1,5 +1,6 @@
 FROM continuumio/miniconda3
 
+RUN mkdir /stampydata
 WORKDIR /stampy
 
 # Create the environment:
