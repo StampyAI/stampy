@@ -1,4 +1,4 @@
-from datetime import datetime , timedelta
+from datetime import datetime, timedelta
 import re
 from typing import cast
 import discord
@@ -26,6 +26,7 @@ vote_strengths_per_emoji = {
 }
 
 coda_api = CodaAPI.get_instance()
+
 
 class StampsModule(Module):
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
@@ -77,9 +78,8 @@ class StampsModule(Module):
         if recalculate:
             self.calculate_stamps()
 
-
     def update_all_stamps_in_users_table(self) -> None:
-        coda_api.update_users_cache()
+        coda_api.reload_users_cache()
         users = self.utils.get_users()
         for user_id in users:
             stamp_count = self.get_user_stamps(user_id)
@@ -374,6 +374,7 @@ class StampsModule(Module):
                 expected_regex=r"^You're worth ?[+-]?\d+(?:\.\d+)? stamps to me$",
             ),
             self.create_integration_test(
-                test_message="reloadallstamps", expected_response=self.UNAUTHORIZED_MESSAGE
+                test_message="reloadallstamps",
+                expected_response=self.UNAUTHORIZED_MESSAGE,
             ),
         ]

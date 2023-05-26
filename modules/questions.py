@@ -89,12 +89,17 @@ from utilities.question_query_utils import (
     QuestionFilterNT,
     QuestionQuery,
 )
-from utilities.utilities import is_in_testing_mode, pformat_to_codeblock
+from utilities.utilities import (
+    has_permissions,
+    is_in_testing_mode,
+    pformat_to_codeblock,
+)
 from utilities.serviceutils import ServiceMessage
 
 
 load_dotenv()
 
+# TODO: move this API to utils and access it via Module parent class
 coda_api = CodaAPI.get_instance()
 
 
@@ -118,17 +123,17 @@ class Questions(Module):
             ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
 
-            if (
-                coda_api.questions_cache_last_update
-                < datetime.now() - coda_api.QUESTIONS_CACHE_UPDATE_INTERVAL
-            ):
-                coda_api.update_questions_cache()
-
     def process_message(self, message: ServiceMessage) -> Response:
-        if message.clean_content == "z":
-            breakpoint()
         if not (text := self.is_at_me(message)):
             return Response()
+        if self.parse_hardreload_questions(text, message):
+            return Response(
+                confidence=10, callback=self.cb_hardreload_questions, args=[message]
+            )
+        if self.parse_load_new_questions(text):
+            return Response(
+                confidence=10, callback=self.cb_load_new_questions, args=[message]
+            )
         if response := self.parse_count_questions_command(text, message):
             return response
         if response := self.parse_post_questions_command(text, message):
@@ -136,6 +141,63 @@ class Questions(Module):
         if response := self.parse_get_question_info(text, message):
             return response
         return Response()
+
+    ####################
+    # Reload questions #
+    ####################
+
+    def parse_hardreload_questions(self, text: str, message: ServiceMessage) -> bool:
+        return text == "hardreload questions" and has_permissions(message.author)
+
+    async def cb_hardreload_questions(self, message: ServiceMessage) -> Response:
+        """Reload all questions from coda table and overwrite the current questions cache.
+        Can be called only by bot devs, editors, and reviewers.
+        """
+        if not has_permissions(message.author):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions to hard-reload questions, <@{message.author}>",
+                why=f"{message.author.name} wanted to hardreload questions but they don't have permissions for that",
+            )
+        await message.channel.send(
+            "Ok, hard-reloading questions...\n"
+            f"Before reload: {len(coda_api.questions_df)} questions"
+        )
+        coda_api.reload_questions_cache()
+        return Response(
+            confidence=10,
+            text=f"After reload: {len(coda_api.questions_df)} questions",
+            why=f"{message.author.name} asked me to hardreload questions",
+        )
+
+    def parse_load_new_questions(self, text: str) -> bool:
+        return any(
+            text.startswith(s)
+            for s in ["load new questions", "update questions", "reload questions"]
+        )
+
+    async def cb_load_new_questions(self, message: ServiceMessage) -> Response:
+        """Find questions in coda table which are missing from the current questions cache
+        (checked by question IDs) and add them.
+        """
+        old_q_count = len(coda_api.questions_df)
+        await message.channel.send(
+            "Ok, I'll see if there are any new questions\n"
+            f"Before reload: {old_q_count} questions"
+        )
+        coda_api.fetch_new_questions()
+        n_new_questions = len(coda_api.questions_df) - old_q_count
+        if n_new_questions == 0:
+            response_text = "No new questions found"
+        elif n_new_questions == 1:
+            response_text = "Found 1 new question"
+        else:
+            response_text = f"Found {n_new_questions} new questions"
+        return Response(
+            confidence=10,
+            text=response_text,
+            why=f"{message.author.name} asked me to load new questions and I found {n_new_questions}",
+        )
 
     ###################
     # Count questions #

@@ -76,8 +76,8 @@ class CodaAPI:
             return
 
         self.coda = Coda(self.CODA_API_TOKEN)  # type:ignore
-        self.update_questions_cache()
-        self.update_users_cache()
+        self.reload_questions_cache()
+        self.reload_users_cache()
 
     @property
     def doc(self) -> Document:
@@ -95,7 +95,7 @@ class CodaAPI:
     #   Users   #
     #############
 
-    def update_users_cache(self) -> None:
+    def reload_users_cache(self) -> None:
         """Update the cache of the
         [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_luBnC).
 
@@ -138,26 +138,46 @@ class CodaAPI:
     #   Questions   #
     #################
 
-    def update_questions_cache(self) -> None:
+    def reload_questions_cache(self) -> None:
         """Update the cache of the
         [All answers coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
 
         Gets called during initialization and every ~10 minutes by Questions module.
         """
-        # get coda table
         questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
-        # parse its rows
         question_rows = [parse_question_row(row) for row in questions.rows()]
-        # convert into dataframe
         self.questions_df = pd.DataFrame(question_rows).set_index("id", drop=False)
-        # store date of update
         self.questions_cache_last_update = datetime.now()
-        # log
+        self.log.info(
+            self.class_name,
+            msg="Reloaded questions cache",
+            num_questions=len(self.questions_df),
+        )
+
+    def fetch_new_questions(self) -> list[QuestionRow]:
+        """Fetch questions from coda which are missing from the current questions cache
+        (check it by question IDs). Return new questions parsed as `QuestionRow`s.
+        """
+        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        new_questions = [
+            parse_question_row(row)
+            for row in questions.rows()
+            if row.id not in self.questions_df.id
+        ]
+        if new_questions:
+            self.questions_df = pd.concat(
+                [
+                    self.questions_df,
+                    pd.DataFrame(new_questions).set_index("id", drop=False),
+                ]
+            )
+        self.questions_cache_last_update = datetime.now()
         self.log.info(
             self.class_name,
             msg="Updated questions cache",
             num_questions=len(self.questions_df),
         )
+        return new_questions
 
     def get_question_by_id(self, question_id: str) -> Optional[QuestionRow]:
         """Get QuestionRow from questions cache by its ID"""
@@ -169,6 +189,7 @@ class CodaAPI:
         """Get questions by url links to their GDocs.
         Returns list of `QuestionRow`s.
         Empty list (`[]`) if couldn't find questions with any of the links.
+        Triggers `fetch_new_questions` if found less matching questions than the number of urls given.
         """
         questions_df = self.questions_df
         # query for questions whose url starts with any of the urls that were passed
@@ -177,10 +198,19 @@ class CodaAPI:
                 lambda question_url: any(question_url.startswith(url) for url in urls)
             )
         ]
-        if questions_df_queried.empty:
-            return []
-        questions = questions_df_queried.to_dict(orient="records")
-        return cast(list[QuestionRow], questions)
+
+        questions_queried = cast(
+            list[QuestionRow], questions_df_queried.to_dict(orient="records")
+        )
+        if len(questions_df_queried) < len(urls):
+            new_questions = self.fetch_new_questions()
+            new_questions_queried = [
+                q
+                for q in new_questions
+                if any(q["url"].startswith(url) for url in urls)
+            ]
+            questions_queried.extend(new_questions_queried)
+        return questions_queried
 
     def get_question_by_title(self, title: str) -> Optional[QuestionRow]:
         questions_df = self.questions_df

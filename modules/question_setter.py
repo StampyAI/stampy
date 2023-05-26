@@ -64,7 +64,7 @@ from utilities.question_query_utils import (
     parse_question_spec_query,
 )
 from utilities.serviceutils import ServiceMessage
-from utilities.utilities import is_from_reviewer, lacks_permissions
+from utilities.utilities import has_permissions, is_from_reviewer
 
 
 coda_api = CodaAPI.get_instance()
@@ -369,7 +369,7 @@ class QuestionSetter(Module):
         Only bot devs, editors, and reviewers can do that.
         Additionally, only reviewers can change status to and from `Live on site`.
         """
-        if lacks_permissions(message):
+        if not has_permissions(message.author):
             return Response(
                 confidence=10,
                 text=f"You don't have permissions to changing question status, <@{message.author}>",

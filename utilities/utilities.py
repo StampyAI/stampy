@@ -11,7 +11,16 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    Optional,
+    Union,
+    cast,
+)
 
 import pandas as pd
 import psutil
@@ -373,13 +382,6 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
 
 
-def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id == rob_id:
-        return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id) is not None
-
-
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
 
@@ -410,9 +412,30 @@ def is_from_editor(message: ServiceMessage) -> bool:
     return is_editor(message.author)
 
 
+def is_bot_dev(user: ServiceUser) -> bool:
+    if user.id == rob_id:
+        return True
+    roles = getattr(user, "roles", [])
+    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+
+
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
     return any(role.name == "editor" for role in user.roles)
+
+
+DiscordRole = Literal["reviewer", "editor", "bot dev"]
+
+
+def has_permissions(
+    user: ServiceUser,
+    roles: tuple[DiscordRole, ...] = (
+        "reviewer",
+        "editor",
+        "bot dev",
+    ),
+) -> bool:
+    return any(role.name in roles for role in user.roles)
 
 
 def is_in_testing_mode() -> bool:
@@ -454,7 +477,7 @@ def limit_text(
     fail_length = text_length - limit
 
     if text_length >= limit:
-        return True, format_fail_message(fail_length) + text[0:limit]
+        return True, format_fail_message(fail_length) + text[:limit]
     return False, text
 
 
@@ -462,14 +485,6 @@ def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
     inds = df.index.tolist()
     shuffled_inds = random.sample(inds, len(inds))
     return df.loc[shuffled_inds]
-
-
-def lacks_permissions(message: ServiceMessage) -> bool:
-    return not (
-        is_from_editor(message)
-        or is_from_reviewer(message)
-        or is_bot_dev(message.author)
-    )
 
 
 class UtilsTests:
