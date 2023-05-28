@@ -8,6 +8,7 @@ RUN mkdir /stampydata
 WORKDIR /stampy
 
 # Create the environment:
+COPY environment.yml .
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda env create -f environment.yml
 
 # Make RUN commands use the new environment:
