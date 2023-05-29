@@ -63,6 +63,22 @@ On Rob Miles' Discord server, Stampy posts a random least recently asked questio
 `s, get info <ADDITIONAL_INFO>` (with any filtering option mentioned so far, except `next`) can be used to get detailed information about the question as an entity in the database.
 
 ![](images/help/Questions-get-info-babyagi.png)
+
+### Reloading questions
+
+If you're a bot dev, editor, or reviewerr, you can ask Stampy to refresh questions cache (sync it with coda) by the command.
+
+`s, <reload/fetch/load/update> <?new> <q/questions>`
+
+E.g., `s, reload questions` or `s, fetch new q` 
+
+Stampy also does it whenever he sees a review request containing a GDoc link, which does not appear in any of the questions in his cache.
+
+If you use it and for some reason Stampy's question cache seems still seems to be out of sync with coda, use hardreload.
+
+`s, hardreload questions`.
+
+The difference is that while the former updates the current cache, the latter overwrites it with a new one, which is more certain to work but probably less memory-safe. If it turns out that this function is not necessary, it will be deleted. 
 """
 from __future__ import annotations
 
@@ -126,13 +142,15 @@ class Questions(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         if not (text := self.is_at_me(message)):
             return Response()
-        if self.parse_hardreload_questions(text, message):
+        if text == "hardreload questions":
             return Response(
                 confidence=10, callback=self.cb_hardreload_questions, args=[message]
             )
-        if self.parse_load_new_questions(text):
+        if re.match(
+            r"(reload|fetch|load|update|refresh)(\s+new)?\s+q(uestions)?", text, re.I
+        ):
             return Response(
-                confidence=10, callback=self.cb_load_new_questions, args=[message]
+                confidence=10, callback=self.cb_refresh_questions, args=[message]
             )
         if response := self.parse_count_questions_command(text, message):
             return response
@@ -142,61 +160,66 @@ class Questions(Module):
             return response
         return Response()
 
-    ####################
-    # Reload questions #
-    ####################
-
-    def parse_hardreload_questions(self, text: str, message: ServiceMessage) -> bool:
-        return text == "hardreload questions" and has_permissions(message.author)
+    ############################
+    # Reload/refresh questions #
+    ############################
 
     async def cb_hardreload_questions(self, message: ServiceMessage) -> Response:
-        """Reload all questions from coda table and overwrite the current questions cache.
-        Can be called only by bot devs, editors, and reviewers.
-        """
         if not has_permissions(message.author):
             return Response(
                 confidence=10,
-                text=f"You don't have permissions to hard-reload questions, <@{message.author}>",
-                why=f"{message.author.name} wanted to hardreload questions but they don't have permissions for that",
+                text=f"You don't have permissions to request hard-reload, <@{message.author}>",
+                why=f"{message.author.name} asked me to hard-reload questions questions but they don't have permissions for that",
             )
         await message.channel.send(
-            "Ok, hard-reloading questions...\n"
-            f"Before reload: {len(coda_api.questions_df)} questions"
+            f"Ok, hard-reloading questions cache\nBefore: {len(coda_api.questions_df)} questions"
         )
         coda_api.reload_questions_cache()
         return Response(
             confidence=10,
-            text=f"After reload: {len(coda_api.questions_df)} questions",
-            why=f"{message.author.name} asked me to hardreload questions",
+            text=f"After: {len(coda_api.questions_df)} questions",
+            why=f"{message.author.name} asked me to hard-reload questions",
         )
 
-    def parse_load_new_questions(self, text: str) -> bool:
-        return any(
-            text.startswith(s)
-            for s in ["load new questions", "update questions", "reload questions"]
-        )
-
-    async def cb_load_new_questions(self, message: ServiceMessage) -> Response:
-        """Find questions in coda table which are missing from the current questions cache
-        (checked by question IDs) and add them.
-        """
-        old_q_count = len(coda_api.questions_df)
+    async def cb_refresh_questions(self, message: ServiceMessage) -> Response:
+        if not has_permissions(message.author):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions, <@{message.author}>",
+                why=f"{message.author.name} wanted me to refresh questions questions but they don't have permissions for that",
+            )
         await message.channel.send(
-            "Ok, I'll see if there are any new questions\n"
-            f"Before reload: {old_q_count} questions"
+            f"Ok, refreshing questions cache\nBefore: {len(coda_api.questions_df)} questions"
         )
-        coda_api.fetch_new_questions()
-        n_new_questions = len(coda_api.questions_df) - old_q_count
-        if n_new_questions == 0:
-            response_text = "No new questions found"
-        elif n_new_questions == 1:
-            response_text = "Found 1 new question"
+        new_questions, deleted_questions = coda_api.update_questions_cache()
+        response_text = f"After: {len(coda_api.questions_df)} questions"
+        if not new_questions:
+            response_text += "\nNo new questions"
+        elif len(new_questions) <= 10:
+            response_text += "\nNew questions:\n\t" + "\n\t".join(
+                f'"{q["title"]}"' for q in new_questions
+            )
         else:
-            response_text = f"Found {n_new_questions} new questions"
+            response_text += (
+                f"\n{len(new_questions)} new questions:\n\t"
+                + "\n\t".join(f'"{q["title"]}"' for q in new_questions[:10])
+            ) + "\n\t..."
+
+        if not deleted_questions:
+            response_text += "\nNo questions deleted"
+        elif len(deleted_questions) <= 10:
+            response_text += "\nDeleted questions:\n\t" + "\n\t".join(
+                f'"{q["title"]}"' for q in deleted_questions
+            )
+        else:
+            response_text += (
+                f"\n{len(deleted_questions)} deleted questions:\n\t"
+                + "\n\t".join(f'"{q["title"]}"' for q in deleted_questions[:10])
+            ) + "\n\t..."
         return Response(
             confidence=10,
             text=response_text,
-            why=f"{message.author.name} asked me to load new questions and I found {n_new_questions}",
+            why=f"{message.author.name} asked me to refresh questions cache",
         )
 
     ###################

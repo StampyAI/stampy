@@ -122,3 +122,19 @@ On Rob Miles' Discord server, Stampy posts a random least recently asked questio
 `s, get info <ADDITIONAL_INFO>` (with any filtering option mentioned so far, except `next`) can be used to get detailed information about the question as an entity in the database.
 
 ![](images/help/Questions-get-info-babyagi.png)
+
+### Reloading questions
+
+If you're a bot dev, editor, or reviewerr, you can ask Stampy to refresh questions cache (sync it with coda) by the command.
+
+`s, <reload/fetch/load/update> <?new> <q/questions>`
+
+E.g., `s, reload questions` or `s, fetch new q` 
+
+Stampy also does it whenever he sees a review request containing a GDoc link, which does not appear in any of the questions in his cache.
+
+If you use it and for some reason Stampy's question cache seems still seems to be out of sync with coda, use hardreload.
+
+`s, hardreload questions`.
+
+The difference is that while the former updates the current cache, the latter overwrites it with a new one, which is more certain to work but probably less memory-safe. If it turns out that this function is not necessary, it will be deleted.

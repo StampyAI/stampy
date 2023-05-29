@@ -139,10 +139,11 @@ class CodaAPI:
     #################
 
     def reload_questions_cache(self) -> None:
-        """Update the cache of the
-        [All answers coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
+        """Download [questions coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
+        and save it as DataFrame.
 
-        Gets called during initialization and every ~10 minutes by Questions module.
+        Gets called during initialization and on request (`s, hardreload questions`)
+        if refresh questions cache doesn't work for some reason.
         """
         questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
         question_rows = [parse_question_row(row) for row in questions.rows()]
@@ -154,30 +155,59 @@ class CodaAPI:
             num_questions=len(self.questions_df),
         )
 
-    def fetch_new_questions(self) -> list[QuestionRow]:
-        """Fetch questions from coda which are missing from the current questions cache
-        (check it by question IDs). Return new questions parsed as `QuestionRow`s.
+    def update_questions_cache(self) -> tuple[list[QuestionRow], list[QuestionRow]]:
+        """Download [questions coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
+        and use it to update questions_df cache.
+
+        Gets called on request (`s, refresh questions`) or when Stampy doesn't recognize a GDoc link in review request
+        (see `get_question_by_gdoc_links`).
         """
         questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
-        new_questions = [
-            parse_question_row(row)
-            for row in questions.rows()
-            if row.id not in self.questions_df.id
-        ]
+        question_ids = set()
+        new_questions: list[QuestionRow] = []
+        for q in questions.rows():
+            row = parse_question_row(q)
+            question_ids.add(row["id"])
+            if row["id"] not in self.questions_df.index:
+                new_questions.append(row)
+            else:
+                df_row = self.questions_df.loc[row["id"]]
+                df_row["last_asked_on_discord"] = row["last_asked_on_discord"]
+                df_row["status"] = row["status"]
+                df_row["tags"].clear()
+                df_row["tags"].extend(row["tags"])
+                df_row["title"] = row["title"]
+                df_row["url"] = row["url"]
+
+        deleted_question_ids = sorted(
+            set(self.questions_df.index.tolist()) - question_ids
+        )
+        if deleted_question_ids:
+            self.log.info(
+                self.class_name,
+                msg=f"Deleting {len(deleted_question_ids)} questions which were not found in coda",
+            )
+            deleted_questions = cast(
+                list[QuestionRow],
+                self.questions_df.loc[deleted_question_ids].to_dict(orient="records"),
+            )
+            self.questions_df = self.questions_df.drop(index=deleted_question_ids)
+        else:
+            deleted_questions = []
+
         if new_questions:
+            self.log.info(
+                self.class_name,
+                msg=f"Adding {len(new_questions)} new questions from coda",
+            )
             self.questions_df = pd.concat(
                 [
                     self.questions_df,
                     pd.DataFrame(new_questions).set_index("id", drop=False),
                 ]
             )
-        self.questions_cache_last_update = datetime.now()
-        self.log.info(
-            self.class_name,
-            msg="Updated questions cache",
-            num_questions=len(self.questions_df),
-        )
-        return new_questions
+
+        return new_questions, deleted_questions
 
     def get_question_by_id(self, question_id: str) -> Optional[QuestionRow]:
         """Get QuestionRow from questions cache by its ID"""
@@ -202,8 +232,9 @@ class CodaAPI:
         questions_queried = cast(
             list[QuestionRow], questions_df_queried.to_dict(orient="records")
         )
+        # If some links were not recognized, refresh cache and look into the new questions
         if len(questions_df_queried) < len(urls):
-            new_questions = self.fetch_new_questions()
+            new_questions, _ = self.update_questions_cache()
             new_questions_queried = [
                 q
                 for q in new_questions
