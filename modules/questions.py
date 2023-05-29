@@ -130,6 +130,9 @@ class Questions(Module):
         )
         # Was the last question that was posted, automatically posted by Stampy?
         self.last_question_autoposted = False
+        self.re_refresh_questions = re.compile(
+            r"(reload|fetch|load|update|refresh)(\s+new)?\s+q(uestions)?", re.I
+        )
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
@@ -146,9 +149,7 @@ class Questions(Module):
             return Response(
                 confidence=10, callback=self.cb_hardreload_questions, args=[message]
             )
-        if re.match(
-            r"(reload|fetch|load|update|refresh)(\s+new)?\s+q(uestions)?", text, re.I
-        ):
+        if self.re_refresh_questions.match(text):
             return Response(
                 confidence=10, callback=self.cb_refresh_questions, args=[message]
             )
