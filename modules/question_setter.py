@@ -85,31 +85,40 @@ class QuestionSetter(Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.review_request_id2gdoc_links: dict[str, list[str]] = {}
+        self.msg_id2gdoc_links: dict[str, list[str]] = {}
 
-    async def restore_review_msg_cache(
-        self, channel: DiscordChannel, limit: int = 2000
+    async def find_gdoc_links_in_msg(
+        self, channel: DiscordChannel, msg_ref_id: str
     ) -> None:
-        """Restore the `review_request_id2gdoc_links` cache."""
-
-        await channel.send("Wait a sec, I'm restoring my cache...")
+        """Find gdoc links in message, which is missing from Stampy's cache."""
 
         self.log.info(
             self.class_name,
-            msg="Empty `review_request_id2gdoc_links` cache after reboot, restoring",
+            msg="Looking for GDoc links in message in channel",
+            msg_ref_id=msg_ref_id,
+            channel=channel,
         )
 
-        async for msg in channel.history(limit=limit):
-            text = msg.clean_content
-            if gdoc_links := parse_gdoc_links(text):
-                self.review_request_id2gdoc_links[str(msg.id)] = gdoc_links
-
+        async for msg in channel.history(limit=2000):
+            if str(msg.id) == msg_ref_id:
+                if gdoc_links := parse_gdoc_links(msg.clean_content):
+                    self.msg_id2gdoc_links[str(msg.id)] = gdoc_links
+                    log_msg = f"Found {len(gdoc_links)} in message with ID"
+                else:
+                    log_msg = "Found no GDoc links in message with ID"
+                self.log.info(
+                    self.class_name,
+                    msg=log_msg,
+                    gdoc_links=gdoc_links,
+                    msg_ref_id=msg_ref_id,
+                    channel=channel,
+                )
+                return
         self.log.info(
             self.class_name,
-            msg=(
-                f"Found {len(self.review_request_id2gdoc_links)} "
-                f"in the last {limit} messages in channel {channel.name}",
-            ),
+            msg="Couldn't find a message with ID in the channel",
+            msg_ref_id=msg_ref_id,
+            channel=channel,
         )
 
     #########################################
@@ -134,7 +143,7 @@ class QuestionSetter(Module):
 
         # even if message is not `at me`, it may contain GDoc links
         if gdoc_links := parse_gdoc_links(text):
-            self.review_request_id2gdoc_links[str(message.id)] = gdoc_links
+            self.msg_id2gdoc_links[str(message.id)] = gdoc_links
 
         return Response()
 
@@ -164,7 +173,7 @@ class QuestionSetter(Module):
         # if you fail, assume this is not a review request
         if not (gdoc_links := parse_gdoc_links(text)):
             return
-        self.review_request_id2gdoc_links[message.id] = gdoc_links
+        self.msg_id2gdoc_links[message.id] = gdoc_links
 
         return Response(
             confidence=10,
@@ -250,8 +259,8 @@ class QuestionSetter(Module):
 
         # if msg_ref_id is missing, then it will need to be retrieved
         msg_ref_id = str(msg_ref_id)
-        if msg_ref_id in self.review_request_id2gdoc_links:
-            gdoc_links = self.review_request_id2gdoc_links[msg_ref_id]
+        if msg_ref_id in self.msg_id2gdoc_links:
+            gdoc_links = self.msg_id2gdoc_links[msg_ref_id]
             parsed = gdoc_links
         else:
             parsed = msg_ref_id
@@ -279,8 +288,8 @@ class QuestionSetter(Module):
         else:  # is MsgRefId (string)
             msg_ref_id = parsed
             assert isinstance(message.channel, DiscordChannel)
-            await self.restore_review_msg_cache(message.channel)
-            gdoc_links = self.review_request_id2gdoc_links.get(msg_ref_id, [])
+            await self.find_gdoc_links_in_msg(message.channel, msg_ref_id)
+            gdoc_links = self.msg_id2gdoc_links.get(msg_ref_id, [])
 
         questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
 
