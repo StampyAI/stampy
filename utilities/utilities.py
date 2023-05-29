@@ -11,8 +11,18 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    Optional,
+    Union,
+    cast,
+)
 
+import pandas as pd
 import psutil
 import discord
 from git.repo import Repo
@@ -100,8 +110,8 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
-        
-        # testing 
+
+        # testing
         self.message_prefix: str = ""
 
     @staticmethod
@@ -372,13 +382,6 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
 
 
-def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id == rob_id:
-        return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id) is not None
-
-
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
 
@@ -409,9 +412,30 @@ def is_from_editor(message: ServiceMessage) -> bool:
     return is_editor(message.author)
 
 
+def is_bot_dev(user: ServiceUser) -> bool:
+    if user.id == rob_id:
+        return True
+    roles = getattr(user, "roles", [])
+    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+
+
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
     return any(role.name == "editor" for role in user.roles)
+
+
+DiscordRole = Literal["reviewer", "editor", "bot dev"]
+
+
+def has_permissions(
+    user: ServiceUser,
+    roles: tuple[DiscordRole, ...] = (
+        "reviewer",
+        "editor",
+        "bot dev",
+    ),
+) -> bool:
+    return any(role.name in roles for role in user.roles)
 
 
 def is_in_testing_mode() -> bool:
@@ -423,9 +447,9 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
     Disregards spaces, and punctuation.
     """
-    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
-        container.casefold().replace(" ", "")
-    )
+    contained = remove_punct(contained.casefold().replace(" ", ""))
+    container = remove_punct(container.casefold().replace(" ", ""))
+    return contained in container
 
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
@@ -441,14 +465,27 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
-def limit_text(text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")) -> tuple[bool, str]:
+
+def limit_text(
+    text: str,
+    limit: int,
+    format_fail_message: Callable[[int], str] = (
+        lambda x: f"Cut {x} characters from response\n"
+    ),
+) -> tuple[bool, str]:
     text_length = len(text)
-    failLength = text_length - limit
+    fail_length = text_length - limit
 
     if text_length >= limit:
-        return True, formatFailMessage(failLength) + text[0:limit]
-    else:
-        return False, text
+        return True, format_fail_message(fail_length) + text[:limit]
+    return False, text
+
+
+def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
+    inds = df.index.tolist()
+    shuffled_inds = random.sample(inds, len(inds))
+    return df.loc[shuffled_inds]
+
 
 class UtilsTests:
     def test_split_message_for_discord(self):

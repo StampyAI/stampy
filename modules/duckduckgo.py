@@ -13,10 +13,6 @@ class DuckDuckGo(Module):
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
     words = re.compile("[A-Za-z]+")
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.class_name = self.__class__.__name__
-
     def process_message(self, message) -> Response:
         if text := self.is_at_me(message):
             if text.endswith("?"):

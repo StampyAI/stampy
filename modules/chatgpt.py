@@ -16,7 +16,6 @@ openai.api_key = openai_api_key
 class ChatGPTModule(Module):
     def __init__(self):
         super().__init__()
-        self.class_name = "ChatGPTModule"
 
         self.message_logs = {}  # one message log per channel
         self.log_max_messages = 15  # don't store more than X messages back

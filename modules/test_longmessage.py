@@ -2,9 +2,6 @@ from modules.module import Module, Response
 
 
 class test_longmessage(Module):
-    def __init__(self):
-        super().__init__()
-        self.class_name = self.__class__.__name__
     def process_message(self, message):
         if text := self.is_at_me(message):
             if text.startswith("send a long message"):

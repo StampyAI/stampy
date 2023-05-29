@@ -35,7 +35,6 @@ class TestModule(Module):
 
     def __init__(self):
         super().__init__()
-        self.class_name = self.__str__()
         self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage):

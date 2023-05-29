@@ -19,7 +19,6 @@ class Factoids(Module):
 
     def __init__(self):
         super().__init__()
-        self.class_name = self.__class__.__name__
         dbpath = "factoids.db"
         self.db = FactoidDb(dbpath)
         self.who = "Someone"
