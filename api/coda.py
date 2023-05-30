@@ -68,6 +68,7 @@ class CodaAPI:
                 "status",
                 "tags",
                 "last_asked_on_discord",
+                "alternate_phrasings",
                 "row",
             ]
         )
@@ -176,6 +177,8 @@ class CodaAPI:
                 df_row["status"] = row["status"]
                 df_row["tags"].clear()
                 df_row["tags"].extend(row["tags"])
+                df_row["alternate_phrasings"].clear()
+                df_row["alternate_phrasings"].extend(row["alternate_phrasings"])
                 df_row["title"] = row["title"]
                 df_row["url"] = row["url"]
 

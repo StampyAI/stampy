@@ -48,6 +48,11 @@ Question status can be changed more flexibly, using the command: `<set/change> <
 Status name is case-insensitive and you can use status aliases.
 
 ![](images/help/QuestionsSetter-set-status.png)
+
+### Adding and removing tags #TODO
+
+### Adding and removing alternative question phrasings #TODO
+
 """
 from __future__ import annotations
 
