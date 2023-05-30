@@ -145,8 +145,8 @@ class QuestionSetter(Module):
         # tagging
         if response := self.parse_add_tag(text, message):
             return response
-        # if response := self.parse_remove_tag(text, message):
-        #     return response
+        if response := self.parse_remove_tag(text, message):
+            return response
 
         # even if message is not `at me`, it may contain GDoc links
         if gdoc_links := parse_gdoc_links(text):
@@ -343,11 +343,28 @@ class QuestionSetter(Module):
         query = parse_question_spec_query(text)
         tag = parse_tag(text)
         return Response(
-            confidence=10, callback=self.cb_add_tag, args=[query, tag, message]
+            confidence=10, callback=self.cb_edit_tag, args=[query, tag, message, "add"]
         )
 
-    async def cb_add_tag(
-        self, query: QuestionSpecQuery, tag: str, message: ServiceMessage
+    def parse_remove_tag(
+        self, text: str, message: ServiceMessage
+    ) -> Optional[Response]:
+        if not (text.startswith("remove tag") or text.startswith("delete tag")):
+            return
+        query = parse_question_spec_query(text)
+        tag = parse_tag(text)
+        return Response(
+            confidence=10,
+            callback=self.cb_edit_tag,
+            args=[query, tag, message, "remove"],
+        )
+
+    async def cb_edit_tag(
+        self,
+        query: QuestionSpecQuery,
+        tag: str,
+        message: ServiceMessage,
+        mode: Literal["add", "remove"],
     ) -> Response:
         if not has_permissions(message.author):
             return Response(
@@ -362,19 +379,41 @@ class QuestionSetter(Module):
                 text=f"I found no questions conforming to the query\n{query}",
                 why=f'{message.author.name} asked me to tag some questions as "{tag}" but I found none',
             )  # TODO: nicely printing query
-        await message.channel.send(f"Adding tag {tag} to {len(questions)} questions")
-        n_added_tags = 0
-        for q in questions:
-            if tag in q["tags"]:
-                await message.channel.send(f'"{q["title"]}" already has this tag')
-            else:
-                coda_api.update_question_tags(q, q["tags"] + [tag])
-                n_added_tags += 1
+
+        if mode == "add":
+            msg = f"Adding tag {tag} to {len(questions)}"
+        else:
+            msg = f"Removing tag {tag} from {len(questions)}"
+        await message.channel.send(msg)
+
+        n_edited = 0
+
+        if mode == "add":
+            for q in questions:
+                if tag in q["tags"]:
+                    await message.channel.send(f'"{q["title"]}" already has this tag')
+                else:
+                    coda_api.update_question_tags(q, q["tags"] + [tag])
+                    n_edited += 1
+        else:
+            for q in questions:
+                if tag not in q["tags"]:
+                    await message.channel.send(f'"{q["title"]}" doesn\'t have this tag')
+                else:
+                    new_tags = [t for t in q["tags"] if t != tag]
+                    coda_api.update_question_tags(q, new_tags)
+
+        if n_edited == 0:
+            response_text = "No questions were modified"
+        elif mode == "add":
+            response_text = f'Added tag "{tag}" to {n_edited} questions'
+        else:
+            response_text = f'Remvoed tag "{tag}" from {n_edited} questions'
         return Response(
             confidence=10,
-            text=f'Added tag "{tag}" to {n_added_tags} questions',
+            text=response_text,
             why=f"{message.author.name} asked me to tag these questions, so I did",
-        )  # TODO: handle null result (tag already on all questions)
+        )
 
     ###############################
     #   Setting question status   #
