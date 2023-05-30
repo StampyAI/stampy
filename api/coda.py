@@ -460,8 +460,13 @@ class CodaAPI:
             mention = query[1]
             why = f"{message.author.name} asked about the last question"
             if not questions:
+                text = (
+                    f'What do you mean by "{mention}"?'
+                    if mention != "DEFAULT"
+                    else "What do you mean?"
+                )
                 return (
-                    f'What do you mean by "{mention}"?',
+                    text,
                     why
                     + " but I don't remember what it was because I recently rebooted",
                 )
