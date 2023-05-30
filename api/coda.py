@@ -287,6 +287,15 @@ class CodaAPI:
         # update local cache
         self.questions_df.loc[question_id]["status"] = status
 
+    def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Tags": new_tags})
+        )
+        self.questions_df.loc[question["id"]]["tags"].clear()
+        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+
+    # def remove_question_tag(self, question_id: str, tag: str) -> None:
+
     def update_question_last_asked_date(
         self, question_id: str, current_time: datetime
     ) -> None:

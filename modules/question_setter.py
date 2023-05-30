@@ -62,6 +62,7 @@ from utilities.question_query_utils import (
     QuestionSpecQuery,
     parse_gdoc_links,
     parse_question_spec_query,
+    parse_tag,
 )
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import has_permissions, is_from_reviewer
@@ -126,7 +127,7 @@ class QuestionSetter(Module):
     #########################################
 
     def process_message(self, message: ServiceMessage) -> Response:
-        # new_status and gdoc_links
+        # review request and approval
         if response := self.parse_review_request(message):
             return response
         if response := self.parse_question_approval(message):
@@ -135,11 +136,17 @@ class QuestionSetter(Module):
         if not (text := self.is_at_me(message)):
             return Response()
 
-        # status, gdoc_links
+        # setting question status
         if response := self.parse_mark_question_del_dup(text, message):
             return response
         if response := self.parse_set_question_status(text, message):
             return response
+
+        # tagging
+        if response := self.parse_add_tag(text, message):
+            return response
+        # if response := self.parse_remove_tag(text, message):
+        #     return response
 
         # even if message is not `at me`, it may contain GDoc links
         if gdoc_links := parse_gdoc_links(text):
@@ -325,6 +332,49 @@ class QuestionSetter(Module):
             text=msg,
             why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.",
         )
+
+    ################################
+    #   Adding and removing tags   #
+    ################################
+
+    def parse_add_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
+        if not (text.startswith("add tag") or text.startswith("tag")):
+            return
+        query = parse_question_spec_query(text)
+        tag = parse_tag(text)
+        return Response(
+            confidence=10, callback=self.cb_add_tag, args=[query, tag, message]
+        )
+
+    async def cb_add_tag(
+        self, query: QuestionSpecQuery, tag: str, message: ServiceMessage
+    ) -> Response:
+        if not has_permissions(message.author):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions required to edit tags <@{message.author}>",
+                why=f"{message.author.name} does not have permissions edit tags on questions",
+            )
+        questions = await coda_api.query_for_questions(query, message)
+        if not questions:
+            Response(
+                confidence=10,
+                text=f"I found no questions conforming to the query\n{query}",
+                why=f'{message.author.name} asked me to tag some questions as "{tag}" but I found none',
+            )  # TODO: nicely printing query
+        await message.channel.send(f"Adding tag {tag} to {len(questions)} questions")
+        n_added_tags = 0
+        for q in questions:
+            if tag in q["tags"]:
+                await message.channel.send(f'"{q["title"]}" already has this tag')
+            else:
+                coda_api.update_question_tags(q, q["tags"] + [tag])
+                n_added_tags += 1
+        return Response(
+            confidence=10,
+            text=f'Added tag "{tag}" to {n_added_tags} questions',
+            why=f"{message.author.name} asked me to tag these questions, so I did",
+        )  # TODO: handle null result (tag already on all questions)
 
     ###############################
     #   Setting question status   #
