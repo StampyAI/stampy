@@ -17,9 +17,9 @@ class TestModule(Module):
     """
     This module is the only module that gets stampy to ask himself multiple questions.
     In test mode, stampy only responds to himself, whereas in other modes stampy responds only to not himself.
-    
+
     ### How to test Stampy
-    
+
     - You can only test Stampy in the #talk-to-stampy channel
     - You can test Stampy in one of three ways
         1. test all modules; `s, test yourself` or `s, test modules`
@@ -42,6 +42,7 @@ class TestModule(Module):
             return Response()
         # If this is a message coming from an integration test,
         # add it to the dictionary and update output to the channel
+
         if is_test_response(message.clean_content):
             response_id = cast(int, get_question_id(message))
             self.log.info(
@@ -115,7 +116,7 @@ class TestModule(Module):
                 return Response(
                     confidence=10,
                     text="I don't have these modules. Are you sure you wrote their names correctly?",
-                    why=f"{message.author.name} asked me to test some modules but I couldn't recognize their names."
+                    why=f"{message.author.name} asked me to test some modules but I couldn't recognize their names.",
                 )
 
         return Response(
@@ -129,7 +130,10 @@ class TestModule(Module):
         """The message is directed at this module
         if its service is supported and it contains one of the test phrases
         """
-        if hasattr(message, "service") and message.service not in self.SUPPORTED_SERVICES:
+        if (
+            hasattr(message, "service")
+            and message.service not in self.SUPPORTED_SERVICES
+        ):
             return False
         return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
 
@@ -174,8 +178,8 @@ class TestModule(Module):
 
         # Run test_cases
         await self.send_test_messages(message, modules_dict)
-        await sleep(3)  # Wait for test messages to go to discord and back to server
-        
+        await sleep(10)  # Wait for test messages to go to discord and back to server
+
         # if no tests were found for given modules, reset stuff and explain why
         if not self.sent_test:
             self.utils.test_mode = False
@@ -184,16 +188,20 @@ class TestModule(Module):
             if len(module_names) == 1:
                 module_msg_str = f"module `{module_names[0]}`"
             else:
-                module_msg_str = "modules " + ", ".join(f"`{module_name}`" for module_name in module_names)
+                module_msg_str = "modules " + ", ".join(
+                    f"`{module_name}`" for module_name in module_names
+                )
 
             return Response(
-                confidence=10, 
+                confidence=10,
                 text=f"I found no tests for {module_msg_str}",
-                why=f"This was meant to be a test but I found no test cases for {module_msg_str}"
+                why=f"This was meant to be a test but I found no test cases for {module_msg_str}",
             )
 
-        await message.channel.send("\n\n`=== Finished tests, evaluating the results ===`\n\n")
-        
+        await message.channel.send(
+            "\n\n`=== Finished tests, evaluating the results ===`\n\n"
+        )
+
         # Evaluate tests and generate test message with the score (% of tests that passed)
         score = self.evaluate_test()
         test_message = f"The percentage of tests passed is {score:.2%}"
@@ -241,7 +249,9 @@ class TestModule(Module):
 
                 # run tests
                 for test_case in test_cases:
-                    test_message = f"{TEST_MESSAGE_PREFIX}{test_id}: {test_case['test_message']}"
+                    test_message = (
+                        f"{TEST_MESSAGE_PREFIX}{test_id}: {test_case['test_message']}"
+                    )
                     test_case["test_message"] = test_message
                     self.sent_test.append(test_case)
                     test_id += 1
@@ -260,8 +270,9 @@ class TestModule(Module):
         if not self.sent_test:
             self.log.error(
                 self.class_name,
-                msg="Tried evaluating integration tests but no integration tests were run"
+                msg="Tried evaluating integration tests but no integration tests were run",
             )
+            return 0
         passed_tests_count = 0
         for test_case in self.sent_test:
             # Removing random whitespace errors

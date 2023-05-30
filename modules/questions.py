@@ -333,7 +333,7 @@ class Questions(Module):
         response_text += "\n"
         for q in questions:
             response_text += f"\n{make_post_question_message(q)}"
-            coda_api.update_question_last_asked_date(q["id"], current_time)
+            coda_api.update_question_last_asked_date(q, current_time)
 
         # update caches
         self.last_posted_time = current_time
@@ -375,7 +375,7 @@ class Questions(Module):
 
         # update in coda
         current_time = datetime.now()
-        coda_api.update_question_last_asked_date(question["id"], current_time)
+        coda_api.update_question_last_asked_date(question, current_time)
 
         # update caches
         coda_api.last_question_id = question["id"]

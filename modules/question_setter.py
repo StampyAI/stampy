@@ -52,7 +52,7 @@ Status name is case-insensitive and you can use status aliases.
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union, cast
+from typing import Literal, Optional, Union
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
@@ -216,7 +216,7 @@ class QuestionSetter(Module):
                 n_already_los += 1
                 msg = f"`\"{q['title']}\"` is already `Live on site`."
             else:
-                coda_api.update_question_status(q["id"], status)
+                coda_api.update_question_status(q, status)
                 msg = f"`\"{q['title']}\"` is now `{status}`"
             await message.channel.send(msg)
 
@@ -318,7 +318,7 @@ class QuestionSetter(Module):
                     f"`\"{q['title']}\"` is already `Live on site`"
                 )
             else:
-                coda_api.update_question_status(q["id"], "Live on site")
+                coda_api.update_question_status(q, "Live on site")
                 n_new_los += 1
                 await message.channel.send(f"`\"{q['title']}\"` goes `Live on site`!")
 
@@ -519,7 +519,7 @@ class QuestionSetter(Module):
                 msg = f'`"{q["title"]}"` is already `Live on site`.'
                 n_already_los += 1
             else:
-                coda_api.update_question_status(q["id"], status)
+                coda_api.update_question_status(q, status)
                 msg = (
                     f"`\"{q['title']}\"` is now `{status}` (previously `{prev_status}`)"
                 )
@@ -527,6 +527,8 @@ class QuestionSetter(Module):
 
         n_changed_status = len(questions) - n_already_los
 
+        # if "to bs" in text:
+        #     #breakpoint()
         msg = (
             f"Changed status of {n_changed_status} question"
             + ("s" if n_changed_status > 1 else "")
@@ -536,7 +538,6 @@ class QuestionSetter(Module):
             msg += " One question was already `Live on site`."
         elif n_already_los > 1:
             msg += f" {n_already_los} questions were already `Live on site`."
-
         return Response(
             confidence=10,
             text=msg,
@@ -577,5 +578,21 @@ class QuestionSetter(Module):
             ),
             ##############
             #   Status   #
-            ############## #TODO
+            ##############
+            self.create_integration_test(
+                test_message="del https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Marked for deletion`",
+            ),
+            self.create_integration_test(
+                test_message="dup https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Duplicate`",
+            ),
+            self.create_integration_test(
+                test_message="lgtm https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="2 more questions `Live on site`!",
+            ),
+            self.create_integration_test(
+                test_message="set status to bs https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Bulletpoint sketch`",
+            ),
         ]

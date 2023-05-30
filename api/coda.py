@@ -263,29 +263,19 @@ class CodaAPI:
 
     def update_question_status(
         self,
-        question_id: str,
+        question: QuestionRow,
         status: QuestionStatus,
     ) -> None:
         """Update the status of a question in the
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly.
         """
-        # get question row
-        question = self.get_question_by_id(question_id)
-        if question is None:
-            self.log.warning(
-                self.class_name,
-                msg="Tried updating a question's status but couldn't find a question with that ID",
-                question_id=question_id,
-                status=status,
-            )
-            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
-        self.questions_df.loc[question_id]["status"] = status
+        self.questions_df.loc[question["id"]]["status"] = status
 
     def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
@@ -298,35 +288,26 @@ class CodaAPI:
     # def remove_question_tag(self, question_id: str, tag: str) -> None:
 
     def update_question_last_asked_date(
-        self, question_id: str, current_time: datetime
+        self, question: QuestionRow, current_time: datetime
     ) -> None:
         """Update the `Last Asked On Discord` field of a question in the
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly"""
-        # get question row
-        question = self.get_question_by_id(question_id)
-        if question is None:
-            self.log.warning(
-                self.class_name,
-                msg="Tried updating a question's `Last Asked On Discord` field but couldn't find a question with that ID",
-                question_id=question_id,
-                current_time=current_time,
-            )
-            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             question["row"],
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
         # update local cache
-        self.questions_df.loc[question_id]["last_asked_on_discord"] = current_time
+        self.questions_df.loc[question["id"]]["last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
         for _, r in self.questions_df.iterrows():
             if r["last_asked_on_discord"] != DEFAULT_DATE:
-                question_id = cast(str, r["question_id"])
-                self.update_question_last_asked_date(question_id, DEFAULT_DATE)
+                self.update_question_last_asked_date(
+                    cast(QuestionRow, r.to_dict()), DEFAULT_DATE
+                )
 
     ###############
     #   Finding   #
