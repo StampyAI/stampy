@@ -56,7 +56,8 @@ from typing import Literal, Optional, Union, cast
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
-from modules.module import Module, Response
+from config import ENVIRONMENT_TYPE
+from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.question_query_utils import (
     QuestionSpecQuery,
@@ -541,3 +542,40 @@ class QuestionSetter(Module):
             text=msg,
             why=f"{message.author.name} asked me to change status to `{status}`.",
         )
+
+    @property
+    def test_cases(self) -> list[IntegrationTest]:
+        if ENVIRONMENT_TYPE != "development":
+            return []
+        return [
+            ###############
+            #   Tagging   #
+            ###############
+            self.create_integration_test(
+                test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="Added tag `Decision Theory` to one question",
+            ),
+            self.create_integration_test(
+                test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="No questions were modified",
+            ),
+            self.create_integration_test(
+                test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="Removed tag `Decision Theory` from one question",
+            ),
+            self.create_integration_test(
+                test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="No questions were modified",
+            ),
+            self.create_integration_test(
+                test_message="rm tag open problem",
+                expected_regex="Removed tag `Open Problem` from one question",
+            ),
+            self.create_integration_test(
+                test_message="add tag open problem",
+                expected_regex="Added tag `Open Problem` to one question",
+            ),
+            ##############
+            #   Status   #
+            ############## #TODO
+        ]
