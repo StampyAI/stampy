@@ -401,8 +401,8 @@ class Questions(Module):
         # must match regex and contain query info
         if not re_get_question_info.search(text):
             return
-        if not (spec_data := parse_question_spec_query(text)):
-            return
+        spec_data = parse_question_spec_query(text, return_last_by_default=True)
+
         return Response(
             confidence=10,
             callback=self.cb_get_question_info,

@@ -347,9 +347,7 @@ class QuestionSetter(Module):
         tag = parse_tag(text)
         if tag is None:
             return
-        query = parse_question_spec_query(text) or cast(
-            QuestionSpecQuery, ("Last", "it")
-        )
+        query = parse_question_spec_query(text, return_last_by_default=True)
         return Response(
             confidence=10, callback=self.cb_edit_tag, args=[query, tag, message, mode]
         )
@@ -406,7 +404,7 @@ class QuestionSetter(Module):
             if mode == "add":
                 response_text = f"Added tag `{tag}` to "
             else:
-                response_text = f"Remvoed tag `{tag}` from "
+                response_text = f"Removed tag `{tag}` from "
             response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
 
         return Response(

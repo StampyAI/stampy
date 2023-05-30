@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import cast, Literal, NamedTuple, Optional, Union
+from typing import cast, Literal, NamedTuple, Optional, Union, overload
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
@@ -112,7 +112,23 @@ def parse_question_title(text: str) -> Optional[str]:
         return question_title
 
 
-def parse_question_spec_query(text: str) -> Optional[QuestionSpecQuery]:
+@overload
+def parse_question_spec_query(
+    text: str,
+) -> Optional[QuestionSpecQuery]:
+    ...
+
+
+@overload
+def parse_question_spec_query(
+    text: str, *, return_last_by_default: Literal[True]
+) -> QuestionSpecQuery:
+    ...
+
+
+def parse_question_spec_query(
+    text: str, *, return_last_by_default: bool = False
+) -> Optional[QuestionSpecQuery]:
     """Parse data specifying concrete questions"""
     # QuestionLast
     if mention := parse_question_last(text):
@@ -123,6 +139,8 @@ def parse_question_spec_query(text: str) -> Optional[QuestionSpecQuery]:
     # QuestionTitle
     if question_title := parse_question_title(text):
         return "Title", question_title
+    if return_last_by_default:
+        return "Last", "DEFAULT"
 
 
 def parse_question_query(text: str) -> QuestionQuery:
@@ -136,7 +154,7 @@ def parse_question_query(text: str) -> QuestionQuery:
 
 
 QuestionSpecQuery = Union[
-    tuple[Literal["Last"], Literal["last", "it"]],
+    tuple[Literal["Last"], Literal["last", "it", "DEFAULT"]],
     tuple[Literal["GDocLinks"], list[str]],
     tuple[Literal["Title"], str],
 ]
