@@ -52,7 +52,7 @@ Status name is case-insensitive and you can use status aliases.
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, cast
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
@@ -65,7 +65,7 @@ from utilities.question_query_utils import (
     parse_tag,
 )
 from utilities.serviceutils import ServiceMessage
-from utilities.utilities import has_permissions, is_from_reviewer
+from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
 
 
 coda_api = CodaAPI.get_instance()
@@ -87,6 +87,8 @@ class QuestionSetter(Module):
     def __init__(self) -> None:
         super().__init__()
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
+        self.re_add_tag = re.compile(r"(add\s)?tag", re.I)
+        self.re_remove_tag = re.compile(r"(delete|del|remove|rm)\stag", re.I)
 
     async def find_gdoc_links_in_msg(
         self, channel: DiscordChannel, msg_ref_id: str
@@ -143,9 +145,7 @@ class QuestionSetter(Module):
             return response
 
         # tagging
-        if response := self.parse_add_tag(text, message):
-            return response
-        if response := self.parse_remove_tag(text, message):
+        if response := self.parse_edit_tag(text, message):
             return response
 
         # even if message is not `at me`, it may contain GDoc links
@@ -337,26 +337,21 @@ class QuestionSetter(Module):
     #   Adding and removing tags   #
     ################################
 
-    def parse_add_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
-        if not (text.startswith("add tag") or text.startswith("tag")):
+    def parse_edit_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
+        if self.re_add_tag.match(text):
+            mode = "add"
+        elif self.re_remove_tag.match(text):
+            mode = "remove"
+        else:
             return
-        query = parse_question_spec_query(text)
         tag = parse_tag(text)
-        return Response(
-            confidence=10, callback=self.cb_edit_tag, args=[query, tag, message, "add"]
+        if tag is None:
+            return
+        query = parse_question_spec_query(text) or cast(
+            QuestionSpecQuery, ("Last", "it")
         )
-
-    def parse_remove_tag(
-        self, text: str, message: ServiceMessage
-    ) -> Optional[Response]:
-        if not (text.startswith("remove tag") or text.startswith("delete tag")):
-            return
-        query = parse_question_spec_query(text)
-        tag = parse_tag(text)
         return Response(
-            confidence=10,
-            callback=self.cb_edit_tag,
-            args=[query, tag, message, "remove"],
+            confidence=10, callback=self.cb_edit_tag, args=[query, tag, message, mode]
         )
 
     async def cb_edit_tag(
@@ -376,14 +371,15 @@ class QuestionSetter(Module):
         if not questions:
             Response(
                 confidence=10,
-                text=f"I found no questions conforming to the query\n{query}",
-                why=f'{message.author.name} asked me to tag some questions as "{tag}" but I found none',
-            )  # TODO: nicely printing query
+                text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
+                why=f"{message.author.name} asked me to tag some questions as `{tag}` but I found none",
+            )
 
         if mode == "add":
-            msg = f"Adding tag {tag} to {len(questions)}"
+            msg = f"Adding tag `{tag}` to "
         else:
-            msg = f"Removing tag {tag} from {len(questions)}"
+            msg = f"Removing tag `{tag}` from "
+        msg += f"{len(questions)}" if len(questions) > 1 else "one question"
         await message.channel.send(msg)
 
         n_edited = 0
@@ -402,13 +398,17 @@ class QuestionSetter(Module):
                 else:
                     new_tags = [t for t in q["tags"] if t != tag]
                     coda_api.update_question_tags(q, new_tags)
+                    n_edited += 1
 
         if n_edited == 0:
             response_text = "No questions were modified"
-        elif mode == "add":
-            response_text = f'Added tag "{tag}" to {n_edited} questions'
         else:
-            response_text = f'Remvoed tag "{tag}" from {n_edited} questions'
+            if mode == "add":
+                response_text = f"Added tag `{tag}` to "
+            else:
+                response_text = f"Remvoed tag `{tag}` from "
+            response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
+
         return Response(
             confidence=10,
             text=response_text,
@@ -425,9 +425,9 @@ class QuestionSetter(Module):
         """Somebody is tring to mark one or more questions for deletion
         or as duplicates.
         """
-        if text.startswith("del"):
+        if text.startswith("del "):
             status = "Marked for deletion"
-        elif text.startswith("dup"):
+        elif text.startswith("dup "):
             status = "Duplicate"
         else:
             return
