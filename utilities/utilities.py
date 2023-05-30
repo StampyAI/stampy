@@ -29,11 +29,11 @@ from config import (
     bot_dev_ids,
     bot_vip_ids,
     paid_service_for_all,
-    paid_service_whitelist_role_ids
+    paid_service_whitelist_role_ids,
+    bot_private_channel_id
 )
 from database.database import Database
 from servicemodules.discordConstants import (
-    stampy_error_log_channel_id,
     wiki_feed_channel_id,
 )
 from servicemodules.serviceConstants import Services
@@ -91,7 +91,7 @@ class Utilities:
         self.last_question_asked_timestamp: datetime
         self.latest_question_posted = None
         self.error_channel = cast(
-            discord.Thread, self.client.get_channel(int(stampy_error_log_channel_id))
+            discord.Thread, self.client.get_channel(int(bot_private_channel_id))
         )
 
         self.users: list[int] = []
