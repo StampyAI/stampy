@@ -293,6 +293,7 @@ class CodaAPI:
         )
         self.questions_df.loc[question["id"]]["tags"].clear()
         self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+        self.last_question_id = question["id"]
 
     # def remove_question_tag(self, question_id: str, tag: str) -> None:
 
