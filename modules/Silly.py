@@ -4,18 +4,29 @@ import urllib
 import datetime
 import string
 
-from modules.module import Module, Response
-from utilities.utilities import randbool
+from typing import Dict
+from modules.module import Module, Response, ServiceMessage
+from utilities.utilities import Utilities, randbool
 
+utils = Utilities.get_instance()
 
 class Silly(Module):
+    def __init__(self):
+        super().__init__()
+
     def process_message(self, message):
         atme = self.is_at_me(message)
         text = atme or message.clean_content
         who = message.author.name
         print(atme)
         print(text)
-        
+
+        if atme and utils.messageRepeated(message, text):
+            self.log.info(
+                self.class_name, msg="We don't want to lock people in due to phrasing"
+            )
+            return Response()
+
         if text.lower() == "show me how exceptional you are!":
             class SillyError(Exception):
                 pass

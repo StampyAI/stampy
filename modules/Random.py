@@ -2,7 +2,9 @@ import re
 import random
 from modules.module import Module, Response
 
-from utilities.utilities import randbool
+from utilities.utilities import Utilities, randbool
+
+utils = Utilities.get_instance()
 
 class Random(Module):
     def process_message(self, message):
@@ -40,6 +42,12 @@ class Random(Module):
 
         # "Stampy, choose coke or pepsi or both"
         elif text.startswith("choose ") and " or " in text:
+            # repetition guard
+            if atme and utils.messageRepeated(message, text):
+                self.log.info(
+                    self.class_name, msg="We don't want to lock people in due to phrasing"
+                )
+                return Response()
             cstring = text.partition(" ")[2].strip("?")
             # options = [option.strip() for option in cstring.split(" or ")]  # No oxford commas please
             options = [option.strip() for option in re.split(" or |,", cstring) if option.strip()]
@@ -50,6 +58,13 @@ class Random(Module):
             )
 
         elif (atme or randbool(0.5)) and " or " in text and len(text.split()) < 20:
+            # repetition guard
+            if atme and utils.messageRepeated(message, text):
+                self.log.info(
+                    self.class_name, msg="We don't want to lock people in due to phrasing"
+                )
+                return Response()
+
             options = [option.strip() for option in re.split(" or |,", text.strip("?")) if option.strip()]
             try:  # reflect with ELIZA if available
                 result = self.utils.modules_dict["Eliza"].reflect(random.choice(options))
