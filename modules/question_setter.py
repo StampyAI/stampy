@@ -51,21 +51,22 @@ Status name is case-insensitive and you can use status aliases.
 
 ### Adding and removing tags #TODO
 
-### Adding and removing alternative question phrasings #TODO
+### Adding and removing alternate question phrasings #TODO
 
 """
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 from api.coda import CodaAPI
-from api.utilities.coda_utils import QuestionStatus
+from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import ENVIRONMENT_TYPE
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.question_query_utils import (
     QuestionSpecQuery,
+    parse_alt_phr,
     parse_gdoc_links,
     parse_question_spec_query,
     parse_tag,
@@ -95,6 +96,11 @@ class QuestionSetter(Module):
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
         self.re_add_tag = re.compile(r"(add\s)?tag", re.I)
         self.re_remove_tag = re.compile(r"(delete|del|remove|rm)\stag", re.I)
+        alt_phr_pat = "(alt|alternate|alt phrasing|alternate phrasing|alias)"
+        self.re_add_alt_phr = re.compile(r"(add )?" + alt_phr_pat, re.I)
+        self.re_remove_alt_phr = re.compile(
+            r"(delete|del|remove|rm) " + alt_phr_pat, re.I
+        )
 
     async def find_gdoc_links_in_msg(
         self, channel: DiscordChannel, msg_ref_id: str
@@ -152,6 +158,10 @@ class QuestionSetter(Module):
 
         # tagging
         if response := self.parse_edit_tag(text, message):
+            return response
+
+        # alternate phrasings
+        if response := self.parse_edit_altphr(text, message):
             return response
 
         # even if message is not `at me`, it may contain GDoc links
@@ -339,78 +349,121 @@ class QuestionSetter(Module):
             why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.",
         )
 
-    ################################
-    #   Adding and removing tags   #
-    ################################
+    #######################################################
+    #   Adding/removing tags and alternative phrasings    #
+    #######################################################
 
     def parse_edit_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
         if self.re_add_tag.match(text):
-            mode = "add"
+            add_or_remove = "add"
         elif self.re_remove_tag.match(text):
-            mode = "remove"
+            add_or_remove = "remove"
         else:
             return
-        tag = parse_tag(text)
-        if tag is None:
+        if not (tag := parse_tag(text)):
             return
         query = parse_question_spec_query(text, return_last_by_default=True)
         return Response(
-            confidence=10, callback=self.cb_edit_tag, args=[query, tag, message, mode]
+            confidence=10,
+            callback=self.cb_edit_tag_or_altphr,
+            args=[query, tag, message, add_or_remove, "tag"],
         )
 
-    async def cb_edit_tag(
+    def parse_edit_altphr(
+        self, text: str, message: ServiceMessage
+    ) -> Optional[Response]:
+        ()
+        if self.re_add_alt_phr.match(text):
+            add_or_remove = "add"
+        elif self.re_remove_alt_phr.match(text):
+            add_or_remove = "remove"
+        else:
+            return
+        if not (alt_phr := parse_alt_phr(text)):
+            ()
+            return
+        query = parse_question_spec_query(text, return_last_by_default=True)
+        return Response(
+            confidence=10,
+            callback=self.cb_edit_tag_or_altphr,
+            args=[query, alt_phr, message, add_or_remove, "alternate phrasing"],
+        )
+
+    async def cb_edit_tag_or_altphr(
         self,
         query: QuestionSpecQuery,
-        tag: str,
+        val: str,  # tag or altphr
         message: ServiceMessage,
-        mode: Literal["add", "remove"],
+        add_or_remove: Literal["add", "remove"],
+        tag_or_altphr: Literal["tag", "alternate phrasing"],
     ) -> Response:
         if not has_permissions(message.author):
             return Response(
                 confidence=10,
-                text=f"You don't have permissions required to edit tags <@{message.author}>",
-                why=f"{message.author.name} does not have permissions edit tags on questions",
+                text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
+                why=f"{message.author.name} does not have permissions edit {tag_or_altphr}s on questions",
             )
         questions = await coda_api.query_for_questions(query, message)
+        # adding oen altphr per many questions is not allowed
+        if (
+            len(questions) > 1
+            and add_or_remove == "add"
+            and tag_or_altphr == "alternate phrasing"
+        ):
+            return Response(
+                confidence=10,
+                text=f"I don't think you want to add the same alternate phrasing to {len(questions)} questions, <@{message.author}>, choose one",
+                why=f"{message.author.name} asked me to more than one question at once which is not the way to go",
+            )
+        to_or_from = "to" if add_or_remove == "add" else "from"
         if not questions:
             Response(
                 confidence=10,
                 text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
-                why=f"{message.author.name} asked me to tag some questions as `{tag}` but I found none",
+                why=f"{message.author.name} asked me to {add_or_remove} {tag_or_altphr} `{val}` {to_or_from} some question(s) but I found nothing",
             )
 
-        if mode == "add":
-            msg = f"Adding tag `{tag}` to "
+        if add_or_remove == "add":
+            msg = "Adding"
         else:
-            msg = f"Removing tag `{tag}` from "
-        msg += f"{len(questions)}" if len(questions) > 1 else "one question"
+            msg = "Removing"
+        msg += f" {tag_or_altphr} `{val}` {to_or_from} "
+        msg += f"{len(questions)} questions" if len(questions) > 1 else "one question"
         await message.channel.send(msg)
 
         n_edited = 0
+        field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
+        update_method: Callable[[QuestionRow, list[str]], None] = (
+            coda_api.update_question_tags
+            if tag_or_altphr == "tag"
+            else coda_api.update_question_altphr
+        )
 
-        if mode == "add":
+        if add_or_remove == "add":
             for q in questions:
-                if tag in q["tags"]:
-                    await message.channel.send(f'"{q["title"]}" already has this tag')
+                if val in q[field]:
+                    await message.channel.send(
+                        f'"{q["title"]}" already has this {tag_or_altphr}'
+                    )
                 else:
-                    coda_api.update_question_tags(q, q["tags"] + [tag])
+                    update_method(q, q[field] + [val])
                     n_edited += 1
         else:
             for q in questions:
-                if tag not in q["tags"]:
-                    await message.channel.send(f'"{q["title"]}" doesn\'t have this tag')
+                if val not in q[field]:
+                    await message.channel.send(
+                        f'"{q["title"]}" doesn\'t have this {tag_or_altphr}'
+                    )
                 else:
-                    new_tags = [t for t in q["tags"] if t != tag]
-                    coda_api.update_question_tags(q, new_tags)
+                    new_tags = [t for t in q[field] if t != val]
+                    update_method(q, new_tags)
                     n_edited += 1
 
         if n_edited == 0:
             response_text = "No questions were modified"
         else:
-            if mode == "add":
-                response_text = f"Added tag `{tag}` to "
-            else:
-                response_text = f"Removed tag `{tag}` from "
+            response_text = "Added" if add_or_remove == "add" else "Removed"
+            response_text += f" {tag_or_altphr} `{val}` {to_or_from} "
             response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
 
         return Response(
@@ -533,7 +586,7 @@ class QuestionSetter(Module):
         n_changed_status = len(questions) - n_already_los
 
         # if "to bs" in text:
-        #     #breakpoint()
+        #     #()
         msg = (
             f"Changed status of {n_changed_status} question"
             + ("s" if n_changed_status > 1 else "")

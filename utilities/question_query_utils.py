@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import cast, Literal, NamedTuple, Optional, Union, overload
+from typing import cast, overload, Literal, NamedTuple, Optional, Union
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
@@ -112,6 +112,14 @@ def parse_question_title(text: str) -> Optional[str]:
         return question_title
 
 
+def parse_alt_phr(text: str) -> Optional[str]:
+    start = text.find('"') + 1
+    end = text.find('"', start)
+    if -1 in (start, end):
+        return
+    return text[start:end]
+
+
 @overload
 def parse_question_spec_query(
     text: str,
@@ -128,7 +136,7 @@ def parse_question_spec_query(
 
 def parse_question_spec_query(
     text: str, *, return_last_by_default: bool = False
-) -> Optional[QuestionSpecQuery]:
+) -> Optional[QuestionSpecQuery]:  # TODO: raise or sth if no last
     """Parse data specifying concrete questions"""
     # QuestionLast
     if mention := parse_question_last(text):

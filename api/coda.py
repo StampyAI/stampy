@@ -288,7 +288,17 @@ class CodaAPI:
         self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
         self.last_question_id = question["id"]
 
-    # def remove_question_tag(self, question_id: str, tag: str) -> None:
+    def update_question_altphr(
+        self, question: QuestionRow, new_alt_phrs: list[str]
+    ) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
+        )
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
+            new_alt_phrs
+        )
+        self.last_question_id = question["id"]
 
     def update_question_last_asked_date(
         self, question: QuestionRow, current_time: datetime
