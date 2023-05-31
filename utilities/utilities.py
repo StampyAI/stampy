@@ -491,10 +491,10 @@ class UtilsTests:
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
 
-def can_use_paid_service(message: ServiceMessage) -> bool:
+def can_use_paid_service(author: ServiceUser) -> bool:
     if paid_service_for_all:
         return True
-    elif message.author.id in bot_vip_ids or is_bot_dev(message.author):
+    elif author.id in bot_vip_ids or is_bot_dev(author):
         return True
     elif any(discordutils.user_has_role(message.author, x)
              for x in paid_service_whitelist_role_ids):
