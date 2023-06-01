@@ -143,7 +143,7 @@ class Questions(Module):
         self.re_count_questions = re.compile(
             r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
         )
-        self.re_big_next_question = re.compile(
+        self.re_big_next_question = re.compile(  # TODO: this matches just "a question"
             r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
             r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
             r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"

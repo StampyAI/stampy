@@ -676,13 +676,15 @@ class QuestionSetter(Module):
     def test_cases(self) -> list[IntegrationTest]:
         if ENVIRONMENT_TYPE != "development":
             return []
+        test_altphr = "TEST_ALTERNATE_PHRASING"
         return [
-            ###############
-            #   Tagging   #
-            ###############
+            ############
+            #   Tags   #
+            ############
             self.create_integration_test(
                 test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
                 expected_regex="Added tag `Decision Theory` to one question",
+                test_wait_time=1,
             ),
             self.create_integration_test(
                 test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
@@ -691,6 +693,7 @@ class QuestionSetter(Module):
             self.create_integration_test(
                 test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
                 expected_regex="Removed tag `Decision Theory` from one question",
+                test_wait_time=1,
             ),
             self.create_integration_test(
                 test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
@@ -699,10 +702,51 @@ class QuestionSetter(Module):
             self.create_integration_test(
                 test_message="rm tag open problem",
                 expected_regex="Removed tag `Open Problem` from one question",
+                test_wait_time=1,
             ),
             self.create_integration_test(
                 test_message="add tag open problem",
                 expected_regex="Added tag `Open Problem` to one question",
+            ),
+            ###########################
+            #   Alternate phrasings   #
+            ###########################
+            self.create_integration_test(
+                test_message=f'alt "{test_altphr}" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex=f"Added alternate phrasing `{test_altphr}` to one question",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message=f'alt "{test_altphr}" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex="No questions were modified",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex=f"Removed alternate phrasing `{test_altphr}` from one question",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex="No questions were modified",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="No questions were modified",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message='add alt "XYZ" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit',
+                expected_regex="I don't think you want",
+            ),
+            self.create_integration_test(
+                test_message='rm alt "XYZ" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit',
+                expected_regex="I don't think you want",
+            ),
+            self.create_integration_test(
+                test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="No questions were modified",
             ),
             ##############
             #   Status   #
