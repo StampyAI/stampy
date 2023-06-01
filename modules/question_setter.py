@@ -49,25 +49,37 @@ Status name is case-insensitive and you can use status aliases.
 
 ![](images/help/QuestionsSetter-set-status.png)
 
-### Adding and removing tags
+### Editing tags and alternate phrasings of questions
 
 Add a tag to a question (specified by title, GDocLink, or the last one)
 
-`s, <add/add tag> <tag-name> <gdoc-links/question title>`
+PHOTO
 
+`s, <add/add tag> <tag-name> <gdoc-links/question-title>` (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
 
+If you don't specify the question, Stampy assumes you refer to the last one
+
+PHOTO
 
 Remove a tag from a question
 
-`s, <delete/del/remove/rm> <tag-name> <gdoc-links/question title> `
+`s, <delete/del/remove/rm> <tag-name> <gdoc-links/question-title>`
+
+PHOTO
 
 Clear all tags on a question
 
-`s, clear tags <gdoc-links/question title>`
+`s, clear tags <gdoc-links/question-title>`
 
-### Adding and removing alternate question phrasings #TODO
+PHOTO
 
-Similarly, to tags, except you can only add or remove alternative phrasings to/from one question at a time (because if two questions have the same alternative phrasing, something is fundamentally wrong). You still can clear alternative phrasings on multiple questions at a time.
+---
+
+Editing alternate phrasings works similarly to tags, except you can only add or remove alternative phrasings to/from one question at a time (because if two questions have the same alternative phrasing, something is fundamentally wrong). You still can clear alternative phrasings on multiple questions at a time.
+
+Alternate phrasings must be specified within double quotes, otherwise, they're not going to be parsed at all.
+
+`s, <add/add alt/add alternative phrasing> "<new-alternative-phrasing>" <gdoc-links/question-title>`
 
 """
 from __future__ import annotations
@@ -102,7 +114,7 @@ GDocLinks = list[str]
 MsgRefId = str
 ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
-EditOption = Literal["add", "remove", "clear"]
+EditAction = Literal["add", "remove", "clear"]
 
 
 class QuestionSetter(Module):
@@ -124,7 +136,7 @@ class QuestionSetter(Module):
     async def find_gdoc_links_in_msg(
         self, channel: DiscordChannel, msg_ref_id: str
     ) -> None:
-        """Find gdoc links in message, which is missing from Stampy's cache."""
+        """Find GDoc links in message, which is missing from Stampy's cache."""
 
         self.log.info(
             self.class_name,
@@ -374,15 +386,15 @@ class QuestionSetter(Module):
 
     def parse_edit_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
         if self.re_add_tag.match(text):
-            edit_option: EditOption = "add"
+            edit_action: EditAction = "add"
         elif self.re_remove_tag.match(text):
-            edit_option = "remove"
+            edit_action = "remove"
         elif text.startswith("clear tags"):
-            edit_option = "clear"
+            edit_action = "clear"
         else:
             return
 
-        if edit_option == "clear":
+        if edit_action == "clear":
             tag = None
         elif not (tag := parse_tag(text)):
             return
@@ -391,22 +403,22 @@ class QuestionSetter(Module):
         return Response(
             confidence=10,
             callback=self.cb_edit_tag_or_altphr,
-            args=[query, tag, message, edit_option, "tag"],
+            args=[query, tag, message, edit_action, "tag"],
         )
 
     def parse_edit_altphr(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         if self.re_add_alt_phr.match(text):
-            edit_option: EditOption = "add"
+            edit_action: EditAction = "add"
         elif self.re_remove_alt_phr.match(text):
-            edit_option = "remove"
+            edit_action = "remove"
         elif text.startswith("clear alt"):
-            edit_option = "clear"
+            edit_action = "clear"
         else:
             return
 
-        if edit_option == "clear":
+        if edit_action == "clear":
             alt_phr = None
         elif not (alt_phr := parse_alt_phr(text)):
             return
@@ -415,15 +427,15 @@ class QuestionSetter(Module):
         return Response(
             confidence=10,
             callback=self.cb_edit_tag_or_altphr,
-            args=[query, alt_phr, message, edit_option, "alternate phrasing"],
+            args=[query, alt_phr, message, edit_action, "alternate phrasing"],
         )
 
     async def cb_edit_tag_or_altphr(
         self,
         query: QuestionSpecQuery,
-        val: Optional[str],  # tag or altphr
+        val: Optional[str],  # tag or altphr (None only if edit_action == "clear")
         message: ServiceMessage,
-        edit_option: EditOption,
+        edit_action: EditAction,
         tag_or_altphr: Literal["tag", "alternate phrasing"],
     ) -> Response:
         if not has_permissions(message.author):
@@ -432,34 +444,36 @@ class QuestionSetter(Module):
                 text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
                 why=f"{message.author.name} does not have permissions edit {tag_or_altphr}s on questions",
             )
-        questions = await coda_api.query_for_questions(query, message)
-        # adding oen altphr per many questions is not allowed
-        if (
-            len(questions) > 1
-            and edit_option == "add"
-            and tag_or_altphr == "alternate phrasing"
-        ):
-            return Response(
-                confidence=10,
-                text=f"I don't think you want to add the same alternate phrasing to {len(questions)} questions, <@{message.author}>, choose one",
-                why=f"{message.author.name} asked me to more than one question at once which is not the way to go",
-            )
-
         # define for messages and stuff #TODO
-        to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_option]
+        to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_action]
         verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[
-            edit_option
+            edit_action
         ]
         field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
+        questions = await coda_api.query_for_questions(query, message)
 
         if not questions:
             Response(
                 confidence=10,
                 text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
-                why=f"{message.author.name} asked me to {edit_option} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
+                why=f"{message.author.name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
+            )
+        # adding/removing one altphr per many questions is not allowed
+        if (
+            len(questions) > 1
+            and edit_action != "clear"
+            and tag_or_altphr == "alternate phrasing"
+        ):
+            return Response(
+                confidence=10,
+                text=f"I don't think you want to {edit_action} the same alternate phrasing {to_from_on} {len(questions)} questions. Please, choose one.",
+                why=f"{message.author.name} asked me to more than one question at once which is not the way to go",
             )
 
-        msg = f"{verb_gerund} {tag_or_altphr} `{val}` {to_from_on} "
+        if edit_action != "clear":
+            msg = f"{verb_gerund} {tag_or_altphr} `{val}` {to_from_on} "
+        else:
+            msg = f"Clearing {tag_or_altphr}s on "
         msg += f"{len(questions)} questions" if len(questions) > 1 else "one question"
         await message.channel.send(msg)
 
@@ -470,7 +484,7 @@ class QuestionSetter(Module):
             else coda_api.update_question_altphr
         )
 
-        if edit_option == "add":
+        if edit_action == "add":
             val = cast(str, val)
             for q in questions:
                 if val in q[field]:
@@ -480,7 +494,10 @@ class QuestionSetter(Module):
                 else:
                     update_method(q, q[field] + [val])
                     n_edited += 1
-        elif edit_option == "remove":
+                    await message.channel.send(
+                        f'Added {tag_or_altphr} `{val}` to "{q["title"]}"'
+                    )
+        elif edit_action == "remove":
             for q in questions:
                 if val not in q[field]:
                     await message.channel.send(
@@ -490,28 +507,40 @@ class QuestionSetter(Module):
                     new_tags = [t for t in q[field] if t != val]
                     update_method(q, new_tags)
                     n_edited += 1
+                    await message.channel.send(
+                        f'Removed {tag_or_altphr} `{val}` from "{q["title"]}"'
+                    )
         else:  # clear
             for q in questions:
                 if not q[field]:
                     await message.channel.send(
-                        f'"{q["title"]} already has no {tag_or_altphr}'
+                        f'"{q["title"]}" already has no {tag_or_altphr}s'
                     )
                 else:
                     update_method(q, [])
                     n_edited += 1
+                    await message.channel.send(
+                        f'Cleared {tag_or_altphr}s on "{q["title"]}"'
+                    )
 
         if n_edited == 0:
             response_text = "No questions were modified"
+        elif edit_action == "clear":
+            response_text = f"Cleared {tag_or_altphr}s on {n_edited} questions"
         else:
-            response_text = "Added" if edit_option == "add" else "Removed"
+            response_text = "Added" if edit_action == "add" else "Removed"
             response_text += f" {tag_or_altphr} `{val}` {to_from_on} "
             response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
 
-        return Response(
-            confidence=10,
-            text=response_text,
-            why=f"{message.author.name} asked me to tag these questions, so I did",
-        )
+        why = f"{message.author.name} asked me to {edit_action} "
+        if edit_action == "clear":
+            why += f"{tag_or_altphr}s"
+        elif tag_or_altphr == "tag":
+            why += "a tag"
+        else:
+            why += "an alternate question"
+
+        return Response(confidence=10, text=response_text, why=why)
 
     ###############################
     #   Setting question status   #

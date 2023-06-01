@@ -241,7 +241,7 @@ class Questions(Module):
         filter_data = parse_question_filter(text)
 
         return Response(
-            confidence=8,
+            confidence=10,
             callback=self.cb_count_questions,
             args=[filter_data, message],
             why="I was asked to count questions",
@@ -272,7 +272,7 @@ class Questions(Module):
         response_text += status_and_tag_response_text
 
         return Response(
-            confidence=8,
+            confidence=10,
             text=response_text,
             why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
         )
@@ -288,7 +288,7 @@ class Questions(Module):
             return
         request_data = parse_question_query(text)
         return Response(
-            confidence=8,
+            confidence=10,
             callback=self.cb_post_questions,
             args=[request_data, message],
         )
@@ -440,7 +440,7 @@ class Questions(Module):
             coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=8,
+            confidence=10,
             text=response_text,
             why=why,
         )
