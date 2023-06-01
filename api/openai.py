@@ -1,11 +1,20 @@
 import asyncio
 from api.utilities.openai import OpenAIEngines
-from config import openai_api_key, paid_service_channel_ids, bot_dev_roles
+from config import (
+    openai_api_key,
+    paid_service_channel_ids,
+    bot_dev_roles,
+    bot_vip_ids,
+    use_helicone
+)
 from structlog import get_logger
 from servicemodules.serviceConstants import Services, openai_channel_ids
 from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
-import openai
+if use_helicone:
+    from helicone import openai
+else:
+    import openai
 import discord
 
 openai.api_key = openai_api_key

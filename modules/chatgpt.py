@@ -4,12 +4,16 @@ from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
     bot_vip_ids,
+    use_helicone
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities import Utilities
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
-import openai
+if use_helicone:
+    from helicone import openai
+else:
+    import openai
 import re
 
 openai.api_key = openai_api_key

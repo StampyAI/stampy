@@ -142,6 +142,7 @@ else:
     # if above is false, who gets to use paid services?
     paid_service_whitelist_role_ids: frozenset = getenv_unique_set("PAID_SERVICE_WHITELIST_ROLE_IDS", frozenset())
     expensive_option_role_ids: frozenset = bot_vip_ids | getenv_unique_set("EXPENSIVE_OPTION_ROLE_IDS", frozenset())
+    use_helicone: bool = getenv_bool("USE_HELICONE")
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")
