@@ -36,11 +36,8 @@ def parse_question_filter(text: str) -> QuestionFilterNT:
     )
 
 
-_status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands).replace(" ", r"\s")
-_re_status = re.compile(
-    rf"status\s*({_status_pat})",
-    re.I | re.X,
-)
+_status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands)
+_re_status = re.compile(rf"({_status_pat})", re.I)
 
 
 def parse_status(text: str) -> Optional[QuestionStatus]:
@@ -51,13 +48,13 @@ def parse_status(text: str) -> Optional[QuestionStatus]:
     return status_shorthands[status_val.lower()]
 
 
-_tag_pat = "|".join(all_tags).replace(" ", r"\s")
-_re_tag = re.compile(rf"tag(?:s|ged(?:\sas)?)?\s+({_tag_pat})", re.I)
+_tag_pat = "|".join(rf"\b{t}\b" for t in all_tags)
+_re_tag = re.compile(rf"({_tag_pat})", re.I)
 
 
 def parse_tag(text: str) -> Optional[str]:
     """Parse valid tag from message text for querying questions database"""
-    if (match := _re_tag.search(text)) is None:
+    if "tag" not in text or (match := _re_tag.search(text)) is None:
         return None
     tag_val = match.group(1)
     tag_pat = _tag_pat.replace(r"\s", " ")

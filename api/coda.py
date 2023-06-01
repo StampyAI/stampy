@@ -10,6 +10,7 @@ from structlog import get_logger
 
 
 from api.utilities.coda_utils import (
+    QUESTION_STATUS_ALIASES,
     make_updated_cells,
     parse_question_row,
     QuestionRow,
@@ -280,26 +281,6 @@ class CodaAPI:
         # update local cache
         self.questions_df.loc[question["id"]]["status"] = status
 
-    def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
-        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
-            question["row"], make_updated_cells({"Tags": new_tags})
-        )
-        self.questions_df.loc[question["id"]]["tags"].clear()
-        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
-        self.last_question_id = question["id"]
-
-    def update_question_altphr(
-        self, question: QuestionRow, new_alt_phrs: list[str]
-    ) -> None:
-        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
-            question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
-        )
-        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
-        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
-            new_alt_phrs
-        )
-        self.last_question_id = question["id"]
-
     def update_question_last_asked_date(
         self, question: QuestionRow, current_time: datetime
     ) -> None:
@@ -321,6 +302,30 @@ class CodaAPI:
                 self.update_question_last_asked_date(
                     cast(QuestionRow, r.to_dict()), DEFAULT_DATE
                 )
+
+    # Tags
+
+    def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Tags": new_tags})
+        )
+        self.questions_df.loc[question["id"]]["tags"].clear()
+        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+        self.last_question_id = question["id"]
+
+    # Alternate phrasings
+
+    def update_question_altphr(
+        self, question: QuestionRow, new_alt_phrs: list[str]
+    ) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
+        )
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
+            new_alt_phrs
+        )
+        self.last_question_id = question["id"]
 
     ###############
     #   Finding   #
@@ -506,6 +511,7 @@ class CodaAPI:
             status_shorthand_dict[status.lower()] = status
             shorthand = "".join(word[0].lower() for word in status.split())
             status_shorthand_dict[shorthand] = status
+        status_shorthand_dict.update(QUESTION_STATUS_ALIASES)
         return status_shorthand_dict
 
     def get_all_tags(self) -> list[str]:
