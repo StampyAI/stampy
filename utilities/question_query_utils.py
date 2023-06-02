@@ -5,6 +5,7 @@ from typing import cast, overload, Literal, NamedTuple, Optional, Union
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
+from utilities.utilities import mask_quoted_text
 
 coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()
@@ -142,7 +143,7 @@ def parse_question_spec_query(
     if gdoc_links := parse_gdoc_links(text):
         return "GDocLinks", gdoc_links
     # QuestionTitle
-    if question_title := parse_question_title(text):
+    if question_title := parse_question_title(mask_quoted_text(text)):
         return "Title", question_title
     if return_last_by_default:
         return "Last", "DEFAULT"

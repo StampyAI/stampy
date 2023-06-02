@@ -15,7 +15,7 @@ On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@revie
 - `@feedback` -> `In progress`
 - `@feedback-sketch` -> `Bulletpoint sketch`
 
-![](images/help/QuestionsSetter-review-request.png)
+![](images/help/QuestionSetter-review-request.png)
 
 Some remarks:
 
@@ -33,13 +33,13 @@ The keywords are (case-insensitive):
 - lgtm
   - stands for "looks good to me"
 
-![](images/help/QuestionsSetter-review-acceptance.png)
+![](images/help/QuestionSetter-review-acceptance.png)
 
 ### Marking questions for deletion or as duplicates
 
 Use `s, <del/dup>` (or `stampy, <del/dup>`) to change status of questions to `Marked for deletion` or `Duplicate`
 
-![](images/help/QuestionsSetter-del-dup.png)
+![](images/help/QuestionSetter-del-dup.png)
 
 ### Setting question status
 
@@ -47,31 +47,31 @@ Question status can be changed more flexibly, using the command: `<set/change> <
 
 Status name is case-insensitive and you can use status aliases.
 
-![](images/help/QuestionsSetter-set-status.png)
+![](images/help/QuestionSetter-set-status.png)
 
 ### Editing tags and alternate phrasings of questions
 
 Add a tag to a question (specified by title, GDocLink, or the last one)
 
-PHOTO
-
 `s, <add/add tag> <tag-name> <gdoc-links/question-title>` (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
+
+![](images/help/QuestionSetter-add-tag-gdoc-link.png)
 
 If you don't specify the question, Stampy assumes you refer to the last one
 
-PHOTO
+![](images/help/QuestionSetter-add-tag.png)
 
 Remove a tag from a question
 
 `s, <delete/del/remove/rm> <tag-name> <gdoc-links/question-title>`
 
-PHOTO
+![](images/help/QuestionSetter-remove-tag.png)
 
 Clear all tags on a question
 
 `s, clear tags <gdoc-links/question-title>`
 
-PHOTO
+![](images/help/QuestionSetter-clear-tags.png)
 
 ---
 
@@ -79,7 +79,9 @@ Editing alternate phrasings works similarly to tags, except you can only add or 
 
 Alternate phrasings must be specified within double quotes, otherwise, they're not going to be parsed at all.
 
-`s, <add/add alt/add alternative phrasing> "<new-alternative-phrasing>" <gdoc-links/question-title>`
+![](images/help/QuestionSetter-add-altphr.png)
+
+![](images/help/QuestionSetter-clear-altphr.png)
 
 """
 from __future__ import annotations
