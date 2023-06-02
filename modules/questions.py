@@ -139,7 +139,7 @@ class Questions(Module):
             """,
             re.I | re.X,
         )
-        self.re_get_question_info = re.compile(r"i |info |get info ", re.I)
+        self.re_get_question_info = re.compile(r"(?:i|info|get info)\b", re.I)
         self.re_count_questions = re.compile(
             r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
         )
