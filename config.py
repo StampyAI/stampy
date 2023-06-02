@@ -61,6 +61,7 @@ test_response_message = "LOGGED_TEST_RESPONSE"
 TEST_MESSAGE_PREFIX = "TEST_MESSAGE "
 TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
 CONFUSED_RESPONSE = "I don't understand"
+stampy_default_prompt="You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them."
 
 prod_local_path = "/home/rob/stampy.local"
 
@@ -119,6 +120,10 @@ if robmiles_defaults:
     paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
     paid_service_whitelist_role_ids: frozenset = frozenset()
     expensive_option_role_ids: frozenset = frozenset()
+    llm_prompt: str = getenv(
+        "LLM_PROMPT",
+        default=stampy_default_prompt
+    )
 else:
     # get from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -143,6 +148,10 @@ else:
     paid_service_whitelist_role_ids: frozenset = getenv_unique_set("PAID_SERVICE_WHITELIST_ROLE_IDS", frozenset())
     expensive_option_role_ids: frozenset = bot_vip_ids | getenv_unique_set("EXPENSIVE_OPTION_ROLE_IDS", frozenset())
     use_helicone: bool = getenv_bool("USE_HELICONE")
+    llm_prompt: str = getenv(
+        "LLM_PROMPT",
+        default=stampy_default_prompt
+    )
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")

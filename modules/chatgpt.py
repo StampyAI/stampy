@@ -4,7 +4,8 @@ from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
     bot_vip_ids,
-    use_helicone
+    use_helicone,
+    llm_prompt
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
@@ -96,7 +97,7 @@ class ChatGPTModule(Module):
             0,
             {
                 "role": "system",
-                "content": "You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them.",
+                "content": llm_prompt,
             },
         )
 
