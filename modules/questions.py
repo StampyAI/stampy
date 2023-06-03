@@ -160,7 +160,7 @@ class Questions(Module):
         self.last_question_autoposted = False
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
-        @self.utils.client.event  # TODO this should be registered on Rob's discord only
+        @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
             if (
                 self.last_posted_time < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
