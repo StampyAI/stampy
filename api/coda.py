@@ -10,6 +10,7 @@ from structlog import get_logger
 
 
 from api.utilities.coda_utils import (
+    QUESTION_STATUS_ALIASES,
     make_updated_cells,
     parse_question_row,
     QuestionRow,
@@ -68,6 +69,7 @@ class CodaAPI:
                 "status",
                 "tags",
                 "last_asked_on_discord",
+                "alternate_phrasings",
                 "row",
             ]
         )
@@ -176,6 +178,8 @@ class CodaAPI:
                 df_row["status"] = row["status"]
                 df_row["tags"].clear()
                 df_row["tags"].extend(row["tags"])
+                df_row["alternate_phrasings"].clear()
+                df_row["alternate_phrasings"].extend(row["alternate_phrasings"])
                 df_row["title"] = row["title"]
                 df_row["url"] = row["url"]
 
@@ -263,60 +267,65 @@ class CodaAPI:
 
     def update_question_status(
         self,
-        question_id: str,
+        question: QuestionRow,
         status: QuestionStatus,
     ) -> None:
         """Update the status of a question in the
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly.
         """
-        # get question row
-        question = self.get_question_by_id(question_id)
-        if question is None:
-            self.log.warning(
-                self.class_name,
-                msg="Tried updating a question's status but couldn't find a question with that ID",
-                question_id=question_id,
-                status=status,
-            )
-            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
-        self.questions_df.loc[question_id]["status"] = status
+        self.questions_df.loc[question["id"]]["status"] = status
 
     def update_question_last_asked_date(
-        self, question_id: str, current_time: datetime
+        self, question: QuestionRow, current_time: datetime
     ) -> None:
         """Update the `Last Asked On Discord` field of a question in the
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly"""
-        # get question row
-        question = self.get_question_by_id(question_id)
-        if question is None:
-            self.log.warning(
-                self.class_name,
-                msg="Tried updating a question's `Last Asked On Discord` field but couldn't find a question with that ID",
-                question_id=question_id,
-                current_time=current_time,
-            )
-            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             question["row"],
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
         # update local cache
-        self.questions_df.loc[question_id]["last_asked_on_discord"] = current_time
+        self.questions_df.loc[question["id"]]["last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
         for _, r in self.questions_df.iterrows():
             if r["last_asked_on_discord"] != DEFAULT_DATE:
-                question_id = cast(str, r["question_id"])
-                self.update_question_last_asked_date(question_id, DEFAULT_DATE)
+                self.update_question_last_asked_date(
+                    cast(QuestionRow, r.to_dict()), DEFAULT_DATE
+                )
+
+    # Tags
+
+    def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Tags": new_tags})
+        )
+        self.questions_df.loc[question["id"]]["tags"].clear()
+        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+        self.last_question_id = question["id"]
+
+    # Alternate phrasings
+
+    def update_question_altphr(
+        self, question: QuestionRow, new_alt_phrs: list[str]
+    ) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
+        )
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
+            new_alt_phrs
+        )
+        self.last_question_id = question["id"]
 
     ###############
     #   Finding   #
@@ -450,8 +459,13 @@ class CodaAPI:
             mention = query[1]
             why = f"{message.author.name} asked about the last question"
             if not questions:
+                text = (
+                    f'What do you mean by "{mention}"?'
+                    if mention != "DEFAULT"
+                    else "What do you mean?"
+                )
                 return (
-                    f'What do you mean by "{mention}"?',
+                    text,
                     why
                     + " but I don't remember what it was because I recently rebooted",
                 )
@@ -497,6 +511,7 @@ class CodaAPI:
             status_shorthand_dict[status.lower()] = status
             shorthand = "".join(word[0].lower() for word in status.split())
             status_shorthand_dict[shorthand] = status
+        status_shorthand_dict.update(QUESTION_STATUS_ALIASES)
         return status_shorthand_dict
 
     def get_all_tags(self) -> list[str]:

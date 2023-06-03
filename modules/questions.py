@@ -128,11 +128,36 @@ class Questions(Module):
         self.last_posted_time: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
-        # Was the last question that was posted, automatically posted by Stampy?
-        self.last_question_autoposted = False
+        # regexes
+        self.re_post_question = re.compile(
+            r"""
+            (?:get|post|next) # get / post / next
+            \s # whitespace char (obligatory)
+            (?:\d+\s)? # optional number of questions
+            (?:q|questions?|a|answers?|it|last)
+            # q / question / questions / a / answer / answers / it / last
+            """,
+            re.I | re.X,
+        )
+        self.re_get_question_info = re.compile(r"(?:i|info|get info)\b", re.I)
+        self.re_count_questions = re.compile(
+            r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
+        )
+        self.re_big_next_question = re.compile(  # TODO: this matches just "a question"
+            r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
+            r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
+            r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
+        )
+        self.re_big_count_questions = re.compile(
+            r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
+            r"(long is|long's)) (the|your)( question)? queue( now)?\??",
+        )
         self.re_refresh_questions = re.compile(
             r"(reload|fetch|load|update|refresh)(\s+new)?\s+q(uestions)?", re.I
         )
+
+        # Was the last question that was posted, automatically posted by Stampy?
+        self.last_question_autoposted = False
 
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
@@ -236,12 +261,15 @@ class Questions(Module):
         optionally, filtering for status and/or a tag.
         Returns `None` otherwise.
         """
-        if not (re_big_count_questions.search(text) or re_count_questions.search(text)):
+        if not (
+            self.re_big_count_questions.search(text)
+            or self.re_count_questions.match(text)
+        ):
             return
         filter_data = parse_question_filter(text)
 
         return Response(
-            confidence=8,
+            confidence=10,
             callback=self.cb_count_questions,
             args=[filter_data, message],
             why="I was asked to count questions",
@@ -272,7 +300,7 @@ class Questions(Module):
         response_text += status_and_tag_response_text
 
         return Response(
-            confidence=8,
+            confidence=10,
             text=response_text,
             why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
         )
@@ -284,11 +312,13 @@ class Questions(Module):
     def parse_post_questions_command(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        if not (re_post_question.search(text) or re_big_next_question.search(text)):
+        if not (
+            self.re_post_question.search(text) or self.re_big_next_question.search(text)
+        ):
             return
         request_data = parse_question_query(text)
         return Response(
-            confidence=8,
+            confidence=10,
             callback=self.cb_post_questions,
             args=[request_data, message],
         )
@@ -333,7 +363,7 @@ class Questions(Module):
         response_text += "\n"
         for q in questions:
             response_text += f"\n{make_post_question_message(q)}"
-            coda_api.update_question_last_asked_date(q["id"], current_time)
+            coda_api.update_question_last_asked_date(q, current_time)
 
         # update caches
         self.last_posted_time = current_time
@@ -349,7 +379,6 @@ class Questions(Module):
             why=why,
         )
 
-    # TODO: this should be on Rob's discord only
     async def post_random_oldest_question(self, _event_type) -> None:
         """Post random oldest not started question.
         Triggered automatically six hours after non-posting any question
@@ -375,7 +404,7 @@ class Questions(Module):
 
         # update in coda
         current_time = datetime.now()
-        coda_api.update_question_last_asked_date(question["id"], current_time)
+        coda_api.update_question_last_asked_date(question, current_time)
 
         # update caches
         coda_api.last_question_id = question["id"]
@@ -399,10 +428,10 @@ class Questions(Module):
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         # must match regex and contain query info
-        if not re_get_question_info.search(text):
+        if not self.re_get_question_info.match(text):
             return
-        if not (spec_data := parse_question_spec_query(text)):
-            return
+        spec_data = parse_question_spec_query(text, return_last_by_default=True)
+
         return Response(
             confidence=10,
             callback=self.cb_get_question_info,
@@ -440,7 +469,7 @@ class Questions(Module):
             coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=8,
+            confidence=10,
             text=response_text,
             why=why,
         )
@@ -585,34 +614,3 @@ def make_status_and_tag_response_text(
     if tag:
         return f" tagged as `{tag}`"
     return ""
-
-
-###############
-#   Regexes   #
-###############
-
-re_post_question = re.compile(
-    r"""
-    (?:get|post|next) # get / post / next
-    \s # whitespace char (obligatory)
-    (?:\d+\s)? # optional number of questions
-    (?:q|questions?|a|answers?|itlast)
-    # q / question / questions / a / answer / answers / it / last
-    """,
-    re.I | re.X,
-)
-re_get_question_info = re.compile(r"i|info", re.I)
-re_count_questions = re.compile(
-    r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
-)
-
-re_big_next_question = re.compile(
-    r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
-    r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
-    r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
-)
-
-re_big_count_questions = re.compile(
-    r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
-    r"(long is|long's)) (the|your)( question)? queue( now)?\??",
-)

@@ -487,6 +487,20 @@ def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[shuffled_inds]
 
 
+def mask_quoted_text(text: str) -> str:
+    """Mask everything in text between paired double quotes with zero-width spaces"""
+    quote_inds: list[tuple[int, int]] = []
+    i = 0
+    while text.count('"', i) > 1:
+        start = text.find('"', i)
+        end = text.find('"', start + 1)
+        quote_inds.append((start, end + 1))
+        i = end + 1
+    for start, end in quote_inds:
+        text = text[:start] + (end - start) * "\ufeff" + text[end:]
+    return text
+
+
 class UtilsTests:
     def test_split_message_for_discord(self):
         test_out = len(

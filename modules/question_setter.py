@@ -15,7 +15,7 @@ On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@revie
 - `@feedback` -> `In progress`
 - `@feedback-sketch` -> `Bulletpoint sketch`
 
-![](images/help/QuestionsSetter-review-request.png)
+![](images/help/QuestionSetter-review-request.png)
 
 Some remarks:
 
@@ -33,13 +33,13 @@ The keywords are (case-insensitive):
 - lgtm
   - stands for "looks good to me"
 
-![](images/help/QuestionsSetter-review-acceptance.png)
+![](images/help/QuestionSetter-review-acceptance.png)
 
 ### Marking questions for deletion or as duplicates
 
 Use `s, <del/dup>` (or `stampy, <del/dup>`) to change status of questions to `Marked for deletion` or `Duplicate`
 
-![](images/help/QuestionsSetter-del-dup.png)
+![](images/help/QuestionSetter-del-dup.png)
 
 ### Setting question status
 
@@ -47,24 +47,62 @@ Question status can be changed more flexibly, using the command: `<set/change> <
 
 Status name is case-insensitive and you can use status aliases.
 
-![](images/help/QuestionsSetter-set-status.png)
+![](images/help/QuestionSetter-set-status.png)
+
+### Editing tags and alternate phrasings of questions
+
+Add a tag to a question (specified by title, GDocLink, or the last one)
+
+`s, <add/add tag> <tag-name> <gdoc-links/question-title>` (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
+
+![](images/help/QuestionSetter-add-tag-gdoc-link.png)
+
+If you don't specify the question, Stampy assumes you refer to the last one
+
+![](images/help/QuestionSetter-add-tag.png)
+
+Remove a tag from a question
+
+`s, <delete/del/remove/rm> <tag-name> <gdoc-links/question-title>`
+
+![](images/help/QuestionSetter-remove-tag.png)
+
+Clear all tags on a question
+
+`s, clear tags <gdoc-links/question-title>`
+
+![](images/help/QuestionSetter-clear-tags.png)
+
+---
+
+Editing alternate phrasings works similarly to tags, except you can only add or remove alternative phrasings to/from one question at a time (because if two questions have the same alternative phrasing, something is fundamentally wrong). You still can clear alternative phrasings on multiple questions at a time.
+
+Alternate phrasings must be specified within double quotes, otherwise, they're not going to be parsed at all.
+
+![](images/help/QuestionSetter-add-altphr.png)
+
+![](images/help/QuestionSetter-clear-altphr.png)
+
 """
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union, cast
 
 from api.coda import CodaAPI
-from api.utilities.coda_utils import QuestionStatus
-from modules.module import Module, Response
+from api.utilities.coda_utils import QuestionRow, QuestionStatus
+from config import ENVIRONMENT_TYPE
+from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.question_query_utils import (
     QuestionSpecQuery,
+    parse_alt_phr,
     parse_gdoc_links,
     parse_question_spec_query,
+    parse_tag,
 )
 from utilities.serviceutils import ServiceMessage
-from utilities.utilities import has_permissions, is_from_reviewer
+from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
 
 
 coda_api = CodaAPI.get_instance()
@@ -78,6 +116,7 @@ GDocLinks = list[str]
 MsgRefId = str
 ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
+EditAction = Literal["add", "remove", "clear"]
 
 
 class QuestionSetter(Module):
@@ -86,11 +125,20 @@ class QuestionSetter(Module):
     def __init__(self) -> None:
         super().__init__()
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
+        # tag
+        self.re_add_tag = re.compile(r"(add\s)?tag", re.I)
+        self.re_remove_tag = re.compile(r"(delete|del|remove|rm)\stag", re.I)
+        # altphr
+        alt_phr_pat = "(alt|alternate|alt phrasing|alternate phrasing|alias)"
+        self.re_add_alt_phr = re.compile(r"(add )?" + alt_phr_pat, re.I)
+        self.re_remove_alt_phr = re.compile(
+            r"(delete|del|remove|rm) " + alt_phr_pat, re.I
+        )
 
     async def find_gdoc_links_in_msg(
         self, channel: DiscordChannel, msg_ref_id: str
     ) -> None:
-        """Find gdoc links in message, which is missing from Stampy's cache."""
+        """Find GDoc links in message, which is missing from Stampy's cache."""
 
         self.log.info(
             self.class_name,
@@ -126,7 +174,7 @@ class QuestionSetter(Module):
     #########################################
 
     def process_message(self, message: ServiceMessage) -> Response:
-        # new_status and gdoc_links
+        # review request and approval
         if response := self.parse_review_request(message):
             return response
         if response := self.parse_question_approval(message):
@@ -135,10 +183,18 @@ class QuestionSetter(Module):
         if not (text := self.is_at_me(message)):
             return Response()
 
-        # status, gdoc_links
+        # setting question status
         if response := self.parse_mark_question_del_dup(text, message):
             return response
         if response := self.parse_set_question_status(text, message):
+            return response
+
+        # tagging
+        if response := self.parse_edit_tag(text, message):
+            return response
+
+        # alternate phrasings
+        if response := self.parse_edit_altphr(text, message):
             return response
 
         # even if message is not `at me`, it may contain GDoc links
@@ -208,7 +264,7 @@ class QuestionSetter(Module):
                 n_already_los += 1
                 msg = f"`\"{q['title']}\"` is already `Live on site`."
             else:
-                coda_api.update_question_status(q["id"], status)
+                coda_api.update_question_status(q, status)
                 msg = f"`\"{q['title']}\"` is now `{status}`"
             await message.channel.send(msg)
 
@@ -310,7 +366,7 @@ class QuestionSetter(Module):
                     f"`\"{q['title']}\"` is already `Live on site`"
                 )
             else:
-                coda_api.update_question_status(q["id"], "Live on site")
+                coda_api.update_question_status(q, "Live on site")
                 n_new_los += 1
                 await message.channel.send(f"`\"{q['title']}\"` goes `Live on site`!")
 
@@ -326,6 +382,167 @@ class QuestionSetter(Module):
             why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.",
         )
 
+    #######################################################
+    #   Adding/removing tags and alternative phrasings    #
+    #######################################################
+
+    def parse_edit_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
+        if self.re_add_tag.match(text):
+            edit_action: EditAction = "add"
+        elif self.re_remove_tag.match(text):
+            edit_action = "remove"
+        elif text.startswith("clear tags"):
+            edit_action = "clear"
+        else:
+            return
+
+        if edit_action == "clear":
+            tag = None
+        elif not (tag := parse_tag(text)):
+            return
+
+        query = parse_question_spec_query(text, return_last_by_default=True)
+        return Response(
+            confidence=10,
+            callback=self.cb_edit_tag_or_altphr,
+            args=[query, tag, message, edit_action, "tag"],
+        )
+
+    def parse_edit_altphr(
+        self, text: str, message: ServiceMessage
+    ) -> Optional[Response]:
+        if self.re_add_alt_phr.match(text):
+            edit_action: EditAction = "add"
+        elif self.re_remove_alt_phr.match(text):
+            edit_action = "remove"
+        elif text.startswith("clear alt"):
+            edit_action = "clear"
+        else:
+            return
+
+        if edit_action == "clear":
+            alt_phr = None
+        elif not (alt_phr := parse_alt_phr(text)):
+            return
+
+        query = parse_question_spec_query(text, return_last_by_default=True)
+        return Response(
+            confidence=10,
+            callback=self.cb_edit_tag_or_altphr,
+            args=[query, alt_phr, message, edit_action, "alternate phrasing"],
+        )
+
+    async def cb_edit_tag_or_altphr(
+        self,
+        query: QuestionSpecQuery,
+        val: Optional[str],  # tag or altphr (None only if edit_action == "clear")
+        message: ServiceMessage,
+        edit_action: EditAction,
+        tag_or_altphr: Literal["tag", "alternate phrasing"],
+    ) -> Response:
+        if not has_permissions(message.author):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
+                why=f"{message.author.name} does not have permissions edit {tag_or_altphr}s on questions",
+            )
+
+        # inserts for generating messages
+        to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_action]
+        verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[edit_action]  # fmt:skip
+        field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
+        questions = await coda_api.query_for_questions(query, message)
+
+        if not questions:
+            Response(
+                confidence=10,
+                text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
+                why=f"{message.author.name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
+            )
+        # adding/removing one altphr per many questions is not allowed
+        if (
+            len(questions) > 1
+            and edit_action != "clear"
+            and tag_or_altphr == "alternate phrasing"
+        ):
+            return Response(
+                confidence=10,
+                text=f"I don't think you want to {edit_action} the same alternate phrasing {to_from_on} {len(questions)} questions. Please, choose one.",
+                why=f"{message.author.name} asked me to more than one question at once which is not the way to go",
+            )
+
+        if edit_action != "clear":
+            msg = f"{verb_gerund} {tag_or_altphr} `{val}` {to_from_on} "
+        else:
+            msg = f"Clearing {tag_or_altphr}s on "
+        msg += f"{len(questions)} questions" if len(questions) > 1 else "one question"
+        await message.channel.send(msg)
+
+        n_edited = 0
+        update_method: Callable[[QuestionRow, list[str]], None] = (
+            coda_api.update_question_tags
+            if tag_or_altphr == "tag"
+            else coda_api.update_question_altphr
+        )
+
+        if edit_action == "add":
+            val = cast(str, val)
+            for q in questions:
+                if val in q[field]:
+                    await message.channel.send(
+                        f'"{q["title"]}" already has this {tag_or_altphr}'
+                    )
+                else:
+                    update_method(q, q[field] + [val])
+                    n_edited += 1
+                    await message.channel.send(
+                        f'Added {tag_or_altphr} `{val}` to "{q["title"]}"'
+                    )
+        elif edit_action == "remove":
+            for q in questions:
+                if val not in q[field]:
+                    await message.channel.send(
+                        f'"{q["title"]}" doesn\'t have this {tag_or_altphr}'
+                    )
+                else:
+                    new_tags = [t for t in q[field] if t != val]
+                    update_method(q, new_tags)
+                    n_edited += 1
+                    await message.channel.send(
+                        f'Removed {tag_or_altphr} `{val}` from "{q["title"]}"'
+                    )
+        else:  # clear
+            for q in questions:
+                if not q[field]:
+                    await message.channel.send(
+                        f'"{q["title"]}" already has no {tag_or_altphr}s'
+                    )
+                else:
+                    update_method(q, [])
+                    n_edited += 1
+                    await message.channel.send(
+                        f'Cleared {tag_or_altphr}s on "{q["title"]}"'
+                    )
+
+        if n_edited == 0:
+            response_text = "No questions were modified"
+        elif edit_action == "clear":
+            response_text = f"Cleared {tag_or_altphr}s on {n_edited} questions"
+        else:
+            response_text = "Added" if edit_action == "add" else "Removed"
+            response_text += f" {tag_or_altphr} `{val}` {to_from_on} "
+            response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
+
+        why = f"{message.author.name} asked me to {edit_action} "
+        if edit_action == "clear":
+            why += f"{tag_or_altphr}s"
+        elif tag_or_altphr == "tag":
+            why += "a tag"
+        else:
+            why += "an alternate question"
+
+        return Response(confidence=10, text=response_text, why=why)
+
     ###############################
     #   Setting question status   #
     ###############################
@@ -336,9 +553,9 @@ class QuestionSetter(Module):
         """Somebody is tring to mark one or more questions for deletion
         or as duplicates.
         """
-        if text.startswith("del"):
+        if text.startswith("del "):
             status = "Marked for deletion"
-        elif text.startswith("dup"):
+        elif text.startswith("dup "):
             status = "Duplicate"
         else:
             return
@@ -431,7 +648,7 @@ class QuestionSetter(Module):
                 msg = f'`"{q["title"]}"` is already `Live on site`.'
                 n_already_los += 1
             else:
-                coda_api.update_question_status(q["id"], status)
+                coda_api.update_question_status(q, status)
                 msg = (
                     f"`\"{q['title']}\"` is now `{status}` (previously `{prev_status}`)"
                 )
@@ -439,6 +656,8 @@ class QuestionSetter(Module):
 
         n_changed_status = len(questions) - n_already_los
 
+        # if "to bs" in text:
+        #     #()
         msg = (
             f"Changed status of {n_changed_status} question"
             + ("s" if n_changed_status > 1 else "")
@@ -448,9 +667,112 @@ class QuestionSetter(Module):
             msg += " One question was already `Live on site`."
         elif n_already_los > 1:
             msg += f" {n_already_los} questions were already `Live on site`."
-
         return Response(
             confidence=10,
             text=msg,
             why=f"{message.author.name} asked me to change status to `{status}`.",
         )
+
+    @property
+    def test_cases(self) -> list[IntegrationTest]:
+        # these tests modify coda so they should be run only in development
+        if ENVIRONMENT_TYPE != "development":
+            return []
+
+        test_altphr = "TEST_ALTERNATE_PHRASING"
+        return [
+            ############
+            #   Tags   #
+            ############
+            # some of these tests have increased wait times because sometimes a test requires its predecessor to be evaluated successfully
+            self.create_integration_test(
+                test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="Added tag `Decision Theory` to one question",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="No questions were modified",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="Removed tag `Decision Theory` from one question",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="No questions were modified",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message="rm tag open problem",
+                expected_regex="Removed tag `Open Problem` from one question",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message="add tag open problem",
+                expected_regex="Added tag `Open Problem` to one question",
+            ),
+            ###########################
+            #   Alternate phrasings   #
+            ###########################
+            self.create_integration_test(
+                test_message=f'alt "{test_altphr}" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex=f"Added alternate phrasing `{test_altphr}` to one question",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message=f'alt "{test_altphr}" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex="No questions were modified",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex=f"Removed alternate phrasing `{test_altphr}` from one question",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
+                expected_regex="No questions were modified",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
+                expected_regex="No questions were modified",
+                test_wait_time=1,
+            ),
+            self.create_integration_test(
+                test_message='add alt "XYZ" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit',
+                expected_regex="I don't think you want",
+            ),
+            self.create_integration_test(
+                test_message='rm alt "XYZ" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit',
+                expected_regex="I don't think you want",
+            ),
+            self.create_integration_test(
+                test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="No questions were modified",
+            ),
+            ##############
+            #   Status   #
+            ##############
+            self.create_integration_test(
+                test_message="del https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Marked for deletion`",
+            ),
+            self.create_integration_test(
+                test_message="dup https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Duplicate`",
+            ),
+            self.create_integration_test(
+                test_message="lgtm https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="2 more questions `Live on site`!",
+                test_wait_time=2,
+            ),
+            self.create_integration_test(
+                test_message="set status to bs https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Bulletpoint sketch`",
+                test_wait_time=2,
+            ),
+        ]

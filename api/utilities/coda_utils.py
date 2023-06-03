@@ -27,8 +27,11 @@ def parse_question_row(row: Row) -> QuestionRow:
     url = row_dict["Link"]
     status = row_dict["Status"]
     # remove empty strings
-    tags = [tag for tag in row_dict["Tags"].split(",") if row_dict["Tags"]]
+    tags = [tag for tag in row_dict["Tags"].split(",") if tag]
     last_asked_on_discord = adjust_date(row_dict["Last Asked On Discord"])
+    alternate_phrasings = [
+        alt for alt in row_dict["Alternate Phrasings"].split(",") if alt
+    ]
     return {
         "id": row.id,
         "title": title,
@@ -36,6 +39,7 @@ def parse_question_row(row: Row) -> QuestionRow:
         "status": status,
         "tags": tags,
         "last_asked_on_discord": last_asked_on_discord,
+        "alternate_phrasings": alternate_phrasings,
         "row": row,
     }
 
@@ -59,6 +63,7 @@ class QuestionRow(TypedDict):
     status: str
     tags: list[str]
     last_asked_on_discord: datetime
+    alternate_phrasings: list[str]
     row: Row
 
 
@@ -74,3 +79,11 @@ QuestionStatus = Literal[
     "Uncategorized",
     "Withdrawn",
 ]
+
+QUESTION_STATUS_ALIASES: dict[str, QuestionStatus] = {
+    "bulletpoint": "Bulletpoint sketch",
+    "del": "Marked for deletion",
+    "deleted": "Marked for deletion",
+    "duplicated": "Duplicate",
+    "published": "Live on site",
+}
