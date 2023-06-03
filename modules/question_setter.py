@@ -446,7 +446,8 @@ class QuestionSetter(Module):
                 text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
                 why=f"{message.author.name} does not have permissions edit {tag_or_altphr}s on questions",
             )
-        # define for messages and stuff #TODO
+
+        # inserts for generating messages
         to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_action]
         verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[edit_action]  # fmt:skip
         field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
