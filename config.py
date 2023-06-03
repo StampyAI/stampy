@@ -119,7 +119,9 @@ if robmiles_defaults:
     paid_service_for_all = True
     paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
     paid_service_whitelist_role_ids: frozenset = frozenset()
-    expensive_option_role_ids: frozenset = frozenset()
+    gpt4_for_all: bool = getenv_bool("GPT4_FOR_ALL")
+    gpt4_whitelist_role_ids: frozenset = frozenset()
+    use_helicone: bool = getenv_bool("USE_HELICONE")
     llm_prompt: str = getenv(
         "LLM_PROMPT",
         default=stampy_default_prompt
@@ -141,12 +143,14 @@ else:
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
     bot_reboot = getenv_bool("BOT_REBOOT")
+    paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
+    # if above is false, where can paid services be used?
     paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
-    # set to anything for True
     paid_service_for_all = getenv_bool("PAID_SERVICE_FOR_ALL")
     # if above is false, who gets to use paid services?
     paid_service_whitelist_role_ids: frozenset = getenv_unique_set("PAID_SERVICE_WHITELIST_ROLE_IDS", frozenset())
-    expensive_option_role_ids: frozenset = bot_vip_ids | getenv_unique_set("EXPENSIVE_OPTION_ROLE_IDS", frozenset())
+    gpt4_for_all: bool = getenv_bool("GPT4_FOR_ALL")
+    gpt4_whitelist_role_ids: frozenset = bot_vip_ids | getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone: bool = getenv_bool("USE_HELICONE")
     llm_prompt: str = getenv(
         "LLM_PROMPT",

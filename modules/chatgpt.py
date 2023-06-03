@@ -9,7 +9,7 @@ from config import (
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
-from utilities import Utilities
+from utilities import Utilities, can_use_paid_service
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 if use_helicone:
     from helicone import openai
@@ -50,6 +50,9 @@ class ChatGPTModule(Module):
                 return Response()
 
         if not self.is_at_me(message):
+            return Response()
+
+        if not can_use_paid_service(message.author):
             return Response()
 
         return Response(

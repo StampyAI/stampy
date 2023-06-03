@@ -3,14 +3,17 @@ from api.utilities.openai import OpenAIEngines
 from config import (
     openai_api_key,
     paid_service_channel_ids,
-    bot_dev_roles,
+    gpt4_for_all,
+    gpt4_whitelist_role_ids,
     bot_vip_ids,
+    paid_service_all_channels,
     use_helicone
 )
 from structlog import get_logger
 from servicemodules.serviceConstants import Services, openai_channel_ids
 from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
+from utilities import discordutils
 if use_helicone:
     from helicone import openai
 else:
@@ -29,9 +32,11 @@ class OpenAI:
         self.log = get_logger()
 
     def is_channel_allowed(self, message: ServiceMessage) -> bool:
+        # for Rob's Discord:
         if message.service in openai_channel_ids and message.channel.id in openai_channel_ids[message.service]:
             return True
-        elif message.channel.id in paid_service_channel_ids:
+        elif not paid_service_all_channels or message.channel.id in paid_service_channel_ids:
+            # if list is empty, default
             return True
         else:
             return False
@@ -116,15 +121,13 @@ class OpenAI:
         # NOTE: leaving this more complicated logic to cannibalize later, when
         # enabling higher-priced modules
 
-        #if message.service != Services.DISCORD:
-        #    return OpenAIEngines.BABBAGE
-
-        #if message.author.id in bot_vip_ids:
-        #    return OpenAIEngines.DAVINCI
-        #elif utilities.is_bot_dev(message.author):
-        #    return OpenAIEngines.CURIE
+        #if gpt4_for_all or message.author.id in bot_vip_ids or utilities.is_bot_dev(message.author):
+        #    return OpenAIEngines.GPT_4
+        #elif any(discordutils.user_has_role(message.author, x)
+        #         for x in gpt4_whitelist_role_ids):
+        #    return OpenAIEngines.GPT_4
         #else:
-        #    return OpenAIEngines.BABBAGE
+        #    return OpenAIEngines.GPT_3_5_TURBO
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
         if self.cf_risk_level(prompt) > 1:

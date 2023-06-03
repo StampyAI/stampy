@@ -72,6 +72,6 @@ class OpenAIEngines(Enum):
     GPT_4 = (
         "gpt-4",
         "GPT 4",
-        "Only for devs and VIPs",
+        "wicked slow",
         tokenizers.gpt2
     )
