@@ -448,9 +448,7 @@ class QuestionSetter(Module):
             )
         # define for messages and stuff #TODO
         to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_action]
-        verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[
-            edit_action
-        ]
+        verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[edit_action]  # fmt:skip
         field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
         questions = await coda_api.query_for_questions(query, message)
 
@@ -676,30 +674,35 @@ class QuestionSetter(Module):
 
     @property
     def test_cases(self) -> list[IntegrationTest]:
+        # these tests modify coda so they should be run only in development
         if ENVIRONMENT_TYPE != "development":
             return []
+
         test_altphr = "TEST_ALTERNATE_PHRASING"
         return [
             ############
             #   Tags   #
             ############
+            # some of these tests have increased wait times because sometimes a test requires its predecessor to be evaluated successfully
             self.create_integration_test(
                 test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
                 expected_regex="Added tag `Decision Theory` to one question",
-                test_wait_time=1,
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message="tag decision theory https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
                 expected_regex="No questions were modified",
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
                 expected_regex="Removed tag `Decision Theory` from one question",
-                test_wait_time=1,
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message="rm tag decision theory from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
                 expected_regex="No questions were modified",
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message="rm tag open problem",
@@ -726,12 +729,12 @@ class QuestionSetter(Module):
             self.create_integration_test(
                 test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
                 expected_regex=f"Removed alternate phrasing `{test_altphr}` from one question",
-                test_wait_time=1,
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
                 expected_regex="No questions were modified",
-                test_wait_time=1,
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
@@ -764,9 +767,11 @@ class QuestionSetter(Module):
             self.create_integration_test(
                 test_message="lgtm https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
                 expected_regex="2 more questions `Live on site`!",
+                test_wait_time=2,
             ),
             self.create_integration_test(
                 test_message="set status to bs https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
                 expected_regex="Changed status of 2 questions to `Bulletpoint sketch`",
+                test_wait_time=2,
             ),
         ]

@@ -143,6 +143,8 @@ def parse_question_spec_query(
     if gdoc_links := parse_gdoc_links(text):
         return "GDocLinks", gdoc_links
     # QuestionTitle
+    # double quotes are used for specifying alternate phrasings,
+    # so in order to remove interference with title parsing, we mask whatever is between double quotes
     if question_title := parse_question_title(mask_quoted_text(text)):
         return "Title", question_title
     if return_last_by_default:
