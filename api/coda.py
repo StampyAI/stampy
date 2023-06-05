@@ -10,6 +10,7 @@ from structlog import get_logger
 
 
 from api.utilities.coda_utils import (
+    QUESTION_STATUS_ALIASES,
     make_updated_cells,
     parse_question_row,
     QuestionRow,
@@ -56,17 +57,29 @@ class CodaAPI:
             raise Exception(
                 "This class is a singleton! Access it using `Utilities.get_instance()`"
             )
-        self.__instance = self  # pylint:disable=unused-private-member
+        CodaAPI.__instance = self
         self.class_name = "Coda API"
         self.log = get_logger()
         self.last_question_id: Optional[str] = None
+        self.questions_df = pd.DataFrame(
+            columns=[
+                "id",
+                "title",
+                "url",
+                "status",
+                "tags",
+                "last_asked_on_discord",
+                "alternate_phrasings",
+                "row",
+            ]
+        )
 
         if is_in_testing_mode():
             return
 
         self.coda = Coda(self.CODA_API_TOKEN)  # type:ignore
-        self.update_questions_cache()
-        self.update_users_cache()
+        self.reload_questions_cache()
+        self.reload_users_cache()
 
     @property
     def doc(self) -> Document:
@@ -84,7 +97,7 @@ class CodaAPI:
     #   Users   #
     #############
 
-    def update_users_cache(self) -> None:
+    def reload_users_cache(self) -> None:
         """Update the cache of the
         [Team table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/Team_sur3i#_luBnC).
 
@@ -127,26 +140,78 @@ class CodaAPI:
     #   Questions   #
     #################
 
-    def update_questions_cache(self) -> None:
-        """Update the cache of the
-        [All answers coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
+    def reload_questions_cache(self) -> None:
+        """Download [questions coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
+        and save it as DataFrame.
 
-        Gets called during initialization and every ~10 minutes by Questions module.
+        Gets called during initialization and on request (`s, hardreload questions`)
+        if refresh questions cache doesn't work for some reason.
         """
-        # get coda table
         questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
-        # parse its rows
         question_rows = [parse_question_row(row) for row in questions.rows()]
-        # convert into dataframe
         self.questions_df = pd.DataFrame(question_rows).set_index("id", drop=False)
-        # store date of update
         self.questions_cache_last_update = datetime.now()
-        # log
         self.log.info(
             self.class_name,
-            msg="Updated questions cache",
+            msg="Reloaded questions cache",
             num_questions=len(self.questions_df),
         )
+
+    def update_questions_cache(self) -> tuple[list[QuestionRow], list[QuestionRow]]:
+        """Download [questions coda table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
+        and use it to update questions_df cache.
+
+        Gets called on request (`s, refresh questions`) or when Stampy doesn't recognize a GDoc link in review request
+        (see `get_question_by_gdoc_links`).
+        """
+        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        question_ids = set()
+        new_questions: list[QuestionRow] = []
+        for q in questions.rows():
+            row = parse_question_row(q)
+            question_ids.add(row["id"])
+            if row["id"] not in self.questions_df.index:
+                new_questions.append(row)
+            else:
+                df_row = self.questions_df.loc[row["id"]]
+                df_row["last_asked_on_discord"] = row["last_asked_on_discord"]
+                df_row["status"] = row["status"]
+                df_row["tags"].clear()
+                df_row["tags"].extend(row["tags"])
+                df_row["alternate_phrasings"].clear()
+                df_row["alternate_phrasings"].extend(row["alternate_phrasings"])
+                df_row["title"] = row["title"]
+                df_row["url"] = row["url"]
+
+        deleted_question_ids = sorted(
+            set(self.questions_df.index.tolist()) - question_ids
+        )
+        if deleted_question_ids:
+            self.log.info(
+                self.class_name,
+                msg=f"Deleting {len(deleted_question_ids)} questions which were not found in coda",
+            )
+            deleted_questions = cast(
+                list[QuestionRow],
+                self.questions_df.loc[deleted_question_ids].to_dict(orient="records"),
+            )
+            self.questions_df = self.questions_df.drop(index=deleted_question_ids)
+        else:
+            deleted_questions = []
+
+        if new_questions:
+            self.log.info(
+                self.class_name,
+                msg=f"Adding {len(new_questions)} new questions from coda",
+            )
+            self.questions_df = pd.concat(
+                [
+                    self.questions_df,
+                    pd.DataFrame(new_questions).set_index("id", drop=False),
+                ]
+            )
+
+        return new_questions, deleted_questions
 
     def get_question_by_id(self, question_id: str) -> Optional[QuestionRow]:
         """Get QuestionRow from questions cache by its ID"""
@@ -158,23 +223,34 @@ class CodaAPI:
         """Get questions by url links to their GDocs.
         Returns list of `QuestionRow`s.
         Empty list (`[]`) if couldn't find questions with any of the links.
+        Triggers `fetch_new_questions` if found less matching questions than the number of urls given.
         """
         questions_df = self.questions_df
         # query for questions whose url starts with any of the urls that were passed
-        questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
-            questions_df["url"].map(  # pylint:disable=unsubscriptable-object
+        questions_df_queried = questions_df[
+            questions_df["url"].map(
                 lambda question_url: any(question_url.startswith(url) for url in urls)
             )
         ]
-        if questions_df_queried.empty:
-            return []
-        questions = questions_df_queried.to_dict(orient="records")
-        return cast(list[QuestionRow], questions)
+
+        questions_queried = cast(
+            list[QuestionRow], questions_df_queried.to_dict(orient="records")
+        )
+        # If some links were not recognized, refresh cache and look into the new questions
+        if len(questions_df_queried) < len(urls):
+            new_questions, _ = self.update_questions_cache()
+            new_questions_queried = [
+                q
+                for q in new_questions
+                if any(q["url"].startswith(url) for url in urls)
+            ]
+            questions_queried.extend(new_questions_queried)
+        return questions_queried
 
     def get_question_by_title(self, title: str) -> Optional[QuestionRow]:
         questions_df = self.questions_df
-        questions_df_queried = questions_df[  # pylint:disable=unsubscriptable-object
-            questions_df["title"].map(  # pylint:disable=unsubscriptable-object
+        questions_df_queried = questions_df[
+            questions_df["title"].map(
                 lambda question_title: fuzzy_contains(question_title, title)
             )
         ]
@@ -191,60 +267,65 @@ class CodaAPI:
 
     def update_question_status(
         self,
-        question_id: str,
+        question: QuestionRow,
         status: QuestionStatus,
     ) -> None:
         """Update the status of a question in the
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly.
         """
-        # get question row
-        question = self.get_question_by_id(question_id)
-        if question is None:
-            self.log.warning(
-                self.class_name,
-                msg="Tried updating a question's status but couldn't find a question with that ID",
-                question_id=question_id,
-                status=status,
-            )
-            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
-        self.questions_df.loc[question_id]["status"] = status
+        self.questions_df.loc[question["id"]]["status"] = status
 
     def update_question_last_asked_date(
-        self, question_id: str, current_time: datetime
+        self, question: QuestionRow, current_time: datetime
     ) -> None:
         """Update the `Last Asked On Discord` field of a question in the
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly"""
-        # get question row
-        question = self.get_question_by_id(question_id)
-        if question is None:
-            self.log.warning(
-                self.class_name,
-                msg="Tried updating a question's `Last Asked On Discord` field but couldn't find a question with that ID",
-                question_id=question_id,
-                current_time=current_time,
-            )
-            return
         # update coda table
         self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
             question["row"],
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
         # update local cache
-        self.questions_df.loc[question_id]["last_asked_on_discord"] = current_time
+        self.questions_df.loc[question["id"]]["last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
         for _, r in self.questions_df.iterrows():
             if r["last_asked_on_discord"] != DEFAULT_DATE:
-                question_id = cast(str, r["question_id"])
-                self.update_question_last_asked_date(question_id, DEFAULT_DATE)
+                self.update_question_last_asked_date(
+                    cast(QuestionRow, r.to_dict()), DEFAULT_DATE
+                )
+
+    # Tags
+
+    def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Tags": new_tags})
+        )
+        self.questions_df.loc[question["id"]]["tags"].clear()
+        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+        self.last_question_id = question["id"]
+
+    # Alternate phrasings
+
+    def update_question_altphr(
+        self, question: QuestionRow, new_alt_phrs: list[str]
+    ) -> None:
+        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+            question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
+        )
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
+        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
+            new_alt_phrs
+        )
+        self.last_question_id = question["id"]
 
     ###############
     #   Finding   #
@@ -261,20 +342,20 @@ class CodaAPI:
 
         Args
         ----------
-        query: QuestionQuery
+        query
             - A 2-tuple where the first value is a string indicating the type of the second value. Possible variants are:
                 - ("Last", "last" or "it") - requesting the last question (e.g., `s, get last question`, `s, post it`)
                 - ("GDocLinks", list of strings) - links to GDocs of particular answers
                 - ("Title", question title) - doesn't have to be the exact, perfectly matching title, fuzzily matching substring is enough
                 - ("Filter", QuestionFilterQuery) - a NamedTuple containing
-                    - status: Optional[QuestionStatus] - optional query for questions
-                    - tag: Optional[str] - optional query for questions
-                    - limit: int - how many questions at most should be returned
+                    - status - optional query for questions
+                    - tag - optional query for questions
+                    - limit - how many questions at most should be returned
 
-        message: ServiceMessage
+        message
             - The original message from which that request was parsed.
 
-        least_recently_asked_unpublished: bool, default=False
+        least_recently_asked_unpublished
             - If `True` and `query` is of type "Filter" with `status=None` and `tag=None`, then questions will be filtered for those which are not `Live on site` and choose randomly from them
             - Should be set to `True` when querying for questions for posting
 
@@ -378,8 +459,13 @@ class CodaAPI:
             mention = query[1]
             why = f"{message.author.name} asked about the last question"
             if not questions:
+                text = (
+                    f'What do you mean by "{mention}"?'
+                    if mention != "DEFAULT"
+                    else "What do you mean?"
+                )
                 return (
-                    f'What do you mean by "{mention}"?',
+                    text,
                     why
                     + " but I don't remember what it was because I recently rebooted",
                 )
@@ -419,14 +505,13 @@ class CodaAPI:
 
         statuses = self.get_all_statuses()
         status_shorthand_dict = {}
+        # to find proper status name by either the name itself, lowercase version, or an acronym shorthand
         for status in statuses:
-            # map default status name
             status_shorthand_dict[status] = status
-            # map lowercased status name
             status_shorthand_dict[status.lower()] = status
-            # map acronym shorthand
             shorthand = "".join(word[0].lower() for word in status.split())
             status_shorthand_dict[shorthand] = status
+        status_shorthand_dict.update(QUESTION_STATUS_ALIASES)
         return status_shorthand_dict
 
     def get_all_tags(self) -> list[str]:

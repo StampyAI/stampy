@@ -69,8 +69,7 @@ class ChatGPTModule(Module):
         self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
 
         self.message_logs[message.channel].append(message)
-        self.message_logs[message.channel] = \
-            self.message_logs[message.channel][-self.log_max_messages:]
+        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages:]  # fmt:skip
 
     def generate_messages_list(self, channel):
         messages = []

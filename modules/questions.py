@@ -63,6 +63,22 @@ On Rob Miles' Discord server, Stampy posts a random least recently asked questio
 `s, get info <ADDITIONAL_INFO>` (with any filtering option mentioned so far, except `next`) can be used to get detailed information about the question as an entity in the database.
 
 ![](images/help/Questions-get-info-babyagi.png)
+
+### Reloading questions
+
+If you're a bot dev, editor, or reviewerr, you can ask Stampy to refresh questions cache (sync it with coda) by the command.
+
+`s, <reload/fetch/load/update> <?new> <q/questions>`
+
+E.g., `s, reload questions` or `s, fetch new q` 
+
+Stampy also does it whenever he sees a review request containing a GDoc link, which does not appear in any of the questions in his cache.
+
+If you use it and for some reason Stampy's question cache seems still seems to be out of sync with coda, use hardreload.
+
+`s, hardreload questions`.
+
+The difference is that while the former updates the current cache, the latter overwrites it with a new one, which is more certain to work but probably less memory-safe. If it turns out that this function is not necessary, it will be deleted. 
 """
 from __future__ import annotations
 
@@ -89,12 +105,17 @@ from utilities.question_query_utils import (
     QuestionFilterNT,
     QuestionQuery,
 )
-from utilities.utilities import is_in_testing_mode, pformat_to_codeblock
+from utilities.utilities import (
+    has_permissions,
+    is_in_testing_mode,
+    pformat_to_codeblock,
+)
 from utilities.serviceutils import ServiceMessage
 
 
 load_dotenv()
 
+# TODO: move this API to utils and access it via Module parent class
 coda_api = CodaAPI.get_instance()
 
 
@@ -107,6 +128,34 @@ class Questions(Module):
         self.last_posted_time: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
         )
+        # regexes
+        self.re_post_question = re.compile(
+            r"""
+            (?:get|post|next) # get / post / next
+            \s # whitespace char (obligatory)
+            (?:\d+\s)? # optional number of questions
+            (?:q|questions?|a|answers?|it|last)
+            # q / question / questions / a / answer / answers / it / last
+            """,
+            re.I | re.X,
+        )
+        self.re_get_question_info = re.compile(r"(?:i|info|get info)\b", re.I)
+        self.re_count_questions = re.compile(
+            r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
+        )
+        self.re_big_next_question = re.compile(  # TODO: this matches just "a question"
+            r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
+            r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
+            r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
+        )
+        self.re_big_count_questions = re.compile(
+            r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
+            r"(long is|long's)) (the|your)( question)? queue( now)?\??",
+        )
+        self.re_refresh_questions = re.compile(
+            r"(reload|fetch|load|update|refresh)(\s+new)?\s+q(uestions)?", re.I
+        )
+
         # Was the last question that was posted, automatically posted by Stampy?
         self.last_question_autoposted = False
 
@@ -118,15 +167,17 @@ class Questions(Module):
             ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
 
-            if (
-                coda_api.questions_cache_last_update
-                < datetime.now() - coda_api.QUESTIONS_CACHE_UPDATE_INTERVAL
-            ):
-                coda_api.update_questions_cache()
-
     def process_message(self, message: ServiceMessage) -> Response:
         if not (text := self.is_at_me(message)):
             return Response()
+        if text == "hardreload questions":
+            return Response(
+                confidence=10, callback=self.cb_hardreload_questions, args=[message]
+            )
+        if self.re_refresh_questions.match(text):
+            return Response(
+                confidence=10, callback=self.cb_refresh_questions, args=[message]
+            )
         if response := self.parse_count_questions_command(text, message):
             return response
         if response := self.parse_post_questions_command(text, message):
@@ -134,6 +185,68 @@ class Questions(Module):
         if response := self.parse_get_question_info(text, message):
             return response
         return Response()
+
+    ############################
+    # Reload/refresh questions #
+    ############################
+
+    async def cb_hardreload_questions(self, message: ServiceMessage) -> Response:
+        if not has_permissions(message.author):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions to request hard-reload, <@{message.author}>",
+                why=f"{message.author.name} asked me to hard-reload questions questions but they don't have permissions for that",
+            )
+        await message.channel.send(
+            f"Ok, hard-reloading questions cache\nBefore: {len(coda_api.questions_df)} questions"
+        )
+        coda_api.reload_questions_cache()
+        return Response(
+            confidence=10,
+            text=f"After: {len(coda_api.questions_df)} questions",
+            why=f"{message.author.name} asked me to hard-reload questions",
+        )
+
+    async def cb_refresh_questions(self, message: ServiceMessage) -> Response:
+        if not has_permissions(message.author):
+            return Response(
+                confidence=10,
+                text=f"You don't have permissions, <@{message.author}>",
+                why=f"{message.author.name} wanted me to refresh questions questions but they don't have permissions for that",
+            )
+        await message.channel.send(
+            f"Ok, refreshing questions cache\nBefore: {len(coda_api.questions_df)} questions"
+        )
+        new_questions, deleted_questions = coda_api.update_questions_cache()
+        response_text = f"After: {len(coda_api.questions_df)} questions"
+        if not new_questions:
+            response_text += "\nNo new questions"
+        elif len(new_questions) <= 10:
+            response_text += "\nNew questions:\n\t" + "\n\t".join(
+                f'"{q["title"]}"' for q in new_questions
+            )
+        else:
+            response_text += (
+                f"\n{len(new_questions)} new questions:\n\t"
+                + "\n\t".join(f'"{q["title"]}"' for q in new_questions[:10])
+            ) + "\n\t..."
+
+        if not deleted_questions:
+            response_text += "\nNo questions deleted"
+        elif len(deleted_questions) <= 10:
+            response_text += "\nDeleted questions:\n\t" + "\n\t".join(
+                f'"{q["title"]}"' for q in deleted_questions
+            )
+        else:
+            response_text += (
+                f"\n{len(deleted_questions)} deleted questions:\n\t"
+                + "\n\t".join(f'"{q["title"]}"' for q in deleted_questions[:10])
+            ) + "\n\t..."
+        return Response(
+            confidence=10,
+            text=response_text,
+            why=f"{message.author.name} asked me to refresh questions cache",
+        )
 
     ###################
     # Count questions #
@@ -148,12 +261,15 @@ class Questions(Module):
         optionally, filtering for status and/or a tag.
         Returns `None` otherwise.
         """
-        if not (re_big_count_questions.search(text) or re_count_questions.search(text)):
+        if not (
+            self.re_big_count_questions.search(text)
+            or self.re_count_questions.match(text)
+        ):
             return
         filter_data = parse_question_filter(text)
 
         return Response(
-            confidence=8,
+            confidence=10,
             callback=self.cb_count_questions,
             args=[filter_data, message],
             why="I was asked to count questions",
@@ -184,7 +300,7 @@ class Questions(Module):
         response_text += status_and_tag_response_text
 
         return Response(
-            confidence=8,
+            confidence=10,
             text=response_text,
             why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
         )
@@ -196,11 +312,13 @@ class Questions(Module):
     def parse_post_questions_command(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        if not (re_post_question.search(text) or re_big_next_question.search(text)):
+        if not (
+            self.re_post_question.search(text) or self.re_big_next_question.search(text)
+        ):
             return
         request_data = parse_question_query(text)
         return Response(
-            confidence=8,
+            confidence=10,
             callback=self.cb_post_questions,
             args=[request_data, message],
         )
@@ -245,7 +363,7 @@ class Questions(Module):
         response_text += "\n"
         for q in questions:
             response_text += f"\n{make_post_question_message(q)}"
-            coda_api.update_question_last_asked_date(q["id"], current_time)
+            coda_api.update_question_last_asked_date(q, current_time)
 
         # update caches
         self.last_posted_time = current_time
@@ -261,7 +379,6 @@ class Questions(Module):
             why=why,
         )
 
-    # TODO: this should be on Rob's discord only
     async def post_random_oldest_question(self, _event_type) -> None:
         """Post random oldest not started question.
         Triggered automatically six hours after non-posting any question
@@ -287,7 +404,7 @@ class Questions(Module):
 
         # update in coda
         current_time = datetime.now()
-        coda_api.update_question_last_asked_date(question["id"], current_time)
+        coda_api.update_question_last_asked_date(question, current_time)
 
         # update caches
         coda_api.last_question_id = question["id"]
@@ -311,10 +428,10 @@ class Questions(Module):
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         # must match regex and contain query info
-        if not re_get_question_info.search(text):
+        if not self.re_get_question_info.match(text):
             return
-        if not (spec_data := parse_question_spec_query(text)):
-            return
+        spec_data = parse_question_spec_query(text, return_last_by_default=True)
+
         return Response(
             confidence=10,
             callback=self.cb_get_question_info,
@@ -352,7 +469,7 @@ class Questions(Module):
             coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=8,
+            confidence=10,
             text=response_text,
             why=why,
         )
@@ -497,34 +614,3 @@ def make_status_and_tag_response_text(
     if tag:
         return f" tagged as `{tag}`"
     return ""
-
-
-###############
-#   Regexes   #
-###############
-
-re_post_question = re.compile(
-    r"""
-    (?:get|post|next) # get / post / next
-    \s # whitespace char (obligatory)
-    (?:\d+\s)? # optional number of questions
-    (?:q|questions?|a|answers?|itlast)
-    # q / question / questions / a / answer / answers / it / last
-    """,
-    re.I | re.X,
-)
-re_get_question_info = re.compile(r"i|info", re.I)
-re_count_questions = re.compile(
-    r"(?:count|how many|number of|n of|#) (?:q|questions|a|answers)", re.I
-)
-
-re_big_next_question = re.compile(
-    r"(([wW]hat(’|'| i)?s|([Cc]an|[Mm]ay) (we|[iI]) (have|get)|[Ll]et[’']?s have|[gG]ive us)"
-    r"?( ?[Aa](nother)?|( the)? ?[nN]ext) question,?( please)?\??|([Dd]o you have|([Hh]ave you )"
-    r"?[gG]ot)?( ?[Aa]ny( more| other)?| another) questions?( for us)?\??)!?"
-)
-
-re_big_count_questions = re.compile(
-    r"([hH]ow many questions (are (there )?)?(left )?in)|([hH]ow "
-    r"(long is|long's)) (the|your)( question)? queue( now)?\??",
-)

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import re
-from typing import cast, Literal, NamedTuple, Optional, Union
+from typing import cast, overload, Literal, NamedTuple, Optional, Union
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
+from utilities.utilities import mask_quoted_text
 
 coda_api = CodaAPI.get_instance()
 status_shorthands = coda_api.get_status_shorthand_dict()
@@ -36,11 +37,8 @@ def parse_question_filter(text: str) -> QuestionFilterNT:
     )
 
 
-_status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands).replace(" ", r"\s")
-_re_status = re.compile(
-    rf"status\s*({_status_pat})",
-    re.I | re.X,
-)
+_status_pat = "|".join(rf"\b{s}\b" for s in status_shorthands)
+_re_status = re.compile(rf"({_status_pat})", re.I)
 
 
 def parse_status(text: str) -> Optional[QuestionStatus]:
@@ -51,13 +49,13 @@ def parse_status(text: str) -> Optional[QuestionStatus]:
     return status_shorthands[status_val.lower()]
 
 
-_tag_pat = "|".join(all_tags).replace(" ", r"\s")
-_re_tag = re.compile(rf"tag(?:s|ged(?:\sas)?)?\s+({_tag_pat})", re.I)
+_tag_pat = "|".join(rf"\b{t}\b" for t in all_tags)
+_re_tag = re.compile(rf"({_tag_pat})", re.I)
 
 
 def parse_tag(text: str) -> Optional[str]:
     """Parse valid tag from message text for querying questions database"""
-    if (match := _re_tag.search(text)) is None:
+    if "tag" not in text or (match := _re_tag.search(text)) is None:
         return None
     tag_val = match.group(1)
     tag_pat = _tag_pat.replace(r"\s", " ")
@@ -112,7 +110,31 @@ def parse_question_title(text: str) -> Optional[str]:
         return question_title
 
 
-def parse_question_spec_query(text: str) -> Optional[QuestionSpecQuery]:
+def parse_alt_phr(text: str) -> Optional[str]:
+    start = text.find('"') + 1
+    end = text.find('"', start)
+    if -1 in (start, end):
+        return
+    return text[start:end]
+
+
+@overload
+def parse_question_spec_query(
+    text: str,
+) -> Optional[QuestionSpecQuery]:
+    ...
+
+
+@overload
+def parse_question_spec_query(
+    text: str, *, return_last_by_default: Literal[True]
+) -> QuestionSpecQuery:
+    ...
+
+
+def parse_question_spec_query(
+    text: str, *, return_last_by_default: bool = False
+) -> Optional[QuestionSpecQuery]:  # TODO: raise or sth if no last
     """Parse data specifying concrete questions"""
     # QuestionLast
     if mention := parse_question_last(text):
@@ -121,8 +143,12 @@ def parse_question_spec_query(text: str) -> Optional[QuestionSpecQuery]:
     if gdoc_links := parse_gdoc_links(text):
         return "GDocLinks", gdoc_links
     # QuestionTitle
-    if question_title := parse_question_title(text):
+    # double quotes are used for specifying alternate phrasings,
+    # so in order to remove interference with title parsing, we mask whatever is between double quotes
+    if question_title := parse_question_title(mask_quoted_text(text)):
         return "Title", question_title
+    if return_last_by_default:
+        return "Last", "DEFAULT"
 
 
 def parse_question_query(text: str) -> QuestionQuery:
@@ -136,7 +162,7 @@ def parse_question_query(text: str) -> QuestionQuery:
 
 
 QuestionSpecQuery = Union[
-    tuple[Literal["Last"], Literal["last", "it"]],
+    tuple[Literal["Last"], Literal["last", "it", "DEFAULT"]],
     tuple[Literal["GDocLinks"], list[str]],
     tuple[Literal["Title"], str],
 ]

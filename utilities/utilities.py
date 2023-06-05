@@ -11,7 +11,16 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    Optional,
+    Union,
+    cast,
+)
 
 import pandas as pd
 import psutil
@@ -417,9 +426,30 @@ def is_from_editor(message: ServiceMessage) -> bool:
     return is_editor(message.author)
 
 
+def is_bot_dev(user: ServiceUser) -> bool:
+    if user.id == rob_id:
+        return True
+    roles = getattr(user, "roles", [])
+    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+
+
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
     return any(role.name == "editor" for role in user.roles)
+
+
+DiscordRole = Literal["reviewer", "editor", "bot dev"]
+
+
+def has_permissions(
+    user: ServiceUser,
+    roles: tuple[DiscordRole, ...] = (
+        "reviewer",
+        "editor",
+        "bot dev",
+    ),
+) -> bool:
+    return any(role.name in roles for role in user.roles)
 
 
 def is_in_testing_mode() -> bool:
@@ -461,7 +491,7 @@ def limit_text(
     fail_length = text_length - limit
 
     if text_length >= limit:
-        return True, format_fail_message(fail_length) + text[0:limit]
+        return True, format_fail_message(fail_length) + text[:limit]
     return False, text
 
 
@@ -471,12 +501,18 @@ def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[shuffled_inds]
 
 
-def lacks_permissions(message: ServiceMessage) -> bool:
-    return not (
-        is_from_editor(message)
-        or is_from_reviewer(message)
-        or is_bot_dev(message.author)
-    )
+def mask_quoted_text(text: str) -> str:
+    """Mask everything in text between paired double quotes with zero-width spaces"""
+    quote_inds: list[tuple[int, int]] = []
+    i = 0
+    while text.count('"', i) > 1:
+        start = text.find('"', i)
+        end = text.find('"', start + 1)
+        quote_inds.append((start, end + 1))
+        i = end + 1
+    for start, end in quote_inds:
+        text = text[:start] + (end - start) * "\ufeff" + text[end:]
+    return text
 
 
 class UtilsTests:

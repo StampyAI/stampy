@@ -10,3 +10,4 @@ modules/choose.py
 *.ipynb
 *.csv
 .vscode
+help.md
