@@ -1,13 +1,19 @@
-from api.openai import OpenAI
+from typing import Optional, cast
+
+import openai
+from openai.openai_object import OpenAIObject
+import openai.error as oa_error
+
+from api.openai import OpenAI, OpenAIEngines
 from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
 )
-from modules.module import Module, Response
-from utilities.serviceutils import ServiceMessage
+from modules.module import IntegrationTest, Module, Response
+from utilities.serviceutils import ServiceChannel, ServiceMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 from servicemodules.discordConstants import rob_id, stampy_id
-import openai
+
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -15,7 +21,7 @@ restart_sequence = "\n\nQ: "
 
 
 class GPT3Module(Module):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.start_prompt = (
             "I am a highly intelligent question answering bot named Stampy. "
@@ -40,12 +46,13 @@ class GPT3Module(Module):
             "A: Unknown\n\n"
             "Q: "
         )
-        self.message_logs = {}  # one message log per channel
+        # one message log per channel
+        self.message_logs: dict[ServiceChannel, list[ServiceMessage]] = {}
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
-        self.log_message_max_chars = (
-            500  # limit message length to X chars (remove the middle part)
-        )
+        # limit message length to X chars (remove the middle part)
+        self.log_message_max_chars = 500
+
         self.openai = OpenAI() if openai_api_key else None
         if not openai_api_key:
             self.log.info(
@@ -56,14 +63,13 @@ class GPT3Module(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
 
-        if message.is_dm:
-            if message.author.id != rob_id:
-                self.log.info(
-                    self.class_name,
-                    author=message.author.id,
-                    author_type=type(message.author.id),
-                )
-                return Response()
+        if message.is_dm and message.author.id != rob_id:
+            self.log.info(
+                self.class_name,
+                author=message.author.id,
+                author_type=type(message.author.id),
+            )
+            return Response()
 
         if not self.is_at_me(message):
             return Response()
@@ -72,22 +78,20 @@ class GPT3Module(Module):
             confidence=2, callback=self.gpt3_chat, args=[message], kwargs={}
         )
 
-    def process_message_from_stampy(self, message):
+    def process_message_from_stampy(self, message: ServiceMessage) -> None:
         self.message_log_append(message)
 
-    def message_log_append(self, message):
+    def message_log_append(self, message: ServiceMessage) -> None:
         """Store the message in the log"""
 
         # make sure we have a list in there for this channel
         self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
 
         self.message_logs[message.channel].append(message)
-        self.message_logs[message.channel] = self.message_logs[message.channel][
-            -self.log_max_messages :
-        ]
+        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages :]  # fmt:skip
 
-    def generate_chatlog_prompt(self, channel):
-        users = set([])
+    def generate_chatlog_prompt(self, channel: ServiceChannel) -> str:
+        users = set()
         for message in self.message_logs[channel]:
             if message.author.name != "stampy":
                 users.add(message.author.name)
@@ -106,7 +110,7 @@ class GPT3Module(Module):
         self.log.info(self.class_name, prompt=prompt)
         return prompt
 
-    def generate_chatlog(self, channel):
+    def generate_chatlog(self, channel: ServiceChannel) -> str:
         chatlog = ""
         for message in self.message_logs[channel][::-1]:
             username = message.author.name
@@ -127,13 +131,15 @@ class GPT3Module(Module):
 
         return chatlog
 
-    def get_forbidden_tokens(self, channel, engine):
+    def get_forbidden_tokens(
+        self, channel: ServiceChannel, engine: OpenAIEngines
+    ) -> set[int]:
         """
         Go through the chatlog and find the tokens that start each of stampy's own messages
         This is so that we can tell GPT-3 not to use those tokens, to prevent repetition
         """
 
-        forbidden_tokens = set([])
+        forbidden_tokens = set()
 
         for message in self.message_logs[channel]:
             if message.author.id == stampy_id:
@@ -144,7 +150,7 @@ class GPT3Module(Module):
                 else:
                     im = default_italics_mark
                 text = " " + message.clean_content[:10].strip(im)
-                forbidden_token = engine.tokenizer(text)["input_ids"][0]
+                forbidden_token = engine.tokenizer(text)["input_ids"][0]  # type:ignore
                 forbidden_tokens.add(forbidden_token)
                 self.log.info(
                     self.class_name, text=text, forbidden_token=forbidden_token
@@ -152,15 +158,16 @@ class GPT3Module(Module):
 
         return forbidden_tokens
 
-    def tokenize(self, engine, data: str) -> int:
-        return engine.tokenizer(data)["input_ids"][0]
+    def tokenize(self, engine: OpenAIEngines, data: str) -> int:
+        return engine.tokenizer(data)["input_ids"][0]  # type:ignore
 
-    def get_engine(self, message: ServiceMessage):
+    def get_engine(self, message: ServiceMessage) -> Optional[OpenAIEngines]:
         if self.openai and self.openai.is_channel_allowed(message):
             return self.openai.get_engine(message)
 
-    async def gpt3_chat(self, message):
+    async def gpt3_chat(self, message: ServiceMessage) -> Response:
         """Ask GPT-3 what Stampy would say next in the chat log"""
+        self.openai = cast(OpenAI, self.openai)
 
         engine = self.get_engine(message)
         if not engine:
@@ -201,17 +208,18 @@ class GPT3Module(Module):
 
         return Response()
 
-    async def gpt3_question(self, message):
+    async def gpt3_question(self, message: ServiceMessage) -> Response:
         """Ask GPT-3 for an answer"""
+        self.openai = cast(OpenAI, self.openai)
 
         engine = self.get_engine(message)
 
-        text = self.is_at_me(message)
+        text = cast(str, self.is_at_me(message))
         if text.endswith("?"):
             self.log.info(self.class_name, status="Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
 
-            if self.cf_risk_level(prompt) > 1:
+            if self.openai.cf_risk_level(prompt) > 1:
                 return Response(
                     confidence=0,
                     text="",
@@ -219,19 +227,22 @@ class GPT3Module(Module):
                 )
 
             try:
-                response = openai.Completion.create(
-                    engine=engine,
-                    prompt=prompt,
-                    temperature=0,
-                    max_tokens=100,
-                    top_p=1,
-                    user=str(message.author.id),
-                    # stop=["\n"],
+                response = cast(
+                    OpenAIObject,
+                    openai.Completion.create(
+                        engine=engine,
+                        prompt=prompt,
+                        temperature=0,
+                        max_tokens=100,
+                        top_p=1,
+                        user=str(message.author.id),
+                        # stop=["\n"],
+                    ),
                 )
-            except openai.error.AuthenticationError:
+            except oa_error.AuthenticationError:
                 self.log.error(self.class_name, error="OpenAI Authentication Failed")
                 return Response()
-            except openai.error.RateLimitError:
+            except oa_error.RateLimitError:
                 self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
                 return Response(why="Rate Limit Exceeded")
 
@@ -256,7 +267,7 @@ class GPT3Module(Module):
         return "GPT-3 Module"
 
     @property
-    def test_cases(self):
+    def test_cases(self) -> list[IntegrationTest]:
         return [
             self.create_integration_test(
                 test_message="GPT3 api is only hit in production because it is expensive?",
