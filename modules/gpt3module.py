@@ -1,9 +1,7 @@
-from api.gooseai import GooseAI
 from api.openai import OpenAI
 from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
-    goose_api_key,
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
@@ -45,26 +43,34 @@ class GPT3Module(Module):
         self.message_logs = {}  # one message log per channel
         self.log_max_messages = 10  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
-        self.log_message_max_chars = 500  # limit message length to X chars (remove the middle part)
+        self.log_message_max_chars = (
+            500  # limit message length to X chars (remove the middle part)
+        )
         self.openai = OpenAI() if openai_api_key else None
-        self.gooseai = GooseAI() if goose_api_key else None
-        if not openai_api_key and not goose_api_key:
+        if not openai_api_key:
             self.log.info(
                 self.class_name,
-                warning="No API key found in env for any of the GPT3 providers."
+                warning="No API key found in env for any of the GPT3 providers.",
             )
+
     def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
 
         if message.is_dm:
             if message.author.id != rob_id:
-                self.log.info(self.class_name, author=message.author.id, author_type=type(message.author.id))
+                self.log.info(
+                    self.class_name,
+                    author=message.author.id,
+                    author_type=type(message.author.id),
+                )
                 return Response()
 
         if not self.is_at_me(message):
             return Response()
 
-        return Response(confidence=2, callback=self.gpt3_chat, args=[message], kwargs={})
+        return Response(
+            confidence=2, callback=self.gpt3_chat, args=[message], kwargs={}
+        )
 
     def process_message_from_stampy(self, message):
         self.message_log_append(message)
@@ -76,7 +82,9 @@ class GPT3Module(Module):
         self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
 
         self.message_logs[message.channel].append(message)
-        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages :]
+        self.message_logs[message.channel] = self.message_logs[message.channel][
+            -self.log_max_messages :
+        ]
 
     def generate_chatlog_prompt(self, channel):
         users = set([])
@@ -138,19 +146,18 @@ class GPT3Module(Module):
                 text = " " + message.clean_content[:10].strip(im)
                 forbidden_token = engine.tokenizer(text)["input_ids"][0]
                 forbidden_tokens.add(forbidden_token)
-                self.log.info(self.class_name, text=text, forbidden_token=forbidden_token)
+                self.log.info(
+                    self.class_name, text=text, forbidden_token=forbidden_token
+                )
 
         return forbidden_tokens
 
     def tokenize(self, engine, data: str) -> int:
         return engine.tokenizer(data)["input_ids"][0]
 
-    def get_engine(self, message: ServiceMessage, force_goose=False):
-        if not force_goose and self.openai and self.openai.is_channel_allowed(message):
+    def get_engine(self, message: ServiceMessage):
+        if self.openai and self.openai.is_channel_allowed(message):
             return self.openai.get_engine(message)
-
-        if self.gooseai:
-            return self.gooseai.get_engine()
 
     async def gpt3_chat(self, message):
         """Ask GPT-3 what Stampy would say next in the chat log"""
@@ -180,34 +187,17 @@ class GPT3Module(Module):
             im = default_italics_mark
 
         if self.openai.is_channel_allowed(message):
-            self.log.info(self.class_name, msg="sending chat prompt to openai", engine=engine)
+            self.log.info(
+                self.class_name, msg="sending chat prompt to openai", engine=engine
+            )
             response = self.openai.get_response(engine, prompt, logit_bias)
             self.log.info(self.class_name, response=response)
             if response != "":
-                return Response(confidence=10, text=f"{im}{response}{im}", why="OpenAI GPT-3 made me say it!")
-
-            # If OpenAI Failed, redo work and try GooseAI.
-            self.log.critical(self.class_name, msg="OpenAI Failed! Trying GooseAI!")
-            engine = self.get_engine(message, force_goose=True)
-            forbidden_tokens = self.get_forbidden_tokens(message.channel, engine)
-            self.log.info(self.class_name, forbidden_tokens=forbidden_tokens, engine=engine)
-            logit_bias = {
-                self.tokenize(engine, "*"): -100,
-                self.tokenize(engine, "**"): -100,
-                self.tokenize(engine, "***"): -100,
-                self.tokenize(engine, " *"): -100,
-                self.tokenize(engine, " **"): -100,
-                self.tokenize(engine, " ***"): -100,
-            }
-            for forbidden_token in forbidden_tokens:
-                logit_bias[forbidden_token] = -100
-
-
-        self.log.info(self.class_name, msg="sending chat prompt to goose.ai", engine=engine)
-        response = self.gooseai.get_response(engine, prompt, logit_bias)
-        self.log.info(self.class_name, response=response)
-        if response != "":
-            return Response(confidence=10, text=f"{im}{response}{im}", why="GooseAI GPT-3 made me say it!")
+                return Response(
+                    confidence=10,
+                    text=f"{im}{response}{im}",
+                    why="OpenAI GPT-3 made me say it!",
+                )
 
         return Response()
 
@@ -247,7 +237,10 @@ class GPT3Module(Module):
 
             if response["choices"]:
                 choice = response["choices"][0]
-                if choice["finish_reason"] == "stop" and choice["text"].strip() != "Unknown":
+                if (
+                    choice["finish_reason"] == "stop"
+                    and choice["text"].strip() != "Unknown"
+                ):
                     self.log.info(self.class_name, status="Asking GPT-3")
                     return Response(
                         confidence=10,
