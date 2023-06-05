@@ -254,7 +254,7 @@ class GPT3Module(Module):
                 ):
                     self.log.info(self.class_name, status="Asking GPT-3")
                     return Response(
-                        confidence=10,
+                        confidence=9,
                         text="*" + choice["text"].strip(". \n") + "*",
                         why="GPT-3 made me say it!",
                     )
