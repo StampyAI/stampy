@@ -13,10 +13,6 @@ class Reply(Module):
     def __str__(self):
         return "YouTube Reply Posting Module"
 
-    def __init__(self):
-        Module.__init__(self)
-        self.class_name = "Reply Module"
-
     def is_post_request(self, text):
         """Is this message asking us to post a reply?"""
         self.log.info(self.class_name, text=text)

@@ -4,13 +4,11 @@ from typing import Optional
 
 import dotenv
 
-from api.utilities.gooseutils import GooseAIEngines
-
 log_type = "stam.py"
 log = get_logger()
 
 dotenv.load_dotenv()
-NOT_PROVIDED = '__NOT_PROVIDED__'
+NOT_PROVIDED = "__NOT_PROVIDED__"
 
 module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 
@@ -31,7 +29,9 @@ def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]
     """
     value = os.getenv(env_var, default)
     if value == NOT_PROVIDED:
-        raise Exception(f"Environment Variable '{env_var}' not set and no default provided")
+        raise Exception(
+            f"Environment Variable '{env_var}' not set and no default provided"
+        )
     return value
 
 def getenv_unique_set(var_name, default="EMPTY_SET"):
@@ -47,7 +47,9 @@ subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
 youtube_api_version = "v3"
 god_id = "0"
-youtube_testing_thread_url = "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
+youtube_testing_thread_url = (
+    "https://www.youtube.com/watch?v=vuYtSDMBLtQ&lc=Ugx2FUdOI6GuxSBkOQd4AaABAg"
+)
 
 # Multiply this by the total number of votes made, to get the number of stamps needed to post a reply comment
 comment_posting_threshold_factor = 0.15
@@ -100,22 +102,7 @@ discord_guild = getenv("DISCORD_GUILD")
 youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
 database_path = getenv("DATABASE_PATH")
 openai_api_key = getenv("OPENAI_API_KEY", default=None)
-goose_api_key = getenv("GOOSE_API_KEY", default=None)
 wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 # These defaults are just to not break production until slack is set up.
 slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
-
-
-goose_engine_fallback_order = [  # What engine to use in order of preference in case one goes down.
-    GooseAIEngines.GPT_20B,
-    GooseAIEngines.GPT_6B,
-    GooseAIEngines.GPT_2_7B,
-    GooseAIEngines.GPT_1_3B,
-    GooseAIEngines.GPT_125M,
-    GooseAIEngines.FAIRSEQ_13B,
-    GooseAIEngines.FAIRSEQ_6_7B,
-    GooseAIEngines.FAIRSEQ_2_7B,
-    GooseAIEngines.FAIRSEQ_1_3B,
-    GooseAIEngines.FAIRSEQ_125M,
-]

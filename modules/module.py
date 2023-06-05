@@ -131,11 +131,10 @@ class Module:
 
     def __init__(self):
         self.utils = Utilities.get_instance()
-        self.class_name = "BaseModule"
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
 
-    def process_message(self, message: ServiceMessage):
+    def process_message(self, message: ServiceMessage) -> Response:
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
@@ -169,7 +168,7 @@ class Module:
         """
         pass
 
-    async def process_raw_reaction_event(self, event):
+    async def process_raw_reaction_event(self, event) -> Response:
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()
@@ -289,6 +288,12 @@ class Module:
 
         return string
 
+    @property
+    def class_name(self) -> str:
+        """Name of the class inheriting from Module"""
+        if self.__class__ is Module:
+            return "BaseModule"
+        return self.__class__.__name__
 
 class IntegrationTest(TypedDict):
     """Integration test for testing Stampy modules"""

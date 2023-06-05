@@ -7,8 +7,7 @@ from modules.module import Module, Response
 
 class InviteManager(Module):
     def __init__(self):
-        Module.__init__(self)
-        self.class_name = "InviteManager"
+        super().__init__()
         self.re_request = re.compile(
             r"([pP]lease )?(([cC]an|[cC]ould) you )?(([Cc]reate|[mM]ake|[gG]ive|[gG]enerate) (me )?|"
             "([Cc]an|[mM]ay) [iI] (get|have) )((an|a new|my|\d+) )?[Ii]nvites?( link)?s?,?( please| pls)?"
