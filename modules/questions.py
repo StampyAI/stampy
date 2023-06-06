@@ -493,11 +493,11 @@ class Questions(Module):
             ),
             self.create_integration_test(
                 test_message="how many questions with status los?",
-                expected_regex=r"There are \d{3} questions",
+                expected_regex=r"There are \d{3} questions with status `Live on site`",
             ),
             self.create_integration_test(
                 test_message="count questions tagged hedonium",
-                expected_regex=r"There are \d\d? questions",
+                expected_regex=r"There are \d\d? questions tagged as `Hedonium`",
             ),
             ########
             # Info #

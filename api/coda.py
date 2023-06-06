@@ -406,6 +406,9 @@ class CodaAPI:
         # if tag was specified, filter for questions having that tag
         questions_df = filter_on_tag(questions_df, tag)
 
+        if questions_df.empty:
+            return []
+
         if least_recently_asked_unpublished:
             # get the least recently asked and shuffle them
             questions_df = get_least_recently_asked_on_discord(questions_df)
@@ -416,9 +419,7 @@ class CodaAPI:
             await message.channel.send(f"{limit} is to much. I'll give you up to 5.")
 
         # filter on max num of questions
-        questions_df = questions_df.sort_values(
-            "last_asked_on_discord", ascending=False
-        ).iloc[: min(limit, 5)]
+        questions_df = questions_df.sort_values("last_asked_on_discord", ascending=False).iloc[: min(limit, 5)]  # fmt:skip
         if questions_df.empty:
             return []
         questions = questions_df.to_dict(orient="records")
@@ -522,7 +523,7 @@ class CodaAPI:
         if is_in_testing_mode():
             return []
         tags_table = self.doc.get_table(self.TAGS_GRID_ID)
-        tags_vals = {row["Tag name"] for row in tags_table.to_dict()}
+        tags_vals = {row["Tag name"] for row in tags_table.to_dict() if row["Tag name"]}
         return sorted(tags_vals)
 
     def get_all_statuses(self) -> list[str]:
@@ -533,7 +534,9 @@ class CodaAPI:
         # get coda table
         status_table = self.doc.get_table(self.STATUSES_GRID_ID)
         # load status values from it
-        coda_status_vals = {r["Status"].value for r in status_table.rows()}
+        coda_status_vals = {
+            r["Status"].value for r in status_table.rows() if r["Status"].value
+        }
         # load status values defined in code
         code_status_vals = set(get_args(QuestionStatus))
         # if mismatch, log and raise errory
