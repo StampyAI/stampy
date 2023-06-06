@@ -385,17 +385,6 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
 
 
-def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id in bot_vip_ids:
-        return True
-    if user.id in bot_dev_ids:
-        return True
-    user_roles = getattr(user, "roles", [])
-    if any(r in bot_dev_roles for r in user_roles):
-        return True
-    return False
-
-
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
 
@@ -427,10 +416,14 @@ def is_from_editor(message: ServiceMessage) -> bool:
 
 
 def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id == rob_id:
+    if user.id in bot_vip_ids:
         return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+    if user.id in bot_dev_ids:
+        return True
+    user_roles = getattr(user, "roles", [])
+    if any(r in bot_dev_roles for r in user_roles):
+        return True
+    return False
 
 
 def is_editor(user: ServiceUser) -> bool:
