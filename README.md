@@ -29,10 +29,20 @@ current version of stampy.
     * `#stampy-dev-priv` channel to access the `.env` information
     * Stampy's Test Server
 1. Set Environment Variables
-    * In the `#stampy-dev-priv` channel, go to pinned messages, and copy the message that starts with `DISCORD_TOKEN`
-    * Create `.env` in the root of the stampy repository (so [dotenv](https://pypi.org/project/python-dotenv/) can find it)
-    * Paste the message into `.env`
-    * Add coda api token to `.env`: first create a [coda account](https://coda.io/), then create a token in [account settings](https://coda.io/account), then add `CODA_API_TOKEN="your-token-here"` to `.env`
+    * if running your own Stampy instance:
+       * Create `.env` in the root of the stampy repository (so [dotenv](https://pypi.org/project/python-dotenv/) can find it)
+       * In `.env`, set at least the following variables:
+         - `ENVIRONMENT_TYPE` to "development" or "production".
+         - `DISCORD_TOKEN` to your bot token
+         - `DISCORD_GUILD` to your server ID
+         - `DATABASE_PATH` to the path to the Q&A database (normally in `./database/stampy.db`).
+         - `STAMPY_MODULES` to a space-separated list of your desired modules, or leave unset to load all modules in the `./modules/` directory.
+         - All other environment variables can be found in `./config.py`
+    * if working on our Stampy instance:
+        * In the `#stampy-dev-priv` channel, go to pinned messages, and copy the message that starts with `DISCORD_TOKEN`
+        * Create `.env` in the root of the stampy repository (so [dotenv](https://pypi.org/project/python-dotenv/) can find it)
+        * Paste the message into `.env`
+        * Add coda api token to `.env`: first create a [coda account](https://coda.io/), then create a token in [account settings](https://coda.io/account), then add `CODA_API_TOKEN="your-token-here"` to `.env`
 1. Verify that your setup is working
     * Run `conda activate stampy`
     * Then run `python3 stam.py` or `python stam.py` from the base directory of the repository.

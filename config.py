@@ -1,11 +1,26 @@
+from structlog import get_logger
 import os
 from typing import Optional
 
 import dotenv
 
+log_type = "stam.py"
+log = get_logger()
+
 dotenv.load_dotenv()
 NOT_PROVIDED = "__NOT_PROVIDED__"
 
+module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
+
+def get_all_modules() -> set[str]:
+    modules = []
+    for file_name in os.listdir(module_dir):
+        if file_name.endswith('.py') and file_name != '__init__.py':
+            modules.append(file_name[:-3])
+
+    return set(modules)
+
+All_Stampy_Modules = get_all_modules()
 
 def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
     """
@@ -19,6 +34,13 @@ def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]
         )
     return value
 
+def getenv_unique_set(var_name, default="EMPTY_SET"):
+    l = getenv(var_name, default=default).split(" ")
+    if l == [default]:
+        return default
+    s = set(l)
+    assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
+    return s
 
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
@@ -66,10 +88,18 @@ stamp_scores_csv_file_path = {
     "development": "stamps-export.csv",
 }[ENVIRONMENT_TYPE]
 
+# list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
+# if STAMPY_MODULES is unset, enable everything found in ./modules
+enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL")
+if enabled_modules_var == "ALL":
+    enabled_modules = All_Stampy_Modules
+    log.info("STAMPY_MODULES unset, loading all modules indiscriminately")
+else:
+    enabled_modules = enabled_modules_var
 
 discord_token = getenv("DISCORD_TOKEN")
 discord_guild = getenv("DISCORD_GUILD")
-youtube_api_key = getenv("YOUTUBE_API_KEY")
+youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
 database_path = getenv("DATABASE_PATH")
 openai_api_key = getenv("OPENAI_API_KEY", default=None)
 wolfram_token = getenv("WOLFRAM_TOKEN", default=None)

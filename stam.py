@@ -3,7 +3,7 @@ import threading
 
 from structlog import get_logger
 
-from config import database_path
+from config import database_path, enabled_modules, All_Stampy_Modules
 from modules.module import Module
 from servicemodules.discord import DiscordHandler
 from servicemodules.flask import FlaskHandler
@@ -18,11 +18,10 @@ log = get_logger()
 def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
-    module_filenames = [
-        f[:-3] for f in os.listdir(path) if f.endswith(".py") and f != "__init__.py"
-    ]
-    for file_title in module_filenames:
+    skipped_modules = All_Stampy_Modules.copy()
+    for file_title in enabled_modules:
+        assert (file_title in All_Stampy_Modules), f"Module {file_title} enabled but doesn't exist!"
+
         log.info("import", filename=file_title)
         mod = __import__(".".join(["modules", file_title]), fromlist=[file_title])
         log.info("import", module_name=mod)
@@ -31,7 +30,10 @@ def get_stampy_modules() -> dict[str, Module]:
             if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
                 log.info("import Module Found", module_name=attribute)
                 stampy_modules[cls.__name__] = cls()
+        skipped_modules.remove(file_title)
+
     log.info("LOADED MODULES", modules=sorted(stampy_modules.keys()))
+    log.info("SKIPPED MODULES", modules=sorted(skipped_modules))
     return stampy_modules
 
 
