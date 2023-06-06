@@ -1,7 +1,7 @@
 import discord
 from git import Repo, cmd
 from structlog import get_logger
-from config import bot_private_channel_id
+from servicemodules.discordConstants import stampy_dev_priv_channel_id
 from config import discord_token
 
 intents = discord.Intents.default()
@@ -26,8 +26,7 @@ async def on_ready():
     date = master.commit.committed_datetime.strftime("%A, %B %d, %Y at %I:%M:%S %p UTC%z")
     message = offline_message % (actor, git_message, date)
     log.info("notify_discord_script", msg=message)
-    if bot_private_channel_id:
-        await client.get_channel(int(bot_private_channel_id)).send(message)
+    await client.get_channel(int(stampy_dev_priv_channel_id)).send(message)
     log.info("notify_discord_script", status="COMPLETE")
     exit()
 

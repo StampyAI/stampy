@@ -34,8 +34,6 @@ export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
 export CLIENT_SECRET_PATH="$(cat ~/.clientsecretpath)"
 export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
 
-export ROBMILES_DEFAULTS="TRUE"
-
 cd ~/stampy
 conda activate stampy
 python -m scripts.notify-discord-stampy-offline

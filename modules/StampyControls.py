@@ -1,24 +1,10 @@
-import os
 import sys
 import discord
 from modules.module import Module, Response
-from config import (
-    TEST_RESPONSE_PREFIX,
-    bot_control_channel_ids,
-    can_invite_role_id,
-    member_role_id,
-    Stampy_Path,
-    bot_reboot
-)
+from config import TEST_RESPONSE_PREFIX
 from servicemodules.serviceConstants import Services
-from utilities import (
-    Utilities,
-    get_github_info,
-    get_memory_usage,
-    get_running_user_info,
-    get_question_id,
-    is_bot_dev
-)
+from servicemodules.discordConstants import bot_admin_role_id, stampy_control_channel_ids, can_invite_role_id, member_role_id
+from utilities import Utilities, get_github_info, get_memory_usage, get_running_user_info, get_question_id
 
 
 class StampyControls(Module):
@@ -33,9 +19,9 @@ class StampyControls(Module):
         super().__init__()
         self.routines = {
             "reboot": self.reboot,
+            "resetinviteroles": self.resetinviteroles,
             "stats": self.get_stampy_stats,
             "add member role to everyone": self.add_member_role,
-            "resetinviteroles": self.resetinviteroles,
         }
 
     def is_at_module(self, message):
@@ -66,26 +52,13 @@ class StampyControls(Module):
 
     @staticmethod
     async def reboot(message):
-        if hasattr(message.channel, "id") and message.channel.id in bot_control_channel_ids:
-            asked_by_dev = is_bot_dev(message.author)
-            if asked_by_dev:
-                if bot_reboot and not os.path.exists(Stampy_Path):
-                    return Response(
-                        confidence=10,
-                        why=f"I couldn't find myself at this path: {Stampy_Path}",
-                        text="I need to do some soul-searching."
-                    )
+        if hasattr(message.channel, "id") and message.channel.id in stampy_control_channel_ids:
+            asked_by_admin = discord.utils.get(message.author.roles, id=bot_admin_role_id)
+            if asked_by_admin:
                 await message.channel.send("Rebooting...")
                 sys.stdout.flush()
                 Utilities.get_instance().stop.set()
-                if bot_reboot == "exec":
-                    # Alternative: self-managed reboot, without needing external loop.
-                    # BUG: When rebooting, Flask throws an error about port 2300
-                    # being still in use. However the app seems to keep working.
-                    os.execvp("bash", ["bash", "--login", "-c", f"python3 {Stampy_Path}"])
-                else:
-                    # expecting external infinite loop to make it a reboot
-                    exit()
+                exit()
             return Response(
                 confidence=10,
                 why="%s tried to kill me! They said 'reboot'" % message.author.name,
@@ -98,8 +71,6 @@ class StampyControls(Module):
         )
 
     async def resetinviteroles(self, message):
-        if not can_invite_role_ids:
-            return Response(confidence=10, text="Variable can_invite_role_id isn't defined!")
         if self.utils.test_mode:
             self.log.warning(self.class_name, msg="Stampy is in test mode, not updating invite roles")
             return Response(
@@ -135,9 +106,6 @@ class StampyControls(Module):
     async def add_member_role(self, message):
         if message.service != Services.DISCORD:
             return Response(confidence=10, text="This feature is only available on Discord")
-        if not member_role_id:
-            return Response(confidence=10, text="Variable member_role_id not defined")
-
         guild = message._message.guild
         member_role = discord.utils.get(guild.roles, id=int(member_role_id))
         if not member_role:
