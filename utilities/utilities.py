@@ -34,16 +34,13 @@ from config import (
     database_path,
     discord_guild,
     discord_token,
-    bot_dev_roles,
-    bot_dev_ids,
-    bot_vip_ids,
-    paid_service_for_all,
-    paid_service_whitelist_role_ids,
-    bot_private_channel_id
 )
 from database.database import Database
 from servicemodules.discordConstants import (
+    stampy_error_log_channel_id,
     wiki_feed_channel_id,
+    rob_id,
+    bot_dev_role_id,
 )
 from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordMessage, DiscordUser
@@ -100,7 +97,7 @@ class Utilities:
         self.last_question_asked_timestamp: datetime
         self.latest_question_posted = None
         self.error_channel = cast(
-            discord.Thread, self.client.get_channel(int(bot_private_channel_id))
+            discord.Thread, self.client.get_channel(int(stampy_error_log_channel_id))
         )
 
         self.users: list[int] = []
@@ -385,17 +382,6 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
 
 
-def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id in bot_vip_ids:
-        return True
-    if user.id in bot_dev_ids:
-        return True
-    user_roles = getattr(user, "roles", [])
-    if any(r in bot_dev_roles for r in user_roles):
-        return True
-    return False
-
-
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
 
@@ -526,14 +512,3 @@ class UtilsTests:
         self.assertEqual(len(test_out), 4)
         for chunk in test_out:
             self.assertLessEqual(len(chunk), 20)
-
-def can_use_paid_service(author: ServiceUser) -> bool:
-    if paid_service_for_all:
-        return True
-    elif author.id in bot_vip_ids or is_bot_dev(author):
-        return True
-    elif any(discordutils.user_has_role(message.author, x)
-             for x in paid_service_whitelist_role_ids):
-        return True
-    else:
-        return False

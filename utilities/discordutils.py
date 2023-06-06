@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 import discord
 
@@ -69,8 +69,3 @@ class DiscordMessage(ServiceMessage):
     def _parse_discord_mentions(self, mentions: list[discord.abc.User]):
         for user in mentions:
             self.mentions.append(DiscordUser(user))
-
-def user_has_role(user: ServiceUser, roleID: Union[str, int]):
-    if isinstance(id, str):
-        roleID = int(roleID)
-    discord.utils.get(user.roles, id=roleID)

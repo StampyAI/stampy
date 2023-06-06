@@ -1,7 +1,3 @@
-# NOTE(ProducerMatt): mostly deprecated as Stampy codebase may be used on
-# multiple servers, see ../config.py. Should eventually be removed entirely with
-# blessing of dev team.
-
 from config import ENVIRONMENT_TYPE
 
 #################################

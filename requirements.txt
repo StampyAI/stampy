@@ -15,4 +15,3 @@ structlog
 transformers
 pandas
 codaio
-helicone

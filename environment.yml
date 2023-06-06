@@ -23,4 +23,3 @@ dependencies:
       - structlog
       - transformers
       - codaio
-      - helicone

@@ -2,9 +2,7 @@ import re
 import random
 import sqlite3
 from typing import Optional
-from os import path
-from config import factoid_database_path
-assert isinstance(factoid_database_path, str) and path.dirname(factoid_database_path), f"Factoid.db parent directory not found at {factoid_database_path=}"
+
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities.discordutils import DiscordUser
@@ -21,7 +19,8 @@ class Factoids(Module):
 
     def __init__(self):
         super().__init__()
-        self.db = FactoidDb(factoid_database_path)
+        dbpath = "factoids.db"
+        self.db = FactoidDb(dbpath)
         self.who = "Someone"
         self.re_replace = re.compile(r".*?({{.+?}})")
         self.re_verb = re.compile(r".*?<([^>]+)>")

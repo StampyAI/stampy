@@ -20,13 +20,11 @@ from collections.abc import Iterable
 from datetime import datetime, timezone, timedelta
 from textwrap import wrap
 from typing import Dict, Generator, List, Union
-import config
 from config import (
     discord_token,
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
-    youtube_api_key,
-    bot_private_channel_id
+    youtube_api_key
 )
 from servicemodules import discordConstants
 from servicemodules.serviceConstants import Services, openai_channel_ids
@@ -81,7 +79,7 @@ class DiscordHandler:
 
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(self.class_name, guild_members=members)
-            await self.utils.client.get_channel(int(bot_private_channel_id)).send(
+            await self.utils.client.get_channel(int(discordConstants.stampy_dev_priv_channel_id)).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
 
@@ -311,16 +309,10 @@ class DiscordHandler:
         return t
 
     def test_channel_constants(self):
-        channel_ids = set()
-        for name in dir(config):
-            if name.endswith('channel_id') or name.endswith('channel_ids') or name.endswith('category_id'):
-                item = getattr(config, name)
-                if type(item) is set:
-                    channel_ids.update(item)
-                else:
-                    channel_ids.add(item)
-        # TODO: let modules define "channel dependencies" which is a set of variable
-        # names, then check each var has a valid id, or iterable of valid ids.
+        channel_ids = [getattr(discordConstants, name)
+                       for name in dir(discordConstants)
+                       if name.endswith('channel_id')
+                       or name.endswith('category_id')]
         for channel_id in channel_ids:
             if int(channel_id) > 0 and self.utils.client.get_channel(int(channel_id)) is None:
                 log.warning(self.class_name, msg=f"Could not find a channel with id {channel_id}")
