@@ -22,9 +22,7 @@ Discussion and planning is primarily done on Discord. You are welcome to join vi
 1. Create stampy [python conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
     * Change directory to where you downloaded the stampy github
 repository: `cd stampy`
-    * Run `conda env create -f environment.yml` This will create an anaconda
-python kernel with all the dependencies required to run the
-current version of stampy.
+    * Run `conda env create -f environment.yml` This will create an anaconda python kernel with all the dependencies required to run the current version of stampy.
 1. Get access to appropriate channels in Discord. In the `#stampy-dev` channel, ask to be given access to:
     * `#stampy-dev-priv` channel to access the `.env` information
     * Stampy's Test Server
@@ -37,7 +35,7 @@ current version of stampy.
          - `DISCORD_GUILD` to your server ID
          - `DATABASE_PATH` to the path to the Q&A database (normally in `./database/stampy.db`).
          - `STAMPY_MODULES` to a space-separated list of your desired modules, or leave unset to load all modules in the `./modules/` directory.
-         - All other environment variables can be found in `./config.py`
+         - All other environment variables can be found in `./config.py`. Though they are not required, you will not be able to do some functions, i.e. rebooting stampy with Discord messages, in-Discord logging, etc
     * if working on our Stampy instance:
         * In the `#stampy-dev-priv` channel, go to pinned messages, and copy the message that starts with `DISCORD_TOKEN`
         * Create `.env` in the root of the stampy repository (so [dotenv](https://pypi.org/project/python-dotenv/) can find it)

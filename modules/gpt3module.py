@@ -12,8 +12,8 @@ from config import (
 from modules.module import IntegrationTest, Module, Response
 from utilities.serviceutils import ServiceChannel, ServiceMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
-from servicemodules.discordConstants import rob_id, stampy_id
-
+from config import bot_vip_ids
+import openai
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -63,13 +63,10 @@ class GPT3Module(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         self.message_log_append(message)
 
-        if message.is_dm and message.author.id != rob_id:
-            self.log.info(
-                self.class_name,
-                author=message.author.id,
-                author_type=type(message.author.id),
-            )
-            return Response()
+        if message.is_dm:
+            if message.author.id not in bot_vip_ids:
+                self.log.info(self.class_name, author=message.author.id, author_type=type(message.author.id))
+                return Response()
 
         if not self.is_at_me(message):
             return Response()
@@ -142,7 +139,7 @@ class GPT3Module(Module):
         forbidden_tokens = set()
 
         for message in self.message_logs[channel]:
-            if message.author.id == stampy_id:
+            if Utilities.get_instance().stampy_is_author(message):
                 # we only need the first token, so just clip to ten chars
                 # the space is because we generate from "stampy:" so there's always a space at the start
                 if message.service in service_italics_marks:
