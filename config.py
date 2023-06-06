@@ -119,6 +119,7 @@ if robmiles_defaults:
     member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
     bot_reboot = False
     paid_service_for_all = True
+    paid_service_all_channels = True
     paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
     paid_service_whitelist_role_ids: frozenset = frozenset()
     gpt4_for_all: bool = getenv_bool("GPT4_FOR_ALL")
