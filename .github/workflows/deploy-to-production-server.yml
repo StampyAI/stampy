@@ -78,6 +78,8 @@ jobs:
             export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
             export CODA_API_TOKEN=$(cat ~/.codatoken);
 
+            export ROBMILES_DEFAULTS="TRUE"
+
             cd ~/stampy
             conda activate stampy
             python -m scripts.notify-discord-stampy-offline
