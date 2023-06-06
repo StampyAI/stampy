@@ -102,7 +102,7 @@ robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
 if robmiles_defaults:
     # use robmiles server defaults
     print("Using settings for the Rob Miles Discord server")
-    discord_guild = "677546901339504640"
+    discord_guild = [{"production": "677546901339504640", "development": "783123903382814720"}[ENVIRONMENT_TYPE]]
     factoid_database_path = "./factoids.db"
     bot_vip_ids = frozenset(["181142785259208704"])
     bot_dev_roles = frozenset([{"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]])
