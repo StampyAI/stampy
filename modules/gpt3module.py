@@ -8,11 +8,11 @@ from api.openai import OpenAI, OpenAIEngines
 from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
+    bot_vip_ids
 )
 from modules.module import IntegrationTest, Module, Response
 from utilities.serviceutils import ServiceChannel, ServiceMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
-from config import bot_vip_ids
 import openai
 
 openai.api_key = openai_api_key
