@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 import re
 import random
-from typing import Callable, Iterable, Literal, Optional, Union
+from typing import Callable, Iterable, Literal, Optional, TypedDict, Union
 
 import discord
 from structlog import get_logger
 
-from config import TEST_QUESTION_PREFIX
-from utilities import Utilities, get_question_id
+from config import TEST_MESSAGE_PREFIX
 from utilities.utilities import (
+    Utilities,
     is_stampy_mentioned,
     stampy_is_author,
     get_guild_and_invite_role,
+    get_question_id,
 )
 from utilities.serviceutils import ServiceMessage
 
@@ -128,11 +131,10 @@ class Module:
 
     def __init__(self):
         self.utils = Utilities.get_instance()
-        self.class_name = "BaseModule"
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
 
-    def process_message(self, message: ServiceMessage):
+    def process_message(self, message: ServiceMessage) -> Response:
         """Handle the message, return a string which is your response.
         This is an async function so it can interact with the Discord API if it needs to.
         If confidence is more than zero, and the message is empty, `processMessage` may be called
@@ -166,7 +168,7 @@ class Module:
         """
         pass
 
-    async def process_raw_reaction_event(self, event):
+    async def process_raw_reaction_event(self, event) -> Response:
         """event is a discord.RawReactionActionEvent object
         Use this to allow modules to handle adding and removing reactions on messages"""
         return Response()
@@ -186,19 +188,20 @@ class Module:
 
     @staticmethod
     def create_integration_test(
-        question="",
+        test_message="",
         expected_response="",
         expected_regex=None,
         test_wait_time=0.5,
         minimum_allowed_similarity=1.0,
-    ):
+    ) -> IntegrationTest:
         return {
-            "question": question,
+            "test_message": test_message,
             "expected_response": expected_response,
             "received_response": "NEVER RECEIVED A RESPONSE",
             "expected_regex": expected_regex,
             "test_wait_time": test_wait_time,
             "minimum_allowed_similarity": minimum_allowed_similarity,
+            "result": None,
         }
 
     @staticmethod
@@ -219,9 +222,9 @@ class Module:
         text = message.clean_content
         if self.utils.test_mode:
             if stampy_is_author(message):
-                if TEST_QUESTION_PREFIX in message.clean_content:
+                if TEST_MESSAGE_PREFIX in message.clean_content:
                     text = "stampy " + self.clean_test_prefixes(
-                        message, TEST_QUESTION_PREFIX
+                        message, TEST_MESSAGE_PREFIX
                     )
         at_me = is_stampy_mentioned(message)
         re_at_me = re.compile(r"^@?[Ss]tampy\W? ")
@@ -229,9 +232,9 @@ class Module:
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
             text = text.partition(" ")[2]
-        elif re.search(",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
+        elif re.search(r",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
             text = re.sub(
-                ",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", "\g<punctuation>", text
+                r",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", r"\g<punctuation>", text
             )
             at_me = True
 
@@ -284,3 +287,21 @@ class Module:
                 string = string.replace(tag, "{notfound:%s}" % key, 1)
 
         return string
+
+    @property
+    def class_name(self) -> str:
+        """Name of the class inheriting from Module"""
+        if self.__class__ is Module:
+            return "BaseModule"
+        return self.__class__.__name__
+
+class IntegrationTest(TypedDict):
+    """Integration test for testing Stampy modules"""
+
+    test_message: str
+    expected_response: str
+    received_response: str
+    expected_regex: Optional[str]
+    test_wait_time: float
+    minimum_allowed_similarity: float
+    result: Literal["PASSED", "FAILED", None]

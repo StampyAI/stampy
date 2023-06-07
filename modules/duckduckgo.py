@@ -20,18 +20,14 @@ class DuckDuckGo(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message and return a response if this module can handle it."""
-        text = self.is_at_me(message)
-        if text is False:
-            return Response()
-        
-        if text.endswith("?"):
-            return Response(
-                confidence=6,
-                callback=self.ask,
-                args=[text],
-                why="It's a question, we might be able to answer it",
-            )
-        else:
+        if text := self.is_at_me(message):
+            if text.endswith("?"):
+                return Response(
+                    confidence=6,
+                    callback=self.ask,
+                    args=[text],
+                    why="It's a question, we might be able to answer it",
+                )
             return Response(
                 confidence=2,
                 callback=self.ask,

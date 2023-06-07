@@ -13,7 +13,6 @@ class VideoSearch(Module):
 
     def __init__(self):
         super().__init__()
-        self.class_name = "VideoSearch"
         self.re_search = re.compile(
             r"""((([Ww]hich|[Ww]hat) vid(eo)? (is|was) (it|that))|
 ?([Ii]n )?([Ww]hich|[Ww]hat)('?s| is| was| are| were)? ?(it|that|the|they|those)? ?vid(eo)?s? ?(where|in which|which)?|
@@ -177,10 +176,10 @@ class VideoSearch(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="Which video did rob play civilization V in?",
+                test_message="Which video did rob play civilization V in?",
                 expected_regex="Superintelligence Mod for Civilization V+",
             ),
             self.create_integration_test(
-                question="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
+                test_message="which video is trash?", expected_response=self.NOT_FOUND_MESSAGE,
             ),
         ]

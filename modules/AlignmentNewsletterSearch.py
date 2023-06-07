@@ -108,10 +108,6 @@ class AlignmentNewsletterSearch(Module):
     A module that searches the Alignment Newsletter database for relevant papers/articles etc.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.class_name = self.__class__.__name__
-
     def process_message(self, message: ServiceMessage) -> Response:
         """Process a message and return a response if this module can handle it."""
         text = self.is_at_me(message)
@@ -333,11 +329,11 @@ class AlignmentNewsletterSearch(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                question="paper search bugs features",
+                test_message="paper search bugs features",
                 expected_regex=r"This seems relevant:\n.?Adversarial Examples Are Not Bugs, They Are Features",
             ),
             self.create_integration_test(
-                question="blog post search: thisisnotarealword",
+                test_message="blog post search: thisisnotarealword",
                 expected_response="No matches found in the Alignment Newsletter Database",
             ),
         ]

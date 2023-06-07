@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-import requests
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 from codaio import Cell, Row
+
 
 DEFAULT_DATE = datetime(1, 1, 1, 0)
 
@@ -18,24 +18,20 @@ def adjust_date(date_str: str) -> datetime:
     return datetime.fromisoformat(date_str.split("T")[0])
 
 
-def make_post_question_message(question_row: QuestionRow) -> str:
-    """Make question message from questions DataFrame row
-
-    <title>\n
-    <url>
-    """
-    return question_row["title"] + "\n" + question_row["url"]
-
-
 def parse_question_row(row: Row) -> QuestionRow:
-    """Parse a raw row from "All answers" table"""
+    """Parse a raw row from
+    [All answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)
+    """
     row_dict = row.to_dict()
     title = row_dict["Edit Answer"]
     url = row_dict["Link"]
     status = row_dict["Status"]
     # remove empty strings
-    tags = [tag for tag in row_dict["Tags"].split(",") if row_dict["Tags"]]
+    tags = [tag for tag in row_dict["Tags"].split(",") if tag]
     last_asked_on_discord = adjust_date(row_dict["Last Asked On Discord"])
+    alternate_phrasings = [
+        alt for alt in row_dict["Alternate Phrasings"].split(",") if alt
+    ]
     return {
         "id": row.id,
         "title": title,
@@ -43,6 +39,7 @@ def parse_question_row(row: Row) -> QuestionRow:
         "status": status,
         "tags": tags,
         "last_asked_on_discord": last_asked_on_discord,
+        "alternate_phrasings": alternate_phrasings,
         "row": row,
     }
 
@@ -58,7 +55,7 @@ def make_updated_cells(col2val: dict[str, Any]) -> list[Cell]:
 
 
 class QuestionRow(TypedDict):
-    """Dict representing one row parsed from coda "All Answers" table"""
+    """Dictionary representing one row parsed from coda "All Answers" table"""
 
     id: str
     title: str
@@ -66,8 +63,27 @@ class QuestionRow(TypedDict):
     status: str
     tags: list[str]
     last_asked_on_discord: datetime
+    alternate_phrasings: list[str]
     row: Row
 
 
-def request_succesful(response: requests.Response) -> bool:
-    return response.status_code in (200, 202)
+# Status of question in coda table
+QuestionStatus = Literal[
+    "Bulletpoint sketch",
+    "Duplicate",
+    "In progress",
+    "In review",
+    "Live on site",
+    "Marked for deletion",
+    "Not started",
+    "Uncategorized",
+    "Withdrawn",
+]
+
+QUESTION_STATUS_ALIASES: dict[str, QuestionStatus] = {
+    "bulletpoint": "Bulletpoint sketch",
+    "del": "Marked for deletion",
+    "deleted": "Marked for deletion",
+    "duplicated": "Duplicate",
+    "published": "Live on site",
+}

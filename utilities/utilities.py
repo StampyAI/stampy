@@ -11,15 +11,25 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    Optional,
+    Union,
+    cast,
+)
 
+import pandas as pd
 import psutil
 import discord
 from git.repo import Repo
 from structlog import get_logger
 
 from config import (
-    TEST_QUESTION_PREFIX,
+    TEST_MESSAGE_PREFIX,
     TEST_RESPONSE_PREFIX,
     database_path,
     discord_guild,
@@ -97,8 +107,12 @@ class Utilities:
         # stamp counts
         self.scores: list[float] = []
 
+        # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
+
+        # testing
+        self.message_prefix: str = ""
 
     @staticmethod
     def get_instance() -> Utilities:
@@ -121,7 +135,7 @@ class Utilities:
             return True
         return False
 
-    def is_stampy_mentioned(self, message: DiscordMessage) -> bool:
+    def is_stampy_mentioned(self, message: ServiceMessage) -> bool:
         for user in message.mentions:
             if self.is_stampy(user):
                 return True
@@ -351,7 +365,7 @@ def is_test_response(text: str) -> bool:
 
 
 def is_test_question(text: str) -> bool:
-    return contains_prefix_with_number(text, TEST_QUESTION_PREFIX)
+    return contains_prefix_with_number(text, TEST_MESSAGE_PREFIX)
 
 
 def is_test_message(text: str) -> bool:
@@ -366,13 +380,6 @@ def randbool(p: float) -> bool:
 
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
-
-
-def is_bot_dev(user: ServiceUser):
-    if user.id == rob_id:
-        return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id)
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
@@ -405,9 +412,30 @@ def is_from_editor(message: ServiceMessage) -> bool:
     return is_editor(message.author)
 
 
+def is_bot_dev(user: ServiceUser) -> bool:
+    if user.id == rob_id:
+        return True
+    roles = getattr(user, "roles", [])
+    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+
+
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
     return any(role.name == "editor" for role in user.roles)
+
+
+DiscordRole = Literal["reviewer", "editor", "bot dev"]
+
+
+def has_permissions(
+    user: ServiceUser,
+    roles: tuple[DiscordRole, ...] = (
+        "reviewer",
+        "editor",
+        "bot dev",
+    ),
+) -> bool:
+    return any(role.name in roles for role in user.roles)
 
 
 def is_in_testing_mode() -> bool:
@@ -419,9 +447,9 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
     Disregards spaces, and punctuation.
     """
-    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
-        container.casefold().replace(" ", "")
-    )
+    contained = remove_punct(contained.casefold().replace(" ", ""))
+    container = remove_punct(container.casefold().replace(" ", ""))
+    return contained in container
 
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
@@ -436,6 +464,41 @@ def remove_punct(s: str) -> str:
     for p in punctuation:
         s = s.replace(p, "")
     return s
+
+
+def limit_text(
+    text: str,
+    limit: int,
+    format_fail_message: Callable[[int], str] = (
+        lambda x: f"Cut {x} characters from response\n"
+    ),
+) -> tuple[bool, str]:
+    text_length = len(text)
+    fail_length = text_length - limit
+
+    if text_length >= limit:
+        return True, format_fail_message(fail_length) + text[:limit]
+    return False, text
+
+
+def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
+    inds = df.index.tolist()
+    shuffled_inds = random.sample(inds, len(inds))
+    return df.loc[shuffled_inds]
+
+
+def mask_quoted_text(text: str) -> str:
+    """Mask everything in text between paired double quotes with zero-width spaces"""
+    quote_inds: list[tuple[int, int]] = []
+    i = 0
+    while text.count('"', i) > 1:
+        start = text.find('"', i)
+        end = text.find('"', start + 1)
+        quote_inds.append((start, end + 1))
+        i = end + 1
+    for start, end in quote_inds:
+        text = text[:start] + (end - start) * "\ufeff" + text[end:]
+    return text
 
 
 class UtilsTests:

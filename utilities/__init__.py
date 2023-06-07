@@ -11,5 +11,6 @@ from utilities.utilities import (
     is_test_message,
     get_user_handle,
     is_from_reviewer,
-    is_in_testing_mode
+    is_in_testing_mode,
+    limit_text,
 )

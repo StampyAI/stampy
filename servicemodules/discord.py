@@ -11,6 +11,7 @@ from utilities import (
     is_test_message,
     is_test_question,
     get_git_branch_info,
+    limit_text,
 )
 from utilities.discordutils import DiscordMessage, DiscordUser
 from structlog import get_logger
@@ -23,13 +24,30 @@ from config import (
     discord_token,
     TEST_RESPONSE_PREFIX,
     maximum_recursion_depth,
+    youtube_api_key
 )
-from servicemodules.discordConstants import stampy_dev_priv_channel_id, automatic_question_channel_id
+from servicemodules import discordConstants
+from servicemodules.serviceConstants import Services, openai_channel_ids
 from api.youtube import YoutubeAPI
 
 log = get_logger()
-youtube_api = YoutubeAPI.get_instance()
 
+if youtube_api_key:
+    youtube_api = YoutubeAPI.get_instance()
+else:
+    youtube_api = None
+
+# An appropriate max for how much text we should be able to give to Discord.
+# Discord messages can be 2000 max, so 20000 allows for 10 max length messages
+discordLimit = 20000
+# TODO: store long responses temporarily for viewing outside of discord
+def limit_text_and_notify(response, why_traceback) -> str:
+    if isinstance(response.text, str):
+        wastrimmed = False
+        wastrimmed, textToReturn = limit_text(response.text, discordLimit)
+        if wastrimmed:
+            why_traceback.append(f"I had to trim the output from {response.module}")
+    return textToReturn
 
 class DiscordHandler:
     def __init__(self):
@@ -57,9 +75,11 @@ class DiscordHandler:
 
             log.info(self.class_name, msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id))
 
+            self.test_channel_constants()
+
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(self.class_name, guild_members=members)
-            await self.utils.client.get_channel(int(stampy_dev_priv_channel_id)).send(
+            await self.utils.client.get_channel(int(discordConstants.stampy_dev_priv_channel_id)).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
 
@@ -96,7 +116,7 @@ class DiscordHandler:
                 message_content=message.content,
             )
 
-            if hasattr(message.channel, "id") and str(message.channel.id) == automatic_question_channel_id:
+            if hasattr(message.channel, "id") and str(message.channel.id) == discordConstants.automatic_question_channel_id:
                 log.info(self.class_name, msg="the latest general discord channel message was not from stampy")
                 self.utils.last_message_was_youtube_question = False
 
@@ -117,6 +137,9 @@ class DiscordHandler:
                         response.confidence -= 0.001
 
                     responses.append(response)
+
+                    response.text = limit_text_and_notify(response, why_traceback)
+
                     why_traceback.append(f"I asked the {module} module, and it responded with: {response}")
 
             for i in range(maximum_recursion_depth):  # don't hang if infinite regress
@@ -159,6 +182,7 @@ class DiscordHandler:
                                 new_response = top_response.callback(*top_response.args, **top_response.kwargs)
 
                         new_response.module = top_response.module
+                        new_response.text = limit_text_and_notify(new_response, why_traceback)
                         responses.append(new_response)
                         why_traceback.append(f"The callback responded with: {new_response}")
                     else:
@@ -239,12 +263,13 @@ class DiscordHandler:
             # this is needed for later checks, which should all be replaced with rate_limit calls (TODO)
             now = datetime.now(timezone.utc)
 
-            # check for new youtube comments
-            new_comments = youtube_api.check_for_new_youtube_comments()
-            if new_comments:
-                for comment in new_comments:
-                    if "?" in comment["text"]:
-                        youtube_api.add_youtube_question(comment)
+            if youtube_api:
+                # check for new youtube comments
+                new_comments = youtube_api.check_for_new_youtube_comments()
+                if new_comments:
+                    for comment in new_comments:
+                        if "?" in comment["text"]:
+                            youtube_api.add_youtube_question(comment)
  
         @self.utils.client.event
         async def on_raw_reaction_add(payload: discord.raw_models.RawReactionActionEvent) -> None:
@@ -282,3 +307,13 @@ class DiscordHandler:
         t.name = "Discord Thread"
         t.start()
         return t
+
+    def test_channel_constants(self):
+        channel_ids = [getattr(discordConstants, name)
+                       for name in dir(discordConstants)
+                       if name.endswith('channel_id')
+                       or name.endswith('category_id')]
+        for channel_id in channel_ids:
+            if int(channel_id) > 0 and self.utils.client.get_channel(int(channel_id)) is None:
+                log.warning(self.class_name, msg=f"Could not find a channel with id {channel_id}")
+
