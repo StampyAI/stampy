@@ -34,6 +34,7 @@ class DuckDuckGo(Module):
                 args=[text],
                 why="It's not a question but we might be able to look it up",
             )
+        return Response()
 
     def __str__(self):
         return "DuckDuckGo"
