@@ -43,7 +43,11 @@ class CodaAPI:
     DOC_ID = (
         "bmMz5rbOHi" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
     )
-    ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
+    ALL_ANSWERS_TABLE_ID = (
+        "table-3-4uDMgxyI"
+        if os.getenv("ENVIRONMENT_TYPE") == "development"
+        else "table-YvPEyAXl8a"  # "table-WZF5uzB-Lj"
+    )
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     TAGS_GRID_ID = "grid-4uOTjz1Rkz"
