@@ -68,9 +68,8 @@ class DiscordMessage(ServiceMessage):
         self.mentions: list[DiscordUser]
         self._parse_discord_mentions(msg.mentions)
         self.reference = None
-        if msg.reference:
-            if msg.reference.resolved:
-                self.reference = DiscordMessage(msg.reference.resolved) if isinstance(msg.reference.resolved, discord.message.Message) else None
+        if msg.reference and msg.reference.resolved:
+            self.reference = DiscordMessage(msg.reference.resolved) if isinstance(msg.reference.resolved, discord.message.Message) else None
         self.reactions = msg.reactions  # We need reactions for recalculating stamps from history
         self.author: DiscordUser
         if guild is None:
