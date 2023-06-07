@@ -14,10 +14,6 @@ class DuckDuckGo(Module):
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
     words = re.compile("[A-Za-z]+")
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.class_name = self.__class__.__name__
-
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message and return a response if this module can handle it."""
         if text := self.is_at_me(message):
