@@ -8,3 +8,4 @@ services:
       - "./local:/stampydata"
     environment:
       - "FACTOID_DATABASE_PATH=/stampydata/Factoids.db"
+      - "STAMPY_RUN_TESTS=${STAMPY_RUN_TESTS}"

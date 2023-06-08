@@ -15,3 +15,5 @@ structlog
 transformers
 pandas
 codaio
+helicone
+mypy

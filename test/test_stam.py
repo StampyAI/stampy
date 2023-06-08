@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
+from config import enabled_modules
 from stam import get_stampy_modules
-
 
 class TestStam(TestCase):
     def test_get_stampy_modules(self):
