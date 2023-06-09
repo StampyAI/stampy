@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 import os
 from typing import cast, get_args, Optional, TYPE_CHECKING
 
-from config import ENVIRONMENT_TYPE
 from codaio import Coda, Document, Row
 import pandas as pd
 from structlog import get_logger
@@ -18,7 +17,8 @@ from api.utilities.coda_utils import (
     QuestionStatus,
     DEFAULT_DATE,
 )
-from utilities import is_in_testing_mode, Utilities
+from config import ENVIRONMENT_TYPE
+from utilities import is_in_testing_mode
 from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
