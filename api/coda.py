@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import os
 from typing import cast, get_args, Optional, TYPE_CHECKING
 
+from config import ENVIRONMENT_TYPE
 from codaio import Coda, Document, Row
 import pandas as pd
 from structlog import get_logger
@@ -17,7 +18,7 @@ from api.utilities.coda_utils import (
     QuestionStatus,
     DEFAULT_DATE,
 )
-from utilities import is_in_testing_mode
+from utilities import is_in_testing_mode, Utilities
 from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
@@ -40,14 +41,8 @@ class CodaAPI:
 
     # Constants
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    DOC_ID = (
-        "bmMz5rbOHi" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
-    )
-    ALL_ANSWERS_TABLE_ID = (
-        "table-3-4uDMgxyI"
-        if os.getenv("ENVIRONMENT_TYPE") == "development"
-        else "table-YvPEyAXl8a"  # "table-WZF5uzB-Lj"
-    )
+    DOC_ID = {"development": "bmMz5rbOHi", "production": "fau7sl2hmG"}[ENVIRONMENT_TYPE]
+    ALL_ANSWERS_TABLE_ID = {"development": "table-3-4uDMgxyI","production": "table-YvPEyAXl8a"}[ENVIRONMENT_TYPE]  # fmt:skip
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     TAGS_GRID_ID = "grid-4uOTjz1Rkz"
