@@ -125,6 +125,7 @@ paid_service_channel_ids: frozenset[int]
 paid_service_for_all: bool
 # if above is false, who gets to use paid services?
 paid_service_whitelist_role_ids: frozenset[int]
+gpt4: bool
 gpt4_for_all: bool
 gpt4_whitelist_role_ids: frozenset[int]
 # load and use helicone API base instead of OpenAI
@@ -155,6 +156,7 @@ if robmiles_defaults:
     paid_service_all_channels = True
     paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
     paid_service_whitelist_role_ids = frozenset()
+    gpt4 = getenv_bool("GPT4")
     gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
     gpt4_whitelist_role_ids = bot_vip_ids | getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
@@ -185,6 +187,7 @@ else:
     paid_service_for_all = getenv_bool("PAID_SERVICE_FOR_ALL")
     # if above is false, who gets to use paid services?
     paid_service_whitelist_role_ids = getenv_unique_set("PAID_SERVICE_ROLE_IDS", frozenset())
+    gpt4 = getenv_bool("GPT4")
     gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
     gpt4_whitelist_role_ids = bot_vip_ids | getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
