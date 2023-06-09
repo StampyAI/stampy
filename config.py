@@ -1,8 +1,8 @@
-from structlog import get_logger
 import os
-from typing import Optional
+from typing import Optional, overload
 
 import dotenv
+from structlog import get_logger
 
 log_type = "stam.py"
 log = get_logger()
@@ -12,15 +12,26 @@ NOT_PROVIDED = "__NOT_PROVIDED__"
 
 module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 
+
 def get_all_modules() -> set[str]:
     modules = []
     for file_name in os.listdir(module_dir):
-        if file_name.endswith('.py') and file_name != '__init__.py':
+        if file_name.endswith(".py") and file_name != "__init__.py":
             modules.append(file_name[:-3])
 
     return set(modules)
 
+
 All_Stampy_Modules = get_all_modules()
+# fmt:off
+@overload
+def getenv(env_var: str) -> str:...
+@overload
+def getenv(env_var: str, default: None) -> Optional[str]:...
+@overload
+def getenv(env_var: str, default: str) -> str:...
+# fmt:on
+
 
 def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
     """
@@ -34,13 +45,15 @@ def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]
         )
     return value
 
+
 def getenv_unique_set(var_name, default="EMPTY_SET"):
     l = getenv(var_name, default=default).split(" ")
     if l == [default]:
         return default
     s = set(l)
-    assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
+    assert len(l) == len(s), f"{var_name} has duplicate members! {l}"
     return s
+
 
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
