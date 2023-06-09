@@ -15,7 +15,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Iterable,
     Literal,
     Optional,
     Union,
@@ -43,7 +42,7 @@ from servicemodules.discordConstants import (
     bot_dev_role_id,
 )
 from servicemodules.serviceConstants import Services
-from utilities.discordutils import DiscordMessage, DiscordUser
+from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage, ServiceUser
 
 if TYPE_CHECKING:
