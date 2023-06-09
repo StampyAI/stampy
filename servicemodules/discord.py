@@ -297,7 +297,7 @@ class DiscordHandler:
             for module in self.modules:
                 await module.process_raw_reaction_event(payload)
 
-    def start(self, event: threading.Event) -> threading.Timer:
+    def start(self, event: threading.Event) -> threading.Thread:
         try:
             # This line is deprecated in 3.10, but doesn't work otherwise.
             loop = asyncio.get_event_loop()

@@ -1,6 +1,6 @@
 from structlog import get_logger
 import os
-from typing import Optional
+from typing import Optional, Any, Union
 
 import dotenv
 
@@ -22,7 +22,7 @@ def get_all_modules() -> frozenset[str]:
 
 All_Stampy_Modules = get_all_modules()
 
-def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
+def getenv(env_var: str, default: Any = NOT_PROVIDED) -> Optional[Any]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -138,7 +138,7 @@ else:
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
     # devs have less but can do maintainence like reboot
     bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
-    bot_dev_ids = bot_vip_ids.union(getenv_unique_set("BOT_DEV_IDS", frozenset()))
+    bot_dev_ids = bot_vip_ids | getenv_unique_set("BOT_DEV_IDS", frozenset())
     # control channel is where maintainence commands are issued
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
     # private channel is where stampy logging gets printed
