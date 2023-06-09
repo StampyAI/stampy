@@ -1,7 +1,8 @@
 from servicemodules.serviceConstants import Services
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional, Union
+import discord
 
 @dataclass
 class ServiceRole:
@@ -103,8 +104,9 @@ class ServiceChannel:
         """
         return hash(self.id) >> 22
 
-    async def send(self, content):
-        raise NotImplementedError()
+    SendReturnType = Union[discord.message.Message, None]
+
+    async def send(self, *args, **kwargs) -> SendReturnType: ...
 
 
 @dataclass

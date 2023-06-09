@@ -1,13 +1,14 @@
+from collections.abc import Coroutine
 from functools import cache
 from servicemodules.serviceConstants import Services
 from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
-from typing import Any
+from typing import Any, Optional
 
 
 class SlackUtilities:
     __instance = None
     client = None
-    user = None
+    user: Optional["SlackUser"] = None
 
     @staticmethod
     def get_instance():
@@ -114,7 +115,8 @@ class SlackChannel(ServiceChannel):
         super().__init__(name, channel_id, server)
         self.channel_type = channel_type
 
-    async def send(self, data: str):
+    async def send(self, *args, **kwargs) -> None:
+        data = kwargs["data"] if "data" in kwargs else args[0]
         utils.client.web_client.api_call(
             api_method="chat.postMessage", params={"channel": self.id, "text": data}
         )
@@ -133,6 +135,8 @@ class SlackMessage(ServiceMessage):
         else:
             id = msg["client_msg_id"]
         super().__init__(str(id), msg["text"], SlackUser(msg["user"]), channel, service)
+        self.author: SlackUser
+        self.mentions: list[SlackUser] = []
         self._parse_mentions()
         self.clean_content = self.clean_content.replace("<!here>", "@here")
         self.clean_content = self.clean_content.replace("<!channel>", "@channel")

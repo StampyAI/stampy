@@ -4,6 +4,7 @@ from urllib.parse import quote_plus
 from urllib.request import urlopen
 
 from modules.module import Module, Response
+from utilities.serviceutils import ServiceMessage
 
 
 class DuckDuckGo(Module):
@@ -13,7 +14,8 @@ class DuckDuckGo(Module):
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
     words = re.compile("[A-Za-z]+")
 
-    def process_message(self, message) -> Response:
+    def process_message(self, message: ServiceMessage) -> Response:
+        """Process message and return a response if this module can handle it."""
         if text := self.is_at_me(message):
             if text.endswith("?"):
                 return Response(
@@ -46,10 +48,15 @@ class DuckDuckGo(Module):
         return max_confidence
 
     def ask(self, question: str) -> Response:
-        """Query DuckDuckGo with that question"""
+        """Ask DuckDuckGo a question and return a response."""
+
+        # strip out question mark and common 'question phrases', e.g. 'who are',
+        # 'what is', 'tell me about'
         q = question.lower().strip().strip("?")
         q = re.sub(r"w(hat|ho)('s|'re| is| are| was| were) ?", "", q)
-        q = re.sub(r"(what do you know||(what )?(can you)? ?tell me) about", "", q)
+        q = re.sub(r"(what do you know|(what )?(can you)? ?tell me) about", "", q)
+
+        # create url which searches DuckDuckGo for the question
         url = f"https://api.duckduckgo.com/?q={quote_plus(q)}&format=json&nohtml=1&skip_disambig=1"
         try:
             data = urlopen(url).read()
@@ -94,3 +101,16 @@ class DuckDuckGo(Module):
             self.log.error(self.class_name, error=e)
 
         return Response()
+
+    @property
+    def test_cases(self):
+        return [
+            self.create_integration_test(
+                question="what is linear algebra?",
+                expected_regex="Linear algebra is the branch of mathematics concerning linear equations",
+            ),
+            self.create_integration_test(
+                question="what is deep learning?",
+                expected_regex="Deep learning is part of a broader family of machine learning method",
+            ),
+        ]
