@@ -1,5 +1,5 @@
 import os
-from typing import Optional, overload
+from typing import Literal, Optional, cast, overload
 
 import dotenv
 from structlog import get_logger
@@ -81,7 +81,9 @@ CONFUSED_RESPONSE = "I don't understand"
 
 prod_local_path = "/home/rob/stampy.local"
 
-ENVIRONMENT_TYPE = getenv("ENVIRONMENT_TYPE")
+ENVIRONMENT_TYPE = cast(
+    Literal["development", "production"], getenv("ENVIRONMENT_TYPE")
+)
 acceptable_environment_types = ("production", "development")
 assert (
     ENVIRONMENT_TYPE in acceptable_environment_types
