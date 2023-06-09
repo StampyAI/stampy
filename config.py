@@ -1,10 +1,19 @@
 import os
-from typing import Optional
+from typing import Optional, overload
 
 import dotenv
 
 dotenv.load_dotenv()
 NOT_PROVIDED = "__NOT_PROVIDED__"
+
+# fmt:off
+@overload
+def getenv(env_var: str) -> str:...
+@overload
+def getenv(env_var: str, default: None) -> Optional[str]:...
+@overload
+def getenv(env_var: str, default: str) -> str:...
+# fmt:on
 
 
 def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
