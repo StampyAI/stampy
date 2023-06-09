@@ -53,6 +53,7 @@ class ChatGPTModule(Module):
             return Response()
 
         if not can_use_paid_service(message.author):
+            self.log.info(self.class_name, warning="cannot use paid service") # DEBUG
             return Response()
 
         return Response(
