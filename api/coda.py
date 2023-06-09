@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import os
 from typing import cast, get_args, Optional, TYPE_CHECKING
 
+from config import ENVIRONMENT_TYPE
 from codaio import Coda, Document, Row
 import pandas as pd
 from structlog import get_logger
