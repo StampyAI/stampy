@@ -146,7 +146,7 @@ else:
     can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
-    bot_reboot = getenv_bool("BOT_REBOOT")
+    bot_reboot = getenv("BOT_REBOOT", default=False)
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
     # if above is false, where can paid services be used?
     paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
