@@ -19,6 +19,7 @@ get_secret "SLACK_BOT_TOKEN" "~/.slackbottoken";
 
 if [ "${STAMPY_RUN_TESTS:-nil}" != "nil" ]; then
     pytest;
+    python -m unittest;
     mypy -m stam;
 else
     while true; do
