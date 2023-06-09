@@ -1,6 +1,6 @@
 from structlog import get_logger
 import os
-from typing import Optional, Union, Any
+from typing import Optional
 
 import dotenv
 
@@ -22,7 +22,7 @@ def get_all_modules() -> frozenset[str]:
 
 All_Stampy_Modules = get_all_modules()
 
-def getenv(env_var: str, default: Any = NOT_PROVIDED, makeInt: bool = False) -> Optional[Union[str, int]]:
+def getenv(env_var: str, default: Optional[str] = NOT_PROVIDED) -> Optional[str]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -32,23 +32,17 @@ def getenv(env_var: str, default: Any = NOT_PROVIDED, makeInt: bool = False) -> 
         raise Exception(
             f"Environment Variable '{env_var}' not set and no default provided"
         )
-    if makeInt and value not in (None, False):
-        return int(value)
-    else:
-        return value
+    return value
 
 def getenv_bool(env_var: str) -> bool:
     e = getenv(env_var, default="UNDEFINED")
     return e != "UNDEFINED"
 
-def getenv_unique_set(var_name: str, default: Any = frozenset(), makeInt: bool = True) -> frozenset:
-    l = getenv(var_name, default="EMPTY_SET", makeInt=False).split(" ")
+def getenv_unique_set(var_name, default=frozenset()) -> frozenset[str]:
+    l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
         return default
-    if makeInt:
-        s = frozenset(map(int, l))
-    else:
-        s = frozenset(l)
+    s = frozenset(l)
     assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
     return s
 
@@ -97,60 +91,32 @@ stamp_scores_csv_file_path = {
 
 # list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
 # if STAMPY_MODULES is unset, enable everything found in ./modules
-enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL", makeInt=False)
+enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL")
 if enabled_modules_var == "ALL":
     enabled_modules = All_Stampy_Modules
     log.info("STAMPY_MODULES unset, loading all modules indiscriminately")
 else:
     enabled_modules = enabled_modules_var
 
-discord_guild: int
-factoid_database_path: str # Give Factoid.py persistent memory
-# VIPs have full access + special permission
-bot_vip_ids: frozenset[int]
-# devs have less but can do maintenance like reboot
-bot_dev_roles: frozenset[int]
-bot_dev_ids: frozenset[int]
-# control channel is where maintenance commands are issued
-bot_control_channel_ids: frozenset[int]
-# private channel is where stampy logging gets printed
-bot_private_channel_id: int
-can_invite_role_id: int
-member_role_id: int
-# bot_reboot is how stampy reboots himself
-bot_reboot: Union[bool, str]
-paid_service_all_channels: bool
-# if above is false, where can paid services be used?
-paid_service_channel_ids: frozenset[int]
-paid_service_for_all: bool
-# if above is false, who gets to use paid services?
-paid_service_whitelist_role_ids: frozenset[int]
-gpt4: bool
-gpt4_for_all: bool
-gpt4_whitelist_role_ids: frozenset[int]
-# load and use helicone API base instead of OpenAI
-use_helicone: bool
-llm_prompt: str
-
 robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
 if robmiles_defaults:
     # use robmiles server defaults
     print("Using settings for the Rob Miles Discord server")
-    discord_guild = {"production": 677546901339504640, "development": 783123903382814720}[ENVIRONMENT_TYPE]
+    discord_guild = {"production": "677546901339504640", "development": "783123903382814720"}[ENVIRONMENT_TYPE]
     factoid_database_path = "./factoids.db"
-    bot_vip_ids = frozenset([181142785259208704])
-    bot_dev_roles = frozenset({"production": 736247946676535438, "development": 817518998148087858}[ENVIRONMENT_TYPE])
+    bot_vip_ids = frozenset(["181142785259208704"])
+    bot_dev_roles = frozenset([{"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]])
     bot_dev_ids = bot_vip_ids
     bot_control_channel_ids = frozenset([
-        {"production": -99, "development": 803448149946662923}[ENVIRONMENT_TYPE],
-        {"production": 736247813616304159, "development": 817518389848309760}[ENVIRONMENT_TYPE],
-        {"production": 758062805810282526, "development": 817518145472299009}[ENVIRONMENT_TYPE],
-        {"production": 808138366330994688, "development": 817518440192409621}[ENVIRONMENT_TYPE],
-        {"production": -1, "development": 736241264856662038}[ENVIRONMENT_TYPE]
+        {"production": "-99", "development": "803448149946662923"}[ENVIRONMENT_TYPE],
+        {"production": "736247813616304159", "development": "817518389848309760"}[ENVIRONMENT_TYPE],
+        {"production": "758062805810282526", "development": "817518145472299009"}[ENVIRONMENT_TYPE],
+        {"production": "808138366330994688", "development": "817518440192409621"}[ENVIRONMENT_TYPE],
+        {"production": "-1", "development": "736241264856662038"}[ENVIRONMENT_TYPE]
         ])
-    bot_private_channel_id = {"production": 736247813616304159, "development": 817518389848309760}[ENVIRONMENT_TYPE]
-    can_invite_role_id = {"production": 791424708973035540, "development": -99}[ENVIRONMENT_TYPE]
-    member_role_id = {"production": 945033781818040391, "development": 947463614841901117}[ENVIRONMENT_TYPE]
+    bot_private_channel_id = {"production": "736247813616304159", "development": "817518389848309760"}[ENVIRONMENT_TYPE]
+    can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
+    member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
     bot_reboot = False
     paid_service_for_all = True
     paid_service_all_channels = True
@@ -166,7 +132,7 @@ if robmiles_defaults:
     )
 else:
     # get from dotenv
-    discord_guild = getenv("DISCORD_GUILD", makeInt=True)
+    discord_guild = getenv("DISCORD_GUILD")
     factoid_database_path = getenv("FACTOID_DATABASE_PATH", "./database/Factoids.db")
     # VIPs have full access + special permission
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
@@ -178,7 +144,7 @@ else:
     # private channel is where stampy logging gets printed
     bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", default=None)
     can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
-    member_role_id = getenv("MEMBER_ROLE_ID", default=None, makeInt=True)
+    member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
     bot_reboot = getenv_bool("BOT_REBOOT")
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
