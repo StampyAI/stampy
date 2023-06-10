@@ -24,3 +24,6 @@ dependencies:
       - transformers
       - codaio
       - helicone
+      - mypy
+      - pandas-stubs
+      - types-psutil

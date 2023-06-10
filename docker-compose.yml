@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  stampy:
+    stop_signal: SIGKILL # won't respond to anything else
+    build:
+      dockerfile: ./Dockerfile
+    volumes:
+      - "./local:/stampydata"
+    environment:
+      - "FACTOID_DATABASE_PATH=/stampydata/Factoids.db"
+      - "STAMPY_RUN_TESTS=${STAMPY_RUN_TESTS}"

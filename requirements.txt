@@ -16,3 +16,6 @@ transformers
 pandas
 codaio
 helicone
+mypy
+pandas-stubs
+types-psutil
