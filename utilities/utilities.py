@@ -15,7 +15,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Iterable,
     Literal,
     Optional,
     Union,
@@ -43,7 +42,7 @@ from servicemodules.discordConstants import (
     bot_dev_role_id,
 )
 from servicemodules.serviceConstants import Services
-from utilities.discordutils import DiscordMessage, DiscordUser
+from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage, ServiceUser
 
 if TYPE_CHECKING:
@@ -499,16 +498,3 @@ def mask_quoted_text(text: str) -> str:
     for start, end in quote_inds:
         text = text[:start] + (end - start) * "\ufeff" + text[end:]
     return text
-
-
-class UtilsTests:
-    def test_split_message_for_discord(self):
-        test_out = len(
-            Utilities.split_message_for_discord(
-                "123456789012345\n1234567890123456789\n10\n10\n10\n01234567890123456789",
-                max_length=20,
-            )
-        )
-        self.assertEqual(len(test_out), 4)
-        for chunk in test_out:
-            self.assertLessEqual(len(chunk), 20)
