@@ -130,8 +130,7 @@ class DiscordHandler:
                     response = module.process_message(message)
                 except Exception as e:
                     why_traceback.append(f"There was a(n) {e} asking the {module} module!")
-                    log.error(self.class_name, error=f"Caught error in {module} module!")
-                    await self.utils.log_exception(e)
+                    await self.utils.log_exception(e, problem_source=f"{self.class_name} {module}")
                 if response:
                     response.module = module  # tag it with the module it came from, for future reference
 

@@ -256,11 +256,21 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    async def log_exception(self, e: Exception) -> None:
+    async def log_exception(self, e: Exception, problem_source: Optional[str] = None) -> None:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
         error_message = "".join(parts)
+        if problem_source:
+            log.error(
+                self.class_name,
+                error=f"Caught Exception from {problem_source}: {e}\n\n{error_message}"
+            )
+        else:
+            log.error(
+                self.class_name,
+                error=f"Caught Exception: {e}\n\n{error_message}"
+            )
         await self.log_error(error_message)
 
     async def log_error(self, error_message: str) -> None:
