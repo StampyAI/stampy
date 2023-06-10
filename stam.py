@@ -18,7 +18,7 @@ log = get_logger()
 def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
-    skipped_modules = All_Stampy_Modules.copy()
+    skipped_modules = set(All_Stampy_Modules)
     for file_title in enabled_modules:
         assert (file_title in All_Stampy_Modules), f"Module {file_title} enabled but doesn't exist!"
 

@@ -8,6 +8,7 @@ on:
       - '*'
 env:
   ENVIRONMENT_TYPE: 'development'
+  ROBMILES_DEFAULTS: 'TRUE'
   DISCORD_TOKEN: 'testing'
   DISCORD_GUILD: 'testing'
   YOUTUBE_API_KEY: 'testing'
