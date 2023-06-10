@@ -7,8 +7,8 @@ from config import (
     use_helicone,
     llm_prompt
 )
-from modules.module import Module, Response
-from utilities.serviceutils import ServiceMessage
+from modules.module import IntegrationTest, Module, Response
+from utilities.serviceutils import ServiceChannel, ServiceMessage
 from utilities import Utilities, can_use_paid_service
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 if use_helicone:
@@ -24,7 +24,7 @@ class ChatGPTModule(Module):
     def __init__(self):
         super().__init__()
 
-        self.message_logs = {}  # one message log per channel
+        self.message_logs: dict[ServiceChannel, list[ServiceMessage]] = {}  # one message log per channel
         self.log_max_messages = 15  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
         self.log_message_max_chars = (
@@ -60,10 +60,10 @@ class ChatGPTModule(Module):
             confidence=3, callback=self.chatgpt_chat, args=[message], kwargs={}
         )
 
-    def process_message_from_stampy(self, message):
+    def process_message_from_stampy(self, message) -> None:
         self.message_log_append(message)
 
-    def message_log_append(self, message):
+    def message_log_append(self, message) -> None:
         """Store the message in the log"""
 
         # make sure we have a list in there for this channel
@@ -72,7 +72,7 @@ class ChatGPTModule(Module):
         self.message_logs[message.channel].append(message)
         self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages:]  # fmt:skip
 
-    def generate_messages_list(self, channel):
+    def generate_messages_list(self, channel) -> list[dict[str, str]]:
         messages = []
         chatlog = ""
         for message in self.message_logs[channel][::-1]:
@@ -106,7 +106,7 @@ class ChatGPTModule(Module):
 
         return messages
 
-    async def chatgpt_chat(self, message):
+    async def chatgpt_chat(self, message) -> Response:
         """Ask ChatGPT what Stampy would say next in the chat log"""
 
         engine: OpenAIEngines = self.openai.get_engine(message)
@@ -147,7 +147,7 @@ class ChatGPTModule(Module):
         return "ChatGPT Module"
 
     @property
-    def test_cases(self):
+    def test_cases(self) -> list[IntegrationTest]:
         return [
             self.create_integration_test(
                 test_message="ChatGPT api is only hit in production because it is expensive?",
