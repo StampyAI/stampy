@@ -13,10 +13,20 @@ class DuckDuckGo(Module):
     # Some types of things we don't really care about
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
     words = re.compile("[A-Za-z]+")
+    directly_asked = re.compile(r"^([Pp]lease )?(([Dd]uck[Dd]uck[Gg]o)||(ddg||DDG) for||search for||Google for) ")
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Process message and return a response if this module can handle it."""
         if text := self.is_at_me(message):
+            if m := self.directly_asked.match(text):
+                print(m.string)
+                return Response(
+                    confidence=10,
+                    callback=self.ask,
+                    args=[text[m.end(0):]],
+                    why="This is definitely a web search",
+                )
+            print(f"Text didn't match: {text}")
             if text.endswith("?"):
                 return Response(
                     confidence=6,
