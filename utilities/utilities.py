@@ -102,6 +102,9 @@ class Utilities:
             discord.Thread, self.client.get_channel(int(bot_private_channel_id))
         )
 
+        # Last messages we got per channel, for annoyance prevention
+        self.lastMessages: Dict[int, str] = {}
+
         self.users: list[int] = []
         self.ids: list[int] = []
         self.index: dict[int, int] = {}
@@ -307,6 +310,31 @@ class Utilities:
                 next_split_marker = split_marker_try + 1
         output.append(msg[last_split_index:])
         return output
+
+    def messageRepeated(self, message: ServiceMessage, this_text: str) -> bool:
+        """
+        This function keeps a log of the last messages by channel and returns
+        true if this text is identical to the last text. To use, find the block
+        where a response is chosen and add a guard at the top
+
+        ```
+        # repetition guard
+        if self.is_at_me(message) and Utilities.get_instance().messageRepeated(message, text):
+            self.log.info(
+                self.class_name, msg="We don't want to lock people in due to phrasing"
+            )
+            return Response()
+        ```
+        """
+        chan = message.channel.id
+        if not chan in self.lastMessages:
+            self.lastMessages[chan] = this_text
+            return False
+        elif self.lastMessages[chan] == this_text:
+            return True
+        else:
+            self.lastMessages[chan] = this_text
+            return False
 
 
 def get_github_info() -> str:
