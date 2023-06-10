@@ -11,8 +11,17 @@ from pprint import pformat
 from string import punctuation
 from threading import Event
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Literal,
+    Optional,
+    Union,
+    cast,
+)
 
+import pandas as pd
 import psutil
 import discord
 from git.repo import Repo
@@ -24,16 +33,19 @@ from config import (
     database_path,
     discord_guild,
     discord_token,
+    bot_dev_roles,
+    bot_dev_ids,
+    bot_vip_ids,
+    paid_service_for_all,
+    paid_service_whitelist_role_ids,
+    bot_private_channel_id
 )
 from database.database import Database
 from servicemodules.discordConstants import (
-    stampy_error_log_channel_id,
     wiki_feed_channel_id,
-    rob_id,
-    bot_dev_role_id,
 )
 from servicemodules.serviceConstants import Services
-from utilities.discordutils import DiscordMessage, DiscordUser
+from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage, ServiceUser
 
 if TYPE_CHECKING:
@@ -87,8 +99,11 @@ class Utilities:
         self.last_question_asked_timestamp: datetime
         self.latest_question_posted = None
         self.error_channel = cast(
-            discord.Thread, self.client.get_channel(int(stampy_error_log_channel_id))
+            discord.Thread, self.client.get_channel(int(bot_private_channel_id))
         )
+
+        # Last messages we got per channel, for annoyance prevention
+        self.lastMessages: Dict[int, str] = {}
 
         self.users: list[int] = []
         self.ids: list[int] = []
@@ -100,8 +115,8 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
-        
-        # testing 
+
+        # testing
         self.message_prefix: str = ""
 
     @staticmethod
@@ -244,11 +259,21 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    async def log_exception(self, e: Exception) -> None:
+    async def log_exception(self, e: Exception, problem_source: Optional[str] = None) -> None:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
         error_message = "".join(parts)
+        if problem_source:
+            log.error(
+                self.class_name,
+                error=f"Caught Exception from {problem_source}: {e}\n\n{error_message}"
+            )
+        else:
+            log.error(
+                self.class_name,
+                error=f"Caught Exception: {e}\n\n{error_message}"
+            )
         await self.log_error(error_message)
 
     async def log_error(self, error_message: str) -> None:
@@ -285,6 +310,31 @@ class Utilities:
                 next_split_marker = split_marker_try + 1
         output.append(msg[last_split_index:])
         return output
+
+    def messageRepeated(self, message: ServiceMessage, this_text: str) -> bool:
+        """
+        This function keeps a log of the last messages by channel and returns
+        true if this text is identical to the last text. To use, find the block
+        where a response is chosen and add a guard at the top
+
+        ```
+        # repetition guard
+        if self.is_at_me(message) and Utilities.get_instance().messageRepeated(message, text):
+            self.log.info(
+                self.class_name, msg="We don't want to lock people in due to phrasing"
+            )
+            return Response()
+        ```
+        """
+        chan = message.channel.id
+        if not chan in self.lastMessages:
+            self.lastMessages[chan] = this_text
+            return False
+        elif self.lastMessages[chan] == this_text:
+            return True
+        else:
+            self.lastMessages[chan] = this_text
+            return False
 
 
 def get_github_info() -> str:
@@ -373,10 +423,14 @@ def is_stampy_mentioned(message: ServiceMessage) -> bool:
 
 
 def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id == rob_id:
+    if user.id in bot_vip_ids:
         return True
-    roles = getattr(user, "roles", [])
-    return discord.utils.get(roles, id=bot_dev_role_id) is not None
+    if user.id in bot_dev_ids:
+        return True
+    user_roles = getattr(user, "roles", [])
+    if any(r in bot_dev_roles for r in user_roles):
+        return True
+    return False
 
 
 def stampy_is_author(message: ServiceMessage) -> bool:
@@ -409,9 +463,34 @@ def is_from_editor(message: ServiceMessage) -> bool:
     return is_editor(message.author)
 
 
+def is_bot_dev(user: ServiceUser) -> bool:
+    if user.id in bot_vip_ids:
+        return True
+    if user.id in bot_dev_ids:
+        return True
+    user_roles = getattr(user, "roles", [])
+    if any(r in bot_dev_roles for r in user_roles):
+        return True
+    return False
+
+
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
     return any(role.name == "editor" for role in user.roles)
+
+
+DiscordRole = Literal["reviewer", "editor", "bot dev"]
+
+
+def has_permissions(
+    user: ServiceUser,
+    roles: tuple[DiscordRole, ...] = (
+        "reviewer",
+        "editor",
+        "bot dev",
+    ),
+) -> bool:
+    return any(role.name in roles for role in user.roles)
 
 
 def is_in_testing_mode() -> bool:
@@ -423,9 +502,9 @@ def fuzzy_contains(container: str, contained: str) -> bool:
     """Fuzzy-ish version of `contained in container`.
     Disregards spaces, and punctuation.
     """
-    return remove_punct(contained.casefold().replace(" ", "")) in remove_punct(
-        container.casefold().replace(" ", "")
-    )
+    contained = remove_punct(contained.casefold().replace(" ", ""))
+    container = remove_punct(container.casefold().replace(" ", ""))
+    return contained in container
 
 
 def pformat_to_codeblock(d: dict[str, Any]) -> str:
@@ -441,23 +520,48 @@ def remove_punct(s: str) -> str:
         s = s.replace(p, "")
     return s
 
-def limit_text(text, limit, formatFailMessage=(lambda x: f"Cut {x} characters from response\n")) -> tuple[bool, str]:
+
+def limit_text(
+    text: str,
+    limit: int,
+    format_fail_message: Callable[[int], str] = (
+        lambda x: f"Cut {x} characters from response\n"
+    ),
+) -> tuple[bool, str]:
     text_length = len(text)
-    failLength = text_length - limit
+    fail_length = text_length - limit
 
     if text_length >= limit:
-        return True, formatFailMessage(failLength) + text[0:limit]
-    else:
-        return False, text
+        return True, format_fail_message(fail_length) + text[:limit]
+    return False, text
 
-class UtilsTests:
-    def test_split_message_for_discord(self):
-        test_out = len(
-            Utilities.split_message_for_discord(
-                "123456789012345\n1234567890123456789\n10\n10\n10\n01234567890123456789",
-                max_length=20,
-            )
-        )
-        self.assertEqual(len(test_out), 4)
-        for chunk in test_out:
-            self.assertLessEqual(len(chunk), 20)
+
+def shuffle_df(df: pd.DataFrame) -> pd.DataFrame:
+    inds = df.index.tolist()
+    shuffled_inds = random.sample(inds, len(inds))
+    return df.loc[shuffled_inds]
+
+
+def mask_quoted_text(text: str) -> str:
+    """Mask everything in text between paired double quotes with zero-width spaces"""
+    quote_inds: list[tuple[int, int]] = []
+    i = 0
+    while text.count('"', i) > 1:
+        start = text.find('"', i)
+        end = text.find('"', start + 1)
+        quote_inds.append((start, end + 1))
+        i = end + 1
+    for start, end in quote_inds:
+        text = text[:start] + (end - start) * "\ufeff" + text[end:]
+    return text
+
+def can_use_paid_service(author: ServiceUser) -> bool:
+    if paid_service_for_all:
+        return True
+    elif author.id in bot_vip_ids or is_bot_dev(author):
+        return True
+    elif any(discordutils.user_has_role(message.author, x)
+             for x in paid_service_whitelist_role_ids):
+        return True
+    else:
+        return False

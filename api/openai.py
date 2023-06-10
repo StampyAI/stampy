@@ -1,12 +1,24 @@
 import asyncio
 from api.utilities.openai import OpenAIEngines
-from config import openai_api_key
+from config import (
+    openai_api_key,
+    paid_service_channel_ids,
+    gpt4,
+    gpt4_for_all,
+    gpt4_whitelist_role_ids,
+    bot_vip_ids,
+    paid_service_all_channels,
+    use_helicone
+)
 from structlog import get_logger
-from servicemodules.discordConstants import rob_id
 from servicemodules.serviceConstants import Services, openai_channel_ids
 from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
-import openai
+from utilities import discordutils
+if use_helicone:
+    from helicone import openai
+else:
+    import openai
 import discord
 
 openai.api_key = openai_api_key
@@ -21,10 +33,14 @@ class OpenAI:
         self.log = get_logger()
 
     def is_channel_allowed(self, message: ServiceMessage) -> bool:
-        if message.service not in openai_channel_ids:
+        # for Rob's Discord:
+        if message.service in openai_channel_ids and message.channel.id in openai_channel_ids[message.service]:
+            return True
+        elif not paid_service_all_channels or message.channel.id in paid_service_channel_ids:
+            # if list is empty, default
+            return True
+        else:
             return False
-        return message.channel.id in openai_channel_ids[message.service]
-
     def cf_risk_level(self, prompt):
         """Ask the openai content filter if the prompt is risky
         Returns:
@@ -101,20 +117,13 @@ class OpenAI:
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
 
-        if message.service != Services.DISCORD:
-            return OpenAIEngines.BABBAGE
-
-        guild, _ = utilities.get_guild_and_invite_role()
-
-        bot_dev_role = discord.utils.get(guild.roles, name="bot dev")
-        member = guild.get_member(message.author.id)
-
-        if message.author.id == rob_id:
-            return OpenAIEngines.DAVINCI
-        elif member and (bot_dev_role in member.roles):
-            return OpenAIEngines.CURIE
+        if gpt4 and gpt4_for_all or message.author.id in bot_vip_ids or utilities.is_bot_dev(message.author):
+            return OpenAIEngines.GPT_4
+        elif any(discordutils.user_has_role(message.author, x)
+                 for x in gpt4_whitelist_role_ids):
+            return OpenAIEngines.GPT_4
         else:
-            return OpenAIEngines.BABBAGE
+            return OpenAIEngines.GPT_3_5_TURBO
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
         if self.cf_risk_level(prompt) > 1:

@@ -2,7 +2,7 @@ import re
 import random
 import sqlite3
 from typing import Optional
-
+from config import factoid_database_path
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities.discordutils import DiscordUser
@@ -19,9 +19,7 @@ class Factoids(Module):
 
     def __init__(self):
         super().__init__()
-        self.class_name = self.__class__.__name__
-        dbpath = "factoids.db"
-        self.db = FactoidDb(dbpath)
+        self.db = FactoidDb(factoid_database_path)
         self.who = "Someone"
         self.re_replace = re.compile(r".*?({{.+?}})")
         self.re_verb = re.compile(r".*?<([^>]+)>")

@@ -1,13 +1,20 @@
 from api.openai import OpenAI
+from api.utilities.openai import OpenAIEngines
 from config import (
     CONFUSED_RESPONSE,
     openai_api_key,
+    bot_vip_ids,
+    use_helicone,
+    llm_prompt
 )
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
+from utilities import Utilities, can_use_paid_service
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
-from servicemodules.discordConstants import rob_id, stampy_id
-import openai
+if use_helicone:
+    from helicone import openai
+else:
+    import openai
 import re
 
 openai.api_key = openai_api_key
@@ -16,7 +23,6 @@ openai.api_key = openai_api_key
 class ChatGPTModule(Module):
     def __init__(self):
         super().__init__()
-        self.class_name = "ChatGPTModule"
 
         self.message_logs = {}  # one message log per channel
         self.log_max_messages = 15  # don't store more than X messages back
@@ -35,7 +41,7 @@ class ChatGPTModule(Module):
         self.message_log_append(message)
 
         if message.is_dm:
-            if message.author.id != rob_id:
+            if message.author.id not in bot_vip_ids:
                 self.log.info(
                     self.class_name,
                     author=message.author.id,
@@ -44,6 +50,10 @@ class ChatGPTModule(Module):
                 return Response()
 
         if not self.is_at_me(message):
+            return Response()
+
+        if not can_use_paid_service(message.author):
+            self.log.info(self.class_name, warning="cannot use paid service") # DEBUG
             return Response()
 
         return Response(
@@ -60,8 +70,7 @@ class ChatGPTModule(Module):
         self.message_logs[message.channel] = self.message_logs.get(message.channel, [])
 
         self.message_logs[message.channel].append(message)
-        self.message_logs[message.channel] = \
-            self.message_logs[message.channel][-self.log_max_messages:]
+        self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages:]  # fmt:skip
 
     def generate_messages_list(self, channel):
         messages = []
@@ -82,7 +91,7 @@ class ChatGPTModule(Module):
             if len(chatlog) + len(chatline) > self.log_max_chars:
                 break
 
-            if username.lower() == "stampy":
+            if Utilities.get_instance().stampy_is_author(message):
                 messages.insert(0, {"role": "assistant", "content": text.strip("*")})
             else:
                 messages.insert(0, {"role": "user", "content": chatline})
@@ -91,7 +100,7 @@ class ChatGPTModule(Module):
             0,
             {
                 "role": "system",
-                "content": "You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them.",
+                "content": llm_prompt,
             },
         )
 
@@ -100,7 +109,7 @@ class ChatGPTModule(Module):
     async def chatgpt_chat(self, message):
         """Ask ChatGPT what Stampy would say next in the chat log"""
 
-        engine = "gpt-3.5-turbo"
+        engine: OpenAIEngines = self.openai.get_engine(message)
 
         messages = self.generate_messages_list(message.channel)
         self.log.info(self.class_name, messages=messages)
@@ -111,9 +120,9 @@ class ChatGPTModule(Module):
             im = default_italics_mark
 
         if self.openai.is_channel_allowed(message):
-            self.log.info(self.class_name, msg="sending chat prompt to chatgpt")
+            self.log.info(self.class_name, msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})")
             chatcompletion = openai.ChatCompletion.create(
-                model=engine, messages=messages
+                model=str(engine), messages=messages
             )
             print(chatcompletion)
             if chatcompletion.choices:

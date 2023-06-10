@@ -4,18 +4,29 @@ import urllib
 import datetime
 import string
 
-from modules.module import Module, Response
-from utilities.utilities import randbool
+from typing import Dict
+from modules.module import Module, Response, ServiceMessage
+from utilities.utilities import Utilities, randbool
 
+utils = Utilities.get_instance()
 
 class Silly(Module):
+    def __init__(self):
+        super().__init__()
+
     def process_message(self, message):
         atme = self.is_at_me(message)
         text = atme or message.clean_content
         who = message.author.name
         print(atme)
         print(text)
-        
+
+        if atme and utils.messageRepeated(message, text):
+            self.log.info(
+                self.class_name, msg="We don't want to lock people in due to phrasing"
+            )
+            return Response()
+
         if text.lower() == "show me how exceptional you are!":
             class SillyError(Exception):
                 pass
@@ -236,6 +247,31 @@ class Silly(Module):
             return Response(confidence=4, text=result, why="Stampy.")
         else:
             return Response()
+
+        # if the sentence looks like it might be a choice, choose between them sometimes
+        if (atme or randbool(0.5)) and " or " in text and len(text.split()) < 20:
+            options = [option.strip() for option in re.split(" or |,", text.strip("?")) if option.strip()]
+            try:  # reflect with ELIZA if available
+                result = self.utils.modules_dict["Eliza"].reflect(random.choice(options))
+                replacements = [
+                    ("were it", "it was"),
+                    ("are it", "it is"),
+                    ("will it", "it will"),
+                    ("am me", "I am"),
+                    ("will me", "I will"),
+                    ("are you", "you are"),
+                    ("will you", "you will"),
+                    ("should you", "you should"),
+                ]
+                for old, new in replacements:
+                    result = result.replace(old, new)
+            except:
+                result = random.choice(options)
+            return Response(
+                confidence=6,
+                text=r"I choose {random.choice(options)}",
+                why="%s implied a choice between the options [%s]" % (who, ", ".join(options)),
+            )
 
     def __str__(self):
         return "Silly"

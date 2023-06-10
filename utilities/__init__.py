@@ -12,5 +12,7 @@ from utilities.utilities import (
     get_user_handle,
     is_from_reviewer,
     is_in_testing_mode,
-    limit_text
+    limit_text,
+    is_bot_dev,
+    can_use_paid_service
 )

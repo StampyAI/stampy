@@ -22,10 +22,6 @@ class Wolfram(Module):
     IRRELEVANT_WORDS = {"film", "movie", "tv", "song", "album", "band"}
     words = re.compile('[A-Za-z]+')
 
-    def __init__(self):
-        super().__init__()
-        self.class_name = "Wolfram"
-
     def __str__(self):
         return "Wolfram Alpha"
 

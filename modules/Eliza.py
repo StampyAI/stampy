@@ -8,7 +8,6 @@ from utilities.serviceutils import ServiceMessage
 class Eliza(Module):
     def __init__(self):
         super().__init__()
-        self.class_name = self.__class__.__name__
         self.psychobabble = psychobabble
         self.reflections = reflections
 
