@@ -22,7 +22,7 @@ def get_all_modules() -> frozenset[str]:
 
 All_Stampy_Modules = get_all_modules()
 
-def getenv(env_var: str, default: Any = NOT_PROVIDED) -> Optional[Any]:
+def getenv(env_var: str, default: Any = NOT_PROVIDED) -> Optional[str]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
