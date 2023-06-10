@@ -131,10 +131,11 @@ if robmiles_defaults:
         default=stampy_default_prompt
     )
 else:
-    # get from dotenv
+    # user-configured from dotenv
     discord_guild = getenv("DISCORD_GUILD")
-    factoid_database_path = getenv("FACTOID_DATABASE_PATH", "./database/Factoids.db")
-    # VIPs have full access + special permission
+    # Factoid.py
+    factoid_database_path = getenv("FACTOID_DATABASE_PATH", default="./database/Factoids.db")
+    # VIPs have full access + special permissions
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
     # devs have less but can do maintainence like reboot
     bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
@@ -143,10 +144,12 @@ else:
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
     # private channel is where stampy logging gets printed
     bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", default=None)
+    # NOTE: Rob's invite/member management functions, not ported yet
     can_invite_role_id = getenv_unique_set("CAN_INVITE_ROLE_ID", default=None)
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
     bot_reboot = getenv("BOT_REBOOT", default=False)
+    # GPT STUFF
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
     # if above is false, where can paid services be used?
     paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
