@@ -32,6 +32,8 @@ if TYPE_CHECKING:
 
 log = get_logger()
 
+# ENVIRONMENT_TYPE = "production"
+
 
 class CodaAPI:
     """Gathers everything for interacting with
@@ -43,14 +45,10 @@ class CodaAPI:
     # Constants
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
     DOC_ID = {"development": "bmMz5rbOHi", "production": "fau7sl2hmG"}[ENVIRONMENT_TYPE]
-    STAMPY_ANSWERS_API_ID = {"development": "table-3-4uDMgxyI","production": "table-YvPEyAXl8a"}[ENVIRONMENT_TYPE]  # fmt:skip
+    STAMPY_ANSWERS_API_ID = {"development": "table-3-4uDMgxyI","production": "table-WZF5uzB-Lj"}[ENVIRONMENT_TYPE]  # fmt:skip
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     TAGS_GRID_ID = "grid-4uOTjz1Rkz"
-
-    REQUEST_TIMEOUT = 5
-
-    QUESTIONS_CACHE_UPDATE_INTERVAL = timedelta(minutes=10)
 
     def __init__(self):
         if CodaAPI.__instance is not None:
