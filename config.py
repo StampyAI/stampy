@@ -124,7 +124,7 @@ if robmiles_defaults:
     paid_service_whitelist_role_ids = frozenset()
     gpt4 = getenv_bool("GPT4")
     gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
-    gpt4_whitelist_role_ids = bot_vip_ids | getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
+    gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv(
         "LLM_PROMPT",
@@ -139,7 +139,7 @@ else:
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
     # devs have less but can do maintainence like reboot
     bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
-    bot_dev_ids = bot_vip_ids | getenv_unique_set("BOT_DEV_IDS", frozenset())
+    bot_dev_ids = getenv_unique_set("BOT_DEV_IDS", frozenset())
     # control channel is where maintainence commands are issued
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
     # private channel is where stampy logging gets printed
@@ -158,7 +158,7 @@ else:
     paid_service_whitelist_role_ids = getenv_unique_set("PAID_SERVICE_ROLE_IDS", frozenset())
     gpt4 = getenv_bool("GPT4")
     gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
-    gpt4_whitelist_role_ids = bot_vip_ids | getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
+    gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv(
         "LLM_PROMPT",
