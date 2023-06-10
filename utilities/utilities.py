@@ -516,3 +516,14 @@ def mask_quoted_text(text: str) -> str:
     for start, end in quote_inds:
         text = text[:start] + (end - start) * "\ufeff" + text[end:]
     return text
+
+def can_use_paid_service(author: ServiceUser) -> bool:
+    if paid_service_for_all:
+        return True
+    elif author.id in bot_vip_ids or is_bot_dev(author):
+        return True
+    elif any(discordutils.user_has_role(message.author, x)
+             for x in paid_service_whitelist_role_ids):
+        return True
+    else:
+        return False
