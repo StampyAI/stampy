@@ -186,10 +186,13 @@ wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 
-# valid Stampy reboot options
+# VARIABLE VALIDATION
 bot_reboot_options = frozenset([ "exec", False ])
 assert bot_reboot in bot_reboot_options, f"BOT_REBOOT must be one of {bot_reboot_options}"
 
 Stampy_Path = os.path.abspath("./stam.py")
 if not os.path.exists(Stampy_Path):
     log.info(f"Didn't find anything at {Stampy_Path}")
+
+if factoid_database_path:
+    assert isinstance(factoid_database_path, str) and os.path.dirname(factoid_database_path), f"Factoid.db parent directory not found at {factoid_database_path=}"
