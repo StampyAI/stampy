@@ -1,8 +1,8 @@
-from structlog import get_logger
 import os
-from typing import Optional, Any, Union
+from typing import Literal, Optional, cast, overload, Any, Union
 
 import dotenv
+from structlog import get_logger
 
 log_type = "stam.py"
 log = get_logger()
@@ -15,12 +15,22 @@ module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 def get_all_modules() -> frozenset[str]:
     modules = set()
     for file_name in os.listdir(module_dir):
-        if file_name.endswith('.py') and file_name != '__init__.py':
+        if file_name.endswith(".py") and file_name != "__init__.py":
             modules.add(file_name[:-3])
 
     return frozenset(modules)
 
+
 All_Stampy_Modules = get_all_modules()
+# fmt:off
+@overload
+def getenv(env_var: str) -> str:...
+@overload
+def getenv(env_var: str, default: None) -> Optional[str]:...
+@overload
+def getenv(env_var: str, default: str) -> str:...
+# fmt:on
+
 
 def getenv(env_var: str, default: Any = NOT_PROVIDED) -> Optional[str]:
     """
@@ -46,6 +56,7 @@ def getenv_unique_set(var_name, default=frozenset()) -> frozenset[str]:
     assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
     return s
 
+
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
 youtube_api_service_name = "youtube"
@@ -67,7 +78,9 @@ stampy_default_prompt="You are Stampy, an AI originally designed to collect stam
 
 prod_local_path = "/home/rob/stampy.local"
 
-ENVIRONMENT_TYPE = getenv("ENVIRONMENT_TYPE")
+ENVIRONMENT_TYPE = cast(
+    Literal["development", "production"], getenv("ENVIRONMENT_TYPE")
+)
 acceptable_environment_types = ("production", "development")
 assert (
     ENVIRONMENT_TYPE in acceptable_environment_types

@@ -4,9 +4,11 @@
 
 from config import ENVIRONMENT_TYPE
 
-#################################
-# RAW DATA FOR ALL CHANNEL IDS
-#################################
+# fmt:off
+
+################################
+# RAW DATA FOR ALL CHANNEL IDS #
+################################
 
 welcome_channel_id: str = {"production": "743842679741481051", "development": "817518666349412352"}[ENVIRONMENT_TYPE]
 introductions_channel_id: str = {"production": "741764243753402389", "development": "817518698339500053"}[ENVIRONMENT_TYPE]
@@ -45,9 +47,9 @@ bot_owner_dms_id: str = {"production": "-1", "development": "736241264856662038"
 
 # TODO: it would be good if we had a test that warned us if the above did not actually match up with the server layout
 
-#################################
-# ID DERIVED VARIABLES
-#################################
+########################
+# ID DERIVED VARIABLES #
+########################
 
 automatic_question_channel_id = general_channel_id  # TODO: should this be ai_safety_questions_channel_id?
 
@@ -55,9 +57,9 @@ stampy_control_channel_ids: tuple[str, ...] = (test_channel_id, stampy_dev_priv_
                                                talk_to_stampy_channel_id, bot_owner_dms_id)
 
 
-#################################
-# USER/ROLE IDs (not complete due to lack of need)
-#################################
+####################################################
+# USER/ROLE IDs (not complete due to lack of need) #
+####################################################
 
 bot_admin_role_id: str = {"production": "819898114823159819", "development": "948709263461711923"}[ENVIRONMENT_TYPE]
 bot_dev_role_id: str = {"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import os
 from typing import cast, get_args, Optional, TYPE_CHECKING
 
+from config import ENVIRONMENT_TYPE
 from codaio import Coda, Document, Row
 import pandas as pd
 from structlog import get_logger
@@ -17,6 +18,7 @@ from api.utilities.coda_utils import (
     QuestionStatus,
     DEFAULT_DATE,
 )
+from config import ENVIRONMENT_TYPE
 from utilities import is_in_testing_mode
 from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage
@@ -40,10 +42,8 @@ class CodaAPI:
 
     # Constants
     CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
-    DOC_ID = (
-        "bmMz5rbOHi" if os.getenv("ENVIRONMENT_TYPE") == "development" else "fau7sl2hmG"
-    )
-    ALL_ANSWERS_TABLE_ID = "table-YvPEyAXl8a"
+    DOC_ID = {"development": "bmMz5rbOHi", "production": "fau7sl2hmG"}[ENVIRONMENT_TYPE]
+    STAMPY_ANSWERS_API_ID = {"development": "table-3-4uDMgxyI","production": "table-YvPEyAXl8a"}[ENVIRONMENT_TYPE]  # fmt:skip
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     TAGS_GRID_ID = "grid-4uOTjz1Rkz"
@@ -147,7 +147,7 @@ class CodaAPI:
         Gets called during initialization and on request (`s, hardreload questions`)
         if refresh questions cache doesn't work for some reason.
         """
-        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        questions = self.doc.get_table(self.STAMPY_ANSWERS_API_ID)
         question_rows = [parse_question_row(row) for row in questions.rows()]
         self.questions_df = pd.DataFrame(question_rows).set_index("id", drop=False)
         self.questions_cache_last_update = datetime.now()
@@ -164,7 +164,7 @@ class CodaAPI:
         Gets called on request (`s, refresh questions`) or when Stampy doesn't recognize a GDoc link in review request
         (see `get_question_by_gdoc_links`).
         """
-        questions = self.doc.get_table(self.ALL_ANSWERS_TABLE_ID)
+        questions = self.doc.get_table(self.STAMPY_ANSWERS_API_ID)
         question_ids = set()
         new_questions: list[QuestionRow] = []
         for q in questions.rows():
@@ -275,7 +275,7 @@ class CodaAPI:
         Also, update the local cache accordingly.
         """
         # update coda table
-        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+        self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
@@ -288,7 +288,7 @@ class CodaAPI:
         [All answers table](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a).
         Also, update the local cache accordingly"""
         # update coda table
-        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+        self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"],
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
@@ -306,7 +306,7 @@ class CodaAPI:
     # Tags
 
     def update_question_tags(self, question: QuestionRow, new_tags: list[str]) -> None:
-        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+        self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Tags": new_tags})
         )
         self.questions_df.loc[question["id"]]["tags"].clear()
@@ -318,7 +318,7 @@ class CodaAPI:
     def update_question_altphr(
         self, question: QuestionRow, new_alt_phrs: list[str]
     ) -> None:
-        self.doc.get_table(self.ALL_ANSWERS_TABLE_ID).update_row(
+        self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
         )
         self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()

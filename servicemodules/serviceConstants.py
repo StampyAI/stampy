@@ -7,7 +7,7 @@ class Services(Enum):
     FLASK = "Flask"
     SLACK = "Slack"
 
-    def __str__(self) -> None:
+    def __str__(self) -> str:
         return str(self._value_)
 
     def __eq__(self, other: object) -> bool:
@@ -17,11 +17,10 @@ class Services(Enum):
             return False
 
     def __hash__(self):
-
         return hash(str(self)) >> 22
 
 
-openai_channel_ids: dict[Services, tuple[int, ...]] = {
+openai_channel_ids: dict[Services, tuple[str, ...]] = {
     Services.DISCORD: (
         discordConstants.stampy_dev_priv_channel_id,
         discordConstants.aligned_intelligences_only_channel_id,
@@ -31,9 +30,9 @@ openai_channel_ids: dict[Services, tuple[int, ...]] = {
         discordConstants.projects_channel_id,
         discordConstants.book_club_channel_id,
         discordConstants.dialogues_with_stampy_channel_id,
-        discordConstants.meta_channel_id,        
+        discordConstants.meta_channel_id,
         discordConstants.general_channel_id,
-        discordConstants.talk_to_stampy_channel_id
+        discordConstants.talk_to_stampy_channel_id,
     )
 }
 
