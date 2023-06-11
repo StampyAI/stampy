@@ -5,6 +5,8 @@ from config import database_path, enabled_modules, ALL_STAMPY_MODULES, ENVIRONME
 
 if not warnoptions: # if user hasn't passed explicit warning settings
     import warnings
+    from typing import Literal
+    warnlevel: Literal['default', 'error', 'ignore', 'always', 'module', 'once']
     if ENVIRONMENT_TYPE == "development":
         warnlevel = 'error'
     elif ENVIRONMENT_TYPE == "production":
