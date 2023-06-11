@@ -1,12 +1,31 @@
-export DISCORD_TOKEN="$(cat ~/.discordtoken)"
-export DISCORD_GUILD="$(cat ~/.discordguild)"
-export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
-export CLIENT_SECRET_PATH="$(cat ~/.clientsecretpath)"
-export OPENAI_API_KEY=$(cat ~/.openaikey);
-export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
-export SLACK_APP_TOKEN=$(cat ~/.slackapptoken);
-export SLACK_BOT_TOKEN=$(cat ~/.slackbottoken);
+#!/bin/sh
+get_secret () {
+    VAR_NAME="${1}"
+    GIVEN_PATH="${2}"
 
-while true; do sleep 0.5; python stam.py ; done
+    if [ -e ${GIVEN_PATH} ]; then
+        export ${VAR_NAME}="$(cat ${GIVEN_PATH})"
+    fi
+}
+
+get_secret "DISCORD_TOKEN" "~/.discordtoken"
+get_secret "DISCORD_GUILD" "~/.discordguild"
+get_secret "YOUTUBE_API_KEY" "~/.youtubeapikey"
+get_secret "CLIENT_SECRET_PATH" "~/.clientsecretpath"
+get_secret "OPENAI_API_KEY" "~/.openaikey";
+get_secret "WOLFRAM_TOKEN" "~/.wolframtoken";
+get_secret "SLACK_APP_TOKEN" "~/.slackapptoken";
+get_secret "SLACK_BOT_TOKEN" "~/.slackbottoken";
+
+if [ "${STAMPY_RUN_TESTS:-nil}" != "nil" ]; then
+    pytest;
+    python -m unittest;
+    mypy -m stam;
+else
+    while true; do
+        python stam.py ;
+        sleep 0.5;
+    done
+fi
 
 # also run CommentPoster.py

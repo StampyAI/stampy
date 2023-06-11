@@ -30,7 +30,7 @@ class DiscordChannel(ServiceChannel):
     def __init__(self, channel: discord.abc.Messageable, server: Optional[ServiceServer]):
         self._channel: discord.abc.Messageable = channel
         self.history = channel.history
-        if not isinstance(channel, discord.abc.Messageable):
+        if not isinstance(channel, discord.DMChannel):
             channel_id = channel.id
         else:
             channel_id = 0
@@ -78,3 +78,8 @@ class DiscordMessage(ServiceMessage):
     def _parse_discord_mentions(self, mentions: list[Union[discord.user.User, discord.Member]]):
         for user in mentions:
             self.mentions.append(DiscordUser(user))
+
+def user_has_role(user: ServiceUser, roleID: Union[str, int]):
+    if isinstance(id, str):
+        roleID = int(roleID)
+    discord.utils.get(user.roles, id=roleID)

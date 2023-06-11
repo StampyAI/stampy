@@ -9,5 +9,6 @@ modules/choose.py
 .pylintrc
 *.ipynb
 *.csv
+local
 .vscode
 help.md
