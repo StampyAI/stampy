@@ -233,7 +233,7 @@ class DiscordHandler:
             # if we ever get here, we've gone maximum_recursion_depth layers deep without the top response being text
             # so that's likely an infinite regress
             sent = await message.channel.send("[Stampy's ears start to smoke. There is a strong smell of recursion]")
-            self.messages[str(sent.id)] = {"why": "I detected recursion and killed the response process!", "traceback": why_traceback}
+            self.messages[str(sent)] = {"why": "I detected recursion and killed the response process!", "traceback": why_traceback}
             why_traceback.append("Detected recursion and killed the response process!")
             log.critical(self.class_name, error="Hit our recursion limit!")
 
