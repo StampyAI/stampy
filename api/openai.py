@@ -33,10 +33,12 @@ class OpenAI:
         self.log = get_logger()
 
     def is_channel_allowed(self, message: ServiceMessage) -> bool:
-        # for Rob's Discord:
         if message.service in openai_channel_ids and message.channel.id in openai_channel_ids[message.service]:
+            # For Rob's discord
             return True
-        elif not paid_service_all_channels or message.channel.id in paid_service_channel_ids:
+        elif paid_service_all_channels:
+            return True
+        elif message.channel.id in paid_service_channel_ids:
             # if list is empty, default
             return True
         else:
