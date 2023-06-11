@@ -428,7 +428,7 @@ def is_bot_dev(user: ServiceUser) -> bool:
         return True
     if user.id in bot_dev_ids:
         return True
-    if any(user_has_role(user, r) in bot_dev_roles
+    if any(user_has_role(user, r.id) in bot_dev_roles
            for r in user.roles):
         return True
     return False
