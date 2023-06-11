@@ -30,7 +30,7 @@ class DiscordChannel(ServiceChannel):
     def __init__(self, channel: discord.abc.Messageable, server: Optional[ServiceServer]):
         self._channel: discord.abc.Messageable = channel
         self.history = channel.history
-        if not isinstance(channel, discord.abc.Messageable):
+        if not isinstance(channel, discord.DMChannel):
             channel_id = channel.id
         else:
             channel_id = 0
