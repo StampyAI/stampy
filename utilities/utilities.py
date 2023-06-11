@@ -104,7 +104,7 @@ class Utilities:
         )
 
         # Last messages we got per channel, for annoyance prevention
-        self.lastMessages: Dict[int, str] = {}
+        self.lastMessages: Dict[str, str] = {}
 
         self.users: list[int] = []
         self.ids: list[int] = []
