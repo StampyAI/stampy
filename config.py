@@ -12,6 +12,7 @@ NOT_PROVIDED = "__NOT_PROVIDED__"
 
 module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 
+
 def get_all_modules() -> frozenset[str]:
     modules = set()
     for file_name in os.listdir(module_dir):
@@ -44,16 +45,18 @@ def getenv(env_var: str, default: Any = NOT_PROVIDED) -> Optional[str]:
         )
     return value
 
+
 def getenv_bool(env_var: str) -> bool:
     e = getenv(env_var, default="UNDEFINED")
     return e != "UNDEFINED"
+
 
 def getenv_unique_set(var_name, default=frozenset()) -> frozenset[str]:
     l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
         return default
     s = frozenset(l)
-    assert (len(l) == len(s)), f"{var_name} has duplicate members! {l}"
+    assert len(l) == len(s), f"{var_name} has duplicate members! {l}"
     return s
 
 
@@ -74,7 +77,7 @@ test_response_message = "LOGGED_TEST_RESPONSE"
 TEST_MESSAGE_PREFIX = "TEST_MESSAGE "
 TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
 CONFUSED_RESPONSE = "I don't understand"
-stampy_default_prompt="You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them."
+stampy_default_prompt = "You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them."
 
 prod_local_path = "/home/rob/stampy.local"
 
@@ -115,39 +118,66 @@ robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
 if robmiles_defaults:
     # use robmiles server defaults
     print("Using settings for the Rob Miles Discord server")
-    discord_guild = {"production": "677546901339504640", "development": "783123903382814720"}[ENVIRONMENT_TYPE]
+    discord_guild = {
+        "production": "677546901339504640",
+        "development": "783123903382814720",
+    }[ENVIRONMENT_TYPE]
     factoid_database_path = "./factoids.db"
     bot_vip_ids = frozenset(["181142785259208704"])
-    bot_dev_roles = frozenset([{"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]])
+    bot_dev_roles = frozenset(
+        [
+            {"production": "736247946676535438", "development": "817518998148087858"}[
+                ENVIRONMENT_TYPE
+            ]
+        ]
+    )
     bot_dev_ids = bot_vip_ids
-    bot_control_channel_ids = frozenset([
-        {"production": "-99", "development": "803448149946662923"}[ENVIRONMENT_TYPE],
-        {"production": "736247813616304159", "development": "817518389848309760"}[ENVIRONMENT_TYPE],
-        {"production": "758062805810282526", "development": "817518145472299009"}[ENVIRONMENT_TYPE],
-        {"production": "808138366330994688", "development": "817518440192409621"}[ENVIRONMENT_TYPE],
-        {"production": "-1", "development": "736241264856662038"}[ENVIRONMENT_TYPE]
-        ])
-    bot_private_channel_id = {"production": "736247813616304159", "development": "817518389848309760"}[ENVIRONMENT_TYPE]
-    can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
-    member_role_id = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
+    bot_control_channel_ids = frozenset(
+        [
+            {"production": "-99", "development": "803448149946662923"}[
+                ENVIRONMENT_TYPE
+            ],
+            {"production": "736247813616304159", "development": "817518389848309760"}[
+                ENVIRONMENT_TYPE
+            ],
+            {"production": "758062805810282526", "development": "817518145472299009"}[
+                ENVIRONMENT_TYPE
+            ],
+            {"production": "808138366330994688", "development": "817518440192409621"}[
+                ENVIRONMENT_TYPE
+            ],
+            {"production": "-1", "development": "736241264856662038"}[ENVIRONMENT_TYPE],
+        ]
+    )
+    bot_private_channel_id = {
+        "production": "736247813616304159",
+        "development": "817518389848309760",
+    }[ENVIRONMENT_TYPE]
+    can_invite_role_id = {"production": "791424708973035540", "development": "-99"}[
+        ENVIRONMENT_TYPE
+    ]
+    member_role_id = {
+        "production": "945033781818040391",
+        "development": "947463614841901117",
+    }[ENVIRONMENT_TYPE]
     bot_reboot = False
     paid_service_for_all = True
     paid_service_all_channels = True
-    paid_service_channel_ids = frozenset(); # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
+    paid_service_channel_ids = frozenset()
+    # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
     paid_service_whitelist_role_ids = frozenset()
     gpt4 = getenv_bool("GPT4")
     gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
     gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
-    llm_prompt = getenv(
-        "LLM_PROMPT",
-        default=stampy_default_prompt
-    )
+    llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
 else:
     # user-configured from dotenv
     discord_guild = getenv("DISCORD_GUILD")
     # Factoid.py
-    factoid_database_path = getenv("FACTOID_DATABASE_PATH", default="./database/Factoids.db")
+    factoid_database_path = getenv(
+        "FACTOID_DATABASE_PATH", default="./database/Factoids.db"
+    )
     # VIPs have full access + special permissions
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
     # devs have less but can do maintainence like reboot
@@ -165,18 +195,19 @@ else:
     # GPT STUFF
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
     # if above is false, where can paid services be used?
-    paid_service_channel_ids = getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())
+    paid_service_channel_ids = getenv_unique_set(
+        "PAID_SERVICE_CHANNEL_IDS", frozenset()
+    )
     paid_service_for_all = getenv_bool("PAID_SERVICE_FOR_ALL")
     # if above is false, who gets to use paid services?
-    paid_service_whitelist_role_ids = getenv_unique_set("PAID_SERVICE_ROLE_IDS", frozenset())
+    paid_service_whitelist_role_ids = getenv_unique_set(
+        "PAID_SERVICE_ROLE_IDS", frozenset()
+    )
     gpt4 = getenv_bool("GPT4")
     gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
     gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
-    llm_prompt = getenv(
-        "LLM_PROMPT",
-        default=stampy_default_prompt
-    )
+    llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")
@@ -187,12 +218,16 @@ slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
 
 # VARIABLE VALIDATION
-bot_reboot_options = frozenset([ "exec", False ])
-assert bot_reboot in bot_reboot_options, f"BOT_REBOOT must be one of {bot_reboot_options}"
+bot_reboot_options = frozenset(["exec", False])
+assert (
+    bot_reboot in bot_reboot_options
+), f"BOT_REBOOT must be one of {bot_reboot_options}"
 
 Stampy_Path = os.path.abspath("./stam.py")
 if not os.path.exists(Stampy_Path):
     log.info(f"Didn't find anything at {Stampy_Path}")
 
 if factoid_database_path:
-    assert isinstance(factoid_database_path, str) and os.path.dirname(factoid_database_path), f"Factoid.db parent directory not found at {factoid_database_path=}"
+    assert isinstance(factoid_database_path, str) and os.path.dirname(
+        factoid_database_path
+    ), f"Factoid.db parent directory not found at {factoid_database_path=}"

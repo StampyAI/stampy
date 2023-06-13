@@ -20,7 +20,9 @@ def get_stampy_modules() -> dict[str, Module]:
     stampy_modules = {}
     skipped_modules = set(All_Stampy_Modules)
     for file_title in enabled_modules:
-        assert (file_title in All_Stampy_Modules), f"Module {file_title} enabled but doesn't exist!"
+        assert (
+            file_title in All_Stampy_Modules
+        ), f"Module {file_title} enabled but doesn't exist!"
 
         log.info("import", filename=file_title)
         mod = __import__(".".join(["modules", file_title]), fromlist=[file_title])
@@ -46,7 +48,6 @@ if __name__ == "__main__":
         )
 
     utils.modules_dict = get_stampy_modules()
-
     utils.service_modules_dict = {
         Services.DISCORD: DiscordHandler(),
         Services.SLACK: SlackHandler(),
