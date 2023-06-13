@@ -19,6 +19,7 @@ from typing import (
     Optional,
     Union,
     cast,
+    Dict,
 )
 
 import pandas as pd
@@ -45,7 +46,7 @@ from servicemodules.discordConstants import (
     wiki_feed_channel_id,
 )
 from servicemodules.serviceConstants import Services
-from utilities.discordutils import DiscordUser
+from utilities.discordutils import DiscordUser, user_has_role
 from utilities.serviceutils import ServiceMessage, ServiceUser
 
 if TYPE_CHECKING:
@@ -74,7 +75,7 @@ class Utilities:
     GUILD = discord_guild
     DB_PATH = database_path
 
-    def __init__(self):
+    def __init__(self) -> None:
         if Utilities.__instance is not None:
             raise Exception(
                 "This class is a singleton! Access it using `Utilities.get_instance()`"
@@ -103,7 +104,7 @@ class Utilities:
         )
 
         # Last messages we got per channel, for annoyance prevention
-        self.lastMessages: Dict[int, str] = {}
+        self.lastMessages: Dict[str, str] = {}
 
         self.users: list[int] = []
         self.ids: list[int] = []
@@ -427,11 +428,10 @@ def is_bot_dev(user: ServiceUser) -> bool:
         return True
     if user.id in bot_dev_ids:
         return True
-    user_roles = getattr(user, "roles", [])
-    if any(r in bot_dev_roles for r in user_roles):
+    if any(user_has_role(user, r.id) in bot_dev_roles
+           for r in user.roles):
         return True
     return False
-
 
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
@@ -461,18 +461,6 @@ def is_reviewer(user: ServiceUser) -> bool:
 def is_from_editor(message: ServiceMessage) -> bool:
     """Is this message from `@editor`?"""
     return is_editor(message.author)
-
-
-def is_bot_dev(user: ServiceUser) -> bool:
-    if user.id in bot_vip_ids:
-        return True
-    if user.id in bot_dev_ids:
-        return True
-    user_roles = getattr(user, "roles", [])
-    if any(r in bot_dev_roles for r in user_roles):
-        return True
-    return False
-
 
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
@@ -560,7 +548,7 @@ def can_use_paid_service(author: ServiceUser) -> bool:
         return True
     elif author.id in bot_vip_ids or is_bot_dev(author):
         return True
-    elif any(discordutils.user_has_role(message.author, x)
+    elif any(user_has_role(author, x)
              for x in paid_service_whitelist_role_ids):
         return True
     else:
