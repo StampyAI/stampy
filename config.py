@@ -22,7 +22,7 @@ def get_all_modules() -> frozenset[str]:
     return frozenset(modules)
 
 
-All_Stampy_Modules = get_all_modules()
+ALL_STAMPY_MODULES = get_all_modules()
 # fmt:off
 @overload
 def getenv(env_var: str) -> str:...
@@ -109,7 +109,7 @@ stamp_scores_csv_file_path = {
 # if STAMPY_MODULES is unset, enable everything found in ./modules
 enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL")
 if enabled_modules_var == "ALL":
-    enabled_modules = All_Stampy_Modules
+    enabled_modules = ALL_STAMPY_MODULES
     log.info("STAMPY_MODULES unset, loading all modules indiscriminately")
 else:
     enabled_modules = enabled_modules_var

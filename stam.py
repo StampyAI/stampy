@@ -3,7 +3,7 @@ import threading
 
 from structlog import get_logger
 
-from config import database_path, enabled_modules, All_Stampy_Modules
+from config import database_path, enabled_modules, ALL_STAMPY_MODULES
 from modules.module import Module
 from servicemodules.discord import DiscordHandler
 from servicemodules.flask import FlaskHandler
@@ -18,10 +18,10 @@ log = get_logger()
 def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
-    skipped_modules = set(All_Stampy_Modules)
+    skipped_modules = set(ALL_STAMPY_MODULES)
     for file_title in enabled_modules:
         assert (
-            file_title in All_Stampy_Modules
+            file_title in ALL_STAMPY_MODULES
         ), f"Module {file_title} enabled but doesn't exist!"
 
         log.info("import", filename=file_title)
