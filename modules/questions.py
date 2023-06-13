@@ -168,6 +168,8 @@ class Questions(Module):
                 await self.post_random_oldest_question(event_type)
 
     def process_message(self, message: ServiceMessage) -> Response:
+        if message.content == "e":
+            raise Exception("test exception")
         if not (text := self.is_at_me(message)):
             return Response()
         if text == "hardreload questions":

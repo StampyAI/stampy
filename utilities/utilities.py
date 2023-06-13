@@ -19,7 +19,6 @@ from typing import (
     Optional,
     Union,
     cast,
-    Dict,
 )
 
 import pandas as pd
@@ -39,11 +38,11 @@ from config import (
     bot_vip_ids,
     paid_service_for_all,
     paid_service_whitelist_role_ids,
-    bot_private_channel_id,
 )
 from database.database import Database
 from servicemodules.discordConstants import (
     wiki_feed_channel_id,
+    stampy_error_log_channel_id,
 )
 from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordUser, user_has_role
@@ -99,12 +98,9 @@ class Utilities:
 
         self.last_question_asked_timestamp: datetime
         self.latest_question_posted = None
-        self.error_channel = cast(
-            discord.Thread, self.client.get_channel(int(bot_private_channel_id))
-        )
 
         # Last messages we got per channel, for annoyance prevention
-        self.lastMessages: Dict[str, str] = {}
+        self.lastMessages: dict[str, str] = {}
         self.last_message_was_youtube_question: bool = False
 
         self.users: list[int] = []
@@ -283,7 +279,11 @@ class Utilities:
         for msg_chunk in Utilities.split_message_for_discord(
             error_message, max_length=discord_message_length_limit - 6
         ):
-            await self.error_channel.send(f"```{msg_chunk}```")
+            channel = cast(
+                discord.channel.TextChannel,
+                self.client.get_channel(int(stampy_error_log_channel_id)),
+            )
+            await channel.send(f"```{msg_chunk}```")
 
     @staticmethod
     def split_message_for_discord(
