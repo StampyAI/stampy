@@ -39,7 +39,7 @@ from config import (
     bot_vip_ids,
     paid_service_for_all,
     paid_service_whitelist_role_ids,
-    bot_private_channel_id
+    bot_private_channel_id,
 )
 from database.database import Database
 from servicemodules.discordConstants import (
@@ -105,6 +105,7 @@ class Utilities:
 
         # Last messages we got per channel, for annoyance prevention
         self.lastMessages: Dict[str, str] = {}
+        self.last_message_was_youtube_question: bool = False
 
         self.users: list[int] = []
         self.ids: list[int] = []
@@ -260,7 +261,9 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    async def log_exception(self, e: Exception, problem_source: Optional[str] = None) -> None:
+    async def log_exception(
+        self, e: Exception, problem_source: Optional[str] = None
+    ) -> None:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
@@ -268,12 +271,11 @@ class Utilities:
         if problem_source:
             log.error(
                 self.class_name,
-                error=f"Caught Exception from {problem_source}: {e}\n\n{error_message}"
+                error=f"Caught Exception from {problem_source}: {e}\n\n{error_message}",
             )
         else:
             log.error(
-                self.class_name,
-                error=f"Caught Exception: {e}\n\n{error_message}"
+                self.class_name, error=f"Caught Exception: {e}\n\n{error_message}"
             )
         await self.log_error(error_message)
 
@@ -428,10 +430,10 @@ def is_bot_dev(user: ServiceUser) -> bool:
         return True
     if user.id in bot_dev_ids:
         return True
-    if any(user_has_role(user, r.id) in bot_dev_roles
-           for r in user.roles):
+    if any(user_has_role(user, r.id) in bot_dev_roles for r in user.roles):
         return True
     return False
+
 
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
@@ -461,6 +463,7 @@ def is_reviewer(user: ServiceUser) -> bool:
 def is_from_editor(message: ServiceMessage) -> bool:
     """Is this message from `@editor`?"""
     return is_editor(message.author)
+
 
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
@@ -543,13 +546,13 @@ def mask_quoted_text(text: str) -> str:
         text = text[:start] + (end - start) * "\ufeff" + text[end:]
     return text
 
+
 def can_use_paid_service(author: ServiceUser) -> bool:
     if paid_service_for_all:
         return True
     elif author.id in bot_vip_ids or is_bot_dev(author):
         return True
-    elif any(user_has_role(author, x)
-             for x in paid_service_whitelist_role_ids):
+    elif any(user_has_role(author, x) for x in paid_service_whitelist_role_ids):
         return True
     else:
         return False
