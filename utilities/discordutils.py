@@ -82,7 +82,5 @@ class DiscordMessage(ServiceMessage):
         for user in mentions:
             self.mentions.append(DiscordUser(user))
 
-def user_has_role(user: ServiceUser, roleID: Union[str, int]):
-    if isinstance(id, str):
-        roleID = int(roleID)
-    discord.utils.get(user.roles, id=roleID)
+def user_has_role(user: ServiceUser, role_id: Union[str, int]):
+    return discord.utils.get(user.roles, id=int(role_id)) is not None
