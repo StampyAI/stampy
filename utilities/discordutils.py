@@ -27,18 +27,21 @@ class DiscordUser(ServiceUser):
 
 
 class DiscordChannel(ServiceChannel):
-    def __init__(self, channel: discord.abc.Messageable, server: Optional[ServiceServer]):
+    def __init__(self, channel: discord.abc.Messageable, server: Optional[ServiceServer]) -> None:
         self._channel: discord.abc.Messageable = channel
         self.history = channel.history
-        if not isinstance(channel, discord.DMChannel):
-            channel_id = channel.id
-        else:
-            channel_id = 0
-        if not isinstance(channel, discord.DMChannel) and not isinstance(channel, discord.abc.Messageable):
-            name = channel.name
-        else:
-            name = ""
-        super().__init__(name, str(channel_id), server)
+        channel_id = str(getattr(channel, "id", 0))
+        channel_name = str(getattr(channel, "name", ""))
+        
+        # if not isinstance(channel, discord.DMChannel):
+        #     channel_id = channel.id
+        # else:
+        #     channel_id = 0
+        # if not isinstance(channel, discord.DMChannel) and not isinstance(channel, discord.abc.Messageable):
+        #     name = channel.name
+        # else:
+        #     name = ""
+        super().__init__(channel_name, channel_id, server)
 
     @property
     def guild(self) -> Optional[ServiceServer]:
