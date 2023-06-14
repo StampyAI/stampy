@@ -554,9 +554,6 @@ def mask_quoted_text(text: str) -> str:
 def can_use_paid_service(author: ServiceUser) -> bool:
     if paid_service_for_all:
         return True
-    elif author.id in bot_vip_ids or is_bot_dev(author):
+    if author.id in bot_vip_ids or is_bot_dev(author):
         return True
-    elif any(user_has_role(author, x) for x in paid_service_whitelist_role_ids):
-        return True
-    else:
-        return False
+    return any(user_has_role(author, x) for x in paid_service_whitelist_role_ids):
