@@ -3,7 +3,7 @@ import json
 from urllib.parse import quote_plus
 from urllib.request import urlopen
 
-from modules.module import Module, Response
+from modules.module import IntegrationTest, Module, Response
 from utilities.serviceutils import ServiceMessage
 
 
@@ -113,14 +113,14 @@ class DuckDuckGo(Module):
         return Response()
 
     @property
-    def test_cases(self):
+    def test_cases(self) -> list[IntegrationTest]:
         return [
             self.create_integration_test(
-                question="what is linear algebra?",
+                test_message="what is linear algebra?",
                 expected_regex="Linear algebra is the branch of mathematics concerning linear equations",
             ),
             self.create_integration_test(
-                question="what is deep learning?",
+                test_message="what is deep learning?",
                 expected_regex="Deep learning is part of a broader family of machine learning method",
             ),
         ]
