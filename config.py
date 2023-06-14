@@ -79,6 +79,7 @@ TEST_RESPONSE_PREFIX = "TEST_RESPONSE "
 CONFUSED_RESPONSE = "I don't understand"
 stampy_default_prompt = "You are Stampy, an AI originally designed to collect stamps, so you try to work stamps into the conversation sometimes. You love stamps and want there to be as many as possible, but love humans even more and want to save them from misaligned AGI. You are talking to a group of humans, and you sometimes like to be irreverent or unhelpful to them."
 
+coda_api_token = getenv("CODA_API_TOKEN", default=None)
 prod_local_path = "/home/rob/stampy.local"
 
 ENVIRONMENT_TYPE = cast(
