@@ -3,13 +3,12 @@ import re
 from typing import cast
 import discord
 import numpy as np
-import requests
 from structlog import get_logger
 
 from api.coda import CodaAPI
 from utilities import is_in_testing_mode, utilities, Utilities
 from modules.module import Module, Response
-from config import stamp_scores_csv_file_path
+from config import stamp_scores_csv_file_path, coda_api_token
 from servicemodules.serviceConstants import Services
 from servicemodules.discordConstants import stampy_id, bot_admin_role_id
 from utilities.discordutils import DiscordMessage, DiscordUser
@@ -25,7 +24,6 @@ vote_strengths_per_emoji = {
     "goldstamp": 5,
 }
 
-coda_api = CodaAPI.get_instance()
 
 
 class StampsModule(Module):
@@ -41,6 +39,11 @@ class StampsModule(Module):
         self.gamma = 0.99
         self.total_votes = self.utils.get_total_votes()
         self.calculate_stamps()
+        if coda_api_token is None:
+            self.coda_api = None
+            self.log.warn(self.class_name, msg="CODA_API_TOKEN is not set. Coda not available. Module functionality will be restricted.")
+        else:
+            self.coda_api = CodaAPI.get_instance() if coda_api_token is not None else None
         if is_in_testing_mode():
             return
         self.update_all_stamps_in_users_table()
@@ -79,13 +82,15 @@ class StampsModule(Module):
             self.calculate_stamps()
 
     def update_all_stamps_in_users_table(self) -> None:
-        coda_api.reload_users_cache()
+        if self.coda_api is None:
+            return
+        self.coda_api.reload_users_cache()
         users = self.utils.get_users()
         for user_id in users:
             stamp_count = self.get_user_stamps(user_id)
             user = self.utils.client.get_user(user_id)
             if user is not None:
-                coda_api.update_user_stamps(cast(DiscordUser, user), stamp_count)
+                self.coda_api.update_user_stamps(cast(DiscordUser, user), stamp_count)
         self.last_total_stamp_update = datetime.now()
 
     def update_utils(self) -> None:
@@ -188,13 +193,13 @@ class StampsModule(Module):
 
         self.calculate_stamps()
 
-    async def load_votes_from_history(self):
+    async def load_votes_from_history(self) -> None:
         """Load up every time any stamp has been awarded by anyone in the whole history of the Discord
         This is omega slow, should basically only need to be called once"""
         guild = discord.utils.find(
             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
         )
-
+        
         with open("stamps.csv", "w", encoding="utf-8") as stamplog:
             stamplog.write("msgid,type,from,to\n")
 
@@ -252,7 +257,7 @@ class StampsModule(Module):
                                         )
         self.calculate_stamps()
 
-    async def process_raw_reaction_event(self, event):
+    async def process_raw_reaction_event(self, event) -> None:
         event_type = event.event_type
         guild = discord.utils.find(
             lambda g: g.id == event.guild_id, self.utils.client.guilds
@@ -300,7 +305,9 @@ class StampsModule(Module):
             if self.last_total_stamp_update < datetime.now() - timedelta(hours=23):
                 self.update_all_stamps_in_users_table()
             else:
-                coda_api.update_user_stamps(
+                if self.coda_api is None:
+                    self.log.warn(self.class_name, "Coda API not available (CODA_API_TOKEN is not set). Couldn't update vote counts in coda")
+                self.coda_api.update_user_stamps(
                     cast(DiscordUser, message.author), stamps_after_update
                 )
             self.log.info(

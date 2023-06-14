@@ -1,5 +1,6 @@
 import os
 import threading
+from typing import Callable
 
 from structlog import get_logger
 
@@ -33,11 +34,16 @@ def get_stampy_modules() -> dict[str, Module]:
             cls = getattr(mod, attribute)
             if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
                 log.info("import Module Found", module_name=attribute)
+                if is_available := getattr(cls, "is_available", None):
+                    if isinstance(is_available, Callable) and not is_available():
+                        log.info("import Module not available", module_name=attribute)
+                        continue
+                    log.info("import Module available", module_name=attribute)
                 try:
                     module = cls()
                     stampy_modules[cls.__name__] = module
-                except Exception as e:
-                    msg = utils.format_error_message(e)
+                except Exception as exc:
+                    msg = utils.format_error_message(exc)
                     utils.initialization_error_messages.append(msg)
 
         skipped_modules.remove(file_title)

@@ -91,26 +91,21 @@ from typing import Callable, Literal, Optional, Union, cast
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionRow, QuestionStatus
-from config import ENVIRONMENT_TYPE
+from config import ENVIRONMENT_TYPE, coda_api_token
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.question_query_utils import (
-    QuestionSpecQuery,
-    parse_alt_phr,
-    parse_gdoc_links,
-    parse_question_spec_query,
-    parse_tag,
-)
+if coda_api_token is not None:
+    from utilities.question_query_utils import (
+        QuestionSpecQuery,
+        parse_alt_phr,
+        parse_gdoc_links,
+        parse_question_spec_query,
+        parse_tag,
+    )
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
 
 
-coda_api = CodaAPI.get_instance()
-status_shorthands = coda_api.get_status_shorthand_dict()
-_status_pat = "|".join(status_shorthands)
-re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({_status_pat})", re.I)
-
-all_tags = coda_api.get_all_tags()
 
 GDocLinks = list[str]
 MsgRefId = str
@@ -121,7 +116,11 @@ EditAction = Literal["add", "remove", "clear"]
 
 class QuestionSetter(Module):
     """Module for editing questions in [coda](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)."""
-
+    
+    @staticmethod
+    def is_available() -> bool:
+        return coda_api_token is not None
+    
     def __init__(self) -> None:
         super().__init__()
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
@@ -134,6 +133,9 @@ class QuestionSetter(Module):
         self.re_remove_alt_phr = re.compile(
             r"(delete|del|remove|rm) " + alt_phr_pat, re.I
         )
+        self.coda_api = CodaAPI.get_instance()
+        _status_pat = "|".join(self.coda_api.status_shorthand_dict)
+        self.re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({_status_pat})", re.I)
 
     async def find_gdoc_links_in_msg(
         self, channel: DiscordChannel, msg_ref_id: str
@@ -241,7 +243,7 @@ class QuestionSetter(Module):
         self, gdoc_links: list[str], status: ReviewStatus, message: ServiceMessage
     ) -> Response:
         """Change status of questions for which an editor requested review or feedback."""
-        questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
+        questions = self.coda_api.get_questions_by_gdoc_links(gdoc_links)
         if not questions:
             return Response(
                 confidence=10,
@@ -264,7 +266,7 @@ class QuestionSetter(Module):
                 n_already_los += 1
                 msg = f"`\"{q['title']}\"` is already `Live on site`."
             else:
-                coda_api.update_question_status(q, status)
+                self.coda_api.update_question_status(q, status)
                 msg = f"`\"{q['title']}\"` is now `{status}`"
             await message.channel.send(msg)
 
@@ -347,7 +349,7 @@ class QuestionSetter(Module):
             await self.find_gdoc_links_in_msg(message.channel, msg_ref_id)
             gdoc_links = self.msg_id2gdoc_links.get(msg_ref_id, [])
 
-        questions = coda_api.get_questions_by_gdoc_links(gdoc_links)
+        questions = self.coda_api.get_questions_by_gdoc_links(gdoc_links)
 
         if not questions:
             return Response(
@@ -366,7 +368,7 @@ class QuestionSetter(Module):
                     f"`\"{q['title']}\"` is already `Live on site`"
                 )
             else:
-                coda_api.update_question_status(q, "Live on site")
+                self.coda_api.update_question_status(q, "Live on site")
                 n_new_los += 1
                 await message.channel.send(f"`\"{q['title']}\"` goes `Live on site`!")
 
@@ -451,7 +453,7 @@ class QuestionSetter(Module):
         to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_action]
         verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[edit_action]  # fmt:skip
         field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
-        questions = await coda_api.query_for_questions(query, message)
+        questions = await self.coda_api.query_for_questions(query, message)
 
         if not questions:
             Response(
@@ -480,9 +482,9 @@ class QuestionSetter(Module):
 
         n_edited = 0
         update_method: Callable[[QuestionRow, list[str]], None] = (
-            coda_api.update_question_tags
+            self.coda_api.update_question_tags
             if tag_or_altphr == "tag"
-            else coda_api.update_question_altphr
+            else self.coda_api.update_question_altphr
         )
 
         if edit_action == "add":
@@ -572,9 +574,9 @@ class QuestionSetter(Module):
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
         """Somebody is tring to change status of one or more questions."""
-        if not (match := re_status.search(text)):
+        if not (match := self.re_status.search(text)):
             return
-        status = status_shorthands[match.group(1).lower()]
+        status = self.coda_api.status_shorthand_dict[match.group(1).lower()]
         if not (q_spec_query := parse_question_spec_query(text)):
             return
 
@@ -609,9 +611,9 @@ class QuestionSetter(Module):
                 why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
             )
 
-        questions = await coda_api.query_for_questions(q_spec_query, message)
+        questions = await self.coda_api.query_for_questions(q_spec_query, message)
         if not questions:
-            response_text, why = await coda_api.get_response_text_and_why(
+            response_text, why = await self.coda_api.get_response_text_and_why(
                 questions, q_spec_query, message
             )
             return Response(confidence=10, text=response_text, why=why)
@@ -648,7 +650,7 @@ class QuestionSetter(Module):
                 msg = f'`"{q["title"]}"` is already `Live on site`.'
                 n_already_los += 1
             else:
-                coda_api.update_question_status(q, status)
+                self.coda_api.update_question_status(q, status)
                 msg = (
                     f"`\"{q['title']}\"` is now `{status}` (previously `{prev_status}`)"
                 )

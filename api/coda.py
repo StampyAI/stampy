@@ -77,6 +77,7 @@ class CodaAPI:
         self.coda = Coda(coda_api_token) #type:ignore
         self.reload_questions_cache()
         self.reload_users_cache()
+        self.status_shorthand_dict = self._get_status_shorthand_dict()
 
     @property
     def doc(self) -> Document:
@@ -493,7 +494,7 @@ class CodaAPI:
     #   Getters for valid field values   #
     ######################################
 
-    def get_status_shorthand_dict(self) -> dict[str, QuestionStatus]:
+    def _get_status_shorthand_dict(self) -> dict[str, QuestionStatus]:
         """Get dictionary mapping question statuses and status shorthands
         (e.g. "bs" for "Bulletpoint sketch") to valid `Status` field values.
         """

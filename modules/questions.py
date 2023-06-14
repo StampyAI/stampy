@@ -96,15 +96,17 @@ from api.coda import (
     get_least_recently_asked_on_discord,
 )
 from api.utilities.coda_utils import QuestionRow, QuestionStatus
+from config import coda_api_token
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
-from utilities.question_query_utils import (
-    parse_question_filter,
-    parse_question_query,
-    parse_question_spec_query,
-    QuestionFilterNT,
-    QuestionQuery,
-)
+if coda_api_token is not None:
+    from utilities.question_query_utils import (
+        parse_question_filter,
+        parse_question_query,
+        parse_question_spec_query,
+        QuestionFilterNT,
+        QuestionQuery,
+    )
 from utilities.utilities import (
     has_permissions,
     is_in_testing_mode,
@@ -116,14 +118,19 @@ from utilities.serviceutils import ServiceMessage
 load_dotenv()
 
 # TODO: move this API to utils and access it via Module parent class
-coda_api = CodaAPI.get_instance()
 
 
 class Questions(Module):
     AUTOPOST_QUESTION_INTERVAL = timedelta(hours=6)
-
+    
+    @staticmethod
+    def is_available() -> bool:
+        return coda_api_token is not None
+    
     def __init__(self) -> None:
         super().__init__()
+        self.coda_api = CodaAPI.get_instance()
+        
         # Time when last question was posted
         self.last_posted_time: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
@@ -159,6 +166,7 @@ class Questions(Module):
         # Was the last question that was posted, automatically posted by Stampy?
         self.last_question_autoposted = False
 
+        
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
@@ -198,12 +206,12 @@ class Questions(Module):
                 why=f"{message.author.name} asked me to hard-reload questions questions but they don't have permissions for that",
             )
         await message.channel.send(
-            f"Ok, hard-reloading questions cache\nBefore: {len(coda_api.questions_df)} questions"
+            f"Ok, hard-reloading questions cache\nBefore: {len(self.coda_api.questions_df)} questions"
         )
-        coda_api.reload_questions_cache()
+        self.coda_api.reload_questions_cache()
         return Response(
             confidence=10,
-            text=f"After: {len(coda_api.questions_df)} questions",
+            text=f"After: {len(self.coda_api.questions_df)} questions",
             why=f"{message.author.name} asked me to hard-reload questions",
         )
 
@@ -215,10 +223,10 @@ class Questions(Module):
                 why=f"{message.author.name} wanted me to refresh questions questions but they don't have permissions for that",
             )
         await message.channel.send(
-            f"Ok, refreshing questions cache\nBefore: {len(coda_api.questions_df)} questions"
+            f"Ok, refreshing questions cache\nBefore: {len(self.coda_api.questions_df)} questions"
         )
-        new_questions, deleted_questions = coda_api.update_questions_cache()
-        response_text = f"After: {len(coda_api.questions_df)} questions"
+        new_questions, deleted_questions = self.coda_api.update_questions_cache()
+        response_text = f"After: {len(self.coda_api.questions_df)} questions"
         if not new_questions:
             response_text += "\nNo new questions"
         elif len(new_questions) <= 10:
@@ -280,7 +288,7 @@ class Questions(Module):
         question_filter: QuestionFilterNT,
         message: ServiceMessage,
     ) -> Response:
-        questions_df = coda_api.questions_df
+        questions_df = self.coda_api.questions_df
         status, tag, _limit = question_filter
 
         # if status and/or tag specified, filter accordingly
@@ -343,12 +351,12 @@ class Questions(Module):
             )
 
         # get questions (can be emptylist)
-        questions = await coda_api.query_for_questions(
+        questions = await self.coda_api.query_for_questions(
             question_query, message, least_recently_asked_unpublished=True
         )
 
         # get text and why (requires handling failures)
-        response_text, why = await coda_api.get_response_text_and_why(
+        response_text, why = await self.coda_api.get_response_text_and_why(
             questions, question_query, message
         )
 
@@ -363,7 +371,7 @@ class Questions(Module):
         response_text += "\n"
         for q in questions:
             response_text += f"\n{make_post_question_message(q)}"
-            coda_api.update_question_last_asked_date(q, current_time)
+            self.coda_api.update_question_last_asked_date(q, current_time)
 
         # update caches
         self.last_posted_time = current_time
@@ -371,7 +379,7 @@ class Questions(Module):
 
         # if there is exactly one question, remember its ID
         if len(questions) == 1:
-            coda_api.last_question_id = questions[0]["id"]
+            self.coda_api.last_question_id = questions[0]["id"]
 
         return Response(
             confidence=10,
@@ -388,7 +396,7 @@ class Questions(Module):
         channel = cast(Thread, self.utils.client.get_channel(int(general_channel_id)))
 
         # query for questions with status "Not started" and not tagged as "Stampy"
-        questions_df_filtered = coda_api.questions_df.query("status == 'Not started'")
+        questions_df_filtered = self.coda_api.questions_df.query("status == 'Not started'")
         questions_df_filtered = questions_df_filtered[
             questions_df_filtered["tags"].map(lambda tags: "Stampy" not in tags)
         ]
@@ -404,10 +412,10 @@ class Questions(Module):
 
         # update in coda
         current_time = datetime.now()
-        coda_api.update_question_last_asked_date(question, current_time)
+        self.coda_api.update_question_last_asked_date(question, current_time)
 
         # update caches
-        coda_api.last_question_id = question["id"]
+        self.coda_api.last_question_id = question["id"]
         self.last_posted_time = current_time
         self.last_question_autoposted = True
 
@@ -444,10 +452,10 @@ class Questions(Module):
         message: ServiceMessage,
     ) -> Response:
         # get questions (can be emptylist)
-        questions = await coda_api.query_for_questions(question_query, message)
+        questions = await self.coda_api.query_for_questions(question_query, message)
 
         # get text and why (requires handling failures)
-        response_text, why = await coda_api.get_response_text_and_why(
+        response_text, why = await self.coda_api.get_response_text_and_why(
             questions, question_query, message
         )
 
@@ -466,7 +474,7 @@ class Questions(Module):
 
         # if there is exactly one question, remember its ID
         if len(questions) == 1:
-            coda_api.last_question_id = questions[0]["id"]
+            self.coda_api.last_question_id = questions[0]["id"]
 
         return Response(
             confidence=10,
