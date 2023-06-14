@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-import os
 from typing import cast, get_args, Optional, TYPE_CHECKING
 
 from codaio import Coda, Document, Row
