@@ -16,7 +16,7 @@ module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
 def get_all_modules() -> frozenset[str]:
     modules = set()
     for file_name in os.listdir(module_dir):
-        if file_name.endswith(".py") and file_name != "__init__.py":
+        if file_name.endswith(".py") and file_name not in ("__init__.py", "module.py"):
             modules.add(file_name[:-3])
 
     return frozenset(modules)
