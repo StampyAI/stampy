@@ -37,6 +37,7 @@ def get_stampy_modules() -> dict[str, Module]:
                 if is_available := getattr(cls, "is_available", None):
                     if isinstance(is_available, Callable) and not is_available():
                         log.info("import Module not available", module_name=attribute)
+                        utils.unavailable_module_names.append(cls.__name__)
                         continue
                     log.info("import Module available", module_name=attribute)
                 try:

@@ -114,6 +114,7 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
+        self.unavailable_module_names: list[str] = []
 
         # testing
         self.message_prefix: str = ""
