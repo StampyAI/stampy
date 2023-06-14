@@ -91,6 +91,8 @@ class DiscordHandler:
             await self.utils.client.get_channel(int(bot_private_channel_id)).send(
                 f"I just (re)started {get_git_branch_info()}!"
             )
+            for error_msg in self.utils.initialization_error_messages:
+                await self.utils.log_error(error_msg)
 
         @self.utils.client.event
         async def on_message(

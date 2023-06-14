@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-import os
-import random
-import re
-import sys
-import traceback
 from datetime import datetime, timedelta
 from enum import Enum
+from functools import cached_property
+import os
 from pprint import pformat
+import random
+import re
 from string import punctuation
+import sys
 from threading import Event
 from time import time
+import traceback
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -21,10 +22,10 @@ from typing import (
     cast,
 )
 
-import pandas as pd
-import psutil
 import discord
 from git.repo import Repo
+import pandas as pd
+import psutil
 from structlog import get_logger
 
 from config import (
@@ -116,6 +117,9 @@ class Utilities:
 
         # testing
         self.message_prefix: str = ""
+
+        # errors raised during initialization - to be raised on discord service start
+        self.initialization_error_messages: list[str] = []
 
     @staticmethod
     def get_instance() -> Utilities:
@@ -257,13 +261,17 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    async def log_exception(
-        self, e: Exception, problem_source: Optional[str] = None
-    ) -> None:
+    def format_error_message(self, e: Exception) -> str:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
         error_message = "".join(parts)
+        return error_message
+
+    async def log_exception(
+        self, e: Exception, problem_source: Optional[str] = None
+    ) -> None:
+        error_message = self.format_error_message(e)
         if problem_source:
             log.error(
                 self.class_name,
@@ -275,15 +283,18 @@ class Utilities:
             )
         await self.log_error(error_message)
 
+    @cached_property
+    def error_channel(self) -> discord.channel.TextChannel:
+        return cast(
+            discord.channel.TextChannel,
+            self.client.get_channel(int(stampy_error_log_channel_id)),
+        )
+
     async def log_error(self, error_message: str) -> None:
         for msg_chunk in Utilities.split_message_for_discord(
             error_message, max_length=discord_message_length_limit - 6
         ):
-            channel = cast(
-                discord.channel.TextChannel,
-                self.client.get_channel(int(stampy_error_log_channel_id)),
-            )
-            await channel.send(f"```{msg_chunk}```")
+            await self.error_channel.send(f"```{msg_chunk}```")
 
     @staticmethod
     def split_message_for_discord(

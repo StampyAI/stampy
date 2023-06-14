@@ -13,6 +13,7 @@ from utilities import Utilities
 
 log_type = "stam.py"
 log = get_logger()
+utils = Utilities.get_instance()
 
 
 def get_stampy_modules() -> dict[str, Module]:
@@ -27,11 +28,18 @@ def get_stampy_modules() -> dict[str, Module]:
         log.info("import", filename=file_title)
         mod = __import__(".".join(["modules", file_title]), fromlist=[file_title])
         log.info("import", module_name=mod)
+
         for attribute in dir(mod):
             cls = getattr(mod, attribute)
             if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
                 log.info("import Module Found", module_name=attribute)
-                stampy_modules[cls.__name__] = cls()
+                try:
+                    module = cls()
+                    stampy_modules[cls.__name__] = module
+                except Exception as e:
+                    msg = utils.format_error_message(e)
+                    utils.initialization_error_messages.append(msg)
+
         skipped_modules.remove(file_title)
 
     log.info("LOADED MODULES", modules=sorted(stampy_modules.keys()))
@@ -40,8 +48,6 @@ def get_stampy_modules() -> dict[str, Module]:
 
 
 if __name__ == "__main__":
-    utils = Utilities.get_instance()
-
     if not os.path.exists(database_path):
         raise FileNotFoundError(
             f"Couldn't find the stampy database file at {database_path}"
