@@ -30,7 +30,6 @@ if TYPE_CHECKING:
 
 log = get_logger()
 utils = Utilities.get_instance()
-# ENVIRONMENT_TYPE = "production"
 
 
 class CodaAPI:
