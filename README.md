@@ -61,6 +61,7 @@ You'll need at least these:
 - `DISCORD_GUILD`: your server ID
 - `DATABASE_PATH`: the path to the Q&A database (normally in `./database/stampy.db`).
 - `STAMPY_MODULES`: list of your desired modules, or leave unset to load all modules in the `./modules/` directory. You probably don't want all, as some of them aren't applicable to servers other than Rob's.
+- `CODA_API_TOKEN`: token to access Coda
 
 Not required:
 
