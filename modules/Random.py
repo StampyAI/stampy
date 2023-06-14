@@ -43,7 +43,7 @@ class Random(Module):
         # "Stampy, choose coke or pepsi or both"
         elif text.startswith("choose ") and " or " in text:
             # repetition guard
-            if atme and utils.messageRepeated(message, text):
+            if atme and utils.message_repeated(message, text):
                 self.log.info(
                     self.class_name, msg="We don't want to lock people in due to phrasing"
                 )

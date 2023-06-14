@@ -21,7 +21,7 @@ class Silly(Module):
         print(atme)
         print(text)
 
-        if atme and utils.messageRepeated(message, text):
+        if atme and utils.message_repeated(message, text):
             self.log.info(
                 self.class_name, msg="We don't want to lock people in due to phrasing"
             )

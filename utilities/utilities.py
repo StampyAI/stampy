@@ -325,7 +325,7 @@ class Utilities:
         output.append(msg[last_split_index:])
         return output
 
-    def messageRepeated(self, message: ServiceMessage, this_text: str) -> bool:
+    def message_repeated(self, message: ServiceMessage, this_text: str) -> bool:
         """
         This function keeps a log of the last messages by channel and returns
         true if this text is identical to the last text. To use, find the block
@@ -344,11 +344,10 @@ class Utilities:
         if not chan in self.lastMessages:
             self.lastMessages[chan] = this_text
             return False
-        elif self.lastMessages[chan] == this_text:
+        if self.lastMessages[chan] == this_text:
             return True
-        else:
-            self.lastMessages[chan] = this_text
-            return False
+        self.lastMessages[chan] = this_text
+        return False
 
 
 def get_github_info() -> str:
@@ -556,4 +555,4 @@ def can_use_paid_service(author: ServiceUser) -> bool:
         return True
     if author.id in bot_vip_ids or is_bot_dev(author):
         return True
-    return any(user_has_role(author, x) for x in paid_service_whitelist_role_ids):
+    return any(user_has_role(author, x) for x in paid_service_whitelist_role_ids)
