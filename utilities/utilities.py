@@ -262,7 +262,7 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    def format_error_message(self, e: Exception) -> str:
+    def format_error_traceback_msg(self, e: Exception) -> str:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
@@ -272,7 +272,7 @@ class Utilities:
     async def log_exception(
         self, e: Exception, problem_source: Optional[str] = None
     ) -> None:
-        error_message = self.format_error_message(e)
+        error_message = self.format_error_traceback_msg(e)
         if problem_source:
             log.error(
                 self.class_name,

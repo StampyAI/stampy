@@ -124,12 +124,18 @@ class Questions(Module):
 
     @staticmethod
     def is_available() -> bool:
-        return coda_api_token is not None
+        return coda_api_token is not None and not is_in_testing_mode()
 
     def __init__(self) -> None:
+        if not self.is_available():
+            exc_msg = f"Module {self.class_name} is not available."
+            if coda_api_token is None:
+                exc_msg += f" CODA_API_TOKEN is not set in `.env`."
+            if is_in_testing_mode():
+                exc_msg += " Stampy is in testing mode right now."
+            raise Exception(exc_msg)
+
         super().__init__()
-        if is_in_testing_mode():
-            return
         self.coda_api = CodaAPI.get_instance()
 
         # Time when last question was posted

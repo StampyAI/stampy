@@ -124,24 +124,34 @@ class QuestionSetter(Module):
 
     @staticmethod
     def is_available() -> bool:
-        return coda_api_token is not None
+        return coda_api_token is not None and not is_in_testing_mode()
 
     def __init__(self) -> None:
+        if not self.is_available():
+            exc_msg = f"Module {self.class_name} is not available."
+            if coda_api_token is None:
+                exc_msg += f" CODA_API_TOKEN is not set in `.env`."
+            if is_in_testing_mode():
+                exc_msg += " Stampy is in testing mode right now."
+            raise Exception(exc_msg)
+
         super().__init__()
-        if is_in_testing_mode():
-            return
         self.coda_api = CodaAPI.get_instance()
 
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
+
         # tag
         self.re_add_tag = re.compile(r"(add\s)?tag", re.I)
         self.re_remove_tag = re.compile(r"(delete|del|remove|rm)\stag", re.I)
+
         # altphr
         alt_phr_pat = "(alt|alternate|alt phrasing|alternate phrasing|alias)"
         self.re_add_alt_phr = re.compile(r"(add )?" + alt_phr_pat, re.I)
         self.re_remove_alt_phr = re.compile(
             r"(delete|del|remove|rm) " + alt_phr_pat, re.I
         )
+
+        # status
         status_pat = "|".join(self.coda_api.status_shorthand_dict)
         self.re_status = re.compile(
             rf"(?:set|change) (?:status|to|status to) ({status_pat})", re.I

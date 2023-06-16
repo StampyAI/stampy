@@ -1,6 +1,6 @@
 import os
 import threading
-from typing import Callable
+from typing import cast
 
 from structlog import get_logger
 
@@ -23,8 +23,10 @@ def get_stampy_modules() -> dict[str, Module]:
     # dictionary mapping Module class names to initialized Module objects
     stampy_modules: dict[str, Module] = {}
 
-    # names of files of modules that were skipped because not enabled
-    skipped_modules = set(ALL_STAMPY_MODULES - enabled_modules)
+    loaded_module_filenames = set()
+
+    # filenames of modules that were skipped because not enabled
+    skipped_module_filenames = set(ALL_STAMPY_MODULES - enabled_modules)
 
     for filename in enabled_modules:
         if filename not in ALL_STAMPY_MODULES:
@@ -34,13 +36,16 @@ def get_stampy_modules() -> dict[str, Module]:
         mod = __import__(f"modules.{filename}", fromlist=[filename])
         log.info("import", module_name=mod)
 
+        # iterate over attribute names in the file
         for attr_name in dir(mod):
             cls = getattr(mod, attr_name)
+            # try instantiating it if it is a `Module`...
             if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
                 log.info("import Module Found", module_name=attr_name)
+                # unless it has a classmethod is_available, which in this particular situation returns False
                 if (
                     (is_available := getattr(cls, "is_available", None))
-                    and isinstance(is_available, Callable)
+                    and callable(is_available)
                     and not is_available()
                 ):
                     log.info(
@@ -48,44 +53,34 @@ def get_stampy_modules() -> dict[str, Module]:
                         module_name=attr_name,
                         filename=filename,
                     )
+                    # for testing in test_stam.py
                     utils.unavailable_module_filenames.append(filename)
-                    skipped_modules.add(filename)
-                    continue
-                log.info(
-                    "import Module available",
-                    module_name=attr_name,
-                    filename=filename,
-                )
-                if attr_name == "QuestionSetter":
-                    log.info("IMPORT", msg="Importing QuestionSetter")
-                try:
-                    module = cls()
-                    if attr_name == "QuestionSetter":
+                else:
+                    if hasattr(cls, "is_available"):
                         log.info(
-                            "IMPORT", msg="Successfully instantiated QuestionSetter"
+                            "import Module available",
+                            module_name=attr_name,
+                            filename=filename,
                         )
-                        log.info(
-                            "LOADED MODULES BEFORE",
-                            modules=sorted(stampy_modules, key=str.casefold),
-                        )
-                    stampy_modules[cls.__name__] = module
+                    try:
+                        module = cast(Module, cls())
+                        stampy_modules[module.class_name] = module
+                        loaded_module_filenames.add(filename)
+                    except Exception as exc:
+                        msg = utils.format_error_traceback_msg(exc)
+                        utils.initialization_error_messages.append(msg)
+                        log.error("Import error", exc=exc, traceback=msg)
 
-                    if attr_name == "QuestionSetter":
-                        log.info("IMPORT", msg="Successfully added QuestionSetter")
-                        log.info(
-                            "LOADED MODULES AFTER",
-                            modules=sorted(stampy_modules, key=str.casefold),
-                        )
-                except Exception as exc:
-                    msg = utils.format_error_message(exc)
-                    if attr_name == "QuestionSetter":
-                        log.info("IMPORT", msg="Failed at importing QuestionSetter")
-                        log.error("ERROR", exc=exc)
-                        log.error("ERROR MSG", msg=msg)
-                    utils.initialization_error_messages.append(msg)
-    # skipped_modules = set(enabled_modules) - set(stampy_modules)
-    log.info("LOADED MODULES", modules=sorted(stampy_modules, key=str.casefold))
-    log.info("SKIPPED MODULES", modules=sorted(skipped_modules, key=str.casefold))
+    log.info(
+        "Loaded modules", filenames=sorted(loaded_module_filenames, key=str.casefold)
+    )
+    log.info(
+        "Skipped modules", filenames=sorted(skipped_module_filenames, key=str.casefold)
+    )
+    log.info(
+        "Unavailable modules",
+        filenames=sorted(utils.unavailable_module_filenames, key=str.casefold),
+    )
     return stampy_modules
 
 
