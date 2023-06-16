@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-import os
+from datetime import datetime
 from typing import cast, get_args, Optional, TYPE_CHECKING
 
-from config import ENVIRONMENT_TYPE
 from codaio import Coda, Document, Row
 import pandas as pd
 from structlog import get_logger
@@ -18,8 +16,8 @@ from api.utilities.coda_utils import (
     QuestionStatus,
     DEFAULT_DATE,
 )
-from config import ENVIRONMENT_TYPE
-from utilities import is_in_testing_mode
+from config import ENVIRONMENT_TYPE, coda_api_token
+from utilities import is_in_testing_mode, Utilities
 from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
@@ -31,6 +29,7 @@ if TYPE_CHECKING:
 
 
 log = get_logger()
+utils = Utilities.get_instance()
 
 
 class CodaAPI:
@@ -41,18 +40,15 @@ class CodaAPI:
     __instance: Optional[CodaAPI] = None
 
     # Constants
-    CODA_API_TOKEN = os.environ["CODA_API_TOKEN"]
     DOC_ID = {"development": "bmMz5rbOHi", "production": "fau7sl2hmG"}[ENVIRONMENT_TYPE]
-    STAMPY_ANSWERS_API_ID = {"development": "table-3-4uDMgxyI","production": "table-YvPEyAXl8a"}[ENVIRONMENT_TYPE]  # fmt:skip
+    STAMPY_ANSWERS_API_ID = {"development": "table-3-4uDMgxyI","production": "table-WZF5uzB-Lj"}[ENVIRONMENT_TYPE]  # fmt:skip
     STATUSES_GRID_ID = "grid-IWDInbu5n2"
     TEAM_GRID_ID = "grid-pTwk9Bo_Rc"
     TAGS_GRID_ID = "grid-4uOTjz1Rkz"
 
-    REQUEST_TIMEOUT = 5
-
-    QUESTIONS_CACHE_UPDATE_INTERVAL = timedelta(minutes=10)
-
     def __init__(self):
+        if coda_api_token is None:
+            raise Exception("Environmental variable CODA_API_TOKEN is not set")
         if CodaAPI.__instance is not None:
             raise Exception(
                 "This class is a singleton! Access it using `Utilities.get_instance()`"
@@ -77,9 +73,10 @@ class CodaAPI:
         if is_in_testing_mode():
             return
 
-        self.coda = Coda(self.CODA_API_TOKEN)  # type:ignore
+        self.coda = Coda(coda_api_token) #type:ignore
         self.reload_questions_cache()
         self.reload_users_cache()
+        self.status_shorthand_dict = self._get_status_shorthand_dict()
 
     @property
     def doc(self) -> Document:
@@ -496,7 +493,7 @@ class CodaAPI:
     #   Getters for valid field values   #
     ######################################
 
-    def get_status_shorthand_dict(self) -> dict[str, QuestionStatus]:
+    def _get_status_shorthand_dict(self) -> dict[str, QuestionStatus]:
         """Get dictionary mapping question statuses and status shorthands
         (e.g. "bs" for "Bulletpoint sketch") to valid `Status` field values.
         """

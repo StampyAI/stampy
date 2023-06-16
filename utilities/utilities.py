@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-import os
-import random
-import re
-import sys
-import traceback
 from datetime import datetime, timedelta
 from enum import Enum
+from functools import cached_property
+import os
 from pprint import pformat
+import random
+import re
 from string import punctuation
+import sys
 from threading import Event
 from time import time
+import traceback
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -19,13 +20,12 @@ from typing import (
     Optional,
     Union,
     cast,
-    Dict,
 )
 
-import pandas as pd
-import psutil
 import discord
 from git.repo import Repo
+import pandas as pd
+import psutil
 from structlog import get_logger
 
 from config import (
@@ -39,11 +39,11 @@ from config import (
     bot_vip_ids,
     paid_service_for_all,
     paid_service_whitelist_role_ids,
-    bot_private_channel_id
 )
 from database.database import Database
 from servicemodules.discordConstants import (
     wiki_feed_channel_id,
+    stampy_error_log_channel_id,
 )
 from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordUser, user_has_role
@@ -99,12 +99,10 @@ class Utilities:
 
         self.last_question_asked_timestamp: datetime
         self.latest_question_posted = None
-        self.error_channel = cast(
-            discord.Thread, self.client.get_channel(int(bot_private_channel_id))
-        )
 
         # Last messages we got per channel, for annoyance prevention
-        self.lastMessages: Dict[str, str] = {}
+        self.lastMessages: dict[str, str] = {}
+        self.last_message_was_youtube_question: bool = False
 
         self.users: list[int] = []
         self.ids: list[int] = []
@@ -116,9 +114,13 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
+        self.unavailable_module_filenames: list[str] = []
 
         # testing
         self.message_prefix: str = ""
+
+        # errors raised during initialization - to be raised on discord service start
+        self.initialization_error_messages: list[str] = []
 
     @staticmethod
     def get_instance() -> Utilities:
@@ -260,28 +262,43 @@ class Utilities:
         message += " and " + str(time_running.second) + " seconds."
         return message
 
-    async def log_exception(self, e: Exception, problem_source: Optional[str] = None) -> None:
+    def format_error_traceback_msg(self, e: Exception) -> str:
         parts = ["Traceback (most recent call last):\n"]
         parts.extend(traceback.format_stack(limit=25)[:-2])
         parts.extend(traceback.format_exception(*sys.exc_info())[1:])
         error_message = "".join(parts)
+        return error_message
+
+    async def log_exception(
+        self, e: Exception, problem_source: Optional[str] = None
+    ) -> None:
+        error_message = self.format_error_traceback_msg(e)
         if problem_source:
             log.error(
                 self.class_name,
-                error=f"Caught Exception from {problem_source}: {e}\n\n{error_message}"
+                error=f"Caught Exception from {problem_source}: {e}\n\n{error_message}",
             )
         else:
             log.error(
-                self.class_name,
-                error=f"Caught Exception: {e}\n\n{error_message}"
+                self.class_name, error=f"Caught Exception: {e}\n\n{error_message}"
             )
         await self.log_error(error_message)
+
+    @cached_property
+    def error_channel(self) -> discord.channel.TextChannel:
+        return cast(
+            discord.channel.TextChannel,
+            self.client.get_channel(int(stampy_error_log_channel_id)),
+        )
 
     async def log_error(self, error_message: str) -> None:
         for msg_chunk in Utilities.split_message_for_discord(
             error_message, max_length=discord_message_length_limit - 6
         ):
-            await self.error_channel.send(f"```{msg_chunk}```")
+            if is_in_testing_mode():
+                log.error(self.class_name, error_message=error_message)
+            else:
+                await self.error_channel.send(f"```{msg_chunk}```")
 
     @staticmethod
     def split_message_for_discord(
@@ -312,7 +329,7 @@ class Utilities:
         output.append(msg[last_split_index:])
         return output
 
-    def messageRepeated(self, message: ServiceMessage, this_text: str) -> bool:
+    def message_repeated(self, message: ServiceMessage, this_text: str) -> bool:
         """
         This function keeps a log of the last messages by channel and returns
         true if this text is identical to the last text. To use, find the block
@@ -331,11 +348,10 @@ class Utilities:
         if not chan in self.lastMessages:
             self.lastMessages[chan] = this_text
             return False
-        elif self.lastMessages[chan] == this_text:
+        if self.lastMessages[chan] == this_text:
             return True
-        else:
-            self.lastMessages[chan] = this_text
-            return False
+        self.lastMessages[chan] = this_text
+        return False
 
 
 def get_github_info() -> str:
@@ -414,9 +430,7 @@ def is_test_message(text: str) -> bool:
 
 
 def randbool(p: float) -> bool:
-    if random.random() < p:
-        return True
-    return False
+    return random.random() < p
 
 
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
@@ -428,10 +442,8 @@ def is_bot_dev(user: ServiceUser) -> bool:
         return True
     if user.id in bot_dev_ids:
         return True
-    if any(user_has_role(user, r.id) in bot_dev_roles
-           for r in user.roles):
-        return True
-    return False
+    return any(user_has_role(user, r) for r in bot_dev_roles)
+
 
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)
@@ -461,6 +473,7 @@ def is_reviewer(user: ServiceUser) -> bool:
 def is_from_editor(message: ServiceMessage) -> bool:
     """Is this message from `@editor`?"""
     return is_editor(message.author)
+
 
 def is_editor(user: ServiceUser) -> bool:
     """Is this user `@editor`?"""
@@ -543,13 +556,10 @@ def mask_quoted_text(text: str) -> str:
         text = text[:start] + (end - start) * "\ufeff" + text[end:]
     return text
 
+
 def can_use_paid_service(author: ServiceUser) -> bool:
     if paid_service_for_all:
         return True
-    elif author.id in bot_vip_ids or is_bot_dev(author):
+    if author.id in bot_vip_ids or is_bot_dev(author):
         return True
-    elif any(user_has_role(author, x)
-             for x in paid_service_whitelist_role_ids):
-        return True
-    else:
-        return False
+    return any(user_has_role(author, x) for x in paid_service_whitelist_role_ids)

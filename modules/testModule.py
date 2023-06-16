@@ -68,7 +68,6 @@ class TestModule(Module):
                 text=self.TEST_MODE_RESPONSE_MESSAGE,
                 why="Test already running",
             )
-
         if message.channel.name != "talk-to-stampy":
             return Response(
                 confidence=10,

@@ -8,7 +8,7 @@ from api.utilities.coda_utils import QuestionStatus
 from utilities.utilities import mask_quoted_text
 
 coda_api = CodaAPI.get_instance()
-status_shorthands = coda_api.get_status_shorthand_dict()
+status_shorthands = coda_api._get_status_shorthand_dict()
 all_tags = coda_api.get_all_tags()
 
 

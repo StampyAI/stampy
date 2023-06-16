@@ -70,6 +70,7 @@ Not required:
 - `BOT_CONTROL_CHANNEL_IDS`: list of channels where control commands are accepted.
 - `BOT_PRIVATE_CHANNEL_IDS`: single channel where private Stampy status updates are sent
 - `BOT_REBOOT`: how Stampy reboots himself. Unset, he only quits, expecting an external `while true` loop (like in `runstampy`/Dockerfile). Set to `exec` he will try to relaunch himself from his own CLI arguments.
+- `CODA_API_TOKEN`: token to access Coda. Without it, modules `Questions` and `QuestionSetter` will not be available and `StampyControls` will have limited functionality.
 
 Specific modules (excluding LLM stuff):
 

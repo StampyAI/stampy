@@ -1,15 +1,17 @@
 import os
 import sys
+from typing import Optional, cast
+
 import discord
-from modules.module import Module, Response
+
 from config import (
     TEST_RESPONSE_PREFIX,
     bot_control_channel_ids,
-    can_invite_role_id,
     member_role_id,
     Stampy_Path,
     bot_reboot
 )
+from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import (
     Utilities,
@@ -19,13 +21,13 @@ from utilities import (
     get_question_id,
     is_bot_dev
 )
+from utilities.serviceutils import ServiceMessage
 
 
 class StampyControls(Module):
     """Module to manage stampy controls like reboot and resetinviteroles"""
 
     BOT_TEST_MESSAGE = "I'm alive!"
-    RESET_INVITES_MESSAGE = "[resetting can-invite roles, please wait]"
     REBOOT_MESSAGE = "Rebooting..."
     REBOOT_DENIED_MESSAGE = "You're not my supervisor!"
 
@@ -35,37 +37,33 @@ class StampyControls(Module):
             "reboot": self.reboot,
             "stats": self.get_stampy_stats,
             "add member role to everyone": self.add_member_role,
-            "resetinviteroles": self.resetinviteroles,
         }
 
-    def is_at_module(self, message):
-        text = self.is_at_me(message)
-        if text:
+    def is_at_module(self, message: ServiceMessage) -> Optional[str]:
+        if text := self.is_at_me(message):
             return text.lower() in self.routines
-        return False
 
-    async def send_control_message(self, message, text):
+    async def send_control_message(self, message: ServiceMessage, text: str) -> None:
         if self.utils.test_mode:
             question_id = get_question_id(message)
             await message.channel.send(TEST_RESPONSE_PREFIX + str(question_id) + ": " + text)
         else:
             await message.channel.send(text)
 
-    def process_message(self, message):
+    def process_message(self, message: ServiceMessage) -> Response:
         if self.is_at_module(message):
-            routine_name = self.is_at_me(message).lower()
+            routine_name = cast(str, self.is_at_me(message)).lower()
             routine = self.routines[routine_name]
             return Response(
                 confidence=10,
                 callback=routine,
-                why="%s said '%s', which is a special command, so I ran the %s routine"
-                % (message.author.name, routine_name, routine_name),
-                args=[message],
+                why=f"{message.author.name} said '{routine_name}', which is a special command, so I ran the {routine_name} routine",
+                args=[message]
             )
         return Response()
 
     @staticmethod
-    async def reboot(message):
+    async def reboot(message: ServiceMessage) -> Response:
         if hasattr(message.channel, "id") and message.channel.id in bot_control_channel_ids:
             asked_by_dev = is_bot_dev(message.author)
             if asked_by_dev:
@@ -93,46 +91,11 @@ class StampyControls(Module):
             )
         return Response(
             confidence=10,
-            why="%s tried to kill me! They said 'reboot'" % message.author.name,
+            why=f"{message.author.name} tried to kill me! They said 'reboot'", 
             text="This is not the place for violent murder of an agent.",
         )
 
-    async def resetinviteroles(self, message):
-        if not can_invite_role_ids:
-            return Response(confidence=10, text="Variable can_invite_role_id isn't defined!")
-        if self.utils.test_mode:
-            self.log.warning(self.class_name, msg="Stampy is in test mode, not updating invite roles")
-            return Response(
-                confidence=10,
-                why="%s asked me to reset roles, which" % message.author.name,
-                text=self.RESET_INVITES_MESSAGE,
-            )
-        self.log.info(self.class_name, msg="[resetting can-invite roles]")
-        await self.send_control_message(message, self.RESET_INVITES_MESSAGE)
-        guild = discord.utils.find(lambda g: g.name == self.utils.GUILD, self.utils.client.guilds)
-        self.log.info(
-            self.class_name,
-            utility_guild=self.utils.GUILD,
-            discord_guild=guild,
-            discord_guild_member_count=len(guild.members),
-        )
-        role = discord.utils.get(guild.roles, id=int(can_invite_role_id))
-        reset_users_count = 0
-        if not self.utils.test_mode:
-            for member in guild.members:
-                if self.utils.get_user_score(member) > 0:
-                    print(member.name, "can invite")
-                    await member.add_roles(role)
-                    reset_users_count += 1
-                else:
-                    print(member.name, "has 0 stamps, can't invite")
-        return Response(
-            confidence=10,
-            why="%s asked me to reset roles, which" % message.author.name,
-            text="[Invite Roles Reset for %s users]" % reset_users_count,
-        )
-
-    async def add_member_role(self, message):
+    async def add_member_role(self, message: ServiceMessage) -> Response:
         if message.service != Services.DISCORD:
             return Response(confidence=10, text="This feature is only available on Discord")
         if not member_role_id:
@@ -159,7 +122,7 @@ class StampyControls(Module):
             return Response(
                 confidence=10,
                 why=f"{message.author.name} asked to add member role",
-                text=f"but everybody is a member already :shrug:",
+                text="but everybody is a member already :shrug:",
             )
         len_members = len(members)
         await self.send_control_message(
@@ -188,7 +151,7 @@ class StampyControls(Module):
             text="[... done adding member role]",
         )
 
-    def create_stampy_stats_message(self):
+    def create_stampy_stats_message(self)->str:
         git_message = get_github_info()
         run_message = get_running_user_info()
         memory_message = get_memory_usage()
@@ -197,22 +160,19 @@ class StampyControls(Module):
         # scores_message = self.utils.modules_dict["StampsModule"].get_user_scores()
         return "\n\n".join([git_message, run_message, memory_message, runtime_message, modules_message])
 
-    async def get_stampy_stats(self, message):
+    async def get_stampy_stats(self, message: ServiceMessage) -> Response:
         """
         TODO: Make this its own module and add number of factoids
         """
         stats_message = self.create_stampy_stats_message()
         return Response(
-            confidence=10, why="because %s asked for my stats" % message.author.name, text=stats_message
+            confidence=10, why=f"because {message.author.name} asked for my stats", text=stats_message
         )
 
     @property
-    def test_cases(self):
+    def test_cases(self) -> list[IntegrationTest]:
         return [
             self.create_integration_test(test_message="reboot", expected_response=self.REBOOT_DENIED_MESSAGE),
-            self.create_integration_test(
-                test_message="resetinviteroles", expected_response=self.RESET_INVITES_MESSAGE
-            ),
             self.create_integration_test(
                 test_message="stats",
                 expected_response=self.create_stampy_stats_message(),
