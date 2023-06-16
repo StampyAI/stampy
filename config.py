@@ -1,5 +1,5 @@
 import os
-from typing import Literal, Optional, Union, cast, get_args, overload, Any
+from typing import Literal, Optional, TypeVar, Union, cast, get_args, overload, Any
 
 import dotenv
 from structlog import get_logger
@@ -26,14 +26,13 @@ ALL_STAMPY_MODULES = get_all_modules()
 
 # fmt:off
 
+T = TypeVar("T")
+@overload
+def getenv(env_var: str, default: T) -> Union[str, T]:...
 @overload
 def getenv(env_var: str) -> str:...
-@overload
-def getenv(env_var: str, default: None) -> Optional[str]:...
-@overload
-def getenv(env_var: str, default: str) -> str:...
 
-def getenv(env_var: str, default: Any = NOT_PROVIDED) -> Optional[str]:
+def getenv(env_var: str, default: T = NOT_PROVIDED) -> Union[str, T]:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -52,13 +51,16 @@ def getenv_bool(env_var: str) -> bool:
     return e != "UNDEFINED"
 
 
-def getenv_unique_set(var_name, default: Union[frozenset, Literal["ALL"]]=frozenset()) -> Union[frozenset[str], Literal["ALL"]]:
+def getenv_unique_set(
+    var_name, default: Union[frozenset, Literal["ALL"]] = frozenset()
+) -> Union[frozenset[str], Literal["ALL"]]:
     l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
         return default
     s = frozenset(l)
     assert len(l) == len(s), f"{var_name} has duplicate members! {l}"
     return s
+
 
 maximum_recursion_depth = 30
 subs_dir = "./database/subs"
@@ -83,8 +85,10 @@ coda_api_token = getenv("CODA_API_TOKEN", default=None)
 prod_local_path = "/home/rob/stampy.local"
 
 EnvironmentType = Literal["development", "production"]
-ENVIRONMENT_TYPE= cast(EnvironmentType, getenv("ENVIRONMENT_TYPE"))
-assert ENVIRONMENT_TYPE in get_args(EnvironmentType), f"ENVIRONMENT_TYPE should be one of {get_args(EnvironmentType)} but is {ENVIRONMENT_TYPE}"
+ENVIRONMENT_TYPE = cast(EnvironmentType, getenv("ENVIRONMENT_TYPE"))
+assert ENVIRONMENT_TYPE in get_args(
+    EnvironmentType
+), f"ENVIRONMENT_TYPE should be one of {get_args(EnvironmentType)} but is {ENVIRONMENT_TYPE}"
 
 rob_miles_youtube_channel_id = {
     "production": "UCLB7AzTwc6VFZrBsO2ucBMg",
@@ -184,7 +188,7 @@ else:
     # NOTE: Rob's invite/member management functions, not ported yet
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
-    bot_reboot = getenv("BOT_REBOOT", default=None) is not None
+    bot_reboot = getenv("BOT_REBOOT", default=False)
     # GPT STUFF
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
     # if above is false, where can paid services be used?
