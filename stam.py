@@ -56,11 +56,18 @@ def get_stampy_modules() -> dict[str, Module]:
                     module_name=attr_name,
                     filename=filename,
                 )
+                if attr_name == "QuestionSetter":
+                    log.info("IMPORT", msg="Importing QuestionSetter")
                 try:
                     module = cls()
+                    log.info("IMPORT", msg="Successfully instantiated QuestionSetter")
                     stampy_modules[cls.__name__] = module
+                    log.info("IMPORT", msg="Successfully added QuestionSetter")
                 except Exception as exc:
+                    log.info("IMPORT", msg="Failed at importing QuestionSetter")
                     msg = utils.format_error_message(exc)
+                    log.error("ERROR", exc=exc)
+                    log.error("ERROR MSG", msg=msg)
                     utils.initialization_error_messages.append(msg)
     # skipped_modules = set(enabled_modules) - set(stampy_modules)
     log.info("LOADED MODULES", modules=sorted(stampy_modules, key=str.casefold))

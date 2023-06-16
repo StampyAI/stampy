@@ -20,7 +20,7 @@ class TestStam(TestCase):
         self.assertEqual(
             enabled_modules_count,
             found_modules_count,
-            f"\nenabled_modules={enabled_msg}\n"
-            f"modules={modules_msg}\n"
-            f"unavailable_modules={unavailable_msg}",
+            f"\nenabled_module_filenames={enabled_msg}\n"
+            f"stampy_module_classnames={modules_msg}\n"
+            f"unavailable_module_filenames={unavailable_msg}",
         )

@@ -96,6 +96,7 @@ from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
+
 if coda_api_token is not None:
     from utilities.question_query_utils import (
         QuestionSpecQuery,
@@ -104,7 +105,6 @@ if coda_api_token is not None:
         parse_question_spec_query,
         parse_tag,
     )
-
 
 
 GDocLinks = list[str]
@@ -116,11 +116,11 @@ EditAction = Literal["add", "remove", "clear"]
 
 class QuestionSetter(Module):
     """Module for editing questions in [coda](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a)."""
-    
+
     @staticmethod
     def is_available() -> bool:
         return coda_api_token is not None
-    
+
     def __init__(self) -> None:
         super().__init__()
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
@@ -134,8 +134,10 @@ class QuestionSetter(Module):
             r"(delete|del|remove|rm) " + alt_phr_pat, re.I
         )
         self.coda_api = CodaAPI.get_instance()
-        _status_pat = "|".join(self.coda_api.status_shorthand_dict)
-        self.re_status = re.compile(rf"(?:set|change) (?:status|to|status to) ({_status_pat})", re.I)
+        status_pat = "|".join(self.coda_api.status_shorthand_dict)
+        self.re_status = re.compile(
+            rf"(?:set|change) (?:status|to|status to) ({status_pat})", re.I
+        )
 
     async def find_gdoc_links_in_msg(
         self, channel: DiscordChannel, msg_ref_id: str

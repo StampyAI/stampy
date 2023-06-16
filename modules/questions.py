@@ -99,6 +99,7 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import coda_api_token
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
+
 if coda_api_token is not None:
     from utilities.question_query_utils import (
         parse_question_filter,
@@ -117,20 +118,18 @@ from utilities.serviceutils import ServiceMessage
 
 load_dotenv()
 
-# TODO: move this API to utils and access it via Module parent class
-
 
 class Questions(Module):
     AUTOPOST_QUESTION_INTERVAL = timedelta(hours=6)
-    
+
     @staticmethod
     def is_available() -> bool:
         return coda_api_token is not None
-    
+
     def __init__(self) -> None:
         super().__init__()
         self.coda_api = CodaAPI.get_instance()
-        
+
         # Time when last question was posted
         self.last_posted_time: datetime = (
             datetime.now() - self.AUTOPOST_QUESTION_INTERVAL / 2
@@ -166,7 +165,6 @@ class Questions(Module):
         # Was the last question that was posted, automatically posted by Stampy?
         self.last_question_autoposted = False
 
-        
         # Register `post_random_oldest_question` to be triggered every after 6 hours of no question posting
         @self.utils.client.event
         async def on_socket_event_type(event_type) -> None:
@@ -396,7 +394,9 @@ class Questions(Module):
         channel = cast(Thread, self.utils.client.get_channel(int(general_channel_id)))
 
         # query for questions with status "Not started" and not tagged as "Stampy"
-        questions_df_filtered = self.coda_api.questions_df.query("status == 'Not started'")
+        questions_df_filtered = self.coda_api.questions_df.query(
+            "status == 'Not started'"
+        )
         questions_df_filtered = questions_df_filtered[
             questions_df_filtered["tags"].map(lambda tags: "Stampy" not in tags)
         ]
