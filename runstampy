@@ -21,6 +21,7 @@ if [ "${STAMPY_RUN_TESTS:-nil}" != "nil" ]; then
     pytest;
     python -m unittest;
     mypy -m stam;
+    pylint stam;
 else
     while true; do
         python stam.py ;
