@@ -6,16 +6,16 @@ from config import database_path, enabled_modules, ALL_STAMPY_MODULES, ENVIRONME
 if not warnoptions: # if user hasn't passed explicit warning settings
     import warnings
     from typing import Literal
-    warnlevel: Literal['default', 'error', 'ignore', 'always', 'module', 'once']
+    WARN_LEVEL: Literal['default', 'error', 'ignore', 'always', 'module', 'once']
     if ENVIRONMENT_TYPE == "development":
-        warnlevel = 'error'
+        WARN_LEVEL = 'error'
     elif ENVIRONMENT_TYPE == "production":
-        warnlevel = 'always'
+        WARN_LEVEL = 'always'
     else:
         raise Exception(f"Unknown environment type {ENVIRONMENT_TYPE}")
 
-    warnings.simplefilter(warnlevel) # Change the filter in this process
-    os.environ["PYTHONWARNINGS"] = warnlevel # Also affect subprocesses
+    warnings.simplefilter(WARN_LEVEL) # Change the filter in this process
+    os.environ["PYTHONWARNINGS"] = WARN_LEVEL # Also affect subprocesses
 
 import threading
 from typing import cast
