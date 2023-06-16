@@ -94,6 +94,8 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import ENVIRONMENT_TYPE, coda_api_token
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
+from utilities.serviceutils import ServiceMessage
+from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
 if coda_api_token is not None:
     from utilities.question_query_utils import (
         QuestionSpecQuery,
@@ -102,8 +104,6 @@ if coda_api_token is not None:
         parse_question_spec_query,
         parse_tag,
     )
-from utilities.serviceutils import ServiceMessage
-from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
 
 
 

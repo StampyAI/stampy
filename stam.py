@@ -20,7 +20,6 @@ utils = Utilities.get_instance()
 def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
     stampy_modules = {}
-    skipped_modules = set(ALL_STAMPY_MODULES)
     for file_title in enabled_modules:
         assert (
             file_title in ALL_STAMPY_MODULES
@@ -46,8 +45,8 @@ def get_stampy_modules() -> dict[str, Module]:
                 except Exception as exc:
                     msg = utils.format_error_message(exc)
                     utils.initialization_error_messages.append(msg)
-
-        skipped_modules.remove(file_title)
+    
+    skipped_modules = set(enabled_modules) - set(stampy_modules)
 
     log.info("LOADED MODULES", modules=sorted(stampy_modules.keys()))
     log.info("SKIPPED MODULES", modules=sorted(skipped_modules))

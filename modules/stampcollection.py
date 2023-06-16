@@ -25,7 +25,6 @@ vote_strengths_per_emoji = {
 }
 
 
-
 class StampsModule(Module):
     STAMPS_RESET_MESSAGE = "full stamp history reset complete"
     UNAUTHORIZED_MESSAGE = "You can't do that!"
@@ -41,9 +40,14 @@ class StampsModule(Module):
         self.calculate_stamps()
         if coda_api_token is None:
             self.coda_api = None
-            self.log.warn(self.class_name, msg="CODA_API_TOKEN is not set. Coda not available. Module functionality will be restricted.")
+            self.log.warn(
+                self.class_name,
+                msg="CODA_API_TOKEN is not set. Coda not available. Module functionality will be restricted.",
+            )
         else:
-            self.coda_api = CodaAPI.get_instance() if coda_api_token is not None else None
+            self.coda_api = (
+                CodaAPI.get_instance() if coda_api_token is not None else None
+            )
         if is_in_testing_mode():
             return
         self.update_all_stamps_in_users_table()
@@ -199,7 +203,7 @@ class StampsModule(Module):
         guild = discord.utils.find(
             lambda g: g.name == self.utils.GUILD, self.utils.client.guilds
         )
-        
+
         with open("stamps.csv", "w", encoding="utf-8") as stamplog:
             stamplog.write("msgid,type,from,to\n")
 
@@ -306,7 +310,10 @@ class StampsModule(Module):
                 self.update_all_stamps_in_users_table()
             else:
                 if self.coda_api is None:
-                    self.log.warn(self.class_name, "Coda API not available (CODA_API_TOKEN is not set). Couldn't update vote counts in coda")
+                    self.log.warn(
+                        self.class_name,
+                        "Coda API not available (CODA_API_TOKEN is not set). Couldn't update vote counts in coda",
+                    )
                 self.coda_api.update_user_stamps(
                     cast(DiscordUser, message.author), stamps_after_update
                 )

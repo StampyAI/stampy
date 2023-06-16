@@ -295,7 +295,10 @@ class Utilities:
         for msg_chunk in Utilities.split_message_for_discord(
             error_message, max_length=discord_message_length_limit - 6
         ):
-            await self.error_channel.send(f"```{msg_chunk}```")
+            if is_in_testing_mode():
+                log.error(self.class_name, error_message=error_message)
+            else:
+                await self.error_channel.send(f"```{msg_chunk}```")
 
     @staticmethod
     def split_message_for_discord(
