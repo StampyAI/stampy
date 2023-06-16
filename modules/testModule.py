@@ -5,7 +5,7 @@ from typing import cast
 
 from jellyfish import jaro_winkler_similarity
 
-from config import TEST_MESSAGE_PREFIX, TEST_RESPONSE_PREFIX, test_response_message
+from config import TEST_MESSAGE_PREFIX, TEST_RESPONSE_PREFIX, test_response_message, bot_private_channel_id
 from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
@@ -20,7 +20,7 @@ class TestModule(Module):
 
     ### How to test Stampy
 
-    - You can only test Stampy in the #talk-to-stampy channel
+    - You can only test Stampy in the channel for bot_private_channel_id
     - You can test Stampy in one of three ways
         1. test all modules; `s, test yourself` or `s, test modules`
         2. test a subset of modules `s, test modules <module-name-1> <module-name-2> <module-name-3>
@@ -68,11 +68,12 @@ class TestModule(Module):
                 text=self.TEST_MODE_RESPONSE_MESSAGE,
                 why="Test already running",
             )
-        if message.channel.name != "talk-to-stampy":
+
+        if message.channel.id != bot_private_channel_id:
             return Response(
                 confidence=10,
-                text="Testing is only allowed in #talk-to-stampy",
-                why=f"{message.author.name} wanted to test me outside of the #talk-to-stampy channel which is prohibited!",
+                text="Testing is only allowed in the private channel",
+                why=f"{message.author.name} wanted to test me outside of the private channel which is prohibited!",
             )
 
         if not is_bot_dev(message.author):
