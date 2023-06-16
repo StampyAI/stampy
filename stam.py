@@ -65,7 +65,6 @@ def get_stampy_modules() -> dict[str, Module]:
     # skipped_modules = set(enabled_modules) - set(stampy_modules)
     log.info("LOADED MODULES", modules=sorted(stampy_modules, key=str.casefold))
     log.info("SKIPPED MODULES", modules=sorted(skipped_modules, key=str.casefold))
-    breakpoint()
     return stampy_modules
 
 
