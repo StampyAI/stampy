@@ -128,6 +128,8 @@ class Questions(Module):
 
     def __init__(self) -> None:
         super().__init__()
+        if is_in_testing_mode():
+            return
         self.coda_api = CodaAPI.get_instance()
 
         # Time when last question was posted

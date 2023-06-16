@@ -95,7 +95,12 @@ from config import ENVIRONMENT_TYPE, coda_api_token
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
 from utilities.serviceutils import ServiceMessage
-from utilities.utilities import has_permissions, is_from_reviewer, pformat_to_codeblock
+from utilities.utilities import (
+    has_permissions,
+    is_from_reviewer,
+    pformat_to_codeblock,
+    is_in_testing_mode,
+)
 
 if coda_api_token is not None:
     from utilities.question_query_utils import (
@@ -123,6 +128,10 @@ class QuestionSetter(Module):
 
     def __init__(self) -> None:
         super().__init__()
+        if is_in_testing_mode():
+            return
+        self.coda_api = CodaAPI.get_instance()
+
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
         # tag
         self.re_add_tag = re.compile(r"(add\s)?tag", re.I)
@@ -133,7 +142,6 @@ class QuestionSetter(Module):
         self.re_remove_alt_phr = re.compile(
             r"(delete|del|remove|rm) " + alt_phr_pat, re.I
         )
-        self.coda_api = CodaAPI.get_instance()
         status_pat = "|".join(self.coda_api.status_shorthand_dict)
         self.re_status = re.compile(
             rf"(?:set|change) (?:status|to|status to) ({status_pat})", re.I
