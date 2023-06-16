@@ -114,7 +114,7 @@ class Utilities:
         # modules stuff
         self.modules_dict: dict[str, Module] = {}
         self.service_modules_dict: dict[Services, Any] = {}
-        self.unavailable_module_names: list[str] = []
+        self.unavailable_module_filenames: list[str] = []
 
         # testing
         self.message_prefix: str = ""
@@ -432,8 +432,10 @@ def is_test_message(text: str) -> bool:
 def randbool(p: float) -> bool:
     return random.random() < p
 
+
 def is_stampy_mentioned(message: ServiceMessage) -> bool:
     return Utilities.get_instance().is_stampy_mentioned(message)
+
 
 def is_bot_dev(user: ServiceUser) -> bool:
     if user.id in bot_vip_ids:
@@ -441,6 +443,7 @@ def is_bot_dev(user: ServiceUser) -> bool:
     if user.id in bot_dev_ids:
         return True
     return any(user_has_role(user, r) for r in bot_dev_roles)
+
 
 def stampy_is_author(message: ServiceMessage) -> bool:
     return Utilities.get_instance().stampy_is_author(message)

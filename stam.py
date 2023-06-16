@@ -19,37 +19,53 @@ utils = Utilities.get_instance()
 
 def get_stampy_modules() -> dict[str, Module]:
     """Dynamically import and return all Stampy modules"""
-    stampy_modules = {}
-    for file_title in enabled_modules:
-        assert (
-            file_title in ALL_STAMPY_MODULES
-        ), f"Module {file_title} enabled but doesn't exist!"
 
-        log.info("import", filename=file_title)
-        mod = __import__(".".join(["modules", file_title]), fromlist=[file_title])
+    # dictionary mapping Module class names to initialized Module objects
+    stampy_modules: dict[str, Module] = {}
+
+    # names of files of modules that were skipped because not enabled
+    skipped_modules = set(ALL_STAMPY_MODULES - enabled_modules)
+
+    for filename in enabled_modules:
+        if filename not in ALL_STAMPY_MODULES:
+            raise AssertionError(f"Module {filename} enabled but doesn't exist!")
+
+        log.info("import", filename=filename)
+        mod = __import__(f"modules.{filename}", fromlist=[filename])
         log.info("import", module_name=mod)
 
-        for attribute in dir(mod):
-            cls = getattr(mod, attribute)
+        for attr_name in dir(mod):
+            cls = getattr(mod, attr_name)
             if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
-                log.info("import Module Found", module_name=attribute)
-                if is_available := getattr(cls, "is_available", None):
-                    if isinstance(is_available, Callable) and not is_available():
-                        log.info("import Module not available", module_name=attribute)
-                        utils.unavailable_module_names.append(cls.__name__)
-                        continue
-                    log.info("import Module available", module_name=attribute)
+                log.info("import Module Found", module_name=attr_name)
+                if (
+                    (is_available := getattr(cls, "is_available", None))
+                    and isinstance(is_available, Callable)
+                    and not is_available()
+                ):
+                    log.info(
+                        "import Module not available",
+                        module_name=attr_name,
+                        filename=filename,
+                    )
+                    utils.unavailable_module_filenames.append(filename)
+                    skipped_modules.add(filename)
+                    continue
+                log.info(
+                    "import Module available",
+                    module_name=attr_name,
+                    filename=filename,
+                )
                 try:
                     module = cls()
                     stampy_modules[cls.__name__] = module
                 except Exception as exc:
                     msg = utils.format_error_message(exc)
                     utils.initialization_error_messages.append(msg)
-    
-    skipped_modules = set(enabled_modules) - set(stampy_modules)
-
-    log.info("LOADED MODULES", modules=sorted(stampy_modules.keys()))
-    log.info("SKIPPED MODULES", modules=sorted(skipped_modules))
+    # skipped_modules = set(enabled_modules) - set(stampy_modules)
+    log.info("LOADED MODULES", modules=sorted(stampy_modules, key=str.casefold))
+    log.info("SKIPPED MODULES", modules=sorted(skipped_modules, key=str.casefold))
+    breakpoint()
     return stampy_modules
 
 
