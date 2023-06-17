@@ -84,15 +84,20 @@ class TestModule(Module):
         if message.channel.id != bot_private_channel_id:
             return Response(
                 confidence=10,
+<<<<<<< HEAD
                 text="Testing is only allowed in the private channel",
                 why=f"{message.author.name} wanted to test me outside of the private channel which is prohibited!",
+=======
+                text="Testing is only allowed in #talk-to-stampy",
+                why=f"{message.author.display_name} wanted to test me outside of the #talk-to-stampy channel which is prohibited!",
+>>>>>>> b74ea4f (changed message.author.name to message.author.display_name except where it seems to be saved to some cache/db)
             )
 
         if not is_bot_dev(message.author):
             return Response(
                 confidence=10,
-                text=f"You are not a bot dev, {message.author.name}",
-                why=f"{message.author.name} wanted to test me but they are not a bot dev",
+                text=f"You are not a bot dev, {message.author.display_name}",
+                why=f"{message.author.display_name} wanted to test me but they are not a bot dev",
             )
 
         # Otherwise, this is a request for Stampy to run integration tests
@@ -106,7 +111,7 @@ class TestModule(Module):
                     confidence=10,
                     text=f'I don\'t have a module named "{parsed_module_name}"',
                     why=(
-                        f"{message.author.name} asked me to test module "
+                        f"{message.author.display_name} asked me to test module "
                         f'"{parsed_module_name}" but I don\'t have such a module'
                     ),
                 )
@@ -120,7 +125,7 @@ class TestModule(Module):
             return Response(
                 confidence=10,
                 text="Yeah but which module?",
-                why=f"{message.author.name} asked me to test a module but they didn't specify which one",
+                why=f"{message.author.display_name} asked me to test a module but they didn't specify which one",
             )
         else:
             modules_dict = self.parse_module_dict(message)
@@ -128,7 +133,7 @@ class TestModule(Module):
                 return Response(
                     confidence=10,
                     text="I don't have these modules. Are you sure you wrote their names correctly?",
-                    why=f"{message.author.name} asked me to test some modules but I couldn't recognize their names.",
+                    why=f"{message.author.display_name} asked me to test some modules but I couldn't recognize their names.",
                 )
 
         return Response(

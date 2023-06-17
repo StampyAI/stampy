@@ -37,15 +37,18 @@ class Eliza(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         if text := self.is_at_me(message):
             # ELIZA can respond to almost anything, so it only talks if nothing else has, hence 1 confidence
-            if text.startswith("is ") and text[-1] != "?":  # stampy is x becomes "you are x"
+            if (
+                text.startswith("is ") and text[-1] != "?"
+            ):  # stampy is x becomes "you are x"
                 text = "you are " + text.partition(" ")[2]
             result = self.dereference(
-                self.analyze(text).replace("<<", "{{").replace(">>", "}}"), message.author.name
+                self.analyze(text).replace("<<", "{{").replace(">>", "}}"),
+                message.author.display_name,
             )
             if result:
                 return Response(
                     confidence=1,
                     text=result,
-                    why=f"{message.author.name} said '{text}', and ELIZA responded '{result}'" ,
+                    why=f"{message.author.display_name} said '{text}', and ELIZA responded '{result}'",
                 )
         return Response()

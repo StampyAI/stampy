@@ -153,7 +153,7 @@ class Questions(Module):
             return Response(
                 confidence=9,
                 text=f"You don't have permissions to request hard-reload, <@{message.author}>",
-                why=f"{message.author.name} asked me to hard-reload questions questions but they don't have permissions for that",
+                why=f"{message.author.display_name} asked me to hard-reload questions questions but they don't have permissions for that",
             )
         await message.channel.send(
             f"Ok, hard-reloading questions cache\nBefore: {len(self.coda_api.questions_df)} questions"
@@ -162,7 +162,7 @@ class Questions(Module):
         return Response(
             confidence=9,
             text=f"After: {len(self.coda_api.questions_df)} questions",
-            why=f"{message.author.name} asked me to hard-reload questions",
+            why=f"{message.author.display_name} asked me to hard-reload questions",
         )
 
     async def cb_refresh_questions(self, message: ServiceMessage) -> Response:
@@ -170,7 +170,7 @@ class Questions(Module):
             return Response(
                 confidence=9,
                 text=f"You don't have permissions, <@{message.author}>",
-                why=f"{message.author.name} wanted me to refresh questions questions but they don't have permissions for that",
+                why=f"{message.author.display_name} wanted me to refresh questions questions but they don't have permissions for that",
             )
         await message.channel.send(
             f"Ok, refreshing questions cache\nBefore: {len(self.coda_api.questions_df)} questions"
@@ -203,7 +203,7 @@ class Questions(Module):
         return Response(
             confidence=9,
             text=response_text,
-            why=f"{message.author.name} asked me to refresh questions cache",
+            why=f"{message.author.display_name} asked me to refresh questions cache",
         )
 
     ###################
@@ -260,7 +260,7 @@ class Questions(Module):
         return Response(
             confidence=9,
             text=response_text,
-            why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
+            why=f"{message.author.display_name} asked me to count questions{status_and_tag_response_text}",
         )
 
     ######################
@@ -297,7 +297,7 @@ class Questions(Module):
             return Response(
                 confidence=9,
                 text=response_text,
-                why=f"If {message.author.name} has these links, they can surely post these question themselves",
+                why=f"If {message.author.display_name} has these links, they can surely post these question themselves",
             )
 
         # get questions (can be emptylist)

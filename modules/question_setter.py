@@ -221,7 +221,7 @@ class QuestionSetter(Module):
         return Response(
             confidence=10,
             text=msg,
-            why=f"{message.author.name} did something useful and I wanted coda to reflect that.",
+            why=f"{message.author.display_name} did something useful and I wanted coda to reflect that.",
         )
 
     #########################
@@ -380,7 +380,7 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
-                why=f"{message.author.name} does not have permissions edit {tag_or_altphr}s on questions",
+                why=f"{message.author.display_name} does not have permissions edit {tag_or_altphr}s on questions",
             )
 
         # inserts for generating messages
@@ -393,7 +393,7 @@ class QuestionSetter(Module):
             Response(
                 confidence=10,
                 text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
-                why=f"{message.author.name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
+                why=f"{message.author.display_name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
             )
         # adding/removing one altphr per many questions is not allowed
         if (
@@ -404,7 +404,7 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"I don't think you want to {edit_action} the same alternate phrasing {to_from_on} {len(questions)} questions. Please, choose one.",
-                why=f"{message.author.name} asked me to more than one question at once which is not the way to go",
+                why=f"{message.author.display_name} asked me to more than one question at once which is not the way to go",
             )
 
         if edit_action != "clear":
@@ -469,7 +469,7 @@ class QuestionSetter(Module):
             response_text += f" {tag_or_altphr} `{val}` {to_from_on} "
             response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
 
-        why = f"{message.author.name} asked me to {edit_action} "
+        why = f"{message.author.display_name} asked me to {edit_action} "
         if edit_action == "clear":
             why += f"{tag_or_altphr}s"
         elif tag_or_altphr == "tag":
@@ -535,14 +535,14 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"You don't have permissions to changing question status, <@{message.author}>",
-                why=f"{message.author.name} tried changing question status, but I don't trust them.",
+                why=f"{message.author.display_name} tried changing question status, but I don't trust them.",
             )
 
         if status == "Live on site" and not is_from_reviewer(message):
             return Response(
                 confidence=10,
                 text=f"You're not a reviewer, <@{message.author}>. Only reviewers can change status of questions to `Live on site`",
-                why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
+                why=f"{message.author.display_name} wanted to set status to `Live on site` but they're not a reviewer.",
             )
 
         questions = await self.coda_api.query_for_questions(q_spec_query, message)
@@ -606,7 +606,7 @@ class QuestionSetter(Module):
         return Response(
             confidence=10,
             text=msg,
-            why=f"{message.author.name} asked me to change status to `{status}`.",
+            why=f"{message.author.display_name} asked me to change status to `{status}`.",
         )
 
     def __str__(self):

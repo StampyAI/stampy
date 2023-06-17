@@ -124,7 +124,7 @@ class DiscordHandler:
                 self.class_name,
                 message_id=message.id,
                 message_channel_name=message.channel.name,
-                message_author_name=message.author.name,
+                message_author_name=message.author.display_name,
                 message_author_discriminator=message.author.discriminator,
                 message_author_id=message.author.id,
                 message_channel_id=message.channel.id,

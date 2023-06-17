@@ -73,7 +73,7 @@ class CodaAPI:
         if is_in_testing_mode():
             return
 
-        self.coda = Coda(coda_api_token) #type:ignore
+        self.coda = Coda(coda_api_token)  # type:ignore
         self.reload_questions_cache()
         self.reload_users_cache()
         self.status_shorthand_dict = self._get_status_shorthand_dict()
@@ -438,7 +438,7 @@ class CodaAPI:
 
         # QuestionGDocLinks
         if query[0] == "GDocLinks":
-            why = f"{message.author.name} queried for questions matching one or more GDoc links"
+            why = f"{message.author.display_name} queried for questions matching one or more GDoc links"
             if not questions:
                 return ("These links don't lead to any questions", why + FOUND_NOTHING)
             text = "Here it is:" if len(questions) == 1 else "Here they are:"
@@ -447,7 +447,7 @@ class CodaAPI:
         # QuestionTitle
         if query[0] == "Title":
             question_title = query[1]
-            why = f'{message.author.name} asked for a question with title matching "{question_title}"'
+            why = f'{message.author.display_name} asked for a question with title matching "{question_title}"'
             if not questions:
                 return ("I found no question matching that title", why + FOUND_NOTHING)
             return "Here it is:", why
@@ -455,7 +455,7 @@ class CodaAPI:
         # QuestionLast
         if query[0] == "Last":
             mention = query[1]
-            why = f"{message.author.name} asked about the last question"
+            why = f"{message.author.display_name} asked about the last question"
             if not questions:
                 text = (
                     f'What do you mean by "{mention}"?'
@@ -475,7 +475,7 @@ class CodaAPI:
 
         _status, _tag, limit = query[1]
 
-        why = f"{message.author.name} asked me for questions{FOUND_NOTHING}"
+        why = f"{message.author.display_name} asked me for questions{FOUND_NOTHING}"
         if not questions:
             return "I found no questions", why
         if len(questions) == limit == 1:

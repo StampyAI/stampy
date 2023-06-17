@@ -2,9 +2,10 @@ import re
 import random
 from modules.module import Module, Response
 
-from utilities.utilities import Utilities, randbool
+from utilities.utilities import Utilities
 
 utils = Utilities.get_instance()
+
 
 class Random(Module):
     def process_message(self, message):
@@ -37,7 +38,9 @@ class Random(Module):
 
             if result:
                 return Response(
-                    confidence=9, text=result, why=f"{who} asked me to roll {count} {sides}-sided dice"
+                    confidence=9,
+                    text=result,
+                    why=f"{who} asked me to roll {count} {sides}-sided dice",
                 )
 
         # "Stampy, choose coke or pepsi or both"
@@ -45,16 +48,22 @@ class Random(Module):
             # repetition guard
             if atme and utils.message_repeated(message, text):
                 self.log.info(
-                    self.class_name, msg="We don't want to lock people in due to phrasing"
+                    self.class_name,
+                    msg="We don't want to lock people in due to phrasing",
                 )
                 return Response()
             cstring = text.partition(" ")[2].strip("?")
             # options = [option.strip() for option in cstring.split(" or ")]  # No oxford commas please
-            options = [option.strip() for option in re.split(" or |,", cstring) if option.strip()]
+            options = [
+                option.strip()
+                for option in re.split(" or |,", cstring)
+                if option.strip()
+            ]
             return Response(
                 confidence=9,
                 text=random.choice(options),
-                why="%s asked me to choose between the options [%s]" % (who, ", ".join(options)),
+                why="%s asked me to choose between the options [%s]"
+                % (who, ", ".join(options)),
             )
 
     def __str__(self):

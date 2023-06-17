@@ -88,7 +88,7 @@ class ChatGPTModule(Module):
         messages = []
         chatlog = ""
         for message in self.message_logs[channel][::-1]:
-            username = message.author.name
+            username = message.author.display_name
             text = message.clean_content
 
             if len(text) > self.log_message_max_chars:

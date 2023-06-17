@@ -249,7 +249,7 @@ class StampsModule(Module):
                                             user_id=user.id,
                                             message_id=message.id,
                                             reaction_type=emoji,
-                                            author_name=message.author.name,
+                                            author_name=message.author.display_name,
                                             message_author_id=message.author.id,
                                         )
                                         stamplog.write(string + "\n")
@@ -295,7 +295,7 @@ class StampsModule(Module):
                 emoji=emoji,
                 user_id=from_id,
                 reaction_message_author_id=to_id,
-                reaction_message_author_name=message.author.name,
+                reaction_message_author_name=message.author.display_name,
             )
 
             stamps_before_update = self.get_user_stamps(to_id)
@@ -332,7 +332,7 @@ class StampsModule(Module):
                 return Response(
                     confidence=9,
                     text=f"You're worth {authors_stamps:.2f} stamps to me",
-                    why=f"{message.author.name} asked how many stamps they're worth",
+                    why=f"{message.author.display_name} asked how many stamps they're worth",
                 )
 
             elif text == "reloadallstamps":

@@ -2,12 +2,23 @@ import asyncio
 import sys
 import inspect
 import threading
-from utilities import Utilities, is_test_message, is_test_question, is_test_response, get_question_id
+from utilities import (
+    Utilities,
+    is_test_message,
+    is_test_question,
+    is_test_response,
+    get_question_id,
+)
 from utilities.slackutils import SlackUtilities, SlackMessage
 from modules.module import Response
 from collections.abc import Iterable
 from datetime import datetime
-from config import TEST_RESPONSE_PREFIX, maximum_recursion_depth, slack_app_token, slack_bot_token
+from config import (
+    TEST_RESPONSE_PREFIX,
+    maximum_recursion_depth,
+    slack_app_token,
+    slack_bot_token,
+)
 from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
@@ -32,7 +43,10 @@ class SlackHandler:
             response = SocketModeResponse(envelope_id=req.envelope_id)
             client.send_socket_mode_response(response)
 
-            if req.payload["event"]["type"] == "message" and req.payload["event"].get("subtype") is None:
+            if (
+                req.payload["event"]["type"] == "message"
+                and req.payload["event"].get("subtype") is None
+            ):
                 self.on_message(SlackMessage(req.payload["event"]))
 
                 """
@@ -47,7 +61,9 @@ class SlackHandler:
         from_stampy = self.slackutils.stampy_is_author(message)
 
         if is_test_message(message.content) and self.utils.test_mode:
-            log.info(class_name, type="TEST MESSAGE", message_content=message.clean_content)
+            log.info(
+                class_name, type="TEST MESSAGE", message_content=message.clean_content
+            )
         elif from_stampy:
             for module in self.modules:
                 module.process_message_from_stampy(message)
@@ -60,7 +76,7 @@ class SlackHandler:
             class_name,
             message_id=message.id,
             message_channel_name=message.channel.name,
-            message_author_name=message.author.name,
+            message_author_name=message.author.display_name,
             message_author_id=message.author.id,
             message_channel_id=message.channel.id,
             message_is_dm=message_is_dm,
@@ -96,7 +112,9 @@ class SlackHandler:
                     response_callback=response.callback,
                     response_args=args_string,
                     response_text=(
-                        response.text if not isinstance(response.text, Generator) else "[Generator]"
+                        response.text
+                        if not isinstance(response.text, Generator)
+                        else "[Generator]"
                     ),
                     response_reasons=response.why,
                 )
@@ -110,7 +128,9 @@ class SlackHandler:
                         top_response.callback(*top_response.args, **top_response.kwargs)
                     )
                 else:
-                    new_response = top_response.callback(*top_response.args, **top_response.kwargs)
+                    new_response = top_response.callback(
+                        *top_response.args, **top_response.kwargs
+                    )
 
                 new_response.module = top_response.module
                 responses.append(new_response)
@@ -140,7 +160,9 @@ class SlackHandler:
                 return
         # If we get here we've hit maximum_recursion_depth.
         asyncio.run(
-            message.channel.send("[Stampy's ears start to smoke.  There is a strong smell of recursion]")
+            message.channel.send(
+                "[Stampy's ears start to smoke.  There is a strong smell of recursion]"
+            )
         )
 
     def _start(self, event: threading.Event):
@@ -170,5 +192,7 @@ class SlackHandler:
         if slack_app_token and slack_bot_token:
             t.start()
         else:
-            log.info(class_name, msg="Skipping Slack since our token's aren't configured!")
+            log.info(
+                class_name, msg="Skipping Slack since our token's aren't configured!"
+            )
         return t
