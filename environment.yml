@@ -25,5 +25,6 @@ dependencies:
       - codaio
       - helicone
       - mypy
+      - pylint
       - pandas-stubs
       - types-psutil
