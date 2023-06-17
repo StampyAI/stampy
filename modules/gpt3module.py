@@ -5,15 +5,11 @@ from openai.openai_object import OpenAIObject
 import openai.error as oa_error
 
 from api.openai import OpenAI, OpenAIEngines
-from config import (
-    CONFUSED_RESPONSE,
-    openai_api_key,
-    bot_vip_ids
-)
+from config import CONFUSED_RESPONSE, openai_api_key, bot_vip_ids
 from modules.module import IntegrationTest, Module, Response
+from utilities import Utilities
 from utilities.serviceutils import ServiceChannel, ServiceMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
-import openai
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -65,7 +61,11 @@ class GPT3Module(Module):
 
         if message.is_dm:
             if message.author.id not in bot_vip_ids:
-                self.log.info(self.class_name, author=message.author.id, author_type=type(message.author.id))
+                self.log.info(
+                    self.class_name,
+                    author=message.author.id,
+                    author_type=type(message.author.id),
+                )
                 return Response()
 
         if not self.is_at_me(message):
