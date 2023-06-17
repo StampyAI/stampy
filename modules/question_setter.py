@@ -197,7 +197,6 @@ class QuestionSetter(Module):
 
     def process_message(self, message: ServiceMessage) -> Response:
         # review request and approval
-        # breakpoint()
         if response := self.parse_review_request(message):
             return response
         if response := self.parse_question_approval(message):
@@ -320,7 +319,6 @@ class QuestionSetter(Module):
         If it is, return GDoc links to the questions being accepted
         or the ID of the original message that contains them.
         """
-        # breakpoint()
         text = message.clean_content
         if not any(s in text.lower() for s in ("approved", "accepted", "lgtm")):
             return
@@ -356,7 +354,6 @@ class QuestionSetter(Module):
         """Obtain GDoc links to approved questions and change their status in coda
         to `Live on site`.
         """
-        # breakpoint()
         if not is_from_reviewer(message):
             return Response(
                 confidence=10,
