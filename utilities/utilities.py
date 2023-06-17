@@ -355,6 +355,14 @@ class Utilities:
         self.lastMessages[chan] = this_text
         return False
 
+    def parse_module_names(self, text: str) -> list[str]:
+        module_name_candidates = re.findall(r"\w+", text.lower())
+        return sorted(
+            module_name
+            for module_name in self.modules_dict
+            if module_name.lower() in module_name_candidates
+        )
+
 
 def get_github_info() -> str:
     repo = Repo(".")

@@ -156,7 +156,7 @@ class ModuleHelp:
                         + "|".join(a if a != alias else f"**{a}**" for a in cmd_aliases)
                         + ")"
                     )
-                    return f"{msg_cmd_aliases}: {cmd_descr}\n{cmd_example}"
+                    return f"Module `{self.module_name}`\n{msg_cmd_aliases}\n{cmd_descr}\n{cmd_example}"
 
 
 class Module:

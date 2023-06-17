@@ -144,11 +144,10 @@ class TestModule(Module):
         """
         text = message.clean_content
         if re.search(r"test modules ([\w\s]+)", text, re.I):
-            module_name_candidates = re.findall(r"\w+", text.lower())
+            module_names = self.utils.parse_module_names(text)
             modules_dict = {
-                module_name: module
-                for module_name, module in self.utils.modules_dict.items()
-                if module_name.lower() in module_name_candidates
+                module_name: self.utils.modules_dict[module_name]
+                for module_name in module_names
             }
             return modules_dict
         return self.utils.modules_dict

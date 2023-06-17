@@ -1,3 +1,4 @@
+import re
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 
@@ -32,8 +33,10 @@ class HelpModule(Module):
                 text=self.DEFAULT_HELP_RESPONSE,
                 why=f"{message.author.name} asked me for generic help",
             )
-        if text.startswith("help "):
-            return Response(confidence=8, callback=self.cb_help, args=[text, message])
+        if re.match(r"help \w+", text):
+            return Response(confidence=10, callback=self.cb_help, args=[text, message])
+        if re.match(r"docs \w+", text):
+            return Response(confidence=10, callback=self.cb_docs, args=[text, message])
 
         return Response()
 
@@ -48,10 +51,9 @@ class HelpModule(Module):
         help_content = text[len("help ") :]
         for mod in self.utils.modules_dict.values():
             if mod_help := mod.help.get_help(text):
-                msg = f"`{mod.class_name}`: {mod_help}"
                 return Response(
                     confidence=10,
-                    text=msg,
+                    text=mod_help,
                     why=f'{message.author.name} asked me for help with "{help_content}"',
                 )
         return Response(
@@ -59,3 +61,12 @@ class HelpModule(Module):
             text=f'I couldn\'t find any help info related to "{help_content}". Could you rephrase that?',
             why=f'{message.author.name} asked me for help with "{help_content}" but I found nothing.',
         )
+
+    async def cb_docs(self, text: str, message: ServiceMessage) -> Response:
+        module_names = self.utils.parse_module_names(text)
+        if not module_names:
+            return Response(
+                confidence=10,
+                text="I don't have such a module",
+                why=f"{message.author.name} asked me for ",
+            )
