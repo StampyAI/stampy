@@ -1,6 +1,6 @@
-from typing import cast
-
 from openai.openai_object import OpenAIObject
+import re
+from typing import cast, TYPE_CHECKING
 
 from api.openai import OpenAI
 from api.utilities.openai import OpenAIEngines
@@ -20,7 +20,9 @@ if use_helicone:
     from helicone import openai
 else:
     import openai
-import re
+
+if TYPE_CHECKING:
+    from openai.openai_object import OpenAIObject
 
 openai.api_key = openai_api_key
 
