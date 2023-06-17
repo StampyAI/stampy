@@ -85,6 +85,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import random
 import re
+from textwrap import dedent
 from typing import cast, Optional
 
 from discord import Thread
@@ -99,6 +100,7 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import coda_api_token
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
+
 
 if coda_api_token is not None:
     from utilities.question_query_utils import (
@@ -130,7 +132,7 @@ class Questions(Module):
         if not self.is_available():
             exc_msg = f"Module {self.class_name} is not available."
             if coda_api_token is None:
-                exc_msg += f" CODA_API_TOKEN is not set in `.env`."
+                exc_msg += " CODA_API_TOKEN is not set in `.env`."
             if is_in_testing_mode():
                 exc_msg += " Stampy is in testing mode right now."
             raise Exception(exc_msg)
@@ -181,16 +183,54 @@ class Questions(Module):
             ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
 
+        self.help = self.make_module_help(
+            descr="Querying question database",
+            capabilities={
+                ("how many questions", "count questions"): (
+                    "Count questions, optionally queried by status and/or tag",
+                    "`s, count questions [with status <status>] [tagged <tag>]`",
+                ),
+                (
+                    "get question",
+                    "post question",
+                    "next question",
+                ): (
+                    "Post links to one or more questions",
+                    dedent(
+                        """\
+                        `s, <get/post/next> [num-of-questions] question(s) [with status <status>] [tagged <tag>]` - filter by status and/or tags and/or specify maximum number of questions (up to 5)
+                        `s, <get/post/next> question` - post next question with status `Not started`
+                        `s, <get/post/next> question <question-title>` - post question fuzzily matching that title
+                        """
+                    ),
+                ),
+                ("question info",): (
+                    "Get info about question, printed in a codeblock",
+                    dedent(
+                        """\
+                        `s, <info> question <question-title>` - filter by title (fuzzy matching)
+                        `s, <info>` - get info about last question
+                        `s, <info> <gdoc-link>` - get tinfo about the question under that GDoc link 
+                        """
+                    ),
+                ),
+                ("refresh questions", "reload questions"): (
+                    "Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs and editors/reviewers.)",
+                    "`s, <refresh/reload> questions`",
+                ),
+            },
+        )
+
     def process_message(self, message: ServiceMessage) -> Response:
         if not (text := self.is_at_me(message)):
             return Response()
         if text == "hardreload questions":
             return Response(
-                confidence=10, callback=self.cb_hardreload_questions, args=[message]
+                confidence=9, callback=self.cb_hardreload_questions, args=[message]
             )
         if self.re_refresh_questions.match(text):
             return Response(
-                confidence=10, callback=self.cb_refresh_questions, args=[message]
+                confidence=9, callback=self.cb_refresh_questions, args=[message]
             )
         if response := self.parse_count_questions_command(text, message):
             return response
@@ -207,7 +247,7 @@ class Questions(Module):
     async def cb_hardreload_questions(self, message: ServiceMessage) -> Response:
         if not has_permissions(message.author):
             return Response(
-                confidence=10,
+                confidence=9,
                 text=f"You don't have permissions to request hard-reload, <@{message.author}>",
                 why=f"{message.author.name} asked me to hard-reload questions questions but they don't have permissions for that",
             )
@@ -216,7 +256,7 @@ class Questions(Module):
         )
         self.coda_api.reload_questions_cache()
         return Response(
-            confidence=10,
+            confidence=9,
             text=f"After: {len(self.coda_api.questions_df)} questions",
             why=f"{message.author.name} asked me to hard-reload questions",
         )
@@ -224,7 +264,7 @@ class Questions(Module):
     async def cb_refresh_questions(self, message: ServiceMessage) -> Response:
         if not has_permissions(message.author):
             return Response(
-                confidence=10,
+                confidence=9,
                 text=f"You don't have permissions, <@{message.author}>",
                 why=f"{message.author.name} wanted me to refresh questions questions but they don't have permissions for that",
             )
@@ -257,7 +297,7 @@ class Questions(Module):
                 + "\n\t".join(f'"{q["title"]}"' for q in deleted_questions[:10])
             ) + "\n\t..."
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
             why=f"{message.author.name} asked me to refresh questions cache",
         )
@@ -283,7 +323,7 @@ class Questions(Module):
         filter_data = parse_question_filter(text)
 
         return Response(
-            confidence=10,
+            confidence=9,
             callback=self.cb_count_questions,
             args=[filter_data, message],
             why="I was asked to count questions",
@@ -314,7 +354,7 @@ class Questions(Module):
         response_text += status_and_tag_response_text
 
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
             why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
         )
@@ -332,7 +372,7 @@ class Questions(Module):
             return
         request_data = parse_question_query(text)
         return Response(
-            confidence=10,
+            confidence=9,
             callback=self.cb_post_questions,
             args=[request_data, message],
         )
@@ -351,7 +391,7 @@ class Questions(Module):
                 + f" yourself, <@{message.author}>?"
             )
             return Response(
-                confidence=10,
+                confidence=9,
                 text=response_text,
                 why=f"If {message.author.name} has these links, they can surely post these question themselves",
             )
@@ -388,7 +428,7 @@ class Questions(Module):
             self.coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
             why=why,
         )
@@ -449,7 +489,7 @@ class Questions(Module):
         spec_data = parse_question_spec_query(text, return_last_by_default=True)
 
         return Response(
-            confidence=10,
+            confidence=9,
             callback=self.cb_get_question_info,
             args=[spec_data, message],
         )
@@ -485,7 +525,7 @@ class Questions(Module):
             self.coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
             why=why,
         )
