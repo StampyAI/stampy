@@ -1,8 +1,10 @@
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:master-alpine
 
-# TODO: only run when not on x64
-RUN apt-get update
-RUN apt-get install gcc -y
+
+RUN apk update
+RUN apk upgrade
+RUN apk add bash git
+RUN apk add gcc # TODO: only run when not on x64
 
 RUN mkdir /stampydata
 WORKDIR /stampy
@@ -12,7 +14,7 @@ COPY environment.yml .
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda env create -f environment.yml
 
 # Make RUN commands use the new environment:
-RUN echo "conda activate stampy" >> ~/.bashrc
+RUN echo "conda activate stampy" >> ~/.profile
 SHELL ["/bin/bash", "--login", "-c"]
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda activate stampy && conda install pytest
 
