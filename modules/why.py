@@ -47,7 +47,7 @@ class Why(Module):
 
     async def _get_message_about(self, message: DiscordMessage) -> str:
         if message.reference:
-            return str(message.reference.message_id)
+            return str(message.reference.id)
         async for msg in message.channel.history(oldest_first=False):
             m = DiscordMessage(msg)
             if self.utils.stampy_is_author(m):

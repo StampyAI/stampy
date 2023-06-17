@@ -104,7 +104,7 @@ class Reply(Module):
 
         if message.reference:
             # if this message is a reply
-            reference = await message.channel.fetch_message(message.reference.message_id)
+            reference = await message.channel.fetch_message(message.reference.id)
             reference_text = reference.clean_content
             question_url = reference_text.split("\n")[-1].strip("<> \n")
 
