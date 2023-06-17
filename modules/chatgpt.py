@@ -1,3 +1,7 @@
+from typing import cast
+
+from openai.openai_object import OpenAIObject
+
 from api.openai import OpenAI
 from api.utilities.openai import OpenAIEngines
 from config import (
@@ -5,12 +9,13 @@ from config import (
     openai_api_key,
     bot_vip_ids,
     use_helicone,
-    llm_prompt
+    llm_prompt,
 )
 from modules.module import IntegrationTest, Module, Response
 from utilities.serviceutils import ServiceChannel, ServiceMessage
 from utilities import Utilities, can_use_paid_service
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
+
 if use_helicone:
     from helicone import openai
 else:
@@ -24,7 +29,9 @@ class ChatGPTModule(Module):
     def __init__(self):
         super().__init__()
 
-        self.message_logs: dict[ServiceChannel, list[ServiceMessage]] = {}  # one message log per channel
+        self.message_logs: dict[
+            ServiceChannel, list[ServiceMessage]
+        ] = {}  # one message log per channel
         self.log_max_messages = 15  # don't store more than X messages back
         self.log_max_chars = 1500  # total log length shouldn't be longer than this
         self.log_message_max_chars = (
@@ -53,7 +60,7 @@ class ChatGPTModule(Module):
             return Response()
 
         if not can_use_paid_service(message.author):
-            self.log.info(self.class_name, warning="cannot use paid service") # DEBUG
+            self.log.info(self.class_name, warning="cannot use paid service")  # DEBUG
             return Response()
 
         return Response(
@@ -106,8 +113,10 @@ class ChatGPTModule(Module):
 
         return messages
 
-    async def chatgpt_chat(self, message) -> Response:
+    async def chatgpt_chat(self, message: ServiceMessage) -> Response:
         """Ask ChatGPT what Stampy would say next in the chat log"""
+        if self.openai is None:
+            return Response()
 
         engine: OpenAIEngines = self.openai.get_engine(message)
 
@@ -120,9 +129,13 @@ class ChatGPTModule(Module):
             im = default_italics_mark
 
         if self.openai.is_channel_allowed(message):
-            self.log.info(self.class_name, msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})")
-            chatcompletion = openai.ChatCompletion.create(
-                model=str(engine), messages=messages
+            self.log.info(
+                self.class_name,
+                msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})",
+            )
+            chatcompletion = cast(
+                OpenAIObject,
+                openai.ChatCompletion.create(model=str(engine), messages=messages),
             )
             print(chatcompletion)
             if chatcompletion.choices:
