@@ -123,16 +123,41 @@ class Response:
         )
 
 
+@dataclass(frozen=True)
+class ModuleHelp:
+    module_name: str
+    descr: Optional[str]
+    capabilities: dict[str, str]
+    docstring: Optional[str]
+
+    @property
+    def descr_str(self) -> str:
+        if self.descr is None:
+            return f"`descr` for module `{self.module_name}` not available"
+        return self.descr
+
+
 class Module:
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
+    def make_module_help(
+        self, descr: Optional[str] = None, capabilities: Optional[dict[str, str]] = None
+    ) -> ModuleHelp:
+        return ModuleHelp(
+            module_name=self.class_name,
+            descr=descr,
+            capabilities=capabilities or {},
+            docstring=__doc__,
+        )
+
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
+        self.help = self.make_module_help()
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Handle the message, return a string which is your response.
@@ -232,7 +257,9 @@ class Module:
         if (re_at_me.match(text) is not None) or re.search(r"^[sS][,:]? ", text):
             at_me = True
             text = text.partition(" ")[2]
-        elif re.search(r",? @?[sS](tampy)?[.!?]?$", text):  # name can also be at the end
+        elif re.search(
+            r",? @?[sS](tampy)?[.!?]?$", text
+        ):  # name can also be at the end
             text = re.sub(
                 r",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", r"\g<punctuation>", text
             )
@@ -294,6 +321,7 @@ class Module:
         if self.__class__ is Module:
             return "BaseModule"
         return self.__class__.__name__
+
 
 class IntegrationTest(TypedDict):
     """Integration test for testing Stampy modules"""
