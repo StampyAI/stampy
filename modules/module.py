@@ -136,6 +136,12 @@ class ModuleHelp:
             return f"`descr` for module `{self.module_name}` not available"
         return self.descr
 
+    @property
+    def descr_msg(self) -> str:
+        if self.descr is None:
+            return f"- `{self.module_name}`"
+        return f"- `{self.module_name}`: {self.descr}"
+
 
 class Module:
     """Informal Interface specification for modules
