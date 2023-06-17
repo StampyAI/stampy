@@ -4,7 +4,7 @@ import inspect
 import sys
 from textwrap import wrap
 import threading
-from typing import Iterable, Generator, Union
+from typing import Iterable, Generator, Union, cast
 import unicodedata
 
 import discord
@@ -31,6 +31,7 @@ from utilities import (
     limit_text,
 )
 from utilities.discordutils import DiscordMessage
+from utilities.serviceutils import ServiceChannel
 
 log = get_logger()
 
@@ -88,9 +89,11 @@ class DiscordHandler:
 
             members = "\n - " + "\n - ".join([member.name for member in guild.members])
             log.info(self.class_name, guild_members=members)
-            await self.utils.client.get_channel(int(bot_private_channel_id)).send(
-                f"I just (re)started {get_git_branch_info()}!"
-            )
+            if bot_private_channel_id is not None:
+                await cast(
+                    ServiceChannel,
+                    self.utils.client.get_channel(int(bot_private_channel_id)),
+                ).send(f"I just (re)started {get_git_branch_info()}!")
             for error_msg in self.utils.initialization_error_messages:
                 await self.utils.log_error(error_msg)
 
