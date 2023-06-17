@@ -7,8 +7,8 @@ list what modules I have + short descriptions
 
 help
 You can ask me for help with (1) a particular module or (2) a particular command defined on a module
-`s, help <module-name>` - returns description of a module and 
- 
+`s, help <module-name>` - returns description of a module and lists all of its commands
+`s, help <command-name>` - returns description of a command
 """
 
 import re
@@ -33,13 +33,13 @@ class HelpModule(Module):
             return Response(
                 confidence=10,
                 text=self.list_modules(),
-                why=f"{message.author.name} asked me to list my modules",
+                why=f"{message.author.display_name} asked me to list my modules",
             )
         if text == "help":
             return Response(
                 confidence=10,
                 text=self.DEFAULT_HELP_RESPONSE,
-                why=f"{message.author.name} asked me for generic help",
+                why=f"{message.author.display_name} asked me for generic help",
             )
         if self.re_help.match(text):
             return Response(confidence=10, callback=self.cb_help, args=[text, message])
@@ -55,7 +55,6 @@ class HelpModule(Module):
 
     async def cb_help(self, text: str, message: ServiceMessage) -> Response:
         help_content = text[len("help ") :]
-
         # iterate over modules
         for mod in self.utils.modules_dict.values():
             # command help
@@ -64,7 +63,7 @@ class HelpModule(Module):
                 return Response(
                     confidence=10,
                     text=mod_help,
-                    why=f'{message.author.name} asked me for help with "{help_content}"',
+                    why=f'{message.author.display_name} asked me for help with "{help_content}"',
                 )
             # module help
             if mod.class_name.casefold() in help_content.casefold():
@@ -73,12 +72,12 @@ class HelpModule(Module):
                 return Response(
                     confidence=10,
                     text=msg_text,
-                    why=f"{message.author.name} asked me for help with module `{mod.class_name}`",
+                    why=f"{message.author.display_name} asked me for help with module `{mod.class_name}`",
                 )
 
         # nothing found
         return Response(
             confidence=10,
             text=f'I couldn\'t find any help info related to "{help_content}". Could you rephrase that?',
-            why=f'{message.author.name} asked me for help with "{help_content}" but I found nothing.',
+            why=f'{message.author.display_name} asked me for help with "{help_content}" but I found nothing.',
         )

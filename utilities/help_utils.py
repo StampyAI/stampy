@@ -62,9 +62,8 @@ class CommandHelp:
 
     def name_match(self, msg_text: str) -> Optional[str]:
         """check if any of this command's names appears in `msg_text`"""
-        msg_text = msg_text.casefold()
         for name in self.all_names:
-            if name.casefold() in msg_text:
+            if re.search(rf"(?<!\w){name}(?!\w)", msg_text, re.I):
                 return name
 
     @property
