@@ -69,8 +69,9 @@ Not required:
 - `BOT_DEV_IDS`: list of user ids of bot devs. You may want to include `BOT_VIP_IDS` here.
 - `BOT_CONTROL_CHANNEL_IDS`: list of channels where control commands are accepted.
 - `BOT_PRIVATE_CHANNEL_IDS`: single channel where private Stampy status updates are sent
-- `BOT_REBOOT`: how Stampy reboots himself. Unset, he only quits, expecting an external `while true` loop (like in `runstampy`/Dockerfile). Set to `exec` he will try to relaunch himself from his own CLI arguments.
 - `CODA_API_TOKEN`: token to access Coda. Without it, modules `Questions` and `QuestionSetter` will not be available and `StampyControls` will have limited functionality.
+- `BOT_REBOOT`: how Stampy reboots himself. Unset, he only quits, expecting an external `while true` loop (like in `runstampy`/Dockerfile). Set to `exec` he will try to relaunch himself from his own CLI arguments.
+- `STOP_ON_ERROR`: Dockerfile/`runstampy` only, unset `BOT_REBOOT` only. If defined, will only restart Stampy when he gets told to reboot, returning exit code 42. Any other exit code will cause the script to just stop.
 
 Specific modules (excluding LLM stuff):
 

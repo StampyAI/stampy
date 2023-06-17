@@ -82,8 +82,11 @@ class StampyControls(Module):
                     # being still in use. However the app seems to keep working.
                     os.execvp("bash", ["bash", "--login", "-c", f"python3 {Stampy_Path}"])
                 else:
-                    # expecting external infinite loop to make it a reboot
-                    exit()
+                    # expecting external infinite loop to make it a reboot.
+                    # return value of "42" can be used to distinguish from
+                    # intentional shutdown vs others.
+                    Utilities.get_instance().exit_value = 42
+                    sys.exit("Shutting down, expecting a reboot")
             return Response(
                 confidence=10,
                 why="%s tried to kill me! They said 'reboot'" % message.author.name,

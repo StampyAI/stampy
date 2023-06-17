@@ -1,5 +1,6 @@
 import os
 import threading
+import sys
 from typing import cast
 
 from structlog import get_logger
@@ -109,3 +110,7 @@ if __name__ == "__main__":
         if thread.is_alive() and not thread.daemon:
             thread.join()
     log.info(log_type, msg="Stopping Stampy...")
+
+    # Calling sys.exit() from other threads does not get
+    # the exit value to the shell
+    sys.exit(utils.exit_value)

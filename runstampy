@@ -3,7 +3,7 @@ get_secret () {
     VAR_NAME="${1}"
     GIVEN_PATH="${2}"
 
-    if [ -e ${GIVEN_PATH} ]; then
+    if [ -e "${GIVEN_PATH}" ]; then
         export ${VAR_NAME}="$(cat ${GIVEN_PATH})"
     fi
 }
@@ -23,7 +23,12 @@ if [ "${STAMPY_RUN_TESTS:-nil}" != "nil" ]; then
     mypy -m stam;
 else
     while true; do
-        python stam.py ;
+        python stam.py
+        EXIT_CODE=$?
+        # echo "Return code: ${EXIT_CODE}" # DEBUG
+        if [ "${STOP_ON_ERROR:-nil}" != "nil" ] && [ $EXIT_CODE != "42" ]; then
+            exit 0
+        fi
         sleep 0.5;
     done
 fi

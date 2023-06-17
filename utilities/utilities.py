@@ -122,6 +122,8 @@ class Utilities:
         # errors raised during initialization - to be raised on discord service start
         self.initialization_error_messages: list[str] = []
 
+        self.exit_value: int = 0
+
     @staticmethod
     def get_instance() -> Utilities:
         if Utilities.__instance is None:
