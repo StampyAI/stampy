@@ -10,7 +10,10 @@ class HelpModule(Module):
         self.help = self.make_module_help(
             descr="Helps you interact with me",
             capabilities={
-                "list what modules I have + short descriptions": "<s, list modules>"
+                ("list modules",): (
+                    "list what modules I have + short descriptions",
+                    "`<s, list modules>`",
+                )
             },
         )
 

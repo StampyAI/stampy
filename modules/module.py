@@ -123,11 +123,16 @@ class Response:
         )
 
 
+CommandAliases = tuple[str, ...]
+CommandDescr = CommandExample = str
+CapabilitiesDict = dict[CommandAliases, tuple[CommandDescr, CommandExample]]
+
+
 @dataclass(frozen=True)
 class ModuleHelp:
     module_name: str
     descr: Optional[str]
-    capabilities: dict[str, str]
+    capabilities: CapabilitiesDict
     docstring: Optional[str]
 
     @property
@@ -143,9 +148,15 @@ class ModuleHelp:
         return f"- `{self.module_name}`: {self.descr}"
 
     def get_help(self, msg_text: str) -> Optional[str]:
-        for k, v in self.capabilities.items():
-            if k in msg_text:
-                return f"{k}:\n{v}"
+        for cmd_aliases, (cmd_descr, cmd_example) in self.capabilities.items():
+            for alias in cmd_aliases:
+                if alias in msg_text:
+                    msg_cmd_aliases = (
+                        "("
+                        + "|".join(a if a != alias else f"**{a}**" for a in cmd_aliases)
+                        + ")"
+                    )
+                    return f"{msg_cmd_aliases}: {cmd_descr}\n{cmd_example}"
 
 
 class Module:
@@ -155,7 +166,9 @@ class Module:
     then give it to the module that's most confident"""
 
     def make_module_help(
-        self, descr: Optional[str] = None, capabilities: Optional[dict[str, str]] = None
+        self,
+        descr: Optional[str] = None,
+        capabilities: Optional[CapabilitiesDict] = None,
     ) -> ModuleHelp:
         return ModuleHelp(
             module_name=self.class_name,
