@@ -9,6 +9,7 @@ import discord
 from structlog import get_logger
 
 from config import TEST_MESSAGE_PREFIX
+from utilities.help_utils import ModuleHelp
 from utilities.utilities import (
     Utilities,
     is_stampy_mentioned,
@@ -123,65 +124,29 @@ class Response:
         )
 
 
-CommandAliases = tuple[str, ...]
-CommandDescr = CommandExample = str
-CapabilitiesDict = dict[CommandAliases, tuple[CommandDescr, CommandExample]]
-
-
-@dataclass(frozen=True)
-class ModuleHelp:
-    module_name: str
-    descr: Optional[str]
-    capabilities: CapabilitiesDict
-    docstring: Optional[str]
-
-    @property
-    def descr_str(self) -> str:
-        if self.descr is None:
-            return f"`descr` for module `{self.module_name}` not available"
-        return self.descr
-
-    @property
-    def descr_msg(self) -> str:
-        if self.descr is None:
-            return f"- `{self.module_name}`"
-        return f"- `{self.module_name}`: {self.descr}"
-
-    def get_help(self, msg_text: str) -> Optional[str]:
-        for cmd_aliases, (cmd_descr, cmd_example) in self.capabilities.items():
-            for alias in cmd_aliases:
-                if alias in msg_text:
-                    msg_cmd_aliases = (
-                        "("
-                        + "|".join(a if a != alias else f"**{a}**" for a in cmd_aliases)
-                        + ")"
-                    )
-                    return f"Module `{self.module_name}`\n{msg_cmd_aliases}\n{cmd_descr}\n{cmd_example}"
-
-
 class Module:
     """Informal Interface specification for modules
     These represent packets of functionality. For each message,
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    def make_module_help(
-        self,
-        descr: Optional[str] = None,
-        capabilities: Optional[CapabilitiesDict] = None,
-    ) -> ModuleHelp:
-        return ModuleHelp(
-            module_name=self.class_name,
-            descr=descr,
-            capabilities=capabilities or {},
-            docstring=__doc__,
-        )
+    # def make_module_help(
+    #     self,
+    #     descr: Optional[str] = None,
+    #     capabilities: Optional[CapabilitiesDict] = None,
+    # ) -> ModuleHelp:
+    #     return ModuleHelp(
+    #         module_name=self.class_name,
+    #         descr=descr,
+    #         capabilities=capabilities or {},
+    #         docstring=__doc__,
+    #     )
 
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
-        self.help = self.make_module_help()
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Handle the message, return a string which is your response.

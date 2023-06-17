@@ -1,5 +1,15 @@
+"""
+Helps you interact with me
+
+list modules
+list what modules I have + short descriptions
+`s, list modules`
+"""
+
 import re
+
 from modules.module import Module, Response
+from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 
 
@@ -8,15 +18,8 @@ class HelpModule(Module):
 
     def __init__(self):
         super().__init__()
-        self.help = self.make_module_help(
-            descr="Helps you interact with me",
-            capabilities={
-                ("list modules",): (
-                    "list what modules I have + short descriptions",
-                    "`<s, list modules>`",
-                )
-            },
-        )
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
+        self.re_help = re.compile(r"help \w+", re.I)
 
     def process_message(self, message: ServiceMessage) -> Response:
         if not (text := self.is_at_me(message)):
@@ -33,10 +36,8 @@ class HelpModule(Module):
                 text=self.DEFAULT_HELP_RESPONSE,
                 why=f"{message.author.name} asked me for generic help",
             )
-        if re.match(r"help \w+", text):
+        if self.re_help.match(text):
             return Response(confidence=10, callback=self.cb_help, args=[text, message])
-        if re.match(r"docs \w+", text):
-            return Response(confidence=10, callback=self.cb_docs, args=[text, message])
 
         return Response()
 
@@ -49,24 +50,30 @@ class HelpModule(Module):
 
     async def cb_help(self, text: str, message: ServiceMessage) -> Response:
         help_content = text[len("help ") :]
+
+        # iterate over modules
         for mod in self.utils.modules_dict.values():
-            if mod_help := mod.help.get_help(text):
+            # command help
+            # TODO: rename attr
+            if mod_help := mod.help.get_help_for_command(msg_text=help_content):
                 return Response(
                     confidence=10,
                     text=mod_help,
                     why=f'{message.author.name} asked me for help with "{help_content}"',
                 )
+            # module help
+            if mod.class_name.casefold() in help_content.casefold():
+                # TODO: help is empty
+                msg_text = mod.help.get_help_for_module()
+                return Response(
+                    confidence=10,
+                    text=msg_text,
+                    why=f"{message.author.name} asked me for help with module `{mod.class_name}`",
+                )
+
+        # nothing found
         return Response(
             confidence=10,
             text=f'I couldn\'t find any help info related to "{help_content}". Could you rephrase that?',
             why=f'{message.author.name} asked me for help with "{help_content}" but I found nothing.',
         )
-
-    async def cb_docs(self, text: str, message: ServiceMessage) -> Response:
-        module_names = self.utils.parse_module_names(text)
-        if not module_names:
-            return Response(
-                confidence=10,
-                text="I don't have such a module",
-                why=f"{message.author.name} asked me for ",
-            )

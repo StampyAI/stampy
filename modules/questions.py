@@ -1,91 +1,31 @@
 """
-Querying the question database. No special permissions required.
+Querying question database
 
-### Counting questions
+how many questions (count questions)
+Count questions, optionally queried by status and/or tag
+`s, count questions [with status <status>] [tagged <tag>]`
 
-Stampy can count questions in the database. You can narrow down the counting using a particular status or tag. Use commands like these:
+get question (post question, next question)
+Post links to one or more questions
+`s, <get/post/next> [num-of-questions] question(s) [with status <status>] [tagged <tag>]` - filter by status and/or tags and/or specify maximum number of questions (up to 5)
+`s, <get/post/next> question` - post next question with status `Not started`
+`s, <get/post/next> question <question-title>` - post question fuzzily matching that title
 
-- `s, count questions` - counts all questions
-- `s, count questions with status live on site` - counts only questions with status `Live on site`
-- `s, count questions tagged decision theory` - counts only questions with the tag `Decision theory`
-- `s, count questions with status live on site and tagged decision theory` - counts only questions that **both** have status `Live on site` **and** the tag `Decision theory`
+question info
+Get info about question, printed in a codeblock
+`s, <info> question <question-title>` - filter by title (fuzzy matching)
+`s, <info>` - get info about last question
+`s, <info> <gdoc-link>` - get tinfo about the question under that GDoc link
 
-![](images/help/Questions-count-questions.png)
-
----
-
-Status name is case-insensitive: there is no difference between `Live on site`, `live on site`, or `LIVE ON SITE`. Similarly for tags. You can also use acronym aliases for status (but not for tags), e.g., `los` for `Live on site` or `bs` for `Bulletpoint sketch`.
-
-### Posting questions
-
-You can use Stampy to query the database of questions. Stampy will put links to questions that match your query into the channel.
-
-The general pattern for that command is: `s, <get/post/next> <q/question/questions> <ADDITIONAL_INFO>`.
-
-You can query in three ways
-
-#### 1. Title
-
-Stampy returns first question matching that title
-
-`s, get <q/question/title/titled> <question_title>`
-
-![](/images/help/Questions-get-adversarial.png)
-
-#### 2. Filtering by status on tags
-
-Stampy returns the specified number of questions (max 5, default 1) matching (optional) status and tag
-
-`s, get 3 questions with status in progress and tagged definitions` (like [above](#counting-questions))
-
-![](images/help/Questions-get-3-questions-status-tagged.png)
-
-If you say, `s, next question`, then Stampy will query all questions, and post the least recently asked one.
-
-![](images/help/Questions-next.png)
-
-#### 3. Last
-
-Stampy will post last question he interacted with.
-
-`s, post last question` / `s, post it`
-
-![](/images/help/Questions-get-last.png)
-
----
-
-#### Autoposting (Rob Miles' server only)
-
-On Rob Miles' Discord server, Stampy posts a random least recently asked question, if the last question was posted on somebody's request **and** more than 6 hours passed since then. Stampy posts either to the `#editing` channel or the `#general`
-
-### Getting question info
-
-`s, get info <ADDITIONAL_INFO>` (with any filtering option mentioned so far, except `next`) can be used to get detailed information about the question as an entity in the database.
-
-![](images/help/Questions-get-info-babyagi.png)
-
-### Reloading questions
-
-If you're a bot dev, editor, or reviewerr, you can ask Stampy to refresh questions cache (sync it with coda) by the command.
-
-`s, <reload/fetch/load/update> <?new> <q/questions>`
-
-E.g., `s, reload questions` or `s, fetch new q` 
-
-Stampy also does it whenever he sees a review request containing a GDoc link, which does not appear in any of the questions in his cache.
-
-If you use it and for some reason Stampy's question cache seems still seems to be out of sync with coda, use hardreload.
-
-`s, hardreload questions`.
-
-The difference is that while the former updates the current cache, the latter overwrites it with a new one, which is more certain to work but probably less memory-safe. If it turns out that this function is not necessary, it will be deleted. 
+refresh questions (reload questions)
+Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs and editors/reviewers)
+`s, <refresh/reload> questions`
 """
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 import random
 import re
-from textwrap import dedent
 from typing import cast, Optional
 
 from discord import Thread
@@ -100,6 +40,7 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import coda_api_token
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
+from utilities.help_utils import ModuleHelp
 
 
 if coda_api_token is not None:
@@ -138,6 +79,7 @@ class Questions(Module):
             raise Exception(exc_msg)
 
         super().__init__()
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.coda_api = CodaAPI.get_instance()
 
         # Time when last question was posted
@@ -182,44 +124,6 @@ class Questions(Module):
                 self.last_posted_time < datetime.now() - self.AUTOPOST_QUESTION_INTERVAL
             ) and not self.last_question_autoposted:
                 await self.post_random_oldest_question(event_type)
-
-        self.help = self.make_module_help(
-            descr="Querying question database",
-            capabilities={
-                ("how many questions", "count questions"): (
-                    "Count questions, optionally queried by status and/or tag",
-                    "`s, count questions [with status <status>] [tagged <tag>]`",
-                ),
-                (
-                    "get question",
-                    "post question",
-                    "next question",
-                ): (
-                    "Post links to one or more questions",
-                    dedent(
-                        """\
-                        `s, <get/post/next> [num-of-questions] question(s) [with status <status>] [tagged <tag>]` - filter by status and/or tags and/or specify maximum number of questions (up to 5)
-                        `s, <get/post/next> question` - post next question with status `Not started`
-                        `s, <get/post/next> question <question-title>` - post question fuzzily matching that title
-                        """
-                    ),
-                ),
-                ("question info",): (
-                    "Get info about question, printed in a codeblock",
-                    dedent(
-                        """\
-                        `s, <info> question <question-title>` - filter by title (fuzzy matching)
-                        `s, <info>` - get info about last question
-                        `s, <info> <gdoc-link>` - get tinfo about the question under that GDoc link 
-                        """
-                    ),
-                ),
-                ("refresh questions", "reload questions"): (
-                    "Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs and editors/reviewers.)",
-                    "`s, <refresh/reload> questions`",
-                ),
-            },
-        )
 
     def process_message(self, message: ServiceMessage) -> Response:
         if not (text := self.is_at_me(message)):
