@@ -6,7 +6,7 @@ import numpy as np
 from structlog import get_logger
 
 from api.coda import CodaAPI
-from utilities import is_in_testing_mode, utilities, Utilities
+from utilities import is_in_testing_mode, utilities, Utilities, is_bot_dev
 from modules.module import Module, Response
 from config import stamp_scores_csv_file_path, coda_api_token
 from servicemodules.serviceConstants import Services
@@ -337,10 +337,7 @@ class StampsModule(Module):
 
             elif text == "reloadallstamps":
                 if message.service == Services.DISCORD:
-                    asked_by_admin = discord.utils.get(
-                        message.author.roles, id=bot_admin_role_id
-                    )
-                    if asked_by_admin:
+                    if is_bot_dev(message.author):
                         return Response(
                             confidence=10, callback=self.reloadallstamps, args=[message]
                         )
