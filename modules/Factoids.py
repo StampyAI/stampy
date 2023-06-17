@@ -6,7 +6,7 @@ from config import factoid_database_path
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities.discordutils import DiscordUser
-from utilities.utilities import get_user_handle, randbool, is_bot_dev
+from utilities.utilities import get_user_handle, randbool, is_bot_dev, Utilities
 
 
 class Factoids(Module):
@@ -217,9 +217,10 @@ class Factoids(Module):
     @property
     def test_cases(self):
         return [
+
             self.create_integration_test(
                 test_message="remember chriscanal is the person who wrote this test",
-                expected_response='Ok stampy, remembering that "chriscanal" is "the person who wrote this test"',
+                expected_response=f'Ok {Utilities.get_instance().discord_user.name}, remembering that "chriscanal" is "the person who wrote this test"',
             ),
             self.create_integration_test(
                 test_message="list chriscanal",
@@ -227,7 +228,7 @@ class Factoids(Module):
             ),
             self.create_integration_test(
                 test_message="forget that",
-                expected_response='Ok stampy, forgetting that "chriscanal" is "the person who wrote this test"',
+                expected_response=f'Ok {Utilities.get_instance().discord_user.name}, forgetting that "chriscanal" is "the person who wrote this test"',
             ),
         ]
 
