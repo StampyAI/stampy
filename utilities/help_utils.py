@@ -37,7 +37,9 @@ class CommandHelp:
         ), "Must have at least a name (1), a description (2), and an example (3)"
         name_line, descr = lines[:2]
         name, alt_names = cls.parse_name_line(name_line)
-        longdescr = lines[2] if not lines[2].startswith("`") else None
+        longdescr = (
+            "\n".join(l for l in lines[2:] if not l.startswith("`")) or None
+        )  # lines[2] if not lines[2].startswith("`") else None
         cases = [l for l in lines[2:] if l.startswith("`")]
         return cls(
             name=name,
@@ -57,7 +59,7 @@ class CommandHelp:
         """Formatted names: `<main-name> (<alt-name1>, <alt-name2>, ...)`"""
         names_fmt = self.name
         if self.alt_names:
-            names_fmt += " (" + "|".join(self.alt_names) + ")"
+            names_fmt += " (" + ", ".join(self.alt_names) + ")"
         return names_fmt
 
     def name_match(self, msg_text: str) -> Optional[str]:
