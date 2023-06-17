@@ -38,6 +38,18 @@ class TestModule(Module):
         self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage):
+        if message.clean_content == "s, send a long message":
+            if not is_bot_dev(message.author):
+                return Response(
+                    confidence=10,
+                    text=f"You're not a bot dev, {message.author.display_name}",
+                    why=f"{message.author.display_name} doesn't have permissions to ask me to spam the channel with absurdly long messages",
+                )
+            self.log.info(self.class_name, msg="horrifically long message sent")
+            return Response(
+                confidence=10, text=str(list(range(25000))), why="you told me to dude!"
+            )
+
         if not self.is_at_module(message):
             return Response()
         # If this is a message coming from an integration test,
