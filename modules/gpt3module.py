@@ -71,6 +71,9 @@ class GPT3Module(Module):
         if not self.is_at_me(message):
             return Response()
 
+        if Utilities.get_instance().test_mode:
+            return Response()
+
         return Response(
             confidence=2, callback=self.gpt3_chat, args=[message], kwargs={}
         )
@@ -263,11 +266,4 @@ class GPT3Module(Module):
     def __str__(self):
         return "GPT-3 Module"
 
-    @property
-    def test_cases(self) -> list[IntegrationTest]:
-        return [
-            self.create_integration_test(
-                test_message="GPT3 api is only hit in production because it is expensive?",
-                expected_response=CONFUSED_RESPONSE,
-            )  # TODO write actual test for this
-        ]
+    # TODO: integration tests that make sense
