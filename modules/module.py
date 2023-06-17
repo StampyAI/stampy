@@ -142,6 +142,11 @@ class ModuleHelp:
             return f"- `{self.module_name}`"
         return f"- `{self.module_name}`: {self.descr}"
 
+    def get_help(self, msg_text: str) -> Optional[str]:
+        for k, v in self.capabilities.items():
+            if k in msg_text:
+                return f"{k}:\n{v}"
+
 
 class Module:
     """Informal Interface specification for modules
