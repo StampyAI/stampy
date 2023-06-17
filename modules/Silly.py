@@ -10,6 +10,7 @@ from utilities.utilities import Utilities, randbool
 
 utils = Utilities.get_instance()
 
+
 class Silly(Module):
     def __init__(self):
         super().__init__()
@@ -28,8 +29,10 @@ class Silly(Module):
             return Response()
 
         if text.lower() == "show me how exceptional you are!":
+
             class SillyError(Exception):
                 pass
+
             raise SillyError("this much")
 
         # Stampy say X -> X!
@@ -42,25 +45,35 @@ class Silly(Module):
 
         # XKCD #37
         if "-ass " in text:
-            return Response(confidence=4, text=text.replace("-ass ", " ass-"), why="XKCD #37")
+            return Response(
+                confidence=4, text=text.replace("-ass ", " ass-"), why="XKCD #37"
+            )
 
         # I for one am tired of that reference
         # TODO make this a regex factoid
         if (atme or randbool(0.5)) and re.search("welcome our new ", text):
             return Response(
-                confidence=4, text="Never heard that one before...", why=who + " was being unoriginal"
+                confidence=4,
+                text="Never heard that one before...",
+                why=who + " was being unoriginal",
             )
 
         # change 'ex' to 'sex' sometimes? Not sure about this one
         if " ex" in text and len(text) < 100 and randbool(0.005):
-            return Response(confidence=4, text=text.replace(" ex", " sex"), why="sex sells?")
+            return Response(
+                confidence=4, text=text.replace(" ex", " sex"), why="sex sells?"
+            )
 
         # Pokemon reference
         if re.match(r"^[^\W]+ used ", text) and ("used to" not in text):
             return Response(
                 confidence=4,
                 text=random.choice(
-                    ["It's super effective!", "It's not very effective...", "...but it failed!"]
+                    [
+                        "It's super effective!",
+                        "It's not very effective...",
+                        "...but it failed!",
+                    ]
                 ),
                 why="I like pokemon ok",
             )
@@ -90,7 +103,9 @@ class Silly(Module):
         ):
             return Response(
                 confidence=4,
-                text=random.choice(["...yet!", "Well, not *yet*", "CHALLENGE ACCEPTED"]),
+                text=random.choice(
+                    ["...yet!", "Well, not *yet*", "CHALLENGE ACCEPTED"]
+                ),
                 why=f"{who} tried to tell me what I can't do",
             )
 
@@ -98,32 +113,40 @@ class Silly(Module):
         if randbool(0.9) and re.search(r"(\w{4,20} )and the (\w{4,20} ?){2}s\b", text):
             match = re.search(r"(\w{4,20} )and the (\w{4,20} ?){2}s\b", text)
             bandname = match.group(0).title().replace("And The", "and the")
+            self.utils.modules_dict["Factoids"].db.add(
+                "band name", bandname, message.author.id, "reply"
+            )
             return Response(
                 confidence=4,
                 text=f'"{bandname}" might be a good name for a band',
                 why=f"{who} said something like 'X and the Ys' ({bandname}), which could be a band name",
             )
-            self.utils.modules_dict["Factoids"].db.add("band name", bandname, message.author.id, "reply")
         if (randbool(0.04) or atme) and re.search(r"[tT]he (\w{4,20} ?){2}s\b", text):
             match = re.search(r"[tT]he (\w{4,20} ?){2}s\b", text)
             bandname = match.group(0).title()
+            self.utils.modules_dict["Factoids"].db.add(
+                "band name", bandname, message.author.id, "reply"
+            )
             return Response(
                 confidence=4,
                 text=f'"{bandname}" might be a good name for a band',
                 why=f"{who} said something like 'The Xs' ({bandname}), which could be a band name",
             )
-            self.utils.modules_dict["Factoids"].db.add("band name", bandname, message.author.id, "reply")
 
         # The sex number
         # TODO make this a regex factoid
         if re.search(r"\b69\b", text):
-            return Response(confidence=4, text="nice.", why="I'll tell you when you're older")
+            return Response(
+                confidence=4, text="nice.", why="I'll tell you when you're older"
+            )
 
         # ...If you will
         # TODO make this a regex factoid
         if re.search(r", if you will\.?$", text):
             return Response(
-                confidence=4, text="I won't.", why=f"{who} said 'if you will', but I don't think I will."
+                confidence=4,
+                text="I won't.",
+                why=f"{who} said 'if you will', but I don't think I will.",
             )
 
         # So's your face
@@ -141,8 +164,14 @@ class Silly(Module):
             )
 
         # Amazon Echo shopping list add
-        if randbool(0.1) and text.lower().startswith("i need ") or text.lower().startswith("i want "):
-            tobuy = re.search(r"([^.,?!]+)", text[7:]).group(1)  # only up to punctuation
+        if (
+            randbool(0.1)
+            and text.lower().startswith("i need ")
+            or text.lower().startswith("i want ")
+        ):
+            tobuy = re.search(r"([^.,?!]+)", text[7:]).group(
+                1
+            )  # only up to punctuation
             if not (tobuy.startswith("it ") or tobuy.startswith("that ")):
                 return Response(
                     confidence=4,
@@ -171,9 +200,15 @@ class Silly(Module):
             )
             # match any numbers (including commas), increment them, and put them back
             result = result % re.sub(
-                "[0-9]*,?[0-9]+", (lambda x: str(int(x.group(0).replace(",", "")) + 1)), text
+                "[0-9]*,?[0-9]+",
+                (lambda x: str(int(x.group(0).replace(",", "")) + 1)),
+                text,
             )
-            return Response(confidence=4, text=result, why=f"{who} was showing off, but I'm better than them")
+            return Response(
+                confidence=4,
+                text=result,
+                why=f"{who} was showing off, but I'm better than them",
+            )
 
         # Dumb CSI joke when you post an IPv4 address
         if randbool(0.05) and re.search(
@@ -181,11 +216,17 @@ class Silly(Module):
             text,
         ):
             return Response(
-                confidence=4, text="[Builds a GUI in Visual Basic]", why="to track the killer's IP address!"
+                confidence=4,
+                text="[Builds a GUI in Visual Basic]",
+                why="to track the killer's IP address!",
             )
 
         # What time is it?
-        if text.lower() in ("what time is it?", "what is the time?", "what's the time?"):
+        if text.lower() in (
+            "what time is it?",
+            "what is the time?",
+            "what's the time?",
+        ):
             if randbool(0.8):
                 result = datetime.datetime.now().strftime("%H:%M")
             else:
@@ -193,26 +234,36 @@ class Silly(Module):
             return Response(confidence=4, text=result, why=f"{who} asked for the time")
 
         # If you want pictures of spiderman, Stampy's got you
-        imagere = re.compile(r"(get|find|show|i want)?( me)? ?(pictures|images|photos|photographs) of (.*)")
+        imagere = re.compile(
+            r"(get|find|show|i want)?( me)? ?(pictures|images|photos|photographs) of (.*)"
+        )
         if imagere.match(text.lower()):
             term = imagere.match(text.lower()).group(4)
             urlterm = urllib.parse.quote_plus(term)
             url = "https://www.google.co.uk/search?tbm=isch&q=%s" % urlterm
-            return Response(confidence=4, text=url, why=f"{who} asked for pictures of '{term}'")
+            return Response(
+                confidence=4, text=url, why=f"{who} asked for pictures of '{term}'"
+            )
 
         # How do I X? -> You Just X!
         match = re.search(r"^how do (you|I|i) ([^?]+)\??", text)
         if match:
             thing = match.group(2).replace(" a ", " the ")
             return Response(
-                confidence=4, text=f"You just {thing}", why=f"{who} asked how you {thing}, so I told them"
+                confidence=4,
+                text=f"You just {thing}",
+                why=f"{who} asked how you {thing}, so I told them",
             )
 
         # Dude where's my car is still relevant right?
         match = re.search(r"^dude,? where'?s (my|your) ([^?]+)\??", text.lower())
         if match:
             thing = match.group(2)
-            return Response(confidence=4, text=f"Where's your {thing}, dude?", why="Dude!",)
+            return Response(
+                confidence=4,
+                text=f"Where's your {thing}, dude?",
+                why="Dude!",
+            )
 
         # CMake
         # TODO make this a regex factoid when they exist
@@ -231,7 +282,11 @@ class Silly(Module):
                 result = result.replace(c, "o")
             for c in "AEIOU":
                 result = result.replace(c, "O")
-            return Response(confidence=2, text=result, why="O don't know, O thooght ot woold bo fonny")
+            return Response(
+                confidence=2,
+                text=result,
+                why="O don't know, O thooght ot woold bo fonny",
+            )
 
         # If someone is panicking, Stampy panics too
         if len(text) > 3 and set(text.lower()) == set("a"):
@@ -243,16 +298,24 @@ class Silly(Module):
 
         # Stampy! Rob!
         elif text.strip().lower().strip("!.") == "stampy":
-            result = who + (text[-1] == "!" and "!" or "") + (text[-1] == "." and "." or "")
+            result = (
+                who + (text[-1] == "!" and "!" or "") + (text[-1] == "." and "." or "")
+            )
             return Response(confidence=4, text=result, why="Stampy.")
         else:
             return Response()
 
         # if the sentence looks like it might be a choice, choose between them sometimes
         if (atme or randbool(0.5)) and " or " in text and len(text.split()) < 20:
-            options = [option.strip() for option in re.split(" or |,", text.strip("?")) if option.strip()]
+            options = [
+                option.strip()
+                for option in re.split(" or |,", text.strip("?"))
+                if option.strip()
+            ]
             try:  # reflect with ELIZA if available
-                result = self.utils.modules_dict["Eliza"].reflect(random.choice(options))
+                result = self.utils.modules_dict["Eliza"].reflect(
+                    random.choice(options)
+                )
                 replacements = [
                     ("were it", "it was"),
                     ("are it", "it is"),
@@ -270,7 +333,8 @@ class Silly(Module):
             return Response(
                 confidence=6,
                 text=r"I choose {random.choice(options)}",
-                why="%s implied a choice between the options [%s]" % (who, ", ".join(options)),
+                why="%s implied a choice between the options [%s]"
+                % (who, ", ".join(options)),
             )
 
     def __str__(self):

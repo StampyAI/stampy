@@ -332,7 +332,7 @@ class QuestionSetter(Module):
 
         if not (msg_ref := message.reference):
             return
-        if not (msg_ref_id := getattr(msg_ref, "message_id", None)):
+        if not (msg_ref_id := getattr(msg_ref, "id", None)):
             return
 
         # if msg_ref_id is missing, then it will need to be retrieved
