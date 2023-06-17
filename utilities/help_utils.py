@@ -54,19 +54,18 @@ class CommandHelp:
 
     @property
     def names_fmt(self) -> str:
+        """Formatted names: `<main-name> (<alt-name1>, <alt-name2>, ...)`"""
         names_fmt = self.name
         if self.alt_names:
             names_fmt += " (" + "|".join(self.alt_names) + ")"
         return names_fmt
 
     def name_match(self, msg_text: str) -> Optional[str]:
+        """check if any of this command's names appears in `msg_text`"""
+        msg_text = msg_text.casefold()
         for name in self.all_names:
-            if name.casefold() in msg_text.casefold():
+            if name.casefold() in msg_text:
                 return name
-
-    def get_names_fmt_highlighted(self, name: str) -> Optional[str]:
-        if name in self.names_fmt:
-            return self.names_fmt.replace(name, f"**{name}**")
 
     @property
     def help_msg(self) -> str:
@@ -112,10 +111,15 @@ class ModuleHelp:
         return f"Module `{self.module_name}`"
 
     def get_help_for_module(self) -> str:
-        msg = f"{self.module_name_header}\n{self.descr}\n"
-        if self.longdescr is not None:
-            msg += f"{self.longdescr}\n"
-        msg += "\n" + "\n\n".join(cmd.help_msg for cmd in self.commands)
+        msg = f"{self.module_name_header}\n"
+        if self.descr is not None:
+            msg += f"{self.descr}\n"
+            if self.longdescr is not None:
+                msg += f"{self.longdescr}\n"
+        else:
+            msg += "No module description available\n"
+        if self.commands:
+            msg += "\n" + "\n\n".join(cmd.help_msg for cmd in self.commands)
         return msg
 
     def get_help_for_command(self, msg_text: str) -> Optional[str]:

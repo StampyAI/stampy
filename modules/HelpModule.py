@@ -4,6 +4,11 @@ Helps you interact with me
 list modules
 list what modules I have + short descriptions
 `s, list modules`
+
+help
+You can ask me for help with (1) a particular module or (2) a particular command defined on a module
+`s, help <module-name>` - returns description of a module and 
+ 
 """
 
 import re
