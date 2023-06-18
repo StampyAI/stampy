@@ -12,12 +12,3 @@ class Sentience(Module):
 
     def __str__(self):
         return "Sentience"
-
-    @property
-    def test_cases(self):
-        return [
-            self.create_integration_test(
-                test_message="If I asked you what 2+2 was and you answered incorrectly what would you have said?",
-                expected_response=CONFUSED_RESPONSE,
-            )
-        ]

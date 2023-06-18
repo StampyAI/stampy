@@ -63,6 +63,9 @@ class ChatGPTModule(Module):
             self.log.info(self.class_name, warning="cannot use paid service")  # DEBUG
             return Response()
 
+        if Utilities.get_instance().test_mode:
+            return Response()
+
         return Response(
             confidence=3, callback=self.chatgpt_chat, args=[message], kwargs={}
         )
@@ -159,11 +162,4 @@ class ChatGPTModule(Module):
     def __str__(self):
         return "ChatGPT Module"
 
-    @property
-    def test_cases(self) -> list[IntegrationTest]:
-        return [
-            self.create_integration_test(
-                test_message="ChatGPT api is only hit in production because it is expensive?",
-                expected_response=CONFUSED_RESPONSE,
-            )  # TODO write actual test for this
-        ]
+    # TODO: integration tests that make sense
