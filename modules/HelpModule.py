@@ -12,6 +12,7 @@ You can ask me for help with (1) a particular module or (2) a particular command
 """
 
 import re
+from textwrap import dedent
 
 from modules.module import Module, Response
 from utilities.help_utils import ModuleHelp
@@ -19,7 +20,12 @@ from utilities.serviceutils import ServiceMessage
 
 
 class HelpModule(Module):
-    DEFAULT_HELP_RESPONSE = "#TODO: DEFAULT HELP RESPONSE"
+    STAMPY_HELP_MSG = dedent(
+        """\
+        If you'd like to get a general overview of my modules, say `s, list modules`
+        For a description of a module and what commands are available for it, say `s, help <module-name>`
+        For a detailed description of one of those commands say `s, help <command-name>` (where `command-name` is any of alternative names for that command)"""
+    )
 
     def __init__(self):
         super().__init__()
@@ -38,7 +44,7 @@ class HelpModule(Module):
         if text == "help":
             return Response(
                 confidence=10,
-                text=self.DEFAULT_HELP_RESPONSE,
+                text=self.STAMPY_HELP_MSG,
                 why=f"{message.author.display_name} asked me for generic help",
             )
         if self.re_help.match(text):
