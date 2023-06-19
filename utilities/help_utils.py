@@ -87,19 +87,15 @@ class ModuleHelp:
     @classmethod
     def from_docstring(cls, module_name: str, docstring: Optional[str]) -> ModuleHelp:
         if docstring is None:
-            return cls(module_name=module_name, descr=None, longdescr=None, commands=[])
+            return cls(module_name, None, None, [])
         descr_segment, *command_segments = re.split(r"\n{2,}", docstring.strip())
         if "\n" in descr_segment:
             descr, longdescr = descr_segment.split("\n", 1)
         else:
             descr = descr_segment
             longdescr = None
-        cmds = [
-            CommandHelp.from_docstring_segment(segment) for segment in command_segments
-        ]
-        return cls(
-            module_name=module_name, descr=descr, longdescr=longdescr, commands=cmds
-        )
+        cmds = [CommandHelp.from_docstring_segment(segm) for segm in command_segments]
+        return cls(module_name, descr, longdescr, cmds)
 
     @property
     def descr_msg(self) -> str:

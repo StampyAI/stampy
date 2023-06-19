@@ -1,3 +1,27 @@
+"""
+Test whether I work as expected
+Ideally, every Stampy module should have a suite of integration tests written for it. A Stampy integration test consists of Stampy sending a particular test message to the channel and testing whether he (i.e., Stampy himself) will respond to it as expected. You can run all tests at once or only for a subset of modules.
+**Important:** tests can be run only in the `#talk-to-stampy` channel.
+
+test all modules (test yourself)
+Test all Stampy modules that have tests written for them.
+`s, test yourself`
+`s, test modules` - If it's not specified **which particular modules** are to be tested, all modules will be tested.
+
+test some modules (test modules)
+Test a selected subset of Stampy modules.
+`s, test modules <module-name-1> <module-name-2> ...` - Specify one or more modules. Tests will be run only for those.
+
+test one module (test module)
+Test exactly one Stampy module.
+`s, test module <module-name>`
+
+send a long message
+Stampy will send an absurdly long message to the channel so that you can see if it's properly shortened and wrapped.
+This is not included in any tests; only meant as a possibility to check that one functionality.
+`s, send a long message`
+"""
+
 from asyncio import sleep
 import re
 from textwrap import dedent
@@ -5,7 +29,12 @@ from typing import cast
 
 from jellyfish import jaro_winkler_similarity
 
-from config import TEST_MESSAGE_PREFIX, TEST_RESPONSE_PREFIX, test_response_message, bot_private_channel_id
+from config import (
+    TEST_MESSAGE_PREFIX,
+    TEST_RESPONSE_PREFIX,
+    test_response_message,
+    bot_private_channel_id,
+)
 from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
@@ -84,13 +113,10 @@ class TestModule(Module):
         if message.channel.id != bot_private_channel_id:
             return Response(
                 confidence=10,
-<<<<<<< HEAD
                 text="Testing is only allowed in the private channel",
                 why=f"{message.author.name} wanted to test me outside of the private channel which is prohibited!",
-=======
-                text="Testing is only allowed in #talk-to-stampy",
-                why=f"{message.author.display_name} wanted to test me outside of the #talk-to-stampy channel which is prohibited!",
->>>>>>> b74ea4f (changed message.author.name to message.author.display_name except where it seems to be saved to some cache/db)
+                # text="Testing is only allowed in #talk-to-stampy",
+                # why=f"{message.author.display_name} wanted to test me outside of the #talk-to-stampy channel which is prohibited!",
             )
 
         if not is_bot_dev(message.author):
