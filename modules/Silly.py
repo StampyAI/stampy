@@ -19,8 +19,8 @@ class Silly(Module):
         atme = self.is_at_me(message)
         text = atme or message.clean_content
         who = message.author.name
-        print(atme)
-        print(text)
+        #print(atme) # DEBUG
+        #print(text) # DEBUG
 
         if atme and utils.message_repeated(message, text):
             self.log.info(
