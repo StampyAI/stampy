@@ -106,7 +106,7 @@ class Response:
         text = self.text
         callback = self.callback.__name__ if self.callback else None
         args = self.args
-        kwargs = self.kwargs
+        kwargs = trim_kwargs(self.kwargs)
         module = str(self.module)
         why = self.why
         return (
@@ -333,3 +333,15 @@ class IntegrationTest(TypedDict):
     test_wait_time: float
     minimum_allowed_similarity: float
     result: Literal["PASSED", "FAILED", None]
+
+def trim_kwargs(kwargs: dict) -> dict:
+    unwanted = frozenset("prompt")
+    # Prompt should already be known by the user: #294
+    for item in unwanted:
+        if item in kwargs:
+            if hasattr(kwargs[item], "id"):
+                kwargs[item] = "id={}".format(kwargs[item].id)
+            else:
+                kwargs[item] = "<{}>".format(item)
+
+    return kwargs

@@ -19,7 +19,7 @@ from config import (
     youtube_api_key,
     bot_private_channel_id,
 )
-from modules.module import Response
+from modules.module import Response, trim_kwargs
 from servicemodules import discordConstants
 from utilities import (
     Utilities,
@@ -169,6 +169,8 @@ class DiscordHandler:
 
                     response.text = limit_text_and_notify(response, why_traceback)
 
+                    response = trim_kwargs(response.kwargs)
+
                     why_traceback.append(
                         f"I asked the {module} module, and it responded with: {response}"
                     )
@@ -183,10 +185,11 @@ class DiscordHandler:
                     if response.callback:
                         args_string = ", ".join([a.__repr__() for a in response.args])
                         if response.kwargs:
+                            cleaned_items = trim_kwargs(response.kwargs)
                             args_string += ", " + ", ".join(
                                 [
                                     f"{k}={v.__repr__()}"
-                                    for k, v in response.kwargs.items()
+                                    for k, v in cleaned_items
                                 ]
                             )
                     log.info(
