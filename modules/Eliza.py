@@ -46,6 +46,6 @@ class Eliza(Module):
                 return Response(
                     confidence=1,
                     text=result,
-                    why=f"{message.author.name} said '{text}', and ELIZA responded '{result}'" ,
+                    why=f"It seemed like a good idea at the time" ,
                 )
         return Response()
