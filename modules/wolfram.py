@@ -35,14 +35,14 @@ class Wolfram(Module):
             return Response(
                 confidence=5,
                 callback=self.ask,
-                args=[text],
+                kwargs={ "self": self, "prompt": text},
                 why="It's a question, we might be able to answer it",
             )
         else:
             return Response(
                 confidence=1,
                 callback=self.ask,
-                args=[text],
+                kwargs={ "self": self, "prompt": text},
                 why="It's not a question but we might be able to look it up",
             )
 
@@ -59,7 +59,8 @@ class Wolfram(Module):
         else:
             return 8
 
-    def ask(self, question):
+    def ask(self, prompt: str):
+        question: str = prompt
         try:
             self.log.info(self.class_name, wolfram_alpha_question=question)
             question_escaped = urllib.parse.quote_plus(question.strip())

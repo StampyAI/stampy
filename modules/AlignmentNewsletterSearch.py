@@ -147,16 +147,17 @@ class AlignmentNewsletterSearch(Module):
 
         query = match.group("query")
         return Response(
-            confidence=9, callback=self.process_search_request, args=[query]
+            confidence=9, callback=self.process_search_request, kwargs={"self": self, "prompt": query}
         )
 
-    async def process_search_request(self, query) -> Response:
+    async def process_search_request(self, prompt: str) -> Response:
         """Search for relevant items for the query.
 
         First we load all items from the Alignment Newsletter database.
         Then we sort the items by relevance to the query.
         Finally we return the most relevant items, if any.
         """
+        query = prompt
         self.log.info(self.class_name, newsletter_query=query)
 
         items = self.load_items()

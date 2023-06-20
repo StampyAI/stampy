@@ -11,7 +11,7 @@ class SemanticAnswers(Module):
             return Response(
                 confidence=6,
                 callback=self.ask,
-                args=[text],
+                kwargs={ "self": self, "prompt": text},
                 why="It's a question, there might be a similar question in the database",
             )
         else:
@@ -20,8 +20,8 @@ class SemanticAnswers(Module):
     def __str__(self):
         return "Semantic Answers"
 
-    def ask(self, question):
-        q = question.lower().strip()
+    def ask(self, prompt: str):
+        q = prompt.lower().strip()
         url = (
             "https://stampy-nlp-t6p37v2uia-uw.a.run.app/api/search?query=%s"
             % urllib.parse.quote_plus(q)

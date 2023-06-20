@@ -23,7 +23,7 @@ class DuckDuckGo(Module):
                 return Response(
                     confidence=10,
                     callback=self.ask,
-                    args=[text[m.end(0):]],
+                    kwargs={ "self": self, "prompt": text[m.end(0):] },
                     why="This is definitely a web search",
                 )
             print(f"Text didn't match: {text}")
@@ -31,13 +31,13 @@ class DuckDuckGo(Module):
                 return Response(
                     confidence=6,
                     callback=self.ask,
-                    args=[text],
+                    kwargs={ "self": self, "prompt": text },
                     why="It's a question, we might be able to answer it",
                 )
             return Response(
                 confidence=2,
                 callback=self.ask,
-                args=[text],
+                kwargs={ "self": self, "prompt": text },
                 why="It's not a question but we might be able to look it up",
             )
         return Response()
@@ -57,12 +57,12 @@ class DuckDuckGo(Module):
             return 1
         return max_confidence
 
-    def ask(self, question: str) -> Response:
+    def ask(self, prompt: str) -> Response:
         """Ask DuckDuckGo a question and return a response."""
 
         # strip out question mark and common 'question phrases', e.g. 'who are',
         # 'what is', 'tell me about'
-        q = question.lower().strip().strip("?")
+        q = prompt.lower().strip().strip("?")
         q = re.sub(r"w(hat|ho)('s|'re| is| are| was| were) ?", "", q)
         q = re.sub(r"(what do you know|(what )?(can you)? ?tell me) about", "", q)
 

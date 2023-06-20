@@ -75,7 +75,7 @@ class GPT3Module(Module):
             return Response()
 
         return Response(
-            confidence=2, callback=self.gpt3_chat, args=[message], kwargs={}
+            confidence=2, callback=self.gpt3_chat, kwargs={ "self": self, "prompt": message}
         )
 
     def process_message_from_stampy(self, message: ServiceMessage) -> None:
@@ -165,7 +165,8 @@ class GPT3Module(Module):
         if self.openai and self.openai.is_channel_allowed(message):
             return self.openai.get_engine(message)
 
-    async def gpt3_chat(self, message: ServiceMessage) -> Response:
+    async def gpt3_chat(self, prompt: ServiceMessage) -> Response:
+        message: ServiceMessage = prompt
         """Ask GPT-3 what Stampy would say next in the chat log"""
         self.openai = cast(OpenAI, self.openai)
 

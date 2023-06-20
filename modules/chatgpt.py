@@ -67,7 +67,7 @@ class ChatGPTModule(Module):
             return Response()
 
         return Response(
-            confidence=3, callback=self.chatgpt_chat, args=[message], kwargs={}
+            confidence=3, callback=self.chatgpt_chat, kwargs={"self": self, "prompt": message }
         )
 
     def process_message_from_stampy(self, message) -> None:
@@ -116,8 +116,9 @@ class ChatGPTModule(Module):
 
         return messages
 
-    async def chatgpt_chat(self, message: ServiceMessage) -> Response:
+    async def chatgpt_chat(self, prompt: ServiceMessage) -> Response:
         """Ask ChatGPT what Stampy would say next in the chat log"""
+        message: ServiceMessage = prompt
         if self.openai is None:
             return Response()
 

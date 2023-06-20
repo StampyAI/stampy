@@ -24,14 +24,14 @@ class Why(Module):
                     return Response(
                         confidence=10,
                         callback=self.specific,
-                        args=[message],
+                        kwargs={ "self": self, "prompt": message},
                         why="A stamp owner wants to know why I said something.",
                     )
                 else:
                     return Response(
                         confidence=10,
                         callback=self.general,
-                        args=[message],
+                        kwargs={ "self": self, "prompt": message},
                         why="A stamp owner wants to know why I said something.",
                     )
             else:
@@ -54,7 +54,8 @@ class Why(Module):
                 return str(m.id)
         raise Exception("No message from stampy found")
 
-    async def specific(self, message: DiscordMessage) -> Response:
+    async def specific(self, prompt: DiscordMessage) -> Response:
+        message: DiscordMessage = prompt
         m_id = await self._get_message_about(message)
         messages = self._get_known_messages()
         if m_id not in messages:
@@ -68,7 +69,8 @@ class Why(Module):
             builder += f"{step}\n"
         return Response(confidence=10, text=builder, why="I was asked why I said something.")
 
-    async def general(self, message: DiscordMessage) -> Response:
+    async def general(self, prompt: DiscordMessage) -> Response:
+        message: DiscordMessage = prompt
         m_id = await self._get_message_about(message)
         messages = self._get_known_messages()
         if m_id not in messages:
