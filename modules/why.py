@@ -24,14 +24,14 @@ class Why(Module):
                     return Response(
                         confidence=10,
                         callback=self.specific,
-                        kwargs={ "self": self, "prompt": message},
+                        kwargs={"prompt": message},
                         why="A stamp owner wants to know why I said something.",
                     )
                 else:
                     return Response(
                         confidence=10,
                         callback=self.general,
-                        kwargs={ "self": self, "prompt": message},
+                        kwargs={"prompt": message},
                         why="A stamp owner wants to know why I said something.",
                     )
             else:

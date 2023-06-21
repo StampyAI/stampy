@@ -35,14 +35,14 @@ class Wolfram(Module):
             return Response(
                 confidence=5,
                 callback=self.ask,
-                kwargs={ "self": self, "prompt": text},
+                kwargs={"prompt": text},
                 why="It's a question, we might be able to answer it",
             )
         else:
             return Response(
                 confidence=1,
                 callback=self.ask,
-                kwargs={ "self": self, "prompt": text},
+                kwargs={"prompt": text},
                 why="It's not a question but we might be able to look it up",
             )
 

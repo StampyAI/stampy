@@ -23,7 +23,7 @@ class DuckDuckGo(Module):
                 return Response(
                     confidence=10,
                     callback=self.ask,
-                    kwargs={ "self": self, "prompt": text[m.end(0):] },
+                    kwargs={ "prompt": text[m.end(0):] },
                     why="This is definitely a web search",
                 )
             print(f"Text didn't match: {text}")
@@ -31,13 +31,13 @@ class DuckDuckGo(Module):
                 return Response(
                     confidence=6,
                     callback=self.ask,
-                    kwargs={ "self": self, "prompt": text },
+                    kwargs={ "prompt": text },
                     why="It's a question, we might be able to answer it",
                 )
             return Response(
                 confidence=2,
                 callback=self.ask,
-                kwargs={ "self": self, "prompt": text },
+                kwargs={ "prompt": text },
                 why="It's not a question but we might be able to look it up",
             )
         return Response()

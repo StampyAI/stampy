@@ -147,7 +147,7 @@ class AlignmentNewsletterSearch(Module):
 
         query = match.group("query")
         return Response(
-            confidence=9, callback=self.process_search_request, kwargs={"self": self, "prompt": query}
+            confidence=9, callback=self.process_search_request, kwargs={"prompt": query}
         )
 
     async def process_search_request(self, prompt: str) -> Response:

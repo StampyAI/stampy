@@ -11,7 +11,7 @@ class SemanticAnswers(Module):
             return Response(
                 confidence=6,
                 callback=self.ask,
-                kwargs={ "self": self, "prompt": text},
+                kwargs={"prompt": text},
                 why="It's a question, there might be a similar question in the database",
             )
         else:

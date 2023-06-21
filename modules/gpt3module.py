@@ -75,7 +75,7 @@ class GPT3Module(Module):
             return Response()
 
         return Response(
-            confidence=2, callback=self.gpt3_chat, kwargs={ "self": self, "prompt": message}
+            confidence=2, callback=self.gpt3_chat, kwargs={"prompt": message}
         )
 
     def process_message_from_stampy(self, message: ServiceMessage) -> None:

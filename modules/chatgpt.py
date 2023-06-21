@@ -67,7 +67,7 @@ class ChatGPTModule(Module):
             return Response()
 
         return Response(
-            confidence=3, callback=self.chatgpt_chat, kwargs={"self": self, "prompt": message }
+            confidence=3, callback=self.chatgpt_chat, kwargs={ "prompt": message }
         )
 
     def process_message_from_stampy(self, message) -> None:
