@@ -695,6 +695,9 @@ class QuestionSetter(Module):
             why=f"{message.author.name} asked me to change status to `{status}`.",
         )
 
+    def __str__(self):
+        return "Question Setter Module"
+
     @property
     def test_cases(self) -> list[IntegrationTest]:
         # these tests modify coda so they should be run only in development
