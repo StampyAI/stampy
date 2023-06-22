@@ -111,13 +111,7 @@ class Reply(Module):
 
         if message.reference:
             # if this message is a reply
-<<<<<<< HEAD
             reference = await message.channel.fetch_message(message.reference.id)
-=======
-            reference = await message.channel.fetch_message(
-                message.reference.message_id
-            )
->>>>>>> b74ea4f (changed message.author.name to message.author.display_name except where it seems to be saved to some cache/db)
             reference_text = reference.clean_content
             question_url = reference_text.split("\n")[-1].strip("<> \n")
 
