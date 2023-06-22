@@ -44,6 +44,13 @@ class ModuleHelp:
     def empty(self) -> bool:
         return self.descr is None
 
+    @property
+    def listed_descr(self) -> str:
+        """Bulletpoint: module name followed by short description (if it exists)"""
+        if self.descr:
+            return f"- `{self.module_name}`: {self.descr}"
+        return f"- `{self.module_name}`"
+
     def get_module_name_header(self, *, markdown: bool) -> str:
         """Get formatted header with module name"""
         if markdown:
@@ -52,6 +59,8 @@ class ModuleHelp:
 
     def get_command_help(self, msg_text: str) -> Optional[str]:
         """Search for help for command mentioned in `msg_text`. If found, return it. Otherwise, return `None`."""
+        if self.empty:
+            return
         # iterate over commands
         for cmd in self.commands:
             # if some name of the command matches msg_text

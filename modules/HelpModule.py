@@ -13,6 +13,7 @@ You can ask me for help with (1) a particular module or (2) a particular command
 
 import re
 from textwrap import dedent
+from typing import cast
 
 from modules.module import Module, Response
 from utilities.help_utils import ModuleHelp
@@ -54,7 +55,7 @@ class HelpModule(Module):
 
     def list_modules(self) -> str:
         msg_descrs = sorted(
-            (mod.help.descr_msg for mod in self.utils.modules_dict.values()),
+            (mod.help.listed_descr for mod in self.utils.modules_dict.values()),
             key=str.casefold,
         )
         return "I have the following modules:\n" + "\n".join(msg_descrs)
@@ -63,21 +64,18 @@ class HelpModule(Module):
         help_content = text[len("help ") :]
         # iterate over modules
         for mod in self.utils.modules_dict.values():
-            # command help
-            # TODO: rename attr
-            if mod_help := mod.help.get_help_for_command(msg_text=help_content):
+            if cmd_help := mod.help.get_command_help(msg_text=help_content):
                 return Response(
                     confidence=10,
-                    text=mod_help,
+                    text=cmd_help,
                     why=f'{message.author.display_name} asked me for help with "{help_content}"',
                 )
             # module help
             if mod.class_name.casefold() in help_content.casefold():
-                # TODO: help is empty
-                msg_text = mod.help.get_help_for_module()
+                mod_help = cast(str, mod.help.get_module_help(markdown=False))
                 return Response(
                     confidence=10,
-                    text=msg_text,
+                    text=mod_help,
                     why=f"{message.author.display_name} asked me for help with module `{mod.class_name}`",
                 )
 
