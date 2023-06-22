@@ -1,11 +1,11 @@
 """
 Helps you interact with me
 
-list modules
-list what modules I have + short descriptions
+List modules
+List what modules I have + short descriptions
 `s, list modules`
 
-help
+Help
 You can ask me for help with (1) a particular module or (2) a particular command defined on a module
 `s, help <module-name>` - returns description of a module and lists all of its commands
 `s, help <command-name>` - returns description of a command

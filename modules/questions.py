@@ -1,23 +1,23 @@
 """
 Querying question database
 
-how many questions (count questions)
+How many questions, Count questions
 Count questions, optionally queried by status and/or tag
 `s, count questions [with status <status>] [tagged <tag>]`
 
-get question (post question, next question)
+Get question, Post question, Next question
 Post links to one or more questions
 `s, <get/post/next> [num-of-questions] question(s) [with status <status>] [tagged <tag>]` - filter by status and/or tags and/or specify maximum number of questions (up to 5)
 `s, <get/post/next> question` - post next question with status `Not started`
 `s, <get/post/next> question <question-title>` - post question fuzzily matching that title
 
-question info
+Question info
 Get info about question, printed in a codeblock
 `s, <info> question <question-title>` - filter by title (fuzzy matching)
 `s, <info>` - get info about last question
 `s, <info> <gdoc-link>` - get tinfo about the question under that GDoc link
 
-refresh questions (reload questions)
+Refresh questions, Reload questions)
 Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs and editors/reviewers)
 `s, <refresh/reload> questions`
 """

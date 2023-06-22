@@ -3,20 +3,20 @@ Test whether I work as expected
 Ideally, every Stampy module should have a suite of integration tests written for it. A Stampy integration test consists of Stampy sending a particular test message to the channel and testing whether he (i.e., Stampy himself) will respond to it as expected. You can run all tests at once or only for a subset of modules.
 **Important:** tests can be run only in the `#talk-to-stampy` channel.
 
-test all modules (test yourself)
+Test all modules, Test yourself
 Test all Stampy modules that have tests written for them.
 `s, test yourself`
 `s, test modules` - If it's not specified **which particular modules** are to be tested, all modules will be tested.
 
-test some modules (test modules)
+Test some modules, Test modules
 Test a selected subset of Stampy modules.
 `s, test modules <module-name-1> <module-name-2> ...` - Specify one or more modules. Tests will be run only for those.
 
-test one module (test module)
+Test one module, Test module
 Test exactly one Stampy module.
 `s, test module <module-name>`
 
-send a long message
+Send a long message
 Stampy will send an absurdly long message to the channel so that you can see if it's properly shortened and wrapped.
 This is not included in any tests; only meant as a possibility to check that one functionality.
 `s, send a long message`

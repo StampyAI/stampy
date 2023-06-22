@@ -5,14 +5,14 @@ Changing status (in future perhaps also other attributes) of questions in Coda.
 - Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands ([1](#marking-questions-for-deletion-or-as-duplicates) [2](#setting-question-status)).
 - Only `@reviewers` can change status of questions to and from  `Live on site` (including [accepting](#review-acceptance) [review requests](#review-request)).
 
-Review request (@reviewer, @feedback, @feedback-sketch)
+Review request, @reviewer, @feedback, @feedback-sketch
 Request a review on an answer you wrote/edited
 On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@reviewer`s to give them feedback or review their changes to AI Safety Info questions. You just put one or more links to appropriate GDocs and mention one of: `@reviewer`, `@feedback`, or `@feedback-sketch`. Stampy will spot this and update their statuses in the coda table with answers appropriately.
 `@reviewer <gdoc-link(s)>` - change status to `In review`
 `@feedback <gdoc-link(s)>` - change status to `In progress`
 `@feedback-sketch <gdoc-link(s)>` - change status to `Bulletpoint sketch`
 
-Review acceptance (accepted, approved, lgtm)
+Review acceptance, accepted, approved, lgtm
 Accept a review, setting question status to `Live on Site`
 A `@reviewer` can **accept** a question by (1) responding to a review request with a keyword (listed below) or (2) posting one or more valid links to GDocs with AI Safety Info questions with a keyword. Stampy then reacts by changing status to `Live on site`.
 The keywords are (case-insensitive):
@@ -22,18 +22,18 @@ The keywords are (case-insensitive):
   - stands for "looks good to me"
 
 
-Mark for deletion or as duplicate (del, dup, deletion, duplicate)
+Mark for deletion or as duplicate, del, dup, deletion, duplicate
 Change status of questions to `Marked for deletion` or `Duplicate`
 `s, del <gdoc-link(s)>` - change status to `Marked for deletion`
 `s, dup <gdoc-link(s)>` - change status to `Duplicate`
 
-Set question status (status)
+Set question status, Status
 Change status of a question
 `s, <set/change> <status/to/status to> <status>` - change status of the last question
 `s, <set/change> <status/to/status to> <status> <gdoc-link(s)>`
 `s, <set/change> <status/to/status to> <status> question <question-title>` - change status of a question fuzzily matching that title
 
-Editing tags or alternate phrasings (tags, alternate phrasings, altphr)
+Editing tags or alternate phrasings, Tags, Alternate phrasings, Altphr
 Add a tag or an alternate phrasing to a question (specified by title, GDocLink, or the last one)
 `s, <add/add tag> <tag-name> <gdoc-link(s)/question-title>` - specified by gdoc-links or question title (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
 `s, <tag/add tag> <tag-name>` - if you don't specify the question, Stampy assumes you refer to the last one
