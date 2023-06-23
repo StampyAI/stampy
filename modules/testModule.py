@@ -1,7 +1,7 @@
 """
 Test whether I work as expected
 Ideally, every Stampy module should have a suite of integration tests written for it. A Stampy integration test consists of Stampy sending a particular test message to the channel and testing whether he (i.e., Stampy himself) will respond to it as expected. You can run all tests at once or only for a subset of modules.
-**Important:** tests can be run only in the `#talk-to-stampy` channel.
+**Important:** tests can be run only in the private dev channel channel `#stampy-dev-priv`.
 
 Test all modules, Test yourself
 Test all Stampy modules that have tests written for them.
@@ -38,6 +38,7 @@ from config import (
 from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
+from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_bot_dev
 
@@ -64,9 +65,11 @@ class TestModule(Module):
 
     def __init__(self):
         super().__init__()
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage):
+        # breakpoint()
         if message.clean_content == "s, send a long message":
             if not is_bot_dev(message.author):
                 return Response(
@@ -115,8 +118,6 @@ class TestModule(Module):
                 confidence=10,
                 text="Testing is only allowed in the private channel",
                 why=f"{message.author.name} wanted to test me outside of the private channel which is prohibited!",
-                # text="Testing is only allowed in #talk-to-stampy",
-                # why=f"{message.author.display_name} wanted to test me outside of the #talk-to-stampy channel which is prohibited!",
             )
 
         if not is_bot_dev(message.author):
@@ -173,12 +174,16 @@ class TestModule(Module):
         """The message is directed at this module
         if its service is supported and it contains one of the test phrases
         """
+        # breakpoint()
         if (
             hasattr(message, "service")
             and message.service not in self.SUPPORTED_SERVICES
         ):
             return False
-        return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
+        text = self.is_at_me(message)
+        if not text:
+            text = message.clean_content
+        return any(text.startswith(phrase) for phrase in self.TEST_PHRASES)
 
     def parse_module_dict(self, message: ServiceMessage) -> dict[str, Module]:
         """Extract module names from the message (containing "test modules" phrase)

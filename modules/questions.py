@@ -17,7 +17,7 @@ Get info about question, printed in a codeblock
 `s, <info>` - get info about last question
 `s, <info> <gdoc-link>` - get tinfo about the question under that GDoc link
 
-Refresh questions, Reload questions)
+Refresh questions, Reload questions
 Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs and editors/reviewers)
 `s, <refresh/reload> questions`
 """
@@ -41,6 +41,12 @@ from config import coda_api_token
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
 from utilities.help_utils import ModuleHelp
+from utilities.utilities import (
+    has_permissions,
+    is_in_testing_mode,
+    pformat_to_codeblock,
+)
+from utilities.serviceutils import ServiceMessage
 
 
 if coda_api_token is not None:
@@ -51,12 +57,6 @@ if coda_api_token is not None:
         QuestionFilterNT,
         QuestionQuery,
     )
-from utilities.utilities import (
-    has_permissions,
-    is_in_testing_mode,
-    pformat_to_codeblock,
-)
-from utilities.serviceutils import ServiceMessage
 
 
 load_dotenv()

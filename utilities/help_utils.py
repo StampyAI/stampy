@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import re
-from typing import Literal, Optional
+from typing import Literal, Optional, overload
 
 Format = Literal["markdown", "discord"]
 
@@ -55,7 +55,7 @@ class ModuleHelp:
         """Get formatted header with module name"""
         if markdown:
             return f"## {self.module_name}"
-        return f"Module `{self.module_name}`"
+        return f"**Module `{self.module_name}`**"
 
     def get_command_help(self, msg_text: str) -> Optional[str]:
         """Search for help for command mentioned in `msg_text`. If found, return it. Otherwise, return `None`."""
@@ -75,14 +75,15 @@ class ModuleHelp:
         """
         if self.empty:
             return
-        lines = [self.get_module_name_header(markdown=markdown), self.descr]
+        segments = [self.get_module_name_header(markdown=markdown), self.descr]
         if self.longdescr is not None:
-            lines.append(self.longdescr)
+            segments.append(self.longdescr)
+        segments = ["\n".join(segments).replace("\n", "\n\n" if markdown else "\n")]
         if self.commands:
-            lines.extend(
+            segments.extend(
                 cmd.get_help(msg_text=None, markdown=markdown) for cmd in self.commands
             )
-        return _concatenate_lines(lines, markdown=markdown)
+        return "\n\n".join(segments)
 
 
 @dataclass(frozen=True)
@@ -170,8 +171,6 @@ class CommandHelp:
 
         `<main-name> (<alt-name-1>, <alt-name-2>, ...)`
         """
-        # if self.alt_names:
-        #     breakpoint()
         out = self.name
         if markdown:
             out = f"### {out}"
@@ -184,6 +183,12 @@ class CommandHelp:
             out = out.replace(matched_name, f"**{matched_name}**")
         return out
 
+    # fmt:off
+    @overload
+    def get_help(self, msg_text: str, markdown: bool) -> Optional[str]:...
+    @overload
+    def get_help(self, msg_text: None, markdown: bool) -> str:...
+    # fmt:on
     def get_help(self, msg_text: Optional[str], markdown: bool) -> Optional[str]:
         """Get help for this command, if one of its names appears in `msg_text`. Otherwise, return `None`."""
         if msg_text:
@@ -198,15 +203,11 @@ class CommandHelp:
         if self.longdescr:
             lines.append(self.longdescr)
         lines.extend(self.examples)
-        return _concatenate_lines(lines, markdown=markdown)
+        joiner = "\n\n" if markdown else "\n"
+        return joiner.join(lines)
 
     def _name_match(self, msg_text: str) -> Optional[str]:
         """check if any of this command's names appears in `msg_text`"""
         for name in self.all_names:
             if re.search(rf"(?<!\w){name}(?!\w)", msg_text, re.I):
                 return name
-
-
-def _concatenate_lines(lines: list[str], *, markdown: bool) -> str:
-    joiner = "\n\n" if markdown else "\n"
-    return joiner.join(lines)
