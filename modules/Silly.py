@@ -61,7 +61,8 @@ class Silly(Module):
             )
             return Response()
 
-        if text.lower() == "show me how exceptional you are!":
+        if atme and is_bot_dev(message.author) \
+               and text.lower() == "show me how exceptional you are!":
 
             class SillyError(Exception):
                 pass
