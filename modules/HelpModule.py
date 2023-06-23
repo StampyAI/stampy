@@ -10,7 +10,7 @@ You can ask me for help with (1) a particular module or (2) a particular command
 `s, help <module-name>` - returns description of a module and lists all of its commands
 `s, help <command-name>` - returns description of a command
 """
-
+from itertools import islice
 import re
 from textwrap import dedent
 
@@ -61,8 +61,8 @@ class HelpModule(Module):
 
     async def cb_help(self, msg_text: str, message: ServiceMessage) -> Response:
         help_content = msg_text[len("help ") :]
-        # iterate over modules
-        for mod in self.utils.modules_dict.values():
+        # iterate over modules, sorted in reverse in order to put longer module names first to prevent overly eager matching
+        for mod_name, mod in sorted(self.utils.modules_dict.items(), reverse=False):
             if cmd_help := mod.help.get_command_help(msg_text=help_content):
                 return Response(
                     confidence=10,
@@ -70,11 +70,11 @@ class HelpModule(Module):
                     why=f'{message.author.display_name} asked me for help with "{help_content}"',
                 )
             # module help
-            if mod.class_name.casefold() in help_content.casefold():
+            if mod_name.casefold() in help_content.casefold():
                 mod_help = mod.help.get_module_help(markdown=False)
-                why = f"{message.author.display_name} asked me for help with module `{mod.class_name}`"
+                why = f"{message.author.display_name} asked me for help with module `{mod_name}`"
                 if mod_help is None:
-                    msg_text = f"No help for module `{mod.class_name}`"
+                    msg_text = f"No help for module `{mod_name}`"
                     why += " but help is not written for it"
                 else:
                     msg_text = mod_help
@@ -97,18 +97,19 @@ class HelpModule(Module):
             for mod_name, mod in self.utils.modules_dict.items()
             if not mod.help.empty
         ]
-        helpless_module_names = [
-            mod_name
-            for mod_name, mod in self.utils.modules_dict.items()
-            if mod.help.empty
-        ][:3]
-        helpless_module_tests = [
-            self.create_integration_test(
-                test_message=f"help {mod_name}",
-                expected_regex=f"No help for module `{mod_name}`",
+        helpless_module_tests = list(
+            islice(
+                (
+                    self.create_integration_test(
+                        test_message=f"help {mod_name}",
+                        expected_regex=f"No help for module `{mod_name}`",
+                    )
+                    for mod_name, mod in self.utils.modules_dict.items()
+                    if mod.help.empty
+                ),
+                3,
             )
-            for mod_name in helpless_module_names
-        ]
+        )
         return (
             [
                 self.create_integration_test(
