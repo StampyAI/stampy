@@ -68,7 +68,7 @@ class TestModule(Module):
         self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.sent_test: list[IntegrationTest] = []
 
-    def process_message(self, message: ServiceMessage):
+    def process_message(self, message: ServiceMessage) -> Response:
         if message.clean_content == "s, send a long message":
             if not is_bot_dev(message.author):
                 return Response(
@@ -358,7 +358,7 @@ class TestModule(Module):
         return "TestModule"
 
     @property
-    def test_cases(self):
+    def test_cases(self) -> list[IntegrationTest]:
         return [
             self.create_integration_test(
                 test_message=prompt, expected_response=self.TEST_MODE_RESPONSE_MESSAGE

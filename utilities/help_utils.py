@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import re
-from typing import Literal, Optional, overload
-
-Format = Literal["markdown", "discord"]
+from typing import Optional, overload
 
 
 @dataclass(frozen=True)
