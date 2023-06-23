@@ -1,84 +1,25 @@
 """
-Querying the question database. No special permissions required.
+Querying question database
 
-### Counting questions
+How many questions, Count questions
+Count questions, optionally queried by status and/or tag
+`s, count questions [with status <status>] [tagged <tag>]`
 
-Stampy can count questions in the database. You can narrow down the counting using a particular status or tag. Use commands like these:
+Get question, Post question, Next question
+Post links to one or more questions
+`s, <get/post/next> [num-of-questions] question(s) [with status <status>] [tagged <tag>]` - filter by status and/or tags and/or specify maximum number of questions (up to 5)
+`s, <get/post/next> question` - post next question with status `Not started`
+`s, <get/post/next> question <question-title>` - post question fuzzily matching that title
 
-- `s, count questions` - counts all questions
-- `s, count questions with status live on site` - counts only questions with status `Live on site`
-- `s, count questions tagged decision theory` - counts only questions with the tag `Decision theory`
-- `s, count questions with status live on site and tagged decision theory` - counts only questions that **both** have status `Live on site` **and** the tag `Decision theory`
+Question info
+Get info about question, printed in a codeblock
+`s, <info> question <question-title>` - filter by title (fuzzy matching)
+`s, <info>` - get info about last question
+`s, <info> <gdoc-link>` - get tinfo about the question under that GDoc link
 
-![](images/help/Questions-count-questions.png)
-
----
-
-Status name is case-insensitive: there is no difference between `Live on site`, `live on site`, or `LIVE ON SITE`. Similarly for tags. You can also use acronym aliases for status (but not for tags), e.g., `los` for `Live on site` or `bs` for `Bulletpoint sketch`.
-
-### Posting questions
-
-You can use Stampy to query the database of questions. Stampy will put links to questions that match your query into the channel.
-
-The general pattern for that command is: `s, <get/post/next> <q/question/questions> <ADDITIONAL_INFO>`.
-
-You can query in three ways
-
-#### 1. Title
-
-Stampy returns first question matching that title
-
-`s, get <q/question/title/titled> <question_title>`
-
-![](/images/help/Questions-get-adversarial.png)
-
-#### 2. Filtering by status on tags
-
-Stampy returns the specified number of questions (max 5, default 1) matching (optional) status and tag
-
-`s, get 3 questions with status in progress and tagged definitions` (like [above](#counting-questions))
-
-![](images/help/Questions-get-3-questions-status-tagged.png)
-
-If you say, `s, next question`, then Stampy will query all questions, and post the least recently asked one.
-
-![](images/help/Questions-next.png)
-
-#### 3. Last
-
-Stampy will post last question he interacted with.
-
-`s, post last question` / `s, post it`
-
-![](/images/help/Questions-get-last.png)
-
----
-
-#### Autoposting (Rob Miles' server only)
-
-On Rob Miles' Discord server, Stampy posts a random least recently asked question, if the last question was posted on somebody's request **and** more than 6 hours passed since then. Stampy posts either to the `#editing` channel or the `#general`
-
-### Getting question info
-
-`s, get info <ADDITIONAL_INFO>` (with any filtering option mentioned so far, except `next`) can be used to get detailed information about the question as an entity in the database.
-
-![](images/help/Questions-get-info-babyagi.png)
-
-### Reloading questions
-
-If you're a bot dev, editor, or reviewerr, you can ask Stampy to refresh questions cache (sync it with coda) by the command.
-
-`s, <reload/fetch/load/update> <?new> <q/questions>`
-
-E.g., `s, reload questions` or `s, fetch new q` 
-
-Stampy also does it whenever he sees a review request containing a GDoc link, which does not appear in any of the questions in his cache.
-
-If you use it and for some reason Stampy's question cache seems still seems to be out of sync with coda, use hardreload.
-
-`s, hardreload questions`.
-
-The difference is that while the former updates the current cache, the latter overwrites it with a new one, which is more certain to work but probably less memory-safe. If it turns out that this function is not necessary, it will be deleted. 
+Refresh questions, Reload questions
+Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs and editors/reviewers)
+`s, <refresh/reload> questions`
 """
 from __future__ import annotations
 
@@ -99,6 +40,14 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import coda_api_token
 from servicemodules.discordConstants import general_channel_id
 from modules.module import Module, Response
+from utilities.help_utils import ModuleHelp
+from utilities.utilities import (
+    has_permissions,
+    is_in_testing_mode,
+    pformat_to_codeblock,
+)
+from utilities.serviceutils import ServiceMessage
+
 
 if coda_api_token is not None:
     from utilities.question_query_utils import (
@@ -108,12 +57,6 @@ if coda_api_token is not None:
         QuestionFilterNT,
         QuestionQuery,
     )
-from utilities.utilities import (
-    has_permissions,
-    is_in_testing_mode,
-    pformat_to_codeblock,
-)
-from utilities.serviceutils import ServiceMessage
 
 
 load_dotenv()
@@ -130,12 +73,13 @@ class Questions(Module):
         if not self.is_available():
             exc_msg = f"Module {self.class_name} is not available."
             if coda_api_token is None:
-                exc_msg += f" CODA_API_TOKEN is not set in `.env`."
+                exc_msg += " CODA_API_TOKEN is not set in `.env`."
             if is_in_testing_mode():
                 exc_msg += " Stampy is in testing mode right now."
             raise Exception(exc_msg)
 
         super().__init__()
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.coda_api = CodaAPI.get_instance()
 
         # Time when last question was posted
@@ -186,11 +130,11 @@ class Questions(Module):
             return Response()
         if text == "hardreload questions":
             return Response(
-                confidence=10, callback=self.cb_hardreload_questions, args=[message]
+                confidence=9, callback=self.cb_hardreload_questions, args=[message]
             )
         if self.re_refresh_questions.match(text):
             return Response(
-                confidence=10, callback=self.cb_refresh_questions, args=[message]
+                confidence=9, callback=self.cb_refresh_questions, args=[message]
             )
         if response := self.parse_count_questions_command(text, message):
             return response
@@ -207,26 +151,26 @@ class Questions(Module):
     async def cb_hardreload_questions(self, message: ServiceMessage) -> Response:
         if not has_permissions(message.author):
             return Response(
-                confidence=10,
+                confidence=9,
                 text=f"You don't have permissions to request hard-reload, <@{message.author}>",
-                why=f"{message.author.name} asked me to hard-reload questions questions but they don't have permissions for that",
+                why=f"{message.author.display_name} asked me to hard-reload questions questions but they don't have permissions for that",
             )
         await message.channel.send(
             f"Ok, hard-reloading questions cache\nBefore: {len(self.coda_api.questions_df)} questions"
         )
         self.coda_api.reload_questions_cache()
         return Response(
-            confidence=10,
+            confidence=9,
             text=f"After: {len(self.coda_api.questions_df)} questions",
-            why=f"{message.author.name} asked me to hard-reload questions",
+            why=f"{message.author.display_name} asked me to hard-reload questions",
         )
 
     async def cb_refresh_questions(self, message: ServiceMessage) -> Response:
         if not has_permissions(message.author):
             return Response(
-                confidence=10,
+                confidence=9,
                 text=f"You don't have permissions, <@{message.author}>",
-                why=f"{message.author.name} wanted me to refresh questions questions but they don't have permissions for that",
+                why=f"{message.author.display_name} wanted me to refresh questions questions but they don't have permissions for that",
             )
         await message.channel.send(
             f"Ok, refreshing questions cache\nBefore: {len(self.coda_api.questions_df)} questions"
@@ -257,9 +201,9 @@ class Questions(Module):
                 + "\n\t".join(f'"{q["title"]}"' for q in deleted_questions[:10])
             ) + "\n\t..."
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
-            why=f"{message.author.name} asked me to refresh questions cache",
+            why=f"{message.author.display_name} asked me to refresh questions cache",
         )
 
     ###################
@@ -283,7 +227,7 @@ class Questions(Module):
         filter_data = parse_question_filter(text)
 
         return Response(
-            confidence=10,
+            confidence=9,
             callback=self.cb_count_questions,
             args=[filter_data, message],
             why="I was asked to count questions",
@@ -314,9 +258,9 @@ class Questions(Module):
         response_text += status_and_tag_response_text
 
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
-            why=f"{message.author.name} asked me to count questions{status_and_tag_response_text}",
+            why=f"{message.author.display_name} asked me to count questions{status_and_tag_response_text}",
         )
 
     ######################
@@ -332,7 +276,7 @@ class Questions(Module):
             return
         request_data = parse_question_query(text)
         return Response(
-            confidence=10,
+            confidence=9,
             callback=self.cb_post_questions,
             args=[request_data, message],
         )
@@ -351,9 +295,9 @@ class Questions(Module):
                 + f" yourself, <@{message.author}>?"
             )
             return Response(
-                confidence=10,
+                confidence=9,
                 text=response_text,
-                why=f"If {message.author.name} has these links, they can surely post these question themselves",
+                why=f"If {message.author.display_name} has these links, they can surely post these question themselves",
             )
 
         # get questions (can be emptylist)
@@ -388,7 +332,7 @@ class Questions(Module):
             self.coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
             why=why,
         )
@@ -449,7 +393,7 @@ class Questions(Module):
         spec_data = parse_question_spec_query(text, return_last_by_default=True)
 
         return Response(
-            confidence=10,
+            confidence=9,
             callback=self.cb_get_question_info,
             args=[spec_data, message],
         )
@@ -485,7 +429,7 @@ class Questions(Module):
             self.coda_api.last_question_id = questions[0]["id"]
 
         return Response(
-            confidence=10,
+            confidence=9,
             text=response_text,
             why=why,
         )

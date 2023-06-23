@@ -1,3 +1,27 @@
+"""
+Test whether I work as expected
+Ideally, every Stampy module should have a suite of integration tests written for it. A Stampy integration test consists of Stampy sending a particular test message to the channel and testing whether he (i.e., Stampy himself) will respond to it as expected. You can run all tests at once or only for a subset of modules.
+**Important:** tests can be run only in the private dev channel channel `#stampy-dev-priv`.
+
+Test all modules, Test yourself
+Test all Stampy modules that have tests written for them.
+`s, test yourself`
+`s, test modules` - If it's not specified **which particular modules** are to be tested, all modules will be tested.
+
+Test some modules, Test modules
+Test a selected subset of Stampy modules.
+`s, test modules <module-name-1> <module-name-2> ...` - Specify one or more modules. Tests will be run only for those.
+
+Test one module, Test module
+Test exactly one Stampy module.
+`s, test module <module-name>`
+
+Send a long message
+Stampy will send an absurdly long message to the channel so that you can see if it's properly shortened and wrapped.
+This is not included in any tests; only meant as a possibility to check that one functionality.
+`s, send a long message`
+"""
+
 from asyncio import sleep
 import re
 from textwrap import dedent
@@ -5,10 +29,16 @@ from typing import cast
 
 from jellyfish import jaro_winkler_similarity
 
-from config import TEST_MESSAGE_PREFIX, TEST_RESPONSE_PREFIX, test_response_message, bot_private_channel_id
+from config import (
+    TEST_MESSAGE_PREFIX,
+    TEST_RESPONSE_PREFIX,
+    test_response_message,
+    bot_private_channel_id,
+)
 from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
+from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_bot_dev
 
@@ -35,9 +65,22 @@ class TestModule(Module):
 
     def __init__(self):
         super().__init__()
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage):
+        if message.clean_content == "s, send a long message":
+            if not is_bot_dev(message.author):
+                return Response(
+                    confidence=10,
+                    text=f"You're not a bot dev, {message.author.display_name}",
+                    why=f"{message.author.display_name} doesn't have permissions to ask me to spam the channel with absurdly long messages",
+                )
+            self.log.info(self.class_name, msg="horrifically long message sent")
+            return Response(
+                confidence=10, text=str(list(range(25000))), why="you told me to dude!"
+            )
+
         if not self.is_at_module(message):
             return Response()
         # If this is a message coming from an integration test,
@@ -73,14 +116,14 @@ class TestModule(Module):
             return Response(
                 confidence=10,
                 text="Testing is only allowed in the private channel",
-                why=f"{message.author.name} wanted to test me outside of the private channel which is prohibited!",
+                why=f"{message.author.display_name} wanted to test me outside of the private channel which is prohibited!",
             )
 
         if not is_bot_dev(message.author):
             return Response(
                 confidence=10,
-                text=f"You are not a bot dev, {message.author.name}",
-                why=f"{message.author.name} wanted to test me but they are not a bot dev",
+                text=f"You are not a bot dev, {message.author.display_name}",
+                why=f"{message.author.display_name} wanted to test me but they are not a bot dev",
             )
 
         # Otherwise, this is a request for Stampy to run integration tests
@@ -94,7 +137,7 @@ class TestModule(Module):
                     confidence=10,
                     text=f'I don\'t have a module named "{parsed_module_name}"',
                     why=(
-                        f"{message.author.name} asked me to test module "
+                        f"{message.author.display_name} asked me to test module "
                         f'"{parsed_module_name}" but I don\'t have such a module'
                     ),
                 )
@@ -108,7 +151,7 @@ class TestModule(Module):
             return Response(
                 confidence=10,
                 text="Yeah but which module?",
-                why=f"{message.author.name} asked me to test a module but they didn't specify which one",
+                why=f"{message.author.display_name} asked me to test a module but they didn't specify which one",
             )
         else:
             modules_dict = self.parse_module_dict(message)
@@ -116,7 +159,7 @@ class TestModule(Module):
                 return Response(
                     confidence=10,
                     text="I don't have these modules. Are you sure you wrote their names correctly?",
-                    why=f"{message.author.name} asked me to test some modules but I couldn't recognize their names.",
+                    why=f"{message.author.display_name} asked me to test some modules but I couldn't recognize their names.",
                 )
 
         return Response(
@@ -135,7 +178,10 @@ class TestModule(Module):
             and message.service not in self.SUPPORTED_SERVICES
         ):
             return False
-        return any(phrase in message.clean_content for phrase in self.TEST_PHRASES)
+        text = self.is_at_me(message)
+        if not text:
+            text = message.clean_content
+        return any(text.startswith(phrase) for phrase in self.TEST_PHRASES)
 
     def parse_module_dict(self, message: ServiceMessage) -> dict[str, Module]:
         """Extract module names from the message (containing "test modules" phrase)
@@ -144,11 +190,10 @@ class TestModule(Module):
         """
         text = message.clean_content
         if re.search(r"test modules ([\w\s]+)", text, re.I):
-            module_name_candidates = re.findall(r"\w+", text.lower())
+            module_names = self.utils.parse_module_names(text)
             modules_dict = {
-                module_name: module
-                for module_name, module in self.utils.modules_dict.items()
-                if module_name.lower() in module_name_candidates
+                module_name: self.utils.modules_dict[module_name]
+                for module_name in module_names
             }
             return modules_dict
         return self.utils.modules_dict

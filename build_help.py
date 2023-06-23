@@ -1,64 +1,67 @@
-"""Run this script to update help.md file"""
 import os
+from pathlib import Path
 import re
+from textwrap import dedent
 from typing import Optional
 
+from utilities.help_utils import ModuleHelp
 
-HELP_FILE_START_TEXT = """\
-# Stampy commands
+MODULES_PATH = Path("modules/")
 
-This file ~~lists~~ *will list (at some point [WIP])* all available commands for Stampy, divided according to which module handles them.
+ModuleName = Docstring = str
 
-Whenever you add a new feature to Stampy or meaningfully modify some feature in a way that may alter how it acts, please update this file and test manually whether Stampy's behavior follows the specification."""
+FILE_HEADER = dedent(
+    """\
+    # Stampy Module & Command Help
+    
+    This file was auto-generated from file-level docstrings in `modules` directory. If you think it's out of sync with docstrings, re-generate it by calling `python build_help.py`. If docstrings are out of date with code, feel free to edit them or nag somebody with a `@Stampy dev` on the server.
+    
+    """
+)
 
-_re_module_name = re.compile(r"(?:\nclass\s)(\w+)(?:\(Module\))")
 
-ModuleName = DocString = str
-
-
-def get_module_docstring(module_fname: str) -> Optional[tuple[ModuleName, DocString]]:
-    """Get the name of the `Module` defined in the file and its docstring."""
-    with open(f"modules/{module_fname}", "r", encoding="utf-8") as f:
-        code = f.read()
-
-    # If the first line doesn't start with docstring, skip
-    if '"""' not in code.split("\n")[0]:
+def extract_docstring(code: str) -> Optional[Docstring]:
+    if not (code.startswith('"""') and '"""' in code[3:]):
         return
-    # If there is no class that inherits from `Module`, skip
-    if not (match := _re_module_name.search(code)):
-        return
+    docstring_end_pos = code.find('"""', 3)
+    assert docstring_end_pos != -1
+    docstring = code[3:docstring_end_pos].strip()
+    assert docstring
+    return docstring
 
-    # Extract docstring
-    docstring_start = code.find('"""')
-    docstring_end = code.find('"""', docstring_start + 3)
-    docstring = code[docstring_start + 3 : docstring_end].strip()
 
-    # Extract module name
-    module_name = match.group(1)
-    return module_name, docstring
+_re_module_name = re.compile(r"(?<=class\s)\w+(?=\(Module\):)", re.I)
+
+
+def extract_module_name(code: str) -> Optional[ModuleName]:
+    if match := _re_module_name.search(code):
+        return match.group()
+
+
+def load_modules_with_docstrings() -> dict[ModuleName, Docstring]:
+    modules_with_docstrings = {}
+    for fname in os.listdir(MODULES_PATH):
+        if fname.startswith("_") or fname == "module.py":
+            continue
+        with open(MODULES_PATH / fname, "r", encoding="utf-8") as f:
+            code = f.read()
+        if (module_name := extract_module_name(code)) and (
+            docstring := extract_docstring(code)
+        ):
+            modules_with_docstrings[module_name] = docstring
+    return modules_with_docstrings
 
 
 def main() -> None:
-    # get module filenames
-    module_fnames = [
-        fname
-        for fname in os.listdir("modules")
-        if fname.endswith(".py") and fname != "__init__.py"
-    ]
-
-    # build help file text
-    help_file_text = HELP_FILE_START_TEXT
-    for fname in module_fnames:
-        if result := get_module_docstring(fname):
-            module_name, docstring = result
-            help_file_text += f"\n\n## {module_name}\n\n{docstring}"
-
-    # final newline for markdown pedancy
-    help_file_text += "\n"
-
-    # save it
+    modules_with_docstrings = load_modules_with_docstrings()
+    helps = []
+    for module_name, docstring in modules_with_docstrings.items():
+        help = ModuleHelp.from_docstring(module_name, docstring)
+        if not help.empty:
+            helps.append(help.get_module_help(markdown=True))
+    help_txt = FILE_HEADER + "\n\n".join(helps)
     with open("help.md", "w", encoding="utf-8") as f:
-        f.write(help_file_text)
+        f.write(help_txt)
 
 
 if __name__ == "__main__":

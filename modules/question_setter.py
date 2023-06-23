@@ -1,88 +1,47 @@
 """
 Changing status (in future perhaps also other attributes) of questions in Coda.
-
 **Permissions:**
-
 - All server members can contribute to AI Safety Questions and [ask for feedback](#review-request).
 - Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands ([1](#marking-questions-for-deletion-or-as-duplicates) [2](#setting-question-status)).
 - Only `@reviewers` can change status of questions to and from  `Live on site` (including [accepting](#review-acceptance) [review requests](#review-request)).
 
-### Review request
+Review request, @reviewer, @feedback, @feedback-sketch
+Request a review on an answer you wrote/edited
+On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@reviewer`s to give them feedback or review their changes to AI Safety Info questions. You just put one or more links to appropriate GDocs and mention one of: `@reviewer`, `@feedback`, or `@feedback-sketch`. Stampy will spot this and update their statuses in the coda table with answers appropriately.
+`@reviewer <gdoc-link(s)>` - change status to `In review`
+`@feedback <gdoc-link(s)>` - change status to `In progress`
+`@feedback-sketch <gdoc-link(s)>` - change status to `Bulletpoint sketch`
 
-On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@reviewer`s to give them feedback or review their changes to AI Safety Info questions. You just put one or more links to appropriate GDocs and mention one of: `@reviewer`, `@feedback`, or `@feedback-sketch`. Stampy will spot this and update their statuses in the [coda table with answers](https://coda.io/d/AI-Safety-Info_dfau7sl2hmG/All-Answers_sudPS#_lul8a) appropriately.
-
-- `@reviewer` -> `In review`
-- `@feedback` -> `In progress`
-- `@feedback-sketch` -> `Bulletpoint sketch`
-
-![](images/help/QuestionSetter-review-request.png)
-
-Some remarks:
-
-- Optimally, review requesting and approval should be mostly confined to the `#editing` forum-channel.
-- You don't need to call Stampy explicitly to make him update question status. All that matters is that you include one or more valid links to GDocs with AI Safety Info questions and an appropriate at-mention.
-
-### Review acceptance
-
-A `@reviewer` can **accept** a question by (1) responding to a [review request](#review-request) with a keyword (listed below) or (2) posting one or more valid links to GDocs with AI Safety Info questions with a keyword. Stampy then reacts by changing status to `Live on site`.
-
+Review acceptance, accepted, approved, lgtm
+Accept a review, setting question status to `Live on Site`
+A `@reviewer` can **accept** a question by (1) responding to a review request with a keyword (listed below) or (2) posting one or more valid links to GDocs with AI Safety Info questions with a keyword. Stampy then reacts by changing status to `Live on site`.
 The keywords are (case-insensitive):
-
 - accepted
 - approved
 - lgtm
   - stands for "looks good to me"
 
-![](images/help/QuestionSetter-review-acceptance.png)
 
-### Marking questions for deletion or as duplicates
+Mark for deletion or as duplicate, del, dup, deletion, duplicate
+Change status of questions to `Marked for deletion` or `Duplicate`
+`s, del <gdoc-link(s)>` - change status to `Marked for deletion`
+`s, dup <gdoc-link(s)>` - change status to `Duplicate`
 
-Use `s, <del/dup>` (or `stampy, <del/dup>`) to change status of questions to `Marked for deletion` or `Duplicate`
+Set question status, Status
+Change status of a question
+`s, <set/change> <status/to/status to> <status>` - change status of the last question
+`s, <set/change> <status/to/status to> <status> <gdoc-link(s)>`
+`s, <set/change> <status/to/status to> <status> question <question-title>` - change status of a question fuzzily matching that title
 
-![](images/help/QuestionSetter-del-dup.png)
-
-### Setting question status
-
-Question status can be changed more flexibly, using the command: `<set/change> <status/to/status to> <status>`, followed by appropriate GDoc links.
-
-Status name is case-insensitive and you can use status aliases.
-
-![](images/help/QuestionSetter-set-status.png)
-
-### Editing tags and alternate phrasings of questions
-
-Add a tag to a question (specified by title, GDocLink, or the last one)
-
-`s, <add/add tag> <tag-name> <gdoc-links/question-title>` (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
-
-![](images/help/QuestionSetter-add-tag-gdoc-link.png)
-
-If you don't specify the question, Stampy assumes you refer to the last one
-
-![](images/help/QuestionSetter-add-tag.png)
-
-Remove a tag from a question
-
-`s, <delete/del/remove/rm> <tag-name> <gdoc-links/question-title>`
-
-![](images/help/QuestionSetter-remove-tag.png)
-
-Clear all tags on a question
-
-`s, clear tags <gdoc-links/question-title>`
-
-![](images/help/QuestionSetter-clear-tags.png)
-
----
-
-Editing alternate phrasings works similarly to tags, except you can only add or remove alternative phrasings to/from one question at a time (because if two questions have the same alternative phrasing, something is fundamentally wrong). You still can clear alternative phrasings on multiple questions at a time.
-
-Alternate phrasings must be specified within double quotes, otherwise, they're not going to be parsed at all.
-
-![](images/help/QuestionSetter-add-altphr.png)
-
-![](images/help/QuestionSetter-clear-altphr.png)
-
+Editing tags or alternate phrasings, Tags, Alternate phrasings, Altphr
+Add a tag or an alternate phrasing to a question (specified by title, GDocLink, or the last one)
+`s, <add/add tag> <tag-name> <gdoc-link(s)/question-title>` - specified by gdoc-links or question title (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
+`s, <tag/add tag> <tag-name>` - if you don't specify the question, Stampy assumes you refer to the last one
+`s, <delete/del/remove/rm> <tag-name> <gdoc-links/question-title>` - removing tags
+`s, clear tags <gdoc-links/question-title>` - clear all tags on a question
+`s, <altphr> "<alternate-phrasing>" <gdoc-link/question-title>` - you must put the alternate phrasing in double quotes and can do it only on one question at a time
+`s <delete/del/remove/rm> <alternate phrasing/alt> "<alternate-phrasing>" <gdoc-link/question-title>` - analogously
+`s, clear altphr` - here, on last question
 """
 from __future__ import annotations
 
@@ -94,6 +53,7 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import ENVIRONMENT_TYPE, coda_api_token
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
+from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import (
     has_permissions,
@@ -130,12 +90,13 @@ class QuestionSetter(Module):
         if not self.is_available():
             exc_msg = f"Module {self.class_name} is not available."
             if coda_api_token is None:
-                exc_msg += f" CODA_API_TOKEN is not set in `.env`."
+                exc_msg += " CODA_API_TOKEN is not set in `.env`."
             if is_in_testing_mode():
                 exc_msg += " Stampy is in testing mode right now."
             raise Exception(exc_msg)
 
         super().__init__()
+        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.coda_api = CodaAPI.get_instance()
 
         self.msg_id2gdoc_links: dict[str, list[str]] = {}
@@ -307,7 +268,7 @@ class QuestionSetter(Module):
         return Response(
             confidence=10,
             text=msg,
-            why=f"{message.author.name} did something useful and I wanted coda to reflect that.",
+            why=f"{message.author.display_name} did something useful and I wanted coda to reflect that.",
         )
 
     #########################
@@ -322,7 +283,6 @@ class QuestionSetter(Module):
         text = message.clean_content
         if not any(s in text.lower() for s in ("approved", "accepted", "lgtm")):
             return
-
         if gdoc_links := parse_gdoc_links(text):
             return Response(
                 confidence=10,
@@ -368,6 +328,9 @@ class QuestionSetter(Module):
             assert isinstance(message.channel, DiscordChannel)
             await self.find_gdoc_links_in_msg(message.channel, msg_ref_id)
             gdoc_links = self.msg_id2gdoc_links.get(msg_ref_id, [])
+
+        if not gdoc_links:
+            return Response()
 
         questions = self.coda_api.get_questions_by_gdoc_links(gdoc_links)
 
@@ -466,7 +429,7 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
-                why=f"{message.author.name} does not have permissions edit {tag_or_altphr}s on questions",
+                why=f"{message.author.display_name} does not have permissions edit {tag_or_altphr}s on questions",
             )
 
         # inserts for generating messages
@@ -479,7 +442,7 @@ class QuestionSetter(Module):
             Response(
                 confidence=10,
                 text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
-                why=f"{message.author.name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
+                why=f"{message.author.display_name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
             )
         # adding/removing one altphr per many questions is not allowed
         if (
@@ -490,7 +453,7 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"I don't think you want to {edit_action} the same alternate phrasing {to_from_on} {len(questions)} questions. Please, choose one.",
-                why=f"{message.author.name} asked me to more than one question at once which is not the way to go",
+                why=f"{message.author.display_name} asked me to more than one question at once which is not the way to go",
             )
 
         if edit_action != "clear":
@@ -555,7 +518,7 @@ class QuestionSetter(Module):
             response_text += f" {tag_or_altphr} `{val}` {to_from_on} "
             response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
 
-        why = f"{message.author.name} asked me to {edit_action} "
+        why = f"{message.author.display_name} asked me to {edit_action} "
         if edit_action == "clear":
             why += f"{tag_or_altphr}s"
         elif tag_or_altphr == "tag":
@@ -621,14 +584,14 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"You don't have permissions to changing question status, <@{message.author}>",
-                why=f"{message.author.name} tried changing question status, but I don't trust them.",
+                why=f"{message.author.display_name} tried changing question status, but I don't trust them.",
             )
 
         if status == "Live on site" and not is_from_reviewer(message):
             return Response(
                 confidence=10,
                 text=f"You're not a reviewer, <@{message.author}>. Only reviewers can change status of questions to `Live on site`",
-                why=f"{message.author.name} wanted to set status to `Live on site` but they're not a reviewer.",
+                why=f"{message.author.display_name} wanted to set status to `Live on site` but they're not a reviewer.",
             )
 
         questions = await self.coda_api.query_for_questions(q_spec_query, message)
@@ -692,7 +655,7 @@ class QuestionSetter(Module):
         return Response(
             confidence=10,
             text=msg,
-            why=f"{message.author.name} asked me to change status to `{status}`.",
+            why=f"{message.author.display_name} asked me to change status to `{status}`.",
         )
 
     def __str__(self):

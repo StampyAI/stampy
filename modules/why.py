@@ -59,20 +59,30 @@ class Why(Module):
         messages = self._get_known_messages()
         if m_id not in messages:
             return Response(
-                confidence=5, text=self.FORGOT, why="I either didn't say that, or I've restarted since then."
+                confidence=5,
+                text=self.FORGOT,
+                why="I either didn't say that, or I've restarted since then.",
             )
         m = messages[m_id]
         why = m["why"]
         builder = f"In general, it was because {why}\n\nBut here is my traceback:\n\n"
         for step in m["traceback"]:
             builder += f"{step}\n"
-        return Response(confidence=10, text=builder, why="I was asked why I said something.")
+        return Response(
+            confidence=10, text=builder, why="I was asked why I said something."
+        )
 
     async def general(self, message: DiscordMessage) -> Response:
         m_id = await self._get_message_about(message)
         messages = self._get_known_messages()
         if m_id not in messages:
             return Response(
-                confidence=5, text=self.FORGOT, why="I either didn't say that, or I've restarted since then."
+                confidence=5,
+                text=self.FORGOT,
+                why="I either didn't say that, or I've restarted since then.",
             )
-        return Response(confidence=10, text=messages[m_id]["why"], why="I was asked why I said something.")
+        return Response(
+            confidence=10,
+            text=messages[m_id]["why"],
+            why="I was asked why I said something.",
+        )

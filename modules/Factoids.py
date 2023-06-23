@@ -31,7 +31,7 @@ class Factoids(Module):
         # dict of room ids to factoid: (text, value, verb) tuples
         self.prev_factoid = {}
 
-    def process_message(self, message: ServiceMessage):
+    def process_message(self, message: ServiceMessage) -> Response:
         self.who = message.author.name
         self.utils.people.add(self.who)
         result = ""
@@ -217,7 +217,6 @@ class Factoids(Module):
     @property
     def test_cases(self):
         return [
-
             self.create_integration_test(
                 test_message="remember chriscanal is the person who wrote this test",
                 expected_response=f'Ok {Utilities.get_instance().discord_user.name}, remembering that "chriscanal" is "the person who wrote this test"',

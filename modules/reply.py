@@ -17,14 +17,18 @@ class Reply(Module):
         """Is this message asking us to post a reply?"""
         self.log.info(self.class_name, text=text)
         if text:
-            return text.lower().endswith("post this") or text.lower().endswith("send this")
+            return text.lower().endswith("post this") or text.lower().endswith(
+                "send this"
+            )
         else:
             return False
 
     @staticmethod
     def is_allowed(message):
         """[Deprecated] Is the message author authorised to make stampy post replies?"""
-        posting_role = discord.utils.find(lambda r: r.name == "poaster", message.guild.roles)
+        posting_role = discord.utils.find(
+            lambda r: r.name == "poaster", message.guild.roles
+        )
         return posting_role in message.author.roles
 
     @staticmethod
@@ -61,7 +65,9 @@ class Reply(Module):
         with open("database/topost.json", "w") as post_file:
             json.dump(responses_to_post, post_file, indent="\t")
 
-        self.log.info(self.class_name, msg=("dummy, posting %s to %s" % (text, question_id)))
+        self.log.info(
+            self.class_name, msg=("dummy, posting %s to %s" % (text, question_id))
+        )
 
     def comment_posting_threshold(self):
         """Return the number of stamps a reply needs in order to be posted"""
@@ -81,7 +87,8 @@ class Reply(Module):
                 return Response(
                     confidence=9,
                     text=self.POST_MESSAGE % self.comment_posting_threshold(),
-                    why="%s asked me to post a reply to YouTube" % message.author.name,
+                    why="%s asked me to post a reply to YouTube"
+                    % message.author.display_name,
                 )
 
         return Response()
@@ -109,9 +116,14 @@ class Reply(Module):
             question_url = reference_text.split("\n")[-1].strip("<> \n")
 
             if "youtube.com" in question_url:
-                match = re.match(r"YouTube user (.*?)( just)? asked (a|this) question", reference_text)
+                match = re.match(
+                    r"YouTube user (.*?)( just)? asked (a|this) question",
+                    reference_text,
+                )
                 if match:
-                    question_user = match.group(1)  # YouTube user (.*) asked this question
+                    question_user = match.group(
+                        1
+                    )  # YouTube user (.*) asked this question
                 else:
                     question_user = "Unknown User"
                 ####
@@ -130,7 +142,6 @@ class Reply(Module):
                 question_url = self.utils.latest_question_posted["url"]
                 question_title = self.utils.latest_question_posted["question_title"]
             else:
-
                 return (
                     "I don't remember the URL of the last question I posted here,"
                     " so I've probably been restarted since that happened.\n"
@@ -138,13 +149,17 @@ class Reply(Module):
                 )
 
         if question_title:
-            answer_title = f"""{message.author.display_name}'s Answer to {question_title}"""
+            answer_title = (
+                f"""{message.author.display_name}'s Answer to {question_title}"""
+            )
         else:
             answer_title = f"""{message.author.display_name}'s Answer"""
 
         reply_message = self.extract_reply(message.clean_content)
         if "youtube.com" in question_url:
-            reply_message += "\n -- _I am a bot. This reply was approved by %s_" % approver_string
+            reply_message += (
+                "\n -- _I am a bot. This reply was approved by %s_" % approver_string
+            )
 
         quoted_reply_message = "> " + reply_message.replace("\n", "\n> ")
         report += "Ok, posting this:\n %s\n\nas a response to this question: <%s>" % (
@@ -154,7 +169,12 @@ class Reply(Module):
         answer_time = datetime.now()
 
         self.utils.wiki.add_answer(
-            answer_title, message.author.display_name, approvers, answer_time, reply_message, question_title,
+            answer_title,
+            message.author.display_name,
+            approvers,
+            answer_time,
+            reply_message,
+            question_title,
         )
 
         if "youtube.com" in question_url:
@@ -179,28 +199,45 @@ class Reply(Module):
                     users = [user async for user in reaction.users()]
                     for user in users:
                         approvers.append(user)
-                        stampvalue = self.utils.modules_dict["StampsModule"].get_user_stamps(user)
+                        stampvalue = self.utils.modules_dict[
+                            "StampsModule"
+                        ].get_user_stamps(user)
                         total += stampvalue
-                        self.log.info(self.class_name, from_user=user, user_id=user.id, stampvalue=stampvalue)
+                        self.log.info(
+                            self.class_name,
+                            from_user=user,
+                            user_id=user.id,
+                            stampvalue=stampvalue,
+                        )
 
         return total, approvers
 
     def has_been_replied_to(self, message):
         reactions = message.reactions
-        self.log.info(self.class_name, status="Testing if question has already been replied to")
+        self.log.info(
+            self.class_name, status="Testing if question has already been replied to"
+        )
         self.log.info(self.class_name, message_reactions=reactions)
         if reactions:
             for reaction in reactions:
                 react_type = getattr(reaction.emoji, "name", reaction.emoji)
                 self.log.info(self.class_name, reaction_type=react_type)
                 if react_type in ["📨", ":incoming_envelope:"]:
-                    self.log.info(self.class_name, msg="Message has envelope emoji, it's already replied to")
+                    self.log.info(
+                        self.class_name,
+                        msg="Message has envelope emoji, it's already replied to",
+                    )
                     return True
                 elif react_type in ["🚫", ":no_entry_sign:"]:
-                    self.log.info(self.class_name, msg="Message has no entry sign, it's vetoed")
+                    self.log.info(
+                        self.class_name, msg="Message has no entry sign, it's vetoed"
+                    )
                     return True
 
-        self.log.info(self.class_name, msg="Message has no envelope emoji, it has not already replied to")
+        self.log.info(
+            self.class_name,
+            msg="Message has no envelope emoji, it has not already replied to",
+        )
         return False
 
     async def process_raw_reaction_event(self, event):
@@ -211,13 +248,16 @@ class Reply(Module):
 
         if emoji in ["stamp", "goldstamp"]:
             self.log.info(self.class_name, guild=self.utils.GUILD)
-            guild = discord.utils.find(lambda g: g.id == event.guild_id, self.utils.client.guilds)
-            channel = discord.utils.find(lambda c: c.id == event.channel_id, guild.channels)
+            guild = discord.utils.find(
+                lambda g: g.id == event.guild_id, self.utils.client.guilds
+            )
+            channel = discord.utils.find(
+                lambda c: c.id == event.channel_id, guild.channels
+            )
             message = await channel.fetch_message(event.message_id)
             if self.is_at_me(DiscordMessage(message)) and self.is_post_request(
                 self.is_at_me(DiscordMessage(message))
             ):
-
                 if self.has_been_replied_to(message):
                     return
 
@@ -230,9 +270,12 @@ class Reply(Module):
 
                     await channel.send(report)
                 else:
-                    report = "This reply has %s stamp points. I will send it when it has %s" % (
-                        stamp_score,
-                        self.comment_posting_threshold(),
+                    report = (
+                        "This reply has %s stamp points. I will send it when it has %s"
+                        % (
+                            stamp_score,
+                            self.comment_posting_threshold(),
+                        )
                     )
                     await channel.send(report)
 
@@ -240,6 +283,7 @@ class Reply(Module):
     def test_cases(self):
         return [
             self.create_integration_test(
-                test_message="post this", expected_response=self.POST_MESSAGE % self.comment_posting_threshold()
+                test_message="post this",
+                expected_response=self.POST_MESSAGE % self.comment_posting_threshold(),
             )
         ]
