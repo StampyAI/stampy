@@ -1,3 +1,39 @@
+"""
+Provides quirky responses for some pre-programmed cases, most unprompted.
+
+If a message from this module interrupts a desired behavior, re-send your
+previous message and the joke won't trigger.
+
+- `s, say X`: `X!`
+- XKCD 37: `that's a weird-ass story` -> `that's a weird ass-story`
+- How original: `Welcome our new X` ->
+    `Never heard that one before...`
+- Sometimes changes "(space)ex" to "sex" (extremely rare)
+- Pokemon: `X used Y` -> `It's super effective!`
+- Yelling detector: Stampy calls out a long message with all caps
+- Inevitable: `Stampy can't X` -> `... yet!`
+- Band name detector: `I saw X and the Y yesterday`
+    -> `X and the Y might be a good name for a band!`
+    These names are stored in the `Factoids` database. You can get a random one
+    with "s, band name"
+- `69` -> `nice.`
+- `X, if you will` -> `I won't.`
+- So's your face (rare): `X is Y` -> `So's your face!`
+- New for 2023, Alexa support! `I need X` -> `Added X to your shopping list`
+- Oneupmanship: `I scored 200 points` -> `I scored 201 points but you don't see
+    me brag about it`
+- CSI reference: `The IP is X.X.X.X` -> `[builds a GUI in Visual Basic]`
+- `What time is it?` -> `03:40` or `Showtime!`
+- JJ Jameson: `I want pictures of X` -> [a URL to Google image search for X]
+- `How do I X?` -> `You just X`
+- `Dude, where's my X?` -> `Where's your X, dude?`
+- `make X` -> `make: *** No rule to make target 'X'.  Stop.`
+- Vowel violence (very rare): `Sometimes Stampy does this` -> `Somotoms Stompy
+    doos thos`
+- Sympathy panic: `AAAAAAAAAA` -> `AAAAAAAAAAAAAAAAAAA`
+- `User: Stampy!` -> `Stampy: User!`
+"""
+
 import re
 import random
 import urllib
