@@ -13,9 +13,8 @@ You can ask me for help with (1) a particular module or (2) a particular command
 
 import re
 from textwrap import dedent
-from typing import cast
 
-from modules.module import Module, Response
+from modules.module import IntegrationTest, Module, Response
 from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 
@@ -60,8 +59,8 @@ class HelpModule(Module):
         )
         return "I have the following modules:\n" + "\n".join(msg_descrs)
 
-    async def cb_help(self, text: str, message: ServiceMessage) -> Response:
-        help_content = text[len("help ") :]
+    async def cb_help(self, msg_text: str, message: ServiceMessage) -> Response:
+        help_content = msg_text[len("help ") :]
         # iterate over modules
         for mod in self.utils.modules_dict.values():
             if cmd_help := mod.help.get_command_help(msg_text=help_content):
@@ -72,12 +71,14 @@ class HelpModule(Module):
                 )
             # module help
             if mod.class_name.casefold() in help_content.casefold():
-                mod_help = cast(str, mod.help.get_module_help(markdown=False))
-                return Response(
-                    confidence=10,
-                    text=mod_help,
-                    why=f"{message.author.display_name} asked me for help with module `{mod.class_name}`",
-                )
+                mod_help = mod.help.get_module_help(markdown=False)
+                why = f"{message.author.display_name} asked me for help with module `{mod.class_name}`"
+                if mod_help is None:
+                    msg_text = f"No help for module `{mod.class_name}`"
+                    why += " but help is not written for it"
+                else:
+                    msg_text = mod_help
+                return Response(confidence=10, text=msg_text, why=why)
 
         # nothing found
         return Response(
@@ -85,3 +86,23 @@ class HelpModule(Module):
             text=f'I couldn\'t find any help info related to "{help_content}". Could you rephrase that?',
             why=f'{message.author.display_name} asked me for help with "{help_content}" but I found nothing.',
         )
+
+    @property
+    def test_cases(self) -> list[IntegrationTest]:
+        module_help_tests = [
+            self.create_integration_test(
+                test_message=f"help {mod_name}",
+                expected_regex=f"**Module `{mod_name}`**",
+            )
+            for mod_name, mod in self.utils.modules_dict.items()
+            if hasattr(mod, "help")
+        ]
+        return [
+            self.create_integration_test(
+                test_message="list modules",
+                expected_regex=r"I have the following modules:(\n- `\w+`[^\n]*)+",
+            ),
+            self.create_integration_test(
+                test_message="help", expected_response=self.STAMPY_HELP_MSG
+            ),
+        ] + module_help_tests
