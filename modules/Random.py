@@ -1,6 +1,7 @@
 import re
 import random
 from modules.module import Module, Response
+from utilities.serviceutils import ServiceMessage
 
 from utilities.utilities import Utilities
 
@@ -8,10 +9,10 @@ utils = Utilities.get_instance()
 
 
 class Random(Module):
-    def process_message(self, message):
+    def process_message(self, message: ServiceMessage) -> Response:
         atme = self.is_at_me(message)
         text = atme or message.clean_content
-        who = message.author.name
+        who = message.author.display_name
 
         # dice rolling
         if re.search("^roll [0-9]+d[0-9]+$", text):
@@ -44,7 +45,7 @@ class Random(Module):
                 )
 
         # "Stampy, choose coke or pepsi or both"
-        elif text.startswith("choose ") and " or " in text:
+        if text.startswith("choose ") and " or " in text:
             # repetition guard
             if atme and utils.message_repeated(message, text):
                 self.log.info(
@@ -59,12 +60,13 @@ class Random(Module):
                 for option in re.split(" or |,", cstring)
                 if option.strip()
             ]
+            options_str = ", ".join(options)
             return Response(
                 confidence=9,
                 text=random.choice(options),
-                why="%s asked me to choose between the options [%s]"
-                % (who, ", ".join(options)),
+                why=f"{who} asked me to choose between the options [{options_str}]",
             )
+        return Response()
 
     def __str__(self):
         return "Random"

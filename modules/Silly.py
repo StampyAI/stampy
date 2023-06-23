@@ -4,7 +4,6 @@ import urllib
 import datetime
 import string
 
-from typing import Dict
 from modules.module import Module, Response, ServiceMessage
 from utilities.utilities import Utilities, randbool
 
@@ -12,15 +11,10 @@ utils = Utilities.get_instance()
 
 
 class Silly(Module):
-    def __init__(self):
-        super().__init__()
-
-    def process_message(self, message):
+    def process_message(self, message: ServiceMessage) -> Response:
         atme = self.is_at_me(message)
         text = atme or message.clean_content
-        who = message.author.name
-        print(atme)
-        print(text)
+        who = message.author.display_name
 
         if atme and utils.message_repeated(message, text):
             self.log.info(

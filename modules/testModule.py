@@ -116,7 +116,7 @@ class TestModule(Module):
             return Response(
                 confidence=10,
                 text="Testing is only allowed in the private channel",
-                why=f"{message.author.name} wanted to test me outside of the private channel which is prohibited!",
+                why=f"{message.author.display_name} wanted to test me outside of the private channel which is prohibited!",
             )
 
         if not is_bot_dev(message.author):
