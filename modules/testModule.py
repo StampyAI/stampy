@@ -69,7 +69,6 @@ class TestModule(Module):
         self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage):
-        # breakpoint()
         if message.clean_content == "s, send a long message":
             if not is_bot_dev(message.author):
                 return Response(
@@ -174,7 +173,6 @@ class TestModule(Module):
         """The message is directed at this module
         if its service is supported and it contains one of the test phrases
         """
-        # breakpoint()
         if (
             hasattr(message, "service")
             and message.service not in self.SUPPORTED_SERVICES
