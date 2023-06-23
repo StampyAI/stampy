@@ -94,7 +94,7 @@ class Silly(Module):
             )
 
         # change 'ex' to 'sex' sometimes? Not sure about this one
-        if " ex" in text and len(text) < 100 and randbool(0.005):
+        if randbool(0.005) and len(text) < 100 and " ex" in text:
             return Response(
                 confidence=Conf, text=text.replace(" ex", " sex"), why="sex sells?"
             )
