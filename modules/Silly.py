@@ -57,7 +57,8 @@ class Silly(Module):
 
         if atme and utils.message_repeated(message, text):
             self.log.info(
-                self.class_name, msg="We don't want to lock people in due to phrasing"
+                self.class_name,
+                msg="We don't want to lock people in due to phrasing"
             )
             return Response()
 
