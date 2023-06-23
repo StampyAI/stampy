@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import re
+from textwrap import dedent
 from typing import Optional
 
 from utilities.help_utils import ModuleHelp
@@ -9,7 +10,14 @@ MODULES_PATH = Path("modules/")
 
 ModuleName = Docstring = str
 
-FILE_HEADER = """# Stampy Module & Command Help\n\n"""
+FILE_HEADER = dedent(
+    """\
+    # Stampy Module & Command Help
+    
+    This file was auto-generated from file-level docstrings in `modules` directory. If you think it's out of sync with docstrings, re-generate it by calling `python build_help.py`. If docstrings are out of date with code, feel free to edit them or nag somebody with a `@Stampy dev` on the server.
+    
+    """
+)
 
 
 def extract_docstring(code: str) -> Optional[Docstring]:
