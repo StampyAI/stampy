@@ -1,9 +1,9 @@
 """
 Changing status (in future perhaps also other attributes) of questions in Coda.
 **Permissions:**
-- All server members can contribute to AI Safety Questions and [ask for feedback](#review-request).
-- Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands ([1](#marking-questions-for-deletion-or-as-duplicates) [2](#setting-question-status)).
-- Only `@reviewers` can change status of questions to and from  `Live on site` (including [accepting](#review-acceptance) [review requests](#review-request)).
+- All server members can contribute to AI Safety Questions and ask for feedback.
+- Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands.
+- Only `@reviewers` can change status of questions to and from  `Live on site` (including accepting review requests).
 
 Review request, @reviewer, @feedback, @feedback-sketch
 Request a review on an answer you wrote/edited
