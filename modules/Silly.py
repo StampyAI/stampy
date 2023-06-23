@@ -72,7 +72,7 @@ class Silly(Module):
         # Stampy say X -> X!
         if text.lower().startswith("say "):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=self.dereference(text.partition(" ")[2], who) + "!",
                 why=f"{who} told me to say it!",
             )
@@ -80,14 +80,14 @@ class Silly(Module):
         # XKCD #37
         if "-ass " in text:
             return Response(
-                confidence=4, text=text.replace("-ass ", " ass-"), why="XKCD #37"
+                confidence=Conf, text=text.replace("-ass ", " ass-"), why="XKCD #37"
             )
 
         # I for one am tired of that reference
         # TODO make this a regex factoid
         if (atme or randbool(0.5)) and re.search("welcome our new ", text):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text="Never heard that one before...",
                 why=who + " was being unoriginal",
             )
@@ -95,13 +95,13 @@ class Silly(Module):
         # change 'ex' to 'sex' sometimes? Not sure about this one
         if " ex" in text and len(text) < 100 and randbool(0.005):
             return Response(
-                confidence=4, text=text.replace(" ex", " sex"), why="sex sells?"
+                confidence=Conf, text=text.replace(" ex", " sex"), why="sex sells?"
             )
 
         # Pokemon reference
         if re.match(r"^[^\W]+ used ", text) and ("used to" not in text):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=random.choice(
                     [
                         "It's super effective!",
@@ -121,7 +121,7 @@ class Silly(Module):
             and (text.upper() == text)
         ):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=self.dereference("{{$yelling}}", who),
                 why="PEOPLE WERE YELLING",
             )
@@ -136,7 +136,7 @@ class Silly(Module):
             or ("Stampy can't" in text)
         ):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=random.choice(
                     ["...yet!", "Well, not *yet*", "CHALLENGE ACCEPTED"]
                 ),
@@ -151,7 +151,7 @@ class Silly(Module):
                 "band name", bandname, message.author.id, "reply"
             )
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=f'"{bandname}" might be a good name for a band',
                 why=f"{who} said something like 'X and the Ys' ({bandname}), which could be a band name",
             )
@@ -162,7 +162,7 @@ class Silly(Module):
                 "band name", bandname, message.author.id, "reply"
             )
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=f'"{bandname}" might be a good name for a band',
                 why=f"{who} said something like 'The Xs' ({bandname}), which could be a band name",
             )
@@ -171,14 +171,14 @@ class Silly(Module):
         # TODO make this a regex factoid
         if re.search(r"\b69\b", text):
             return Response(
-                confidence=4, text="nice.", why="I'll tell you when you're older"
+                confidence=Conf, text="nice.", why="I'll tell you when you're older"
             )
 
         # ...If you will
         # TODO make this a regex factoid
         if re.search(r", if you will\.?$", text):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text="I won't.",
                 why=f"{who} said 'if you will', but I don't think I will.",
             )
@@ -192,7 +192,7 @@ class Silly(Module):
             and (text[:2].lower() != "wh")
         ):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text="So's your face?",
                 why=f"{who} said '{text}'. which reminded me of their face",
             )
@@ -208,7 +208,7 @@ class Silly(Module):
             )  # only up to punctuation
             if not (tobuy.startswith("it ") or tobuy.startswith("that ")):
                 return Response(
-                    confidence=4,
+                    confidence=Conf,
                     text=f'Okay {who}, I added "{tobuy}" to your shopping list',
                     why=f'{who} suggested they might want to buy "{tobuy}"',
                 )
@@ -239,7 +239,7 @@ class Silly(Module):
                 text,
             )
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=result,
                 why=f"{who} was showing off, but I'm better than them",
             )
@@ -250,7 +250,7 @@ class Silly(Module):
             text,
         ):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text="[Builds a GUI in Visual Basic]",
                 why="to track the killer's IP address!",
             )
@@ -265,7 +265,7 @@ class Silly(Module):
                 result = datetime.datetime.now().strftime("%H:%M")
             else:
                 result = random.choice(["Time to buy a watch", "Showtime!"])
-            return Response(confidence=4, text=result, why=f"{who} asked for the time")
+            return Response(confidence=Conf, text=result, why=f"{who} asked for the time")
 
         # If you want pictures of spiderman, Stampy's got you
         imagere = re.compile(
@@ -276,7 +276,7 @@ class Silly(Module):
             urlterm = urllib.parse.quote_plus(term)
             url = "https://www.google.co.uk/search?tbm=isch&q=%s" % urlterm
             return Response(
-                confidence=4, text=url, why=f"{who} asked for pictures of '{term}'"
+                confidence=Conf, text=url, why=f"{who} asked for pictures of '{term}'"
             )
 
         # How do I X? -> You Just X!
@@ -284,7 +284,7 @@ class Silly(Module):
         if match:
             thing = match.group(2).replace(" a ", " the ")
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=f"You just {thing}",
                 why=f"{who} asked how you {thing}, so I told them",
             )
@@ -294,7 +294,7 @@ class Silly(Module):
         if match:
             thing = match.group(2)
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text=f"Where's your {thing}, dude?",
                 why="Dude!",
             )
@@ -304,7 +304,7 @@ class Silly(Module):
         if atme and text.startswith("make "):
             nextword = text[5:]
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text="`make: *** No rule to make target '%s'.  Stop.`" % nextword,
                 why="Run `$ man make` for more information",
             )
@@ -317,7 +317,7 @@ class Silly(Module):
             for c in "AEIOU":
                 result = result.replace(c, "O")
             return Response(
-                confidence=2,
+                confidence=Conf-2,
                 text=result,
                 why="O don't know, O thooght ot woold bo fonny",
             )
@@ -325,7 +325,7 @@ class Silly(Module):
         # If someone is panicking, Stampy panics too
         if len(text) > 3 and set(text.lower()) == set("a"):
             return Response(
-                confidence=4,
+                confidence=Conf,
                 text="".join([random.choice("Aa") for i in range(len(text) * 2)]),
                 why=f"{who} was panicking and it freaked me out",
             )
@@ -335,7 +335,7 @@ class Silly(Module):
             result = (
                 who + (text[-1] == "!" and "!" or "") + (text[-1] == "." and "." or "")
             )
-            return Response(confidence=4, text=result, why="Stampy.")
+            return Response(confidence=Conf, text=result, why="Stampy.")
         else:
             return Response()
 
@@ -365,7 +365,7 @@ class Silly(Module):
             except:
                 result = random.choice(options)
             return Response(
-                confidence=6,
+                confidence=Conf+2,
                 text=r"I choose {random.choice(options)}",
                 why="%s implied a choice between the options [%s]"
                 % (who, ", ".join(options)),
