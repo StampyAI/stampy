@@ -29,6 +29,7 @@ def parse_question_row(row: Row) -> QuestionRow:
     # remove empty strings
     tags = [tag for tag in row_dict["Tags"].split(",") if tag]
     last_asked_on_discord = adjust_date(row_dict["Last Asked On Discord"])
+    doc_last_edited = adjust_date(row_dict["Doc Last Edited"])
     alternate_phrasings = [
         alt for alt in row_dict["Alternate Phrasings"].split(",") if alt
     ]
@@ -39,6 +40,7 @@ def parse_question_row(row: Row) -> QuestionRow:
         "status": status,
         "tags": tags,
         "last_asked_on_discord": last_asked_on_discord,
+        "doc_last_edited": doc_last_edited,
         "alternate_phrasings": alternate_phrasings,
         "row": row,
     }
@@ -63,6 +65,7 @@ class QuestionRow(TypedDict):
     status: str
     tags: list[str]
     last_asked_on_discord: datetime
+    doc_last_edited: datetime
     alternate_phrasings: list[str]
     row: Row
 

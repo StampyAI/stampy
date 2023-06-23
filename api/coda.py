@@ -57,18 +57,7 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
         self.last_question_id: Optional[str] = None
-        self.questions_df = pd.DataFrame(
-            columns=[
-                "id",
-                "title",
-                "url",
-                "status",
-                "tags",
-                "last_asked_on_discord",
-                "alternate_phrasings",
-                "row",
-            ]
-        )
+        self.questions_df = pd.DataFrame(columns=QuestionRow.__required_keys__)
 
         if is_in_testing_mode():
             return
