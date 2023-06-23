@@ -39,6 +39,7 @@ from config import (
     bot_vip_ids,
     paid_service_for_all,
     paid_service_whitelist_role_ids,
+    be_shy
 )
 from database.database import Database
 from servicemodules.discordConstants import (
@@ -573,3 +574,6 @@ def can_use_paid_service(author: ServiceUser) -> bool:
     if author.id in bot_vip_ids or is_bot_dev(author):
         return True
     return any(user_has_role(author, x) for x in paid_service_whitelist_role_ids)
+
+def is_shy() -> bool:
+    return be_shy

@@ -169,6 +169,7 @@ if robmiles_defaults:
     gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
+    be_shy = getenv_bool("BE_SHY")
 else:
     # user-configured from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -205,6 +206,7 @@ else:
     gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
+    be_shy = getenv_bool("BE_SHY")
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")

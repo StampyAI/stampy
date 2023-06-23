@@ -41,7 +41,7 @@ import datetime
 import string
 
 from modules.module import Module, Response, ServiceMessage
-from utilities.utilities import Utilities, randbool
+from utilities.utilities import Utilities, randbool, is_shy, is_bot_dev
 
 utils = Utilities.get_instance()
 
@@ -49,8 +49,11 @@ utils = Utilities.get_instance()
 class Silly(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         atme = self.is_at_me(message)
-        text = atme or message.clean_content
+        if not atme and is_shy():
+            return Response()
+        Conf: float = 4
         who = message.author.display_name
+        text = atme or message.clean_content
 
         if atme and utils.message_repeated(message, text):
             self.log.info(
