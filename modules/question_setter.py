@@ -90,7 +90,7 @@ class QuestionSetter(Module):
         if not self.is_available():
             exc_msg = f"Module {self.class_name} is not available."
             if coda_api_token is None:
-                exc_msg += f" CODA_API_TOKEN is not set in `.env`."
+                exc_msg += " CODA_API_TOKEN is not set in `.env`."
             if is_in_testing_mode():
                 exc_msg += " Stampy is in testing mode right now."
             raise Exception(exc_msg)
@@ -283,7 +283,6 @@ class QuestionSetter(Module):
         text = message.clean_content
         if not any(s in text.lower() for s in ("approved", "accepted", "lgtm")):
             return
-
         if gdoc_links := parse_gdoc_links(text):
             return Response(
                 confidence=10,
@@ -329,6 +328,9 @@ class QuestionSetter(Module):
             assert isinstance(message.channel, DiscordChannel)
             await self.find_gdoc_links_in_msg(message.channel, msg_ref_id)
             gdoc_links = self.msg_id2gdoc_links.get(msg_ref_id, [])
+
+        if not gdoc_links:
+            return Response()
 
         questions = self.coda_api.get_questions_by_gdoc_links(gdoc_links)
 
