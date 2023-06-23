@@ -92,17 +92,33 @@ class HelpModule(Module):
         module_help_tests = [
             self.create_integration_test(
                 test_message=f"help {mod_name}",
-                expected_regex=f"**Module `{mod_name}`**",
+                expected_regex=rf"\*\*Module `{mod_name}`\*\*",
             )
             for mod_name, mod in self.utils.modules_dict.items()
-            if hasattr(mod, "help")
+            if not mod.help.empty
         ]
-        return [
+        helpless_module_names = [
+            mod_name
+            for mod_name, mod in self.utils.modules_dict.items()
+            if mod.help.empty
+        ][:3]
+        helpless_module_tests = [
             self.create_integration_test(
-                test_message="list modules",
-                expected_regex=r"I have the following modules:(\n- `\w+`[^\n]*)+",
-            ),
-            self.create_integration_test(
-                test_message="help", expected_response=self.STAMPY_HELP_MSG
-            ),
-        ] + module_help_tests
+                test_message=f"help {mod_name}",
+                expected_regex=f"No help for module `{mod_name}`",
+            )
+            for mod_name in helpless_module_names
+        ]
+        return (
+            [
+                self.create_integration_test(
+                    test_message="list modules",
+                    expected_regex=r"I have the following modules:(\n- `\w+`[^\n]*)+",
+                ),
+                self.create_integration_test(
+                    test_message="help", expected_response=self.STAMPY_HELP_MSG
+                ),
+            ]
+            + module_help_tests
+            + helpless_module_tests
+        )
