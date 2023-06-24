@@ -51,9 +51,15 @@ def getenv_bool(env_var: str) -> bool:
     return e != "UNDEFINED"
 
 
-def getenv_unique_set(
-    var_name, default: Union[frozenset, Literal["ALL"]] = frozenset()
-) -> Union[frozenset[str], Literal["ALL"]]:
+@overload
+def getenv_unique_set(var_name: str) -> frozenset:...
+@overload
+def getenv_unique_set(var_name: str, default = None) \
+    -> Optional[frozenset[str]]:...
+@overload
+def getenv_unique_set(var_name: str, default = "ALL") \
+    -> Union[frozenset[str], Literal["ALL"]]:...
+def getenv_unique_set(var_name, default = frozenset()) -> frozenset:
     l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
         return default
