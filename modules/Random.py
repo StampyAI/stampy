@@ -3,7 +3,7 @@ import random
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 
-from utilities.utilities import Utilities
+from utilities.utilities import Utilities, is_shy
 
 utils = Utilities.get_instance()
 
@@ -14,6 +14,8 @@ class Random(Module):
         text = atme or message.clean_content
         who = message.author.display_name
 
+        if not atme and is_shy():
+            return Response()
         # dice rolling
         if re.search("^roll [0-9]+d[0-9]+$", text):
             result = None
