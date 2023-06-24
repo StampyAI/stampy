@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
+from pathlib import Path
 import re
+from textwrap import dedent
 from typing import Optional, overload
 
 
@@ -215,3 +218,60 @@ class CommandHelp:
         for name in self.all_names:
             if re.search(rf"(?<!\w){name}(?!\w)", msg_text, re.I):
                 return name
+
+
+#################
+# Build Help MD #
+#################
+
+
+def build_help_md(modules_dir: Path) -> str:
+    modules_with_docstrings = load_modules_with_docstrings(modules_dir)
+    helps = []
+    for module_name, docstring in modules_with_docstrings.items():
+        help = ModuleHelp.from_docstring(module_name, docstring)
+        if not help.empty:
+            helps.append(help.get_module_help(markdown=True))
+    return HELP_MD_HEADER + "\n\n".join(helps)
+
+
+def load_modules_with_docstrings(modules_dir: Path) -> dict[str, str]:
+    modules_with_docstrings = {}
+    for fname in os.listdir(modules_dir):
+        if fname.startswith("_") or fname == "module.py":
+            continue
+        with open(modules_dir / fname, "r", encoding="utf-8") as f:
+            code = f.read()
+        if (module_name := extract_module_name(code)) and (
+            docstring := extract_docstring(code)
+        ):
+            modules_with_docstrings[module_name] = docstring
+    return modules_with_docstrings
+
+
+HELP_MD_HEADER = dedent(
+    """\
+    # Stampy Module & Command Help
+    
+    This file was auto-generated from file-level docstrings in `modules` directory. If you think it's out of sync with docstrings, re-generate it by calling `python build_help.py`. If docstrings are out of date with code, feel free to edit them or nag somebody with a `@Stampy dev` on the server.
+    
+    """
+)
+
+
+def extract_docstring(code: str) -> Optional[str]:
+    if not (code.startswith('"""') and '"""' in code[3:]):
+        return
+    docstring_end_pos = code.find('"""', 3)
+    assert docstring_end_pos != -1
+    docstring = code[3:docstring_end_pos].strip()
+    assert docstring
+    return docstring
+
+
+_re_module_name = re.compile(r"(?<=class\s)\w+(?=\(Module\):)", re.I)
+
+
+def extract_module_name(code: str) -> Optional[str]:
+    if match := _re_module_name.search(code):
+        return match.group()
