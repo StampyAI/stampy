@@ -73,6 +73,7 @@ Not required:
 - `BOT_REBOOT`: how Stampy reboots himself. Unset, he only quits, expecting an external `while true` loop (like in `runstampy`/Dockerfile). Set to `exec` he will try to relaunch himself from his own CLI arguments.
 - `STOP_ON_ERROR`: Dockerfile/`runstampy` only, unset `BOT_REBOOT` only. If defined, will only restart Stampy when he gets told to reboot, returning exit code 42. Any other exit code will cause the script to just stop.
 - `BE_SHY`: Stamp won't respond when the message isn't specifically to him.
+- `CHANNEL_WHITELIST`: channels Stampy is allowed to respond to messages in
 
 Specific modules (excluding LLM stuff):
 
