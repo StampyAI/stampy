@@ -149,7 +149,7 @@ class DiscordHandler:
                 self.utils.last_message_was_youtube_question = False
 
             #log.info("Checking whitelist...") # DEBUG
-            if (isinstance(channel_whitelist, frozenset)
+            if not message.is_dm and (isinstance(channel_whitelist, frozenset)
                     and hasattr(message.channel, "id")
                     and str(message.channel.id) not in channel_whitelist):
                 #log.info("message channel {} not in whitelist".format(message.channel.id)) # debug
