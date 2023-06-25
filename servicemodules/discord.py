@@ -18,6 +18,7 @@ from config import (
     maximum_recursion_depth,
     youtube_api_key,
     bot_private_channel_id,
+    channel_whitelist,
 )
 from modules.module import Response
 from servicemodules import discordConstants
@@ -146,6 +147,14 @@ class DiscordHandler:
                     msg="the latest general discord channel message was not from stampy",
                 )
                 self.utils.last_message_was_youtube_question = False
+
+            #log.info("Checking whitelist...") # DEBUG
+            if not message.is_dm and (isinstance(channel_whitelist, frozenset)
+                    and hasattr(message.channel, "id")
+                    and str(message.channel.id) not in channel_whitelist):
+                #log.info("message channel {} not in whitelist".format(message.channel.id)) # debug
+                return None
+            #log.info("message channel {} was found in whitelist".format(message.channel.id)) # DEBUG
 
             responses = [Response()]
             why_traceback: list[str] = []
