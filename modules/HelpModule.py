@@ -35,13 +35,13 @@ class HelpModule(Module):
     def process_message(self, message: ServiceMessage) -> Response:
         if not (text := self.is_at_me(message)):
             return Response()
-        if text == "list modules":
+        if text.casefold() == "list modules":
             return Response(
                 confidence=10,
                 text=self.list_modules(),
                 why=f"{message.author.display_name} asked me to list my modules",
             )
-        if text == "help":
+        if text.casefold() == "help":
             return Response(
                 confidence=10,
                 text=self.STAMPY_HELP_MSG,
