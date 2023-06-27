@@ -126,7 +126,7 @@ else:
     enabled_modules = enabled_modules_var
 
 # user-configured from dotenv
-discord_guild: str
+discord_guilds: frozenset[str]
 # Factoid.py
 factoid_database_path: str
 # VIPs have full access + special permissions
@@ -162,10 +162,10 @@ robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
 if robmiles_defaults:
     # use robmiles server defaults
     print("Using settings for the Rob Miles Discord server")
-    discord_guild = {
+    discord_guilds = frozenset({
         "production": "677546901339504640",
         "development": "783123903382814720",
-    }[ENVIRONMENT_TYPE]
+    }[ENVIRONMENT_TYPE])
     factoid_database_path = "./factoids.db"
     bot_vip_ids = frozenset(["181142785259208704"])
     bot_dev_roles = frozenset(
@@ -216,7 +216,7 @@ if robmiles_defaults:
     channel_whitelist = None
 else:
     # user-configured from dotenv
-    discord_guild = getenv("DISCORD_GUILD")
+    discord_guilds = getenv_unique_set("DISCORD_GUILDS")
     # Factoid.py
     factoid_database_path = getenv(
         "FACTOID_DATABASE_PATH", default="./database/Factoids.db"

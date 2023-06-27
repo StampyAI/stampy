@@ -73,7 +73,7 @@ class Utilities:
     __instance: Optional[Utilities] = None
 
     TOKEN = discord_token
-    GUILD = discord_guild
+    GUILDS = discord_guilds
     DB_PATH = database_path
 
     def __init__(self) -> None:

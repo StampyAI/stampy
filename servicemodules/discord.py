@@ -74,21 +74,26 @@ class DiscordHandler:
             log.info(
                 self.class_name,
                 status=f"{self.utils.client.user} has connected to Discord!",
-                searching_for_guild=self.utils.GUILD,
+                searching_for_guilds=self.utils.GUILDS,
                 guilds=self.utils.client.guilds,
             )
-            guild = discord.utils.get(self.utils.client.guilds, name=self.utils.GUILD)
-            if guild is None:
-                raise Exception(f"Guild Not Found : '{self.utils.GUILD}'")
-
-            log.info(
-                self.class_name,
-                msg="found a guild named '%s' with id '%s'" % (guild.name, guild.id),
-            )
+            guilds = set()
+            for G in self.utils.GUILDS:
+                guild_object = discord.utils.get(self.utils.client.guilds, name=G)
+                if guild_object is None:
+                    raise Exception(f"Guild Not Found : '{G}'")
+                guilds.add(guild_object)
+                log.info(
+                    self.class_name,
+                    msg="found a guild named '%s' with id '%s'" % (guild_object.name, guild_object.id),
+                )
 
             self.test_channel_constants()
 
-            members = "\n - " + "\n - ".join([member.name for member in guild.members])
+            members: str = "\n - "
+            for guild in guilds:
+                # NOTE(ProducerMatt): all members in one list, should this be seperated?
+                members += "\n - ".join([member.name for member in guild.members])
             log.info(self.class_name, guild_members=members)
             if bot_private_channel_id is not None:
                 await cast(
