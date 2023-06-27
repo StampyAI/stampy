@@ -1,5 +1,5 @@
 import os
-from typing import Literal, Optional, TypeVar, Union, cast, get_args, overload, Any
+from typing import Literal, TypeVar, Union, cast, get_args, overload
 
 import dotenv
 from structlog import get_logger
@@ -226,6 +226,10 @@ openai_api_key = getenv("OPENAI_API_KEY", default=None)
 wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
 slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
+
+not_rob_server = getenv_bool("NOT_ROB_SERVER")
+is_rob_server = not not_rob_server
+
 
 # VARIABLE VALIDATION
 bot_reboot_options = frozenset(["exec", False])

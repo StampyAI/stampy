@@ -94,3 +94,9 @@ QUESTION_STATUS_ALIASES: dict[str, QuestionStatus] = {
     "duplicated": "Duplicate",
     "published": "Live on site",
 }
+
+REVIEW_STATUSES: set[QuestionStatus] = {
+    "Bulletpoint sketch",
+    "In progress",
+    "In review",
+}

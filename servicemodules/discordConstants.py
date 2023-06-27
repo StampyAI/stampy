@@ -63,7 +63,6 @@ stampy_control_channel_ids: tuple[str, ...] = (test_channel_id, stampy_dev_priv_
 
 bot_admin_role_id: str = {"production": "819898114823159819", "development": "948709263461711923"}[ENVIRONMENT_TYPE]
 bot_dev_role_id: str = {"production": "736247946676535438", "development": "817518998148087858"}[ENVIRONMENT_TYPE]
-can_invite_role_id: str = {"production": "791424708973035540", "development": "-99"}[ENVIRONMENT_TYPE]
 member_role_id: str = {"production": "945033781818040391", "development": "947463614841901117"}[ENVIRONMENT_TYPE]
 # pretty sure can-invite is deprecated, but putting it here for completeness
 
