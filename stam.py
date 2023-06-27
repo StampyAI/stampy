@@ -1,11 +1,28 @@
 import os
+from sys import warnoptions
+
+from config import database_path, enabled_modules, ALL_STAMPY_MODULES, ENVIRONMENT_TYPE
+
+if not warnoptions: # if user hasn't passed explicit warning settings
+    import warnings
+    from typing import Literal
+    WARN_LEVEL: Literal['default', 'error', 'ignore', 'always', 'module', 'once']
+    if ENVIRONMENT_TYPE == "development":
+        WARN_LEVEL = 'error'
+    elif ENVIRONMENT_TYPE == "production":
+        WARN_LEVEL = 'always'
+    else:
+        raise Exception(f"Unknown environment type {ENVIRONMENT_TYPE}")
+
+    warnings.simplefilter(WARN_LEVEL) # Change the filter in this process
+    os.environ["PYTHONWARNINGS"] = WARN_LEVEL # Also affect subprocesses
+
 import threading
 import sys
 from typing import cast
 
 from structlog import get_logger
 
-from config import database_path, enabled_modules, ALL_STAMPY_MODULES
 from modules.module import Module
 from servicemodules.discord import DiscordHandler
 from servicemodules.flask import FlaskHandler
