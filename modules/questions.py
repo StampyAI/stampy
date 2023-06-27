@@ -440,39 +440,21 @@ class Questions(Module):
         self,
         questions: list[QuestionRow],
         channel: Thread,  # TODO: check if this type is correct
+        prefix_msg: str = "",
     ) -> None:
         """Post random oldest not started question.
         Triggered automatically six hours after non-posting any question
         (unless the last was already posted automatically using this method).
         """
         current_time = datetime.now()
+        if prefix_msg:
+            await channel.send(prefix_msg)
         for q in questions:
             self.coda_api.update_question_last_asked_date(q, current_time)
             await channel.send(make_post_question_message(q))
         if len(questions) == 1:
             self.coda_api.last_question_id = questions[0]["id"]
         self.last_question_posted_dt = current_time
-        # get channel #general
-
-        # query for questions with status "Not started" and not tagged as "Stampy"
-
-        # update in coda
-        # current_time = datetime.now()
-        # self.coda_api.update_question_last_asked_date(question, current_time)
-
-        # update caches
-        # self.coda_api.last_question_id = question["id"]
-        # self.last_posted_time = current_time
-        # self.last_question_posted_random_autoposted = True
-
-        # log #TODO
-        # self.log.info(
-        #     self.class_name,
-        #     msg="Posting a random, least recent, not started question to #general",
-        # )
-
-        # send to channel
-        # await channel.send(make_post_question_message(question))
 
     async def post_stagnant_questions(
         self, _event_type, stagnant_questions_df: pd.DataFrame
