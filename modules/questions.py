@@ -370,11 +370,8 @@ class Questions(Module):
                 return True
         return False
 
-    async def autopost_not_started(self) -> Response:
-        """Choose a random question from the oldest not started questions and post to `#general` channel
-
-        Returns `Response` for ease of debugging with callbacks.
-        """
+    async def autopost_not_started(self) -> None:
+        """Choose a random question from the oldest not started questions and post to `#general` channel"""
         current_time = datetime.now()
         self.last_not_started_autopost_attempt_dt = current_time
 
@@ -383,7 +380,7 @@ class Questions(Module):
                 self.class_name,
                 msg="Last message in #general was an autoposted question with status `Not started` -> skipping autoposting",
             )
-            return Response(confidence=10)
+            return
 
         self.log.info(
             self.class_name,
@@ -398,7 +395,7 @@ class Questions(Module):
                 self.class_name,
                 msg='Found no questions with status `Not started` without tag "Stampy"',
             )
-            return Response(confidence=10)
+            return
 
         question = random.choice(
             self.coda_api.q_df_to_rows(
@@ -415,7 +412,6 @@ class Questions(Module):
         self.coda_api.last_question_id = question["id"]
 
         await channel.send(msg)
-        return Response(confidence=10)
 
     def is_time_for_autopost_wip(self) -> bool:
         now = datetime.now()
@@ -435,12 +431,9 @@ class Questions(Module):
                 return True
         return False
 
-    async def autopost_wip(self) -> Response:
+    async def autopost_wip(self) -> None:
         """Post up to a specified number of questions that have been worked on but not touched for longer than a week
-        to #meta-editing channel.
-
-        Returns `Response` for ease of debugging with callbacks.
-        """
+        to #meta-editing channel."""
         today = date.today()
         self.last_wip_autopost_attempt_date = today
 
@@ -449,7 +442,7 @@ class Questions(Module):
                 self.class_name,
                 msg="Last message in `#meta-editing` was one or more autoposted WIP question(s) -> skipping autoposting",
             )
-            return Response(confidence=10)
+            return
 
         week_ago = today - timedelta(days=7)
         question_limit = random.randint(1, self.wip_autopost_limit)
@@ -470,7 +463,7 @@ class Questions(Module):
                 self.class_name,
                 msg=f"Found no questions with status from {REVIEW_STATUSES} with docs edited one week ago or earlier",
             )
-            return Response(confidence=10)
+            return
 
         questions = self.coda_api.q_df_to_rows(questions_df)
 
@@ -492,7 +485,6 @@ class Questions(Module):
             self.coda_api.update_question_last_asked_date(q, current_time)
 
         await channel.send(msg)
-        return Response(confidence=10)
 
     #########################
     #   Get question info   #
