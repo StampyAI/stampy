@@ -1,7 +1,7 @@
 """
 Querying question database.
 This module is also responsible for automatically posting questions coda questions to channels
-1. Every 6 hours Stampy posts to `#general` a question with status `Not started`, chosen randomly from those that were least recently posted to Discord. Stampy doesn't post, if the last message in `#general` was this kind of autoposted question. #TODO add this thingy to checking
+1. Every 6 hours Stampy posts to `#general` a question with status `Not started`, chosen randomly from those that were least recently posted to Discord. Stampy doesn't post, if the last message in `#general` was this kind of autoposted question.
 2. Every Monday, Wednesday, and Friday, sometime between 8 and 12 AM, Stampy posts to `#meta-editing` 1 to 3 questions with status `In review`, `In progress` or `Bulletpoint sketch` that have not been edited for longer than a week. Similarly, he skips if the last message in `#meta-editing` was this one.
 
 How many questions, Count questions
@@ -99,13 +99,13 @@ class Questions(Module):
         # How often Stampy posts random not started questions to `#general`
         self.not_started_question_autopost_interval = timedelta(hours=6)
 
-        # Time when last question was autoposted
-        self.last_not_started_autopost_dt = (
+        # Time of last (attempted) autopost of not started question
+        self.last_not_started_autopost_attempt_dt = (
             datetime.now() - self.not_started_question_autopost_interval / 2
         )
 
-        # Date of last autopost of abandoned question
-        self.last_abandoned_autopost_date: date = get_last_monday().date()
+        # Date of last (attempted) autopost of abandoned question(s)
+        self.last_abandoned_autopost_attempt_date: date = get_last_monday().date()
 
         # Max number of abandoned questions to be autoposted
         self.abandoned_autopost_limit: int = 3
@@ -359,7 +359,7 @@ class Questions(Module):
 
     def is_time_for_autopost_not_started(self) -> bool:
         return (
-            self.last_not_started_autopost_dt
+            self.last_not_started_autopost_attempt_dt
             < datetime.now() - self.not_started_question_autopost_interval
         )
 
@@ -373,7 +373,13 @@ class Questions(Module):
         return False
 
     async def autopost_not_started(self) -> Response:
-        """Choose a random question from the oldest not started questions and post to `#general` channel"""
+        """Choose a random question from the oldest not started questions and post to `#general` channel
+
+        Returns `Response` for ease of debugging with callbacks.
+        """
+        current_time = datetime.now()
+        self.last_not_started_autopost_attempt_dt = current_time
+
         if await self.last_msg_in_general_was_autoposted():
             self.log.info(
                 self.class_name,
@@ -412,8 +418,6 @@ class Questions(Module):
         )
 
         msg = f"{self.AUTOPOST_NOT_STARTED_MSG_PREFIX}\n\n{make_post_question_message(question)}"
-        current_time = datetime.now()
-        self.last_not_started_autopost_dt = current_time
         self.coda_api.update_question_last_asked_date(question, current_time)
         self.coda_api.last_question_id = question["id"]
 
@@ -425,7 +429,7 @@ class Questions(Module):
         return (
             now.weekday() in (0, 2, 4)  # Monday, Wednesday, or Friday
             and 8 <= now.hour <= 12  # between 08:00 and 12:00
-            and self.last_abandoned_autopost_date
+            and self.last_abandoned_autopost_attempt_date
             != now.date()  # Wasn't posted today yet
         )
 
@@ -441,8 +445,11 @@ class Questions(Module):
     async def autopost_abandoned(self) -> Response:
         """Post up to a specified number of questions to #meta-editing channel.
 
-        Returns response for ease of debugging with callbacks.
+        Returns `Response` for ease of debugging with callbacks.
         """
+        today = date.today()
+        self.last_abandoned_autopost_attempt_date = today
+
         if await self.last_msg_in_meta_editing_was_autoposted():
             self.log.info(
                 self.class_name,
@@ -454,8 +461,6 @@ class Questions(Module):
             self.class_name, msg="Autoposting abandoned questions to #general"
         )
 
-        today = date.today()
-        self.last_abandoned_autopost_date = today
         _week_ago = today - timedelta(days=7)
         question_limit = random.randint(1, self.abandoned_autopost_limit)
 
