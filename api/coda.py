@@ -161,15 +161,17 @@ class CodaAPI:
             if row["id"] not in self.questions_df.index:
                 new_questions.append(row)
             else:
-                df_row = self.questions_df.loc[row["id"]]
-                df_row["last_asked_on_discord"] = row["last_asked_on_discord"]
-                df_row["status"] = row["status"]
-                df_row["tags"].clear()
-                df_row["tags"].extend(row["tags"])
-                df_row["alternate_phrasings"].clear()
-                df_row["alternate_phrasings"].extend(row["alternate_phrasings"])
-                df_row["title"] = row["title"]
-                df_row["url"] = row["url"]
+                self.questions_df.at[row["id"], "title"] = row["title"]
+                self.questions_df.at[row["id"], "url"] = row["url"]
+                self.questions_df.at[row["id"], "status"] = row["status"]
+
+                self.questions_df.at[row["id"], "tags"].clear()
+                self.questions_df.at[row["id"], "tags"].extend(row["tags"])
+                self.questions_df.at[row["id"], "alternate_phrasings"].clear()
+                self.questions_df.at[row["id"], "alternate_phrasings"].extend(row["alternate_phrasings"])  # fmt:skip
+
+                self.questions_df.at[row["id"], "doc_last_edited"] = row["doc_last_edited"]  # fmt:skip
+                self.questions_df.at[row["id"], "last_asked_on_discord"] = row["last_asked_on_discord"]  # fmt:skip
 
         deleted_question_ids = sorted(
             set(self.questions_df.index.tolist()) - question_ids
@@ -557,6 +559,5 @@ def get_least_recently_asked_on_discord(
     questions: pd.DataFrame,
 ) -> pd.DataFrame:
     """Get all questions with oldest date and shuffle them"""
-    # pylint:disable=unused-variable
-    oldest_date = questions["last_asked_on_discord"].min()
-    return questions.query("last_asked_on_discord == @oldest_date")
+    _oldest_date = questions["last_asked_on_discord"].min()
+    return questions.query("last_asked_on_discord == @_oldest_date")

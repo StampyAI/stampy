@@ -29,9 +29,9 @@ def parse_question_row(row: Row) -> QuestionRow:
         "url": url,
         "status": status,
         "tags": tags,
+        "alternate_phrasings": alternate_phrasings,
         "last_asked_on_discord": last_asked_on_discord,
         "doc_last_edited": doc_last_edited,
-        "alternate_phrasings": alternate_phrasings,
         "row": row,
     }
 
@@ -54,9 +54,9 @@ class QuestionRow(TypedDict):
     url: str
     status: str
     tags: list[str]
+    alternate_phrasings: list[str]
     last_asked_on_discord: datetime
     doc_last_edited: datetime
-    alternate_phrasings: list[str]
     row: Row
 
 

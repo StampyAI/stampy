@@ -464,7 +464,7 @@ class Questions(Module):
             questions_df[
                 questions_df["status"].map(lambda status: status in REVIEW_STATUSES)
             ]
-            .sort_values(("last_asked_on_discord", "doc_last_edited"))
+            .sort_values(["last_asked_on_discord", "doc_last_edited"])
             .head(question_limit)
         )
 
