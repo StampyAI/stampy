@@ -267,7 +267,7 @@ class Questions(Module):
 
         # if status and/or tag specified, filter accordingly
         if status:
-            questions_df = questions_df.query("status == @status")
+            questions_df = questions_df.query(f"status == '{status}'")
         if tag:
             questions_df = filter_on_tag(questions_df, tag)
 
@@ -453,10 +453,12 @@ class Questions(Module):
             )
             return Response(confidence=10)
 
-        _week_ago = today - timedelta(days=7)
+        week_ago = today - timedelta(days=7)
         question_limit = random.randint(1, self.wip_autopost_limit)
 
-        questions_df = self.coda_api.questions_df.query("doc_last_edited <= @_week_ago")
+        questions_df = self.coda_api.questions_df.query(
+            f"doc_last_edited <= '{week_ago}'"
+        )
         questions_df = (
             questions_df[
                 questions_df["status"].map(lambda status: status in REVIEW_STATUSES)

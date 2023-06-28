@@ -386,7 +386,7 @@ class CodaAPI:
         if least_recently_asked_unpublished:
             questions_df = questions_df.query("status != 'Live on site'")
         elif status is not None:
-            questions_df = questions_df.query("status == @status")
+            questions_df = questions_df.query(f"status == '{status}'")
 
         # if tag was specified, filter for questions having that tag
         questions_df = filter_on_tag(questions_df, tag)
@@ -555,5 +555,5 @@ def get_least_recently_asked_on_discord(
     questions: pd.DataFrame,
 ) -> pd.DataFrame:
     """Get all questions with oldest date and shuffle them"""
-    _oldest_date = questions["last_asked_on_discord"].min()
-    return questions.query("last_asked_on_discord == @_oldest_date")
+    oldest_date = questions["last_asked_on_discord"].min()
+    return questions.query(f"last_asked_on_discord == '{oldest_date}'")
