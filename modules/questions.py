@@ -1,5 +1,8 @@
 """
-Querying question database
+Querying question database.
+This module is also responsible for automatically posting questions coda questions to channels
+1. Every 6 hours Stampy posts to `#general` a question with status `Not started`, chosen randomly from those that were least recently posted to Discord. Stampy doesn't post, if the last message in `#general` was this kind of autoposted question. #TODO add this thingy to checking
+2. Every Monday, Wednesday, and Friday, sometime between 8 and 12 AM, Stampy posts to `#meta-editing` 1 to 3 questions with status `In review`, `In progress` or `Bulletpoint sketch` that have not been edited for longer than a week. Similarly, he skips if the last message in `#meta-editing` was this one.
 
 How many questions, Count questions
 Count questions, optionally queried by status and/or tag
