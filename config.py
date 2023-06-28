@@ -1,5 +1,5 @@
 import os
-from typing import Literal, TypeVar, Union, cast, get_args, overload
+from typing import Literal, TypeVar, Optional, Union, cast, get_args, overload
 
 import dotenv
 from structlog import get_logger
@@ -51,18 +51,19 @@ def getenv_bool(env_var: str) -> bool:
     return e != "UNDEFINED"
 
 
-Tt = TypeVar("Tt")
+# fmt:off
 @overload
 def getenv_unique_set(var_name: str) -> frozenset:...
 @overload
 def getenv_unique_set(var_name: str, default: frozenset) -> frozenset:...
 @overload
-def getenv_unique_set(var_name: str, default: Literal[None]) \
-        -> Optional[frozenset[str]]:...
+def getenv_unique_set(var_name: str, default: None) -> Optional[frozenset[str]]:...
 @overload
-def getenv_unique_set(var_name: str, default: Tt) \
-        -> Union[frozenset[str], Tt]:...
-def getenv_unique_set(var_name: str, default = frozenset()):
+def getenv_unique_set(var_name: str, default: T) -> Union[frozenset[str], T]:...
+# fmt:on
+
+
+def getenv_unique_set(var_name: str, default: T = frozenset()) -> Union[frozenset, T]:
     l = getenv(var_name, default="EMPTY_SET").split(" ")
     if l == ["EMPTY_SET"]:
         return default
@@ -217,7 +218,9 @@ else:
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
     be_shy = getenv_bool("BE_SHY")
-    channel_whitelist: Optional[frozenset[str]] = getenv_unique_set("CHANNEL_WHITELIST", None)
+    channel_whitelist: Optional[frozenset[str]] = getenv_unique_set(
+        "CHANNEL_WHITELIST", None
+    )
 
 discord_token = getenv("DISCORD_TOKEN")
 database_path = getenv("DATABASE_PATH")
