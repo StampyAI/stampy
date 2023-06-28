@@ -1,9 +1,9 @@
 """
 Changing status (in future perhaps also other attributes) of questions in Coda.
 **Permissions:**
-- All server members can contribute to AI Safety Questions and [ask for feedback](#review-request).
-- Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands ([1](#marking-questions-for-deletion-or-as-duplicates) [2](#setting-question-status)).
-- Only `@reviewers` can change status of questions to and from  `Live on site` (including [accepting](#review-acceptance) [review requests](#review-request)).
+- All server members can contribute to AI Safety Questions and ask for feedback.
+- Only `@bot dev`s, `@editor`s, and `@reviewer`s can change question status by other commands.
+- Only `@reviewers` can change status of questions to and from  `Live on site` (including accepting review requests).
 
 Review request, @reviewer, @feedback, @feedback-sketch
 Request a review on an answer you wrote/edited
@@ -53,7 +53,6 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import ENVIRONMENT_TYPE, coda_api_token
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import (
     has_permissions,
@@ -96,7 +95,6 @@ class QuestionSetter(Module):
             raise Exception(exc_msg)
 
         super().__init__()
-        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.coda_api = CodaAPI.get_instance()
 
         self.msg_id2gdoc_links: dict[str, list[str]] = {}

@@ -14,12 +14,12 @@ from api.utilities.coda_utils import (
     parse_question_row,
     QuestionRow,
     QuestionStatus,
-    DEFAULT_DATE,
 )
 from config import ENVIRONMENT_TYPE, coda_api_token
 from utilities import is_in_testing_mode, Utilities
 from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage
+from utilities.time_utils import DEFAULT_DATE
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
 
 if TYPE_CHECKING:
@@ -57,19 +57,8 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
         self.last_question_id: Optional[str] = None
-        self.questions_df = pd.DataFrame(
-            columns=[
-                "id",
-                "title",
-                "url",
-                "status",
-                "tags",
-                "last_asked_on_discord",
-                "alternate_phrasings",
-                "row",
-            ]
-        )
-
+        # pylint:disable=no-member
+        self.questions_df = pd.DataFrame(columns=list(QuestionRow.__required_keys__))  # fmt:skip
         if is_in_testing_mode():
             return
 
@@ -170,15 +159,17 @@ class CodaAPI:
             if row["id"] not in self.questions_df.index:
                 new_questions.append(row)
             else:
-                df_row = self.questions_df.loc[row["id"]]
-                df_row["last_asked_on_discord"] = row["last_asked_on_discord"]
-                df_row["status"] = row["status"]
-                df_row["tags"].clear()
-                df_row["tags"].extend(row["tags"])
-                df_row["alternate_phrasings"].clear()
-                df_row["alternate_phrasings"].extend(row["alternate_phrasings"])
-                df_row["title"] = row["title"]
-                df_row["url"] = row["url"]
+                self.questions_df.at[row["id"], "title"] = row["title"]
+                self.questions_df.at[row["id"], "url"] = row["url"]
+                self.questions_df.at[row["id"], "status"] = row["status"]
+
+                self.questions_df.at[row["id"], "tags"].clear()
+                self.questions_df.at[row["id"], "tags"].extend(row["tags"])
+                self.questions_df.at[row["id"], "alternate_phrasings"].clear()
+                self.questions_df.at[row["id"], "alternate_phrasings"].extend(row["alternate_phrasings"])  # fmt:skip
+
+                self.questions_df.at[row["id"], "doc_last_edited"] = row["doc_last_edited"]  # fmt:skip
+                self.questions_df.at[row["id"], "last_asked_on_discord"] = row["last_asked_on_discord"]  # fmt:skip
 
         deleted_question_ids = sorted(
             set(self.questions_df.index.tolist()) - question_ids
@@ -230,9 +221,8 @@ class CodaAPI:
             )
         ]
 
-        questions_queried = cast(
-            list[QuestionRow], questions_df_queried.to_dict(orient="records")
-        )
+        questions_queried = self.q_df_to_rows(questions_df_queried)
+
         # If some links were not recognized, refresh cache and look into the new questions
         if len(questions_df_queried) < len(urls):
             new_questions, _ = self.update_questions_cache()
@@ -276,7 +266,7 @@ class CodaAPI:
             question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
-        self.questions_df.loc[question["id"]]["status"] = status
+        self.questions_df.at[question["id"], "status"] = status
 
     def update_question_last_asked_date(
         self, question: QuestionRow, current_time: datetime
@@ -290,7 +280,7 @@ class CodaAPI:
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
         # update local cache
-        self.questions_df.loc[question["id"]]["last_asked_on_discord"] = current_time
+        self.questions_df.at[question["id"], "last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
@@ -306,8 +296,8 @@ class CodaAPI:
         self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Tags": new_tags})
         )
-        self.questions_df.loc[question["id"]]["tags"].clear()
-        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+        self.questions_df.at[question["id"], "tags"].clear()
+        self.questions_df.at[question["id"], "tags"].extend(new_tags)
         self.last_question_id = question["id"]
 
     # Alternate phrasings
@@ -318,10 +308,8 @@ class CodaAPI:
         self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
         )
-        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
-        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
-            new_alt_phrs
-        )
+        self.questions_df.at[question["id"], "alternate_phrasings"].clear()
+        self.questions_df.at[question["id"], "alternate_phrasings"].extend(new_alt_phrs)
         self.last_question_id = question["id"]
 
     ###############
@@ -398,7 +386,7 @@ class CodaAPI:
         if least_recently_asked_unpublished:
             questions_df = questions_df.query("status != 'Live on site'")
         elif status is not None:
-            questions_df = questions_df.query("status == @status")
+            questions_df = questions_df.query(f"status == '{status}'")
 
         # if tag was specified, filter for questions having that tag
         questions_df = filter_on_tag(questions_df, tag)
@@ -419,8 +407,7 @@ class CodaAPI:
         questions_df = questions_df.sort_values("last_asked_on_discord", ascending=False).iloc[: min(limit, 5)]  # fmt:skip
         if questions_df.empty:
             return []
-        questions = questions_df.to_dict(orient="records")
-        return cast(list[QuestionRow], questions)
+        return self.q_df_to_rows(questions_df)
 
     ResponseText = ResponseWhy = str
 
@@ -549,6 +536,10 @@ class CodaAPI:
             raise AssertionError(msg)
         return sorted(coda_status_vals)
 
+    @staticmethod
+    def q_df_to_rows(questions_df: pd.DataFrame) -> list[QuestionRow]:
+        return cast(list[QuestionRow], questions_df.to_dict(orient="records"))
+
 
 def filter_on_tag(questions_df: pd.DataFrame, tag: Optional[str]) -> pd.DataFrame:
     if tag is None:
@@ -564,6 +555,5 @@ def get_least_recently_asked_on_discord(
     questions: pd.DataFrame,
 ) -> pd.DataFrame:
     """Get all questions with oldest date and shuffle them"""
-    # pylint:disable=unused-variable
     oldest_date = questions["last_asked_on_discord"].min()
-    return questions.query("last_asked_on_discord == @oldest_date")
+    return questions.query(f"last_asked_on_discord == '{oldest_date}'")
