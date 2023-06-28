@@ -408,11 +408,6 @@ class Questions(Module):
             )
         )
 
-        self.log.info(
-            self.class_name,
-            msg="Posting a random question with status `Not started` to #general",
-        )
-
         channel = cast(
             TextChannel, self.utils.client.get_channel(int(general_channel_id))
         )
@@ -456,10 +451,6 @@ class Questions(Module):
                 msg="Last message in `#meta-editing` was one or more autoposted abandoned question(s) -> skipping autoposting",
             )
             return Response(confidence=10)
-
-        self.log.info(
-            self.class_name, msg="Autoposting abandoned questions to #general"
-        )
 
         _week_ago = today - timedelta(days=7)
         question_limit = random.randint(1, self.abandoned_autopost_limit)
