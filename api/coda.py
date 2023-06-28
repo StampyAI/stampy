@@ -57,10 +57,8 @@ class CodaAPI:
         self.class_name = "Coda API"
         self.log = get_logger()
         self.last_question_id: Optional[str] = None
-        # fmt:off
-        #pylint:disable=no-member
-        self.questions_df = pd.DataFrame(columns=QuestionRow.__required_keys__) # type:ignore 
-        # fmt:on
+        # pylint:disable=no-member
+        self.questions_df = pd.DataFrame(columns=list(QuestionRow.__required_keys__))  # fmt:skip
         if is_in_testing_mode():
             return
 
