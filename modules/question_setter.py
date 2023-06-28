@@ -53,7 +53,6 @@ from api.utilities.coda_utils import QuestionRow, QuestionStatus
 from config import ENVIRONMENT_TYPE, coda_api_token
 from modules.module import IntegrationTest, Module, Response
 from utilities.discordutils import DiscordChannel
-from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import (
     has_permissions,
@@ -96,7 +95,6 @@ class QuestionSetter(Module):
             raise Exception(exc_msg)
 
         super().__init__()
-        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.coda_api = CodaAPI.get_instance()
 
         self.msg_id2gdoc_links: dict[str, list[str]] = {}

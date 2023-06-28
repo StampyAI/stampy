@@ -15,7 +15,6 @@ import re
 from textwrap import dedent
 
 from modules.module import IntegrationTest, Module, Response
-from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 
 
@@ -29,7 +28,6 @@ class HelpModule(Module):
 
     def __init__(self):
         super().__init__()
-        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.re_help = re.compile(r"help \w+", re.I)
 
     def process_message(self, message: ServiceMessage) -> Response:

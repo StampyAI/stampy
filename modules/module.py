@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import inspect
 import re
 import random
 from typing import Callable, Iterable, Literal, Optional, TypedDict, Union
@@ -130,23 +131,12 @@ class Module:
     we show it to each module and ask if it can process the message,
     then give it to the module that's most confident"""
 
-    # def make_module_help(
-    #     self,
-    #     descr: Optional[str] = None,
-    #     capabilities: Optional[CapabilitiesDict] = None,
-    # ) -> ModuleHelp:
-    #     return ModuleHelp(
-    #         module_name=self.class_name,
-    #         descr=descr,
-    #         capabilities=capabilities or {},
-    #         docstring=__doc__,
-    #     )
-
     def __init__(self):
         self.utils = Utilities.get_instance()
         self.log = get_logger()
         self.re_replace = re.compile(r".*?({{.+?}})")
-        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
+        module_docstring = inspect.getmodule(self).__doc__
+        self.help = ModuleHelp.from_docstring(self.class_name, module_docstring)
 
     def process_message(self, message: ServiceMessage) -> Response:
         """Handle the message, return a string which is your response.

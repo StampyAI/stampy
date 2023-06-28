@@ -20,12 +20,6 @@ class ModuleHelp:
     The **main segment** contains an obligatory short module description (`descr`) and an optional, longer module description (`longdescr`).
     The main segment is followed by one or more **command segments**, each describing one specific command or a set of related commands:
     what they do and how to use them. A detailed specification of command segments can be found in the docstring of the `CommandHelp` class.
-
-    ### How to add `help` to `Module`
-
-    ```py
-    self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
-    ```
     """
 
     module_name: str

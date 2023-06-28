@@ -38,7 +38,6 @@ from config import (
 from modules.module import IntegrationTest, Module, Response
 from servicemodules.serviceConstants import Services
 from utilities import get_question_id, is_test_response
-from utilities.help_utils import ModuleHelp
 from utilities.serviceutils import ServiceMessage
 from utilities.utilities import is_bot_dev
 
@@ -65,7 +64,6 @@ class TestModule(Module):
 
     def __init__(self):
         super().__init__()
-        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.sent_test: list[IntegrationTest] = []
 
     def process_message(self, message: ServiceMessage) -> Response:

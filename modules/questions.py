@@ -46,7 +46,6 @@ from servicemodules.discordConstants import (
     meta_editing_channel_id,
 )
 from modules.module import Module, Response
-from utilities.help_utils import ModuleHelp
 from utilities.utilities import (
     has_permissions,
     is_in_testing_mode,
@@ -87,7 +86,6 @@ class Questions(Module):
             raise Exception(exc_msg)
 
         super().__init__()
-        self.help = ModuleHelp.from_docstring(self.class_name, __doc__)
         self.coda_api = CodaAPI.get_instance()
 
         ###################
