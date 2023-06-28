@@ -147,10 +147,6 @@ class Questions(Module):
         )
 
     def process_message(self, message: ServiceMessage) -> Response:
-        if message.clean_content == "a":
-            return Response(confidence=20, callback=self.autopost_abandoned)
-        if message.clean_content == "q":
-            return Response(confidence=20, callback=self.autopost_not_started)
         if not (text := self.is_at_me(message)):
             return Response()
         if text == "hardreload questions":
@@ -414,6 +410,7 @@ class Questions(Module):
 
         msg = f"{self.AUTOPOST_NOT_STARTED_MSG_PREFIX}\n\n{make_post_question_message(question)}"
         current_time = datetime.now()
+        self.last_not_started_autopost_dt = current_time
         self.coda_api.update_question_last_asked_date(question, current_time)
         self.coda_api.last_question_id = question["id"]
 
