@@ -37,6 +37,7 @@ projects_channel_id: str = {"production": "787117276960522280", "development": "
 book_club_channel_id: str = {"production": "929823603766222919", "development": "-2"}[ENVIRONMENT_TYPE]
 dialogues_with_stampy_channel_id: str = {"production": "1013976966564675644", "development": "-2"}[ENVIRONMENT_TYPE]
 meta_channel_id: str = {"production": "741332060031156296", "development": "817518780509847562"}[ENVIRONMENT_TYPE]
+meta_editing_channel_id: str = {"production": "1088468403406258196", "development": "1123312639016181810"}[ENVIRONMENT_TYPE]
 
 archive_category_id: str = {"production": "929823542818766948", "development": "-2"}[ENVIRONMENT_TYPE]
 voice_context_channel_id: str = {"production": "810261871029387275", "development": "-2"}[ENVIRONMENT_TYPE]
@@ -53,8 +54,7 @@ bot_owner_dms_id: str = {"production": "-1", "development": "736241264856662038"
 
 automatic_question_channel_id = general_channel_id  # TODO: should this be ai_safety_questions_channel_id?
 
-stampy_control_channel_ids: tuple[str, ...] = (test_channel_id, stampy_dev_priv_channel_id, stampy_dev_channel_id,
-                                               talk_to_stampy_channel_id, bot_owner_dms_id)
+stampy_control_channel_ids: tuple[str, ...] = (test_channel_id, stampy_dev_priv_channel_id, stampy_dev_channel_id, talk_to_stampy_channel_id, bot_owner_dms_id)
 
 
 ####################################################

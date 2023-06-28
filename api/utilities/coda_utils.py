@@ -5,21 +5,7 @@ from typing import Any, Literal, TypedDict
 
 from codaio import Cell, Row
 
-
-DEFAULT_DATE = datetime(year=2022, month=1, day=1)
-
-
-def round_to_minute(dt: datetime) -> datetime:
-    return dt.replace(second=0, microsecond=0)
-
-
-def adjust_date(date_str: str) -> datetime:
-    """If the date is not empty string, parse it.
-    Otherwise, assign `DEFAULT_DATE`.
-    """
-    if not date_str:
-        return DEFAULT_DATE
-    return round_to_minute(datetime.fromisoformat(date_str.split("T")[0]))
+from utilities.time_utils import adjust_date
 
 
 def parse_question_row(row: Row) -> QuestionRow:

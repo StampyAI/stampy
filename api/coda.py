@@ -14,12 +14,12 @@ from api.utilities.coda_utils import (
     parse_question_row,
     QuestionRow,
     QuestionStatus,
-    DEFAULT_DATE,
 )
 from config import ENVIRONMENT_TYPE, coda_api_token
 from utilities import is_in_testing_mode, Utilities
 from utilities.discordutils import DiscordUser
 from utilities.serviceutils import ServiceMessage
+from utilities.time_utils import DEFAULT_DATE
 from utilities.utilities import fuzzy_contains, get_user_handle, shuffle_df
 
 if TYPE_CHECKING:
@@ -221,9 +221,8 @@ class CodaAPI:
             )
         ]
 
-        questions_queried = cast(
-            list[QuestionRow], questions_df_queried.to_dict(orient="records")
-        )
+        questions_queried = self.q_df_to_rows(questions_df_queried)
+
         # If some links were not recognized, refresh cache and look into the new questions
         if len(questions_df_queried) < len(urls):
             new_questions, _ = self.update_questions_cache()
@@ -410,8 +409,7 @@ class CodaAPI:
         questions_df = questions_df.sort_values("last_asked_on_discord", ascending=False).iloc[: min(limit, 5)]  # fmt:skip
         if questions_df.empty:
             return []
-        questions = questions_df.to_dict(orient="records")
-        return cast(list[QuestionRow], questions)
+        return self.q_df_to_rows(questions_df)
 
     ResponseText = ResponseWhy = str
 
@@ -539,6 +537,10 @@ class CodaAPI:
             msg += f"; {code_status_vals=}; {coda_status_vals=}"
             raise AssertionError(msg)
         return sorted(coda_status_vals)
+
+    @staticmethod
+    def q_df_to_rows(questions_df: pd.DataFrame) -> list[QuestionRow]:
+        return cast(list[QuestionRow], questions_df.to_dict(orient="records"))
 
 
 def filter_on_tag(questions_df: pd.DataFrame, tag: Optional[str]) -> pd.DataFrame:
