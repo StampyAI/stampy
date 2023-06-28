@@ -70,10 +70,8 @@ load_dotenv()
 
 
 class Questions(Module):
-    AUTOPOST_NOT_STARTED_MSG_PREFIX = (
-        "Whoever starts working on this question is gonna get a BIG STAMP from me!"
-    )
-    AUTOPOST_STAGNANT_MSG_PREFIX = "Whoever picks up working on some of these questions is gonna get a BIG STAMP from me!"
+    AUTOPOST_NOT_STARTED_MSG_PREFIX = "Recently I've been wondering..."
+    AUTOPOST_STAGNANT_MSG_PREFIX = "Would any of you like to pick these up?"
 
     @staticmethod
     def is_available() -> bool:
