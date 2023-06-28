@@ -1,8 +1,8 @@
 """
 Querying question database.
 This module is also responsible for automatically posting questions coda questions to channels
-1. Every 6 hours Stampy posts to `#general` a question with status `Not started`, chosen randomly from those that were least recently posted to Discord. Stampy doesn't post, if the last message in `#general` was this kind of autoposted question.
-2. Every Monday, Wednesday, and Friday, sometime between 8 and 12 AM, Stampy posts to `#meta-editing` 1 to 3 questions with status `In review`, `In progress` or `Bulletpoint sketch` that have not been edited for longer than a week. Similarly, he skips if the last message in `#meta-editing` was this one.
+1. `Not started`: Every 6 hours Stampy posts to `#general` a question with status `Not started`, chosen randomly from those that were least recently posted to Discord. Stampy doesn't post, if the last message in `#general` was this kind of autoposted question.
+2. **WIP**: Every Monday, Wednesday, and Friday, sometime between 8 and 12 AM, Stampy posts to `#meta-editing` 1 to 3 questions with status `In review`, `In progress` or `Bulletpoint sketch` that have not been edited for longer than a week. Similarly, he skips if the last message in `#meta-editing` was this one.
 
 How many questions, Count questions
 Count questions, optionally queried by status and/or tag
@@ -104,19 +104,19 @@ class Questions(Module):
             datetime.now() - self.not_started_question_autopost_interval / 2
         )
 
-        # Date of last (attempted) autopost of abandoned question(s)
-        self.last_abandoned_autopost_attempt_date: date = get_last_monday().date()
+        # Date of last (attempted) autopost of WIP question(s)
+        self.last_wip_autopost_attempt_date: date = get_last_monday().date()
 
-        # Max number of abandoned questions to be autoposted
-        self.abandoned_autopost_limit: int = 3
+        # Max number of WIP questions to be autoposted
+        self.wip_autopost_limit: int = 3
 
         if is_rob_server:
             @self.utils.client.event  # fmt:skip
             async def on_socket_event_type(_event_type) -> None:
                 if self.is_time_for_autopost_not_started():
                     await self.autopost_not_started()
-                if self.is_time_for_autopost_abandoned():
-                    await self.autopost_abandoned()
+                if self.is_time_for_autopost_wip():
+                    await self.autopost_wip()
 
         ###############
         #   Regexes   #
@@ -419,12 +419,12 @@ class Questions(Module):
         await channel.send(msg)
         return Response(confidence=10)
 
-    def is_time_for_autopost_abandoned(self) -> bool:
+    def is_time_for_autopost_wip(self) -> bool:
         now = datetime.now()
         return (
             now.weekday() in (0, 2, 4)  # Monday, Wednesday, or Friday
             and 8 <= now.hour <= 12  # between 08:00 and 12:00
-            and self.last_abandoned_autopost_attempt_date
+            and self.last_wip_autopost_attempt_date
             != now.date()  # Wasn't posted today yet
         )
 
@@ -437,23 +437,24 @@ class Questions(Module):
                 return True
         return False
 
-    async def autopost_abandoned(self) -> Response:
-        """Post up to a specified number of questions to #meta-editing channel.
+    async def autopost_wip(self) -> Response:
+        """Post up to a specified number of questions that have been worked on but not touched for longer than a week
+        to #meta-editing channel.
 
         Returns `Response` for ease of debugging with callbacks.
         """
         today = date.today()
-        self.last_abandoned_autopost_attempt_date = today
+        self.last_wip_autopost_attempt_date = today
 
         if await self.last_msg_in_meta_editing_was_autoposted():
             self.log.info(
                 self.class_name,
-                msg="Last message in `#meta-editing` was one or more autoposted abandoned question(s) -> skipping autoposting",
+                msg="Last message in `#meta-editing` was one or more autoposted WIP question(s) -> skipping autoposting",
             )
             return Response(confidence=10)
 
         _week_ago = today - timedelta(days=7)
-        question_limit = random.randint(1, self.abandoned_autopost_limit)
+        question_limit = random.randint(1, self.wip_autopost_limit)
 
         questions_df = self.coda_api.questions_df.query("doc_last_edited <= @_week_ago")
         questions_df = (
@@ -475,7 +476,7 @@ class Questions(Module):
 
         self.log.info(
             self.class_name,
-            msg=f"Posting {len(questions)} abandoned questions to #meta-editing",
+            msg=f"Posting {len(questions)} WIP questions to #meta-editing",
         )
 
         if len(questions) == 1:
