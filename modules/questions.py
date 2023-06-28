@@ -96,11 +96,6 @@ class Questions(Module):
         # How often Stampy posts random not started questions to `#general`
         self.not_started_question_autopost_interval = timedelta(hours=6)
 
-        # Time when last question was posted #TODO: probably deprecate
-        self.last_question_posted_dt = (
-            datetime.now() - self.not_started_question_autopost_interval / 2
-        )
-
         # Time when last question was autoposted
         self.last_not_started_autopost_dt = (
             datetime.now() - self.not_started_question_autopost_interval / 2
@@ -353,11 +348,6 @@ class Questions(Module):
             response_text += f"\n{make_post_question_message(q)}"
             self.coda_api.update_question_last_asked_date(q, current_time)
 
-        # update caches
-        self.last_question_posted_dt = current_time
-        # TODO: probably deprecate also
-        self.last_question_posted_was_started_autoposted = False
-
         # if there is exactly one question, remember its ID
         if len(questions) == 1:
             self.coda_api.last_question_id = questions[0]["id"]
@@ -388,14 +378,13 @@ class Questions(Module):
         if await self.last_msg_in_general_was_autoposted():
             self.log.info(
                 self.class_name,
-                msg="Last message in channel #general was automatically posted not started question -> omitting autoposting",
+                msg="Last message in #general was an autoposted question with status `Not started` -> skipping autoposting",
             )
             return Response(confidence=10)
 
         self.log.info(
             self.class_name,
-            msg="Autoposting a not started question to #general channel",
-            dt=datetime.now(),
+            msg="Autoposting a question with status `Not started` to #general",
         )
         questions_df = self.coda_api.questions_df.query("status == 'Not started'")
         questions_df = questions_df[
@@ -404,7 +393,7 @@ class Questions(Module):
         if questions_df.empty:
             self.log.info(
                 self.class_name,
-                msg='Found no questions with status "Not started" without tag "Stampy"',
+                msg='Found no questions with status `Not started` without tag "Stampy"',
             )
             return Response(confidence=10)
 
@@ -416,21 +405,18 @@ class Questions(Module):
 
         self.log.info(
             self.class_name,
-            msg='Posting a random question with status "Not started" to #general',
+            msg="Posting a random question with status `Not started` to #general",
         )
 
         channel = cast(
             TextChannel, self.utils.client.get_channel(int(general_channel_id))
         )
-        self.last_question_posted_was_started_autoposted = True
 
+        msg = f"{self.AUTOPOST_NOT_STARTED_MSG_PREFIX}\n\n{make_post_question_message(question)}"
         current_time = datetime.now()
-        self.last_question_posted_dt = current_time
-
-        msg = self.AUTOPOST_NOT_STARTED_MSG_PREFIX + "\n\n"
-        msg += make_post_question_message(question)
         self.coda_api.update_question_last_asked_date(question, current_time)
         self.coda_api.last_question_id = question["id"]
+
         await channel.send(msg)
         return Response(confidence=10)
 
@@ -453,60 +439,61 @@ class Questions(Module):
         return False
 
     async def autopost_abandoned(self) -> Response:
-        """Post up to a specified number of questions to #meta-editing channel"""
-        self.last_abandoned_autopost_date = date.today()
+        """Post up to a specified number of questions to #meta-editing channel.
 
+        Returns response for ease of debugging with callbacks.
+        """
         if await self.last_msg_in_meta_editing_was_autoposted():
             self.log.info(
                 self.class_name,
-                msg="Last message in channel #meta-editing was automatically posted abandoned question(s) -> omitting autoposting",
+                msg="Last message in `#meta-editing` was one or more autoposted abandoned question(s) -> skipping autoposting",
             )
             return Response(confidence=10)
 
         self.log.info(
             self.class_name, msg="Autoposting abandoned questions to #general"
         )
-        self.last_abandoned_autopost_date = date.today()
-        _week_ago = datetime.now() - timedelta(days=7)
-        questions_df = self.coda_api.questions_df.query("doc_last_edited < @_week_ago")
-        limit = random.randint(1, self.abandoned_autopost_limit)
+
+        today = date.today()
+        self.last_abandoned_autopost_date = today
+        _week_ago = today - timedelta(days=7)
+        question_limit = random.randint(1, self.abandoned_autopost_limit)
+
+        questions_df = self.coda_api.questions_df.query("doc_last_edited <= @_week_ago")
         questions_df = (
             questions_df[
                 questions_df["status"].map(lambda status: status in REVIEW_STATUSES)
             ]
-            .sort_values(["last_asked_on_discord", "doc_last_edited"])
-            .head(limit)
+            .sort_values(("last_asked_on_discord", "doc_last_edited"))
+            .head(question_limit)
         )
 
         if questions_df.empty:
             self.log.info(
                 self.class_name,
-                msg=f"Found no questions with status from {REVIEW_STATUSES}",
+                msg=f"Found no questions with status from {REVIEW_STATUSES} with docs edited one week ago or earlier",
             )
             return Response(confidence=10)
 
-        channel = cast(
-            TextChannel, self.utils.client.get_channel(int(meta_editing_channel_id))
-        )
         questions = self.coda_api.q_df_to_rows(questions_df)
 
         self.log.info(
             self.class_name,
-            msg=f"Posting {len(questions)} abandoned questions to channel #meta-editing",
+            msg=f"Posting {len(questions)} abandoned questions to #meta-editing",
         )
 
+        if len(questions) == 1:
+            self.coda_api.last_question_id = questions[0]["id"]
+
+        channel = cast(
+            TextChannel, self.utils.client.get_channel(int(meta_editing_channel_id))
+        )
         current_time = datetime.now()
         msg = self.AUTOPOST_STAGNANT_MSG_PREFIX + "\n\n"
         for q in questions:
             self.coda_api.update_question_last_asked_date(q, current_time)
-            msg += (
-                make_post_question_message(
-                    q, with_status=True, with_doc_last_edited=True
-                )
-                + "\n"
-            )
-        if len(questions) == 1:
-            self.coda_api.last_question_id = questions[0]["id"]
+            msg += f"{make_post_question_message(q, with_status=True, with_doc_last_edited=True)}\n"
+
         await channel.send(msg)
         return Response(confidence=10)
 
