@@ -134,7 +134,7 @@ class CommandHelp:
         # TODO: improve
         assert (
             len(lines) >= 3
-        ), "Must have at least a name (1), a description (2), and an example (3)"
+        ), f"Must have at least a name (1), a description (2), and an example (3);\n{lines=}"
         name_line, descr = lines[:2]
         name, alt_names = cls.parse_name_line(name_line)
         longdescr = "\n".join(l for l in lines[2:] if not l.startswith("`")) or None
@@ -228,7 +228,9 @@ class CommandHelp:
 def build_help_md(modules_dir: Path) -> str:
     modules_with_docstrings = load_modules_with_docstrings(modules_dir)
     helps = []
-    for module_name, docstring in modules_with_docstrings.items():
+    for module_name, docstring in sorted(
+        modules_with_docstrings.items(), key=lambda x: x[0].casefold()
+    ):
         help = ModuleHelp.from_docstring(module_name, docstring)
         if not help.empty:
             helps.append(help.get_module_help(markdown=True))

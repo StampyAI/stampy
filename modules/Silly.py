@@ -1,9 +1,7 @@
 """
 Provides quirky responses for some pre-programmed cases, most unprompted.
-
 If a message from this module interrupts a desired behavior, re-send your
 previous message and the joke won't trigger.
-
 - `s, say X`: `X!`
 - XKCD 37: `that's a weird-ass story` -> `that's a weird ass-story`
 - How original: `Welcome our new X` ->
@@ -57,13 +55,15 @@ class Silly(Module):
 
         if atme and utils.message_repeated(message, text):
             self.log.info(
-                self.class_name,
-                msg="We don't want to lock people in due to phrasing"
+                self.class_name, msg="We don't want to lock people in due to phrasing"
             )
             return Response()
 
-        if atme and is_bot_dev(message.author) \
-               and text.lower() == "show me how exceptional you are!":
+        if (
+            atme
+            and is_bot_dev(message.author)
+            and text.lower() == "show me how exceptional you are!"
+        ):
 
             class SillyError(Exception):
                 pass
@@ -266,7 +266,9 @@ class Silly(Module):
                 result = datetime.datetime.now().strftime("%H:%M")
             else:
                 result = random.choice(["Time to buy a watch", "Showtime!"])
-            return Response(confidence=Conf, text=result, why=f"{who} asked for the time")
+            return Response(
+                confidence=Conf, text=result, why=f"{who} asked for the time"
+            )
 
         # If you want pictures of spiderman, Stampy's got you
         imagere = re.compile(
@@ -318,7 +320,7 @@ class Silly(Module):
             for c in "AEIOU":
                 result = result.replace(c, "O")
             return Response(
-                confidence=Conf-2,
+                confidence=Conf - 2,
                 text=result,
                 why="O don't know, O thooght ot woold bo fonny",
             )
@@ -366,7 +368,7 @@ class Silly(Module):
             except:
                 result = random.choice(options)
             return Response(
-                confidence=Conf+2,
+                confidence=Conf + 2,
                 text=r"I choose {random.choice(options)}",
                 why="%s implied a choice between the options [%s]"
                 % (who, ", ".join(options)),
