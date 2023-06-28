@@ -491,8 +491,8 @@ class Questions(Module):
         current_time = datetime.now()
         msg = self.AUTOPOST_STAGNANT_MSG_PREFIX + "\n\n"
         for q in questions:
-            self.coda_api.update_question_last_asked_date(q, current_time)
             msg += f"{make_post_question_message(q, with_status=True, with_doc_last_edited=True)}\n"
+            self.coda_api.update_question_last_asked_date(q, current_time)
 
         await channel.send(msg)
         return Response(confidence=10)
