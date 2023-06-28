@@ -268,7 +268,7 @@ class CodaAPI:
             question["row"], make_updated_cells({"Status": status})
         )
         # update local cache
-        self.questions_df.loc[question["id"]]["status"] = status
+        self.questions_df.at[question["id"], "status"] = status
 
     def update_question_last_asked_date(
         self, question: QuestionRow, current_time: datetime
@@ -282,7 +282,7 @@ class CodaAPI:
             make_updated_cells({"Last Asked On Discord": current_time.isoformat()}),
         )
         # update local cache
-        self.questions_df.loc[question["id"]]["last_asked_on_discord"] = current_time
+        self.questions_df.at[question["id"], "last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
         """Reset all questions' dates (util, not to be used by Stampy)"""
@@ -298,8 +298,8 @@ class CodaAPI:
         self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Tags": new_tags})
         )
-        self.questions_df.loc[question["id"]]["tags"].clear()
-        self.questions_df.loc[question["id"]]["tags"].extend(new_tags)
+        self.questions_df.at[question["id"], "tags"].clear()
+        self.questions_df.at[question["id"], "tags"].extend(new_tags)
         self.last_question_id = question["id"]
 
     # Alternate phrasings
@@ -310,10 +310,8 @@ class CodaAPI:
         self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
             question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
         )
-        self.questions_df.loc[question["id"]]["alternate_phrasings"].clear()
-        self.questions_df.loc[question["id"]]["alternate_phrasings"].extend(
-            new_alt_phrs
-        )
+        self.questions_df.at[question["id"], "alternate_phrasings"].clear()
+        self.questions_df.at[question["id"], "alternate_phrasings"].extend(new_alt_phrs)
         self.last_question_id = question["id"]
 
     ###############
