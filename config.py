@@ -1,5 +1,5 @@
 import os
-from typing import Literal, TypeVar, Optional, Union, cast, get_args, overload
+from typing import Literal, TypeVar, Optional, Union, cast, get_args, overload, Any, Tuple
 
 import dotenv
 from structlog import get_logger
@@ -32,7 +32,7 @@ def getenv(env_var: str, default: T) -> Union[str, T]:...
 @overload
 def getenv(env_var: str) -> str:...
 
-def getenv(env_var: str, default: T = NOT_PROVIDED) -> Union[str, T]:
+def getenv(env_var: str, default = NOT_PROVIDED) -> str:
     """
     Get an environment variable with a default,
     raise an exception if the environment variable isn't set and no default is provided
@@ -118,12 +118,46 @@ stamp_scores_csv_file_path = {
 
 # list of modules like: "AlignmentNewsletterSearch Eliza Silly Random"
 # if STAMPY_MODULES is unset, enable everything found in ./modules
-enabled_modules_var = getenv_unique_set("STAMPY_MODULES", default="ALL")
-if enabled_modules_var == "ALL":
+enabled_modules: frozenset[str]
+enabled_modules_var: Optional[frozenset[str]] = getenv_unique_set("STAMPY_MODULES", default=None)
+if not enabled_modules_var:
     enabled_modules = ALL_STAMPY_MODULES
     log.info("STAMPY_MODULES unset, loading all modules indiscriminately")
 else:
     enabled_modules = enabled_modules_var
+
+# user-configured from dotenv
+discord_guild: str
+# Factoid.py
+factoid_database_path: str
+# VIPs have full access + special permissions
+bot_vip_ids: frozenset
+# devs have less but can do maintainence like reboot
+bot_dev_roles: frozenset
+bot_dev_ids: frozenset
+# control channel is where maintainence commands are issued
+bot_control_channel_ids: frozenset
+# private channel is where stampy logging gets printed
+bot_private_channel_id: Optional[str]
+# NOTE: Rob's invite/member management functions, not ported yet
+member_role_id: Optional[str]
+# bot_reboot is how stampy reboots himself
+valid_bot_reboot_options = Literal["exec", False]
+bot_reboot: valid_bot_reboot_options
+# GPT STUFF
+paid_service_all_channels: bool
+# if above is false, where can paid services be used?
+paid_service_channel_ids: frozenset
+paid_service_for_all: bool
+# if above is false, who gets to use paid services?
+paid_service_whitelist_role_ids: frozenset
+gpt4: bool
+gpt4_for_all: bool
+gpt4_whitelist_role_ids: frozenset
+use_helicone: bool
+llm_prompt: str
+be_shy: bool
+channel_whitelist: Optional[frozenset[str]]
 
 robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
 if robmiles_defaults:
@@ -168,7 +202,7 @@ if robmiles_defaults:
         "production": "945033781818040391",
         "development": "947463614841901117",
     }[ENVIRONMENT_TYPE]
-    bot_reboot = False
+    bot_reboot = cast(valid_bot_reboot_options, False)
     paid_service_for_all = True
     paid_service_all_channels = True
     paid_service_channel_ids = frozenset()
@@ -180,7 +214,7 @@ if robmiles_defaults:
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
     be_shy = getenv_bool("BE_SHY")
-    channel_whitelist: Optional[frozenset[str]] = None
+    channel_whitelist = None
 else:
     # user-configured from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -200,7 +234,7 @@ else:
     # NOTE: Rob's invite/member management functions, not ported yet
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
-    bot_reboot = getenv("BOT_REBOOT", default=False)
+    bot_reboot = cast(valid_bot_reboot_options, getenv("BOT_REBOOT", default=False))
     # GPT STUFF
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
     # if above is false, where can paid services be used?
@@ -218,27 +252,24 @@ else:
     use_helicone = getenv_bool("USE_HELICONE")
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
     be_shy = getenv_bool("BE_SHY")
-    channel_whitelist: Optional[frozenset[str]] = getenv_unique_set(
-        "CHANNEL_WHITELIST", None
-    )
+    channel_whitelist = getenv_unique_set("CHANNEL_WHITELIST", None)
 
-discord_token = getenv("DISCORD_TOKEN")
-database_path = getenv("DATABASE_PATH")
-youtube_api_key = getenv("YOUTUBE_API_KEY", default=None)
-openai_api_key = getenv("OPENAI_API_KEY", default=None)
-wolfram_token = getenv("WOLFRAM_TOKEN", default=None)
-slack_app_token = getenv("SLACK_APP_TOKEN", default=None)
-slack_bot_token = getenv("SLACK_BOT_TOKEN", default=None)
+discord_token: str = getenv("DISCORD_TOKEN")
+database_path: str = getenv("DATABASE_PATH")
+youtube_api_key: Optional[str] = getenv("YOUTUBE_API_KEY", default=None)
+openai_api_key: Optional[str] = getenv("OPENAI_API_KEY", default=None)
+wolfram_token: Optional[str] = getenv("WOLFRAM_TOKEN", default=None)
+slack_app_token: Optional[str] = getenv("SLACK_APP_TOKEN", default=None)
+slack_bot_token: Optional[str] = getenv("SLACK_BOT_TOKEN", default=None)
 
 not_rob_server = getenv_bool("NOT_ROB_SERVER")
 is_rob_server = not not_rob_server
 
 
 # VARIABLE VALIDATION
-bot_reboot_options = frozenset(["exec", False])
 assert (
-    bot_reboot in bot_reboot_options
-), f"BOT_REBOOT must be one of {bot_reboot_options}"
+    bot_reboot in get_args(valid_bot_reboot_options)
+), f"BOT_REBOOT must be one of {valid_bot_reboot_options}"
 
 Stampy_Path = os.path.abspath("./stam.py")
 if not os.path.exists(Stampy_Path):
