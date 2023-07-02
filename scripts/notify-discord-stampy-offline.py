@@ -1,8 +1,8 @@
-import discord
-from git import Repo, cmd
-from structlog import get_logger
 from config import bot_private_channel_id
 from config import discord_token
+from git import cmd, Repo
+from structlog import get_logger
+import discord
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -29,7 +29,7 @@ async def on_ready():
     if bot_private_channel_id:
         await client.get_channel(int(bot_private_channel_id)).send(message)
     log.info("notify_discord_script", status="COMPLETE")
-    exit()
+    await client.close()
 
 
 client.run(discord_token)
