@@ -9,6 +9,7 @@ RUN apk add gcc # TODO: only run when not on x64
 RUN mkdir /stampydata
 WORKDIR /stampy
 
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda update --all
 # Create the environment:
 COPY environment.yml .
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda env create -f environment.yml

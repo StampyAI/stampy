@@ -18,6 +18,7 @@ get_secret "SLACK_APP_TOKEN" "~/.slackapptoken";
 get_secret "SLACK_BOT_TOKEN" "~/.slackbottoken";
 
 if [ "${STAMPY_RUN_TESTS:-nil}" != "nil" ]; then
+    pip install -qr ./requirements_test.txt
     pytest;
     python -m unittest;
     mypy -m stam;
