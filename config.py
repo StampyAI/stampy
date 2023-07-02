@@ -159,8 +159,8 @@ llm_prompt: str
 be_shy: bool
 channel_whitelist: Optional[frozenset[str]]
 
-robmiles_defaults = getenv_bool("ROBMILES_DEFAULTS")
-if robmiles_defaults:
+is_rob_server = getenv_bool("IS_ROB_SERVER")
+if is_rob_server:
     # use robmiles server defaults
     print("Using settings for the Rob Miles Discord server")
     discord_guild = {
@@ -262,8 +262,6 @@ wolfram_token: Optional[str] = getenv("WOLFRAM_TOKEN", default=None)
 slack_app_token: Optional[str] = getenv("SLACK_APP_TOKEN", default=None)
 slack_bot_token: Optional[str] = getenv("SLACK_BOT_TOKEN", default=None)
 
-not_rob_server = getenv_bool("NOT_ROB_SERVER")
-is_rob_server = not not_rob_server
 
 
 # VARIABLE VALIDATION

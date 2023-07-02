@@ -78,7 +78,7 @@ jobs:
             export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
             export CODA_API_TOKEN=$(cat ~/.codatoken);
 
-            export ROBMILES_DEFAULTS="TRUE"
+            export IS_ROB_SERVER="TRUE"
 
             cd ~/stampy
             conda activate stampy

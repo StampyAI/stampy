@@ -34,7 +34,7 @@ export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
 export CLIENT_SECRET_PATH="$(cat ~/.clientsecretpath)"
 export WOLFRAM_TOKEN=$(cat ~/.wolframtoken);
 
-export ROBMILES_DEFAULTS="TRUE"
+export IS_ROB_SERVER="TRUE"
 
 cd ~/stampy
 conda activate stampy
