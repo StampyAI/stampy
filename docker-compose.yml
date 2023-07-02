@@ -4,6 +4,7 @@ services:
     stop_signal: SIGKILL # won't respond to anything else
     build:
       dockerfile: ./Dockerfile
+      context: "."
     volumes:
       - "./local:/stampydata"
     environment:
