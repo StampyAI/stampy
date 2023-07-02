@@ -1,0 +1,4 @@
+mypy
+pylint
+pandas-stubs
+types-psutil
