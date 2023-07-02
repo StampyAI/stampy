@@ -44,9 +44,6 @@ jobs:
             # <<< conda initialize <<<
 
             conda deactivate
-            
-            # temporary line to update conda
-            conda update -n base -c defaults conda
 
             export ENVIRONMENT_TYPE="production"
             export DATABASE_PATH="/home/rob/stampy.local/stampy.db"
