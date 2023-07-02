@@ -93,7 +93,7 @@ class Questions(Module):
         ###################
 
         # How often Stampy posts random not started questions to `#general`
-        self.not_started_question_autopost_interval = timedelta(hours=6)
+        self.not_started_question_autopost_interval = timedelta(hours=24)
 
         # Time of last (attempted) autopost of not started question
         self.last_not_started_autopost_attempt_dt = (
@@ -363,7 +363,7 @@ class Questions(Module):
         channel = cast(
             TextChannel, self.utils.client.get_channel(int(general_channel_id))
         )
-        async for msg in channel.history(limit=1):
+        async for msg in channel.history(limit=20):
             if msg.content.startswith(self.AUTOPOST_NOT_STARTED_MSG_PREFIX):
                 return True
         return False
