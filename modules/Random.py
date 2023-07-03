@@ -1,8 +1,13 @@
 """
 Generates random numbers or chooses between options.
 
-- `roll XdY`: roll X dies with Y sides
-- `choose X or Y (or Z or...)`: choose between as many options as are given
+Roll dice
+roll X dies with Y sides
+`roll XdY`
+
+Make a choice
+choose between as many options as are given
+`choose X or Y (or Z or...)`
 """
 
 import re

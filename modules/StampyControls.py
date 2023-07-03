@@ -1,9 +1,17 @@
 """
 Allows devs to manage some Stampy functions
 
-- `reboot`: reboot Stampy according to `BOT_REBOOT`
-- `stats`: Stats about Stampy
-- `resetinviteroles`: reset the roles for people with invitation permissions
+Reboot
+Reboot Stampy according to `BOT_REBOOT`
+`reboot`
+
+Stats
+Stats about Stampy, like resource usage and modules loaded
+`stats`
+
+Reset invite roles
+reset the roles for people with invitation permissions
+`resetinviteroles`
 """
 
 import os

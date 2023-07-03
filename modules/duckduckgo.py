@@ -1,7 +1,5 @@
 """
-Checks if DuckDuckGo has a definition for what you're asking about.
-
-For example, "what is linear algebra" will get the first paragraph of the
+Checks if DuckDuckGo has a definition for what you're asking about. For example, "what is linear algebra" will get the first paragraph of the
 Wikipedia article for linear algebra.
 """
 

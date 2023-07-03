@@ -1,7 +1,5 @@
 """
-Provides quirky responses for some pre-programmed cases, most unprompted.
-
-If a message from this module interrupts a desired behavior, re-send your
+Provides quirky responses for some pre-programmed cases, most unprompted. If a message from this module interrupts a desired behavior, re-send your
 previous message and the joke won't trigger.
 
 - `s, say X`: `X!`

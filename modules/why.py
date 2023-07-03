@@ -1,10 +1,13 @@
 """
 Gives traceback for a specified message.
 
-To use, respond to my message of concern and say "Why did you say that?"
+Basic traceback
+Give a brief summary of why the message you're responding to was sent.
+`why did you say this?`
 
-For a much more detailed traceback, respond and say "Why did you say that,
-specifically?"
+Detailed traceback
+Give a long and detailed explanation of Stampy's thought process.
+"Why did you say that, specifically?"
 """
 
 import re
