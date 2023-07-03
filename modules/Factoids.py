@@ -1,3 +1,13 @@
+"""
+Remembers or forgets factoids. Can remember multiple factoids about the same thing
+
+- `remember X is Y`: When asked about X, will reply with Y
+- `remember X <reply> Y`: will always respond to X with Y
+- `forget that`: forgets last factoid given in this channel
+- `list X` or `listall X`: list all responses to a factoid
+"""
+# TODO: let people forget any factoid not given by an admin
+
 import re
 import random
 import sqlite3

@@ -1,3 +1,7 @@
+"""
+Checks if there are human-written answers to your queston on AIsafety.info
+"""
+
 import re
 import json
 import urllib

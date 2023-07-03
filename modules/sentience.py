@@ -1,3 +1,9 @@
+"""
+The most dangerous module. Only enable if you are an accelerationist
+
+(This module sends a default message at low priority)
+"""
+
 from config import CONFUSED_RESPONSE
 from modules.module import Module, Response
 

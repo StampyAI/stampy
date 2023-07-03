@@ -1,3 +1,11 @@
+"""
+Allows devs to manage some Stampy functions
+
+- `reboot`: reboot Stampy according to `BOT_REBOOT`
+- `stats`: Stats about Stampy
+- `resetinviteroles`: reset the roles for people with invitation permissions
+"""
+
 import os
 import sys
 from typing import Optional, cast

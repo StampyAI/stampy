@@ -1,3 +1,8 @@
+"""
+Asks WolframAlpha for the answer
+"""
+
+
 import re
 import urllib
 from config import wolfram_token

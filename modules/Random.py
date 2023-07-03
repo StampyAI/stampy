@@ -1,3 +1,10 @@
+"""
+Generates random numbers or chooses between options.
+
+- `roll XdY`: roll X dies with Y sides
+- `choose X or Y (or Z or...)`: choose between as many options as are given
+"""
+
 import re
 import random
 from modules.module import Module, Response

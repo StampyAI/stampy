@@ -1,7 +1,9 @@
 """
 Provides quirky responses for some pre-programmed cases, most unprompted.
+
 If a message from this module interrupts a desired behavior, re-send your
 previous message and the joke won't trigger.
+
 - `s, say X`: `X!`
 - XKCD 37: `that's a weird-ass story` -> `that's a weird ass-story`
 - How original: `Welcome our new X` ->

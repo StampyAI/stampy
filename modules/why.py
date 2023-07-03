@@ -1,3 +1,12 @@
+"""
+Gives traceback for a specified message.
+
+To use, respond to my message of concern and say "Why did you say that?"
+
+For a much more detailed traceback, respond and say "Why did you say that,
+specifically?"
+"""
+
 import re
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage

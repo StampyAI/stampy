@@ -1,3 +1,7 @@
+"""
+Gives basic responses in the style of a therapy bot. Lower priority than LLM modules.
+"""
+
 import re
 import random
 from modules.module import Module, Response
