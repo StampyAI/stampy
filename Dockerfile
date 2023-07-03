@@ -18,6 +18,7 @@ RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda env create -f env
 RUN echo "conda activate stampy" >> ~/.profile
 SHELL ["/bin/bash", "--login", "-c"]
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip conda activate stampy && conda install pytest
+RUN conda clean -a
 
 COPY . .
 ENV STAMPY_RUN_TESTS=${STAMPY_RUN_TESTS}
