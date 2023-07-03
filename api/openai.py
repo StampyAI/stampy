@@ -119,11 +119,11 @@ class OpenAI:
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
 
-        if gpt4 and gpt4_for_all or message.author.id in bot_vip_ids or utilities.is_bot_dev(message.author):
-            return OpenAIEngines.GPT_4
-        elif any(discordutils.user_has_role(message.author, x)
-                 for x in gpt4_whitelist_role_ids):
-            return OpenAIEngines.GPT_4
+        if gpt4:
+            if gpt4_for_all or message.author.id in bot_vip_ids or \
+                    any(discordutils.user_has_role(message.author, x)
+                        for x in gpt4_whitelist_role_ids):
+                return OpenAIEngines.GPT_4
         else:
             return OpenAIEngines.GPT_3_5_TURBO
 
