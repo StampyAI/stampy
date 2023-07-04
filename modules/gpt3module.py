@@ -1,3 +1,7 @@
+"""
+Gives user response to GPT-3 (old API)
+"""
+
 from typing import Optional, cast
 
 import openai

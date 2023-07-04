@@ -1,3 +1,7 @@
+"""
+Manages user rankings through stamps
+"""
+
 from datetime import datetime, timedelta
 import re
 from typing import cast

@@ -1,3 +1,7 @@
+"""
+Searches a database of AI-alignment-related documents for something like your question
+"""
+
 from __future__ import annotations
 import re
 from dataclasses import dataclass

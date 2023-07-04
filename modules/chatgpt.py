@@ -1,3 +1,7 @@
+"""
+Gives user response to ChatGPT
+"""
+
 from openai.openai_object import OpenAIObject
 import re
 from typing import cast, TYPE_CHECKING

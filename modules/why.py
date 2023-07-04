@@ -1,3 +1,15 @@
+"""
+Gives traceback for a specified message.
+
+Basic traceback
+Give a brief summary of why the message you're responding to was sent.
+`why did you say this?`
+
+Detailed traceback
+Give a long and detailed explanation of Stampy's thought process.
+"Why did you say that, specifically?"
+"""
+
 import re
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage

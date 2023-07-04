@@ -1,3 +1,7 @@
+"""
+Curates and posts automated responses to Youtube comments.
+"""
+
 import re
 import json
 import discord

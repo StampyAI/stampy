@@ -1,3 +1,7 @@
+"""
+Searches the titles, descriptions and transcripts of Rob Miles videos, to find keywords/phrases
+"""
+
 import re
 import os
 from modules.module import Module, Response

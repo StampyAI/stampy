@@ -1,3 +1,8 @@
+"""
+Checks if DuckDuckGo has a definition for what you're asking about. For example, "what is linear algebra" will get the first paragraph of the
+Wikipedia article for linear algebra.
+"""
+
 import re
 import json
 from urllib.parse import quote_plus
