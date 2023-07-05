@@ -312,18 +312,14 @@ class QuestionSetter(Module):
         """Obtain GDoc links to approved questions and change their status in coda
         to `Live on site`.
         """
-        if not is_from_reviewer(message):
-            return Response(
-                confidence=10,
-                text=f"You're not a reviewer, <@{message.author}> -_-",
-                why="Only, reviewers can accept questions",
-            )
+        msg_from_reviewer = is_from_reviewer(message)
 
         if isinstance(parsed, list):  # is GDocLinks (list of strings)
             gdoc_links = parsed
         else:  # is MsgRefId (string)
             msg_ref_id = parsed
-            assert isinstance(message.channel, DiscordChannel)
+            if not isinstance(message.channel, DiscordChannel):
+                return Response()
             await self.find_gdoc_links_in_msg(message.channel, msg_ref_id)
             gdoc_links = self.msg_id2gdoc_links.get(msg_ref_id, [])
 
@@ -331,6 +327,15 @@ class QuestionSetter(Module):
             return Response()
 
         questions = self.coda_api.get_questions_by_gdoc_links(gdoc_links)
+
+        if not msg_from_reviewer:
+            if not questions:
+                return Response()
+            return Response(
+                confidence=10,
+                text=f"You're not a reviewer, <@{message.author}> -_-",
+                why="Only reviewers can accept questions",
+            )
 
         if not questions:
             return Response(
@@ -384,7 +389,9 @@ class QuestionSetter(Module):
         elif not (tag := parse_tag(text)):
             return
 
-        query = parse_question_spec_query(text, return_last_by_default=True)
+        query = parse_question_spec_query(text)
+        if query is None:
+            query = "Last", "DEFAULT"
         return Response(
             confidence=10,
             callback=self.cb_edit_tag_or_altphr,
@@ -408,7 +415,9 @@ class QuestionSetter(Module):
         elif not (alt_phr := parse_alt_phr(text)):
             return
 
-        query = parse_question_spec_query(text, return_last_by_default=True)
+        query = parse_question_spec_query(text)
+        if query is None:
+            query = "Last", "DEFAULT"
         return Response(
             confidence=10,
             callback=self.cb_edit_tag_or_altphr,
