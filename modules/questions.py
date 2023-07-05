@@ -495,7 +495,9 @@ class Questions(Module):
         # must match regex and contain query info
         if not self.re_get_question_info.match(text):
             return
-        spec_data = parse_question_spec_query(text, return_last_by_default=True)
+        spec_data = parse_question_spec_query(text)
+        if spec_data is None:
+            return
 
         return Response(
             confidence=9,
