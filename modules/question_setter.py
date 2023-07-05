@@ -334,7 +334,7 @@ class QuestionSetter(Module):
             return Response(
                 confidence=10,
                 text=f"You're not a reviewer, <@{message.author}> -_-",
-                why="Only, reviewers can accept questions",
+                why="Only reviewers can accept questions",
             )
 
         if not questions:
