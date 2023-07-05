@@ -389,7 +389,9 @@ class QuestionSetter(Module):
         elif not (tag := parse_tag(text)):
             return
 
-        query = parse_question_spec_query(text, return_last_by_default=True)
+        query = parse_question_spec_query(text)
+        if query is None:
+            query = "Last", "DEFAULT"
         return Response(
             confidence=10,
             callback=self.cb_edit_tag_or_altphr,
@@ -413,7 +415,9 @@ class QuestionSetter(Module):
         elif not (alt_phr := parse_alt_phr(text)):
             return
 
-        query = parse_question_spec_query(text, return_last_by_default=True)
+        query = parse_question_spec_query(text)
+        if query is None:
+            query = "Last", "DEFAULT"
         return Response(
             confidence=10,
             callback=self.cb_edit_tag_or_altphr,

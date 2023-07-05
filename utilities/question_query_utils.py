@@ -118,23 +118,7 @@ def parse_alt_phr(text: str) -> Optional[str]:
     return text[start:end]
 
 
-@overload
-def parse_question_spec_query(
-    text: str,
-) -> Optional[QuestionSpecQuery]:
-    ...
-
-
-@overload
-def parse_question_spec_query(
-    text: str, *, return_last_by_default: Literal[True]
-) -> QuestionSpecQuery:
-    ...
-
-
-def parse_question_spec_query(
-    text: str, *, return_last_by_default: bool = False
-) -> Optional[QuestionSpecQuery]:  # TODO: raise or sth if no last
+def parse_question_spec_query(text: str) -> Optional[QuestionSpecQuery]:
     """Parse data specifying concrete questions"""
     # QuestionLast
     if mention := parse_question_last(text):
@@ -147,8 +131,6 @@ def parse_question_spec_query(
     # so in order to remove interference with title parsing, we mask whatever is between double quotes
     if question_title := parse_question_title(mask_quoted_text(text)):
         return "Title", question_title
-    if return_last_by_default:
-        return "Last", "DEFAULT"
 
 
 def parse_question_query(text: str) -> QuestionQuery:
