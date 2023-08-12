@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import cast, overload, Literal, NamedTuple, Optional, Union
+from typing import cast, Literal, NamedTuple, Optional, Union
 
 from api.coda import CodaAPI
 from api.utilities.coda_utils import QuestionStatus
@@ -59,7 +59,7 @@ def parse_tag(text: str) -> Optional[str]:
         return None
     tag_val = match.group(1)
     tag_pat = _tag_pat.replace(r"\s", " ")
-    tag_idx = tag_pat.lower().find(tag_val.lower())
+    tag_idx = tag_pat.lower().find(rf"\b{tag_val.lower()}\b") + 2
     tag_val = tag_pat[tag_idx : tag_idx + len(tag_val)]
     return tag_val
 
