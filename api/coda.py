@@ -283,7 +283,7 @@ class CodaAPI:
         self.questions_df.at[question["id"], "last_asked_on_discord"] = current_time
 
     def _reset_dates(self) -> None:
-        """Reset all questions' dates (util, not to be used by Stampy)"""
+        """Reset all questions' dates (debugging util, not to be used by Stampy)"""
         for _, r in self.questions_df.iterrows():
             if r["last_asked_on_discord"] != DEFAULT_DATE:
                 self.update_question_last_asked_date(
