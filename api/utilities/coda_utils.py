@@ -64,6 +64,7 @@ class QuestionRow(TypedDict):
 QuestionStatus = Literal[
     "Bulletpoint sketch",
     "Duplicate",
+    "Dormant",
     "In progress",
     "In review",
     "Live on site",

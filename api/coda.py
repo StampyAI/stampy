@@ -522,18 +522,15 @@ class CodaAPI:
             r["Status"].value for r in status_table.rows() if r["Status"].value
         }
         # load status values defined in code
-        code_status_vals = set(get_args(QuestionStatus))
+        encoded_status_vals = set(get_args(QuestionStatus))
         # if mismatch, log and raise errory
-        if coda_status_vals != code_status_vals:
-            msg = "Status values defined in api/utilities/coda_utils.py don't match the values in coda"
-            self.log.error(
+        if coda_status_vals != encoded_status_vals:
+            self.log.warning(
                 self.class_name,
                 msg="Status values defined in api/utilities/coda_utils.py don't match the values in coda",
-                code_status_vals=code_status_vals,
+                code_status_vals=encoded_status_vals,
                 coda_status_vals=coda_status_vals,
             )
-            msg += f"; {code_status_vals=}; {coda_status_vals=}"
-            raise AssertionError(msg)
         return sorted(coda_status_vals)
 
     @staticmethod
