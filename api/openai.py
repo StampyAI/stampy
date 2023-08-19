@@ -16,7 +16,10 @@ from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
 from utilities import discordutils
 if use_helicone:
-    from helicone import openai
+    try:
+        from helicone import openai
+    except ImportError:
+        from helicone import openai_proxy as openai
 else:
     import openai
 import discord
