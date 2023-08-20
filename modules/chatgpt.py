@@ -21,7 +21,10 @@ from utilities import Utilities, can_use_paid_service
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
 
 if use_helicone:
-    from helicone import openai
+    try:
+        from helicone import openai
+    except ImportError:
+        from helicone import openai_proxy as openai
 else:
     import openai
 
