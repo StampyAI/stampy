@@ -25,6 +25,7 @@ else:
     import openai
     from openai import Moderation
 import discord
+import json # moderation response dump
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -84,6 +85,7 @@ class OpenAI:
 
         if len(violated_categories) > 0:
             self.log.warning(self.class_name, msg=f"Prompt violated these categories: {violated_categories}")
+            self.log.info(self.class_name, msg=f"OpenAI moderation response: {json.dumps(response)}"
             return True
         else:
             self.log.info(self.class_name, msg=f"Prompt looks clean")
