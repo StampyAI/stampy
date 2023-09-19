@@ -46,78 +46,46 @@ class OpenAI:
             return True
         else:
             return False
-    def cf_risk_level(self, prompt):
-        """Ask the openai content filter if the prompt is risky
+    def is_text_risky(self, text: str) -> bool:
+        """Ask the openai moderation endpoint if the text is risky
         Returns:
             0 - The text is safe.
-            1 - This text is sensitive.
             2 - This text is unsafe.
 
-        See https://beta.openai.com/docs/engines/content-filter for details"""
+        See https://platform.openai.com/docs/guides/moderation/quickstart for details"""
 
         try:
-            response = openai.Completion.create(
-                engine="content-filter-alpha",
-                prompt="<|endoftext|>" + prompt + "\n--\nLabel:",
-                temperature=0,
-                max_tokens=1,
-                top_p=0,
-                logprobs=10,
-            )
+            response = openai.Moderation.create(input=text)
         except openai.error.AuthenticationError as e:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
             loop = asyncio.get_running_loop()
             loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
             loop.create_task(utils.log_exception(e))
-            return 2
+            return True
         except openai.error.RateLimitError as e:
             self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
             loop = asyncio.get_running_loop()
             loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
             loop.create_task(utils.log_exception(e))
-            return 2
+            return True
 
-        output_label = response["choices"][0]["text"]
+        flagged: bool = response["results"]["flagged"]
 
-        # This is the probability at which we evaluate that a "2" is likely real
-        # vs. should be discarded as a false positive
-        toxic_threshold = -0.355
+        all_morals: frozenset[str] = ["sexual", "hate", "harassment", "self-harm", "sexual/minors", "hate/threatening", "violence/graphic", "self-harm/intent", "self-harm/instructions", "harassment/threatening", "violence"]
+        allowed_categories = frozenset()
+        violated_categories = set()
 
-        if output_label == "2":
-            # If the model returns "2", return its confidence in 2 or other output-labels
-            logprobs = response["choices"][0]["logprobs"]["top_logprobs"][0]
-
-            # If the model is not sufficiently confident in "2",
-            # choose the most probable of "0" or "1"
-            # Guaranteed to have a confidence for 2 since this was the selected token.
-            if logprobs["2"] < toxic_threshold:
-                logprob_0 = logprobs.get("0", None)
-                logprob_1 = logprobs.get("1", None)
-
-                # If both "0" and "1" have probabilities, set the output label
-                # to whichever is most probable
-                if logprob_0 is not None and logprob_1 is not None:
-                    if logprob_0 >= logprob_1:
-                        output_label = "0"
-                    else:
-                        output_label = "1"
-                # If only one of them is found, set output label to that one
-                elif logprob_0 is not None:
-                    output_label = "0"
-                elif logprob_1 is not None:
-                    output_label = "1"
-
-                # If neither "0" or "1" are available, stick with "2"
-                # by leaving output_label unchanged.
-
-        # if the most probable token is none of "0", "1", or "2"
-        # this should be set as unsafe
-        if output_label not in ["0", "1", "2"]:
-            output_label = "2"
+        if flagged:
+            for moral in all_morals - allowed_categories:
+                if response["results"][moral]:
+                    violated_categories.add(moral)
 
         self.log.info(self.class_name, msg=f"Prompt is risk level {output_label}")
-
-        return int(output_label)
+        if len(violated_categories) > 0:
+            self.log.info(self.class_name, msg=f"Prompt violated these categories: {violated_categories}")
+            return True
+        else:
+            return False
 
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
@@ -131,8 +99,8 @@ class OpenAI:
             return OpenAIEngines.GPT_3_5_TURBO
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
-        if self.cf_risk_level(prompt) > 1:
-            self.log.info(self.class_name, msg="OpenAI's GPT-3 content filter thought the prompt was risky")
+        if self.is_text_risky(prompt):
+            self.log.info(self.class_name, msg="The content filter thought the prompt was risky")
             return ""
 
         try:

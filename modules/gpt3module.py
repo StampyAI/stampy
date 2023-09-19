@@ -223,7 +223,7 @@ class GPT3Module(Module):
             self.log.info(self.class_name, status="Asking GPT-3")
             prompt = self.start_prompt + text + start_sequence
 
-            if self.openai.cf_risk_level(prompt) > 1:
+            if self.openai.is_text_risky(text):
                 return Response(
                     confidence=0,
                     text="",

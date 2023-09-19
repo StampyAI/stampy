@@ -141,6 +141,12 @@ class ChatGPTModule(Module):
             im = default_italics_mark
 
         if self.openai.is_channel_allowed(message):
+            if self.openai.is_text_risky(message.clean_content):
+                return Response(
+                    confidence=0,
+                    text="",
+                    why="GPT-3's content filter thought the prompt was risky",
+                )
             self.log.info(
                 self.class_name,
                 msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})",
