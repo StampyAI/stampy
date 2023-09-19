@@ -16,12 +16,14 @@ from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
 from utilities import discordutils
 if use_helicone:
+    from openai import Moderation
     try:
         from helicone import openai
     except ImportError:
         from helicone import openai_proxy as openai
 else:
     import openai
+    from openai import Moderation
 import discord
 
 openai.api_key = openai_api_key
@@ -55,7 +57,7 @@ class OpenAI:
         See https://platform.openai.com/docs/guides/moderation/quickstart for details"""
 
         try:
-            response = openai.Moderation.create(input=text)
+            response = Moderation.create(input=text)
         except openai.error.AuthenticationError as e:
             self.log.error(self.class_name, error="OpenAI Authentication Failed")
             loop = asyncio.get_running_loop()
@@ -69,7 +71,7 @@ class OpenAI:
             loop.create_task(utils.log_exception(e))
             return True
 
-        flagged: bool = response["results"]["flagged"]
+        flagged: bool = response["results"][0]["flagged"]
 
         all_morals: frozenset[str] = ["sexual", "hate", "harassment", "self-harm", "sexual/minors", "hate/threatening", "violence/graphic", "self-harm/intent", "self-harm/instructions", "harassment/threatening", "violence"]
         allowed_categories = frozenset()
@@ -77,14 +79,14 @@ class OpenAI:
 
         if flagged:
             for moral in all_morals - allowed_categories:
-                if response["results"][moral]:
+                if response["results"][0][moral]:
                     violated_categories.add(moral)
 
-        self.log.info(self.class_name, msg=f"Prompt is risk level {output_label}")
         if len(violated_categories) > 0:
-            self.log.info(self.class_name, msg=f"Prompt violated these categories: {violated_categories}")
+            self.log.warning(self.class_name, msg=f"Prompt violated these categories: {violated_categories}")
             return True
         else:
+            self.log.info(self.class_name, msg=f"Prompt looks clean")
             return False
 
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
