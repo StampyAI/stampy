@@ -138,7 +138,7 @@ bot_dev_ids: frozenset
 # control channel is where maintainence commands are issued
 bot_control_channel_ids: frozenset
 # private channel is where stampy logging gets printed
-bot_private_channel_id: Optional[str]
+bot_private_channel_id: str
 # NOTE: Rob's invite/member management functions, not ported yet
 member_role_id: Optional[str]
 # bot_reboot is how stampy reboots himself
@@ -158,6 +158,7 @@ use_helicone: bool
 llm_prompt: str
 be_shy: bool
 channel_whitelist: Optional[frozenset[str]]
+bot_error_channel_id: str
 
 is_rob_server = getenv_bool("IS_ROB_SERVER")
 if is_rob_server:
@@ -215,6 +216,10 @@ if is_rob_server:
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
     be_shy = getenv_bool("BE_SHY")
     channel_whitelist = None
+    bot_error_channel_id = {
+            "production": "1017527224540344380",
+            "development": "1017531179664150608"
+    }[ENVIRONMENT_TYPE]
 else:
     # user-configured from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -230,7 +235,7 @@ else:
     # control channel is where maintainence commands are issued
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
     # private channel is where stampy logging gets printed
-    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", default=None)
+    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID")
     # NOTE: Rob's invite/member management functions, not ported yet
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     # bot_reboot is how stampy reboots himself
@@ -253,6 +258,7 @@ else:
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
     be_shy = getenv_bool("BE_SHY")
     channel_whitelist = getenv_unique_set("CHANNEL_WHITELIST", None)
+    bot_error_channel_id = getenv("BOT_ERROR_CHANNEL_ID", bot_private_channel_id)
 
 discord_token: str = getenv("DISCORD_TOKEN")
 database_path: str = getenv("DATABASE_PATH")
