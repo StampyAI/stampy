@@ -16,7 +16,6 @@ from utilities.serviceutils import ServiceMessage
 from utilities import utilities, Utilities
 from utilities import discordutils
 if use_helicone:
-    from openai import Moderation
     try:
         from helicone import openai
     except ImportError:
@@ -25,7 +24,14 @@ else:
     import openai
     from openai import Moderation
 import discord
+import requests
 import json # moderation response dump
+
+CURL_REQUEST: bool # helicone breaks some moderation attribute of openai module
+if use_helicone:
+    CURL_REQUEST = True
+else:
+    CURL_REQUEST = False
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -57,25 +63,62 @@ class OpenAI:
 
         See https://platform.openai.com/docs/guides/moderation/quickstart for details"""
 
-        try:
-            response = Moderation.create(input=text)
-        except openai.error.AuthenticationError as e:
-            self.log.error(self.class_name, error="OpenAI Authentication Failed")
-            loop = asyncio.get_running_loop()
-            loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
-            loop.create_task(utils.log_exception(e))
-            return True
-        except openai.error.RateLimitError as e:
-            self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
-            loop = asyncio.get_running_loop()
-            loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
-            loop.create_task(utils.log_exception(e))
-            return True
+        if CURL_REQUEST:
+            try:
+                http_response = requests.post(
+                        'https://api.openai.com/v1/moderations',
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {openai_api_key}"
+                            },
+                        json={
+                            "input": text
+                            }
+                        )
+            except Exception as e:
+                self.log.error(self.class_name, error="Error in Requests module trying to moderate content")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"Error in Requests module trying to moderate content"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            if http_response.status_code == 401:
+                self.log.error(self.class_name, error="OpenAI Authentication Failed")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            elif http_response.status_code == 429:
+                self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            elif http_response.status_code != 200:
+                self.log.warning(self.class_name, error=f"Possible issue with the OpenAI API. Status: {http_response.status_code}, Content: {http_response.text}")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"Possible issue with the OpenAI API. Status: {http_response.status_code}, Content: {http_response.text}"))
+                return True
+            response = http_response.json()
+        else:
+            try:
+                response = Moderation.create(input=text)
+            except openai.error.AuthenticationError as e:
+                self.log.error(self.class_name, error="OpenAI Authentication Failed")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            except openai.error.RateLimitError as e:
+                self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
+                loop.create_task(utils.log_exception(e))
+                return True
 
         flagged: bool = response["results"][0]["flagged"]
 
         all_morals: frozenset[str] = ["sexual", "hate", "harassment", "self-harm", "sexual/minors", "hate/threatening", "violence/graphic", "self-harm/intent", "self-harm/instructions", "harassment/threatening", "violence"]
-        allowed_categories = frozenset()
+        allowed_categories = frozenset("violence") # Can be triggered by some AI safety terms
         violated_categories = set()
 
         if flagged:
@@ -84,11 +127,11 @@ class OpenAI:
                     violated_categories.add(moral)
 
         if len(violated_categories) > 0:
-            self.log.warning(self.class_name, msg=f"Prompt violated these categories: {violated_categories}")
-            self.log.info(self.class_name, msg=f"OpenAI moderation response: {json.dumps(response)}"
+            self.log.warning(self.class_name, msg=f"Text violated these unwanted categories: {violated_categories}")
+            self.log.debug(self.class_name, msg=f"OpenAI moderation response: {json.dumps(response)}")
             return True
         else:
-            self.log.info(self.class_name, msg=f"Prompt looks clean")
+            self.log.info(self.class_name, msg=f"Checked with content filter, it says the text looks clean")
             return False
 
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
