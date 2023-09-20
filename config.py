@@ -126,30 +126,21 @@ if not enabled_modules_var:
 else:
     enabled_modules = enabled_modules_var
 
-# user-configured from dotenv
+# SEE README: ENVIRONMENT VARIABLES
 discord_guild: str
-# Factoid.py
 factoid_database_path: str
-# VIPs have full access + special permissions
 bot_vip_ids: frozenset
-# devs have less but can do maintainence like reboot
 bot_dev_roles: frozenset
 bot_dev_ids: frozenset
-# control channel is where maintainence commands are issued
 bot_control_channel_ids: frozenset
-# private channel is where stampy logging gets printed
 bot_private_channel_id: str
-# NOTE: Rob's invite/member management functions, not ported yet
+bot_error_channel_id: str
 member_role_id: Optional[str]
-# bot_reboot is how stampy reboots himself
 valid_bot_reboot_options = Literal["exec", False]
 bot_reboot: valid_bot_reboot_options
-# GPT STUFF
 paid_service_all_channels: bool
-# if above is false, where can paid services be used?
 paid_service_channel_ids: frozenset
 paid_service_for_all: bool
-# if above is false, who gets to use paid services?
 paid_service_whitelist_role_ids: frozenset
 gpt4: bool
 gpt4_for_all: bool
@@ -158,7 +149,6 @@ use_helicone: bool
 llm_prompt: str
 be_shy: bool
 channel_whitelist: Optional[frozenset[str]]
-bot_error_channel_id: str
 disable_prompt_moderation: bool
 
 is_rob_server = getenv_bool("IS_ROB_SERVER")
@@ -223,33 +213,25 @@ if is_rob_server:
     }[ENVIRONMENT_TYPE]
     disable_prompt_moderation = False
 else:
-    # user-configured from dotenv
+    # SEE README: ENVIRONMENT VARIABLES
     discord_guild = getenv("DISCORD_GUILD")
-    # Factoid.py
     factoid_database_path = getenv(
         "FACTOID_DATABASE_PATH", default="./database/Factoids.db"
     )
-    # VIPs have full access + special permissions
     bot_vip_ids = getenv_unique_set("BOT_VIP_IDS", frozenset())
-    # devs have less but can do maintainence like reboot
     bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
     bot_dev_ids = getenv_unique_set("BOT_DEV_IDS", frozenset())
-    # control channel is where maintainence commands are issued
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
-    # private channel is where stampy logging gets printed
     bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID")
+    bot_error_channel_id = getenv("BOT_ERROR_CHANNEL_ID", bot_private_channel_id)
     # NOTE: Rob's invite/member management functions, not ported yet
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
-    # bot_reboot is how stampy reboots himself
     bot_reboot = cast(valid_bot_reboot_options, getenv("BOT_REBOOT", default=False))
-    # GPT STUFF
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
-    # if above is false, where can paid services be used?
     paid_service_channel_ids = getenv_unique_set(
         "PAID_SERVICE_CHANNEL_IDS", frozenset()
     )
     paid_service_for_all = getenv_bool("PAID_SERVICE_FOR_ALL")
-    # if above is false, who gets to use paid services?
     paid_service_whitelist_role_ids = getenv_unique_set(
         "PAID_SERVICE_ROLE_IDS", frozenset()
     )
@@ -260,7 +242,6 @@ else:
     llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
     be_shy = getenv_bool("BE_SHY")
     channel_whitelist = getenv_unique_set("CHANNEL_WHITELIST", None)
-    bot_error_channel_id = getenv("BOT_ERROR_CHANNEL_ID", bot_private_channel_id)
     disable_prompt_moderation = getenv_bool("DISABLE_PROMPT_MODERATION")
 
 discord_token: str = getenv("DISCORD_TOKEN")
