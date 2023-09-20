@@ -159,6 +159,7 @@ llm_prompt: str
 be_shy: bool
 channel_whitelist: Optional[frozenset[str]]
 bot_error_channel_id: str
+disable_prompt_moderation: bool
 
 is_rob_server = getenv_bool("IS_ROB_SERVER")
 if is_rob_server:
@@ -220,6 +221,7 @@ if is_rob_server:
             "production": "1017527224540344380",
             "development": "1017531179664150608"
     }[ENVIRONMENT_TYPE]
+    disable_prompt_moderation = False
 else:
     # user-configured from dotenv
     discord_guild = getenv("DISCORD_GUILD")
@@ -259,6 +261,7 @@ else:
     be_shy = getenv_bool("BE_SHY")
     channel_whitelist = getenv_unique_set("CHANNEL_WHITELIST", None)
     bot_error_channel_id = getenv("BOT_ERROR_CHANNEL_ID", bot_private_channel_id)
+    disable_prompt_moderation = getenv_bool("DISABLE_PROMPT_MODERATION")
 
 discord_token: str = getenv("DISCORD_TOKEN")
 database_path: str = getenv("DATABASE_PATH")

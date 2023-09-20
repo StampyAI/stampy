@@ -8,7 +8,8 @@ from config import (
     gpt4_whitelist_role_ids,
     bot_vip_ids,
     paid_service_all_channels,
-    use_helicone
+    use_helicone,
+    disable_prompt_moderation
 )
 from structlog import get_logger
 from servicemodules.serviceConstants import Services, openai_channel_ids
@@ -62,6 +63,9 @@ class OpenAI:
             2 - This text is unsafe.
 
         See https://platform.openai.com/docs/guides/moderation/quickstart for details"""
+
+        if disable_prompt_moderation:
+            return False
 
         if CURL_REQUEST:
             try:
