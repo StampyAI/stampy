@@ -58,11 +58,10 @@ class OpenAI:
             return False
     def is_text_risky(self, text: str) -> bool:
         """Ask the openai moderation endpoint if the text is risky
-        Returns:
-            0 - The text is safe.
-            2 - This text is unsafe.
 
         See https://platform.openai.com/docs/guides/moderation/quickstart for details"""
+
+        allowed_categories = frozenset("violence") # Can be triggered by some AI safety terms
 
         if disable_prompt_moderation:
             return False
@@ -122,7 +121,6 @@ class OpenAI:
         flagged: bool = response["results"][0]["flagged"]
 
         all_morals: frozenset[str] = ["sexual", "hate", "harassment", "self-harm", "sexual/minors", "hate/threatening", "violence/graphic", "self-harm/intent", "self-harm/instructions", "harassment/threatening", "violence"]
-        allowed_categories = frozenset("violence") # Can be triggered by some AI safety terms
         violated_categories = set()
 
         if flagged:
