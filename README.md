@@ -69,12 +69,13 @@ Not required:
 - `BOT_DEV_IDS`: list of user ids of bot devs. You may want to include `BOT_VIP_IDS` here.
 - `BOT_CONTROL_CHANNEL_IDS`: list of channels where control commands are accepted.
 - `BOT_PRIVATE_CHANNEL_ID`: single channel where private Stampy status updates are sent
+- `BOT_ERROR_CHANNEL_ID`: (defaults to private channel) low level error tracebacks from Python. with this variable they can be shunted to a seperate channel.
 - `CODA_API_TOKEN`: token to access Coda. Without it, modules `Questions` and `QuestionSetter` will not be available and `StampyControls` will have limited functionality.
 - `BOT_REBOOT`: how Stampy reboots himself. Unset, he only quits, expecting an external `while true` loop (like in `runstampy`/Dockerfile). Set to `exec` he will try to relaunch himself from his own CLI arguments.
 - `STOP_ON_ERROR`: Dockerfile/`runstampy` only, unset `BOT_REBOOT` only. If defined, will only restart Stampy when he gets told to reboot, returning exit code 42. Any other exit code will cause the script to just stop.
-- `BE_SHY`: Stamp won't respond when the message isn't specifically to him.
+- `BE_SHY`: Stamp never responds when the message isn't specifically to him.
 - `CHANNEL_WHITELIST`: channels Stampy is allowed to respond to messages in
-- `IS_ROB_SERVER`: If defined, Rob Miles server-specific stuff is enabled. Servers other than Rob Miles Discord Server and Stampy Test Server should not enable it, Otherwise some errors are likely to occur.
+- `IS_ROB_SERVER`: If defined, Rob Miles server-specific stuff is enabled. This is a convenience option for the Rob Miles sysadmins. Servers other than Rob Miles Discord Server and Stampy Test Server should not enable it, otherwise your custom config won't be read.
 
 Specific modules (excluding LLM stuff):
 
@@ -93,6 +94,7 @@ LLM stuff:
 - `GPT4_WHITELIST_ROLE_IDS`: if the above is unset, Stampy responds with GPT4 only for users with these roles.
 - `USE_HELICONE`: if set, GPT prompts call the helicone API rather than OpenAI.
 - `LLM_PROMPT`: What prompt is the language model being fed? This describes the personality and behavior of the bot.
+- `DISABLE_PROMPT_MODERATION`: don't check safety of prompts for LLM
 
 ## Docker
 

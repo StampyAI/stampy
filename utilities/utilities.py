@@ -39,12 +39,12 @@ from config import (
     bot_vip_ids,
     paid_service_for_all,
     paid_service_whitelist_role_ids,
-    be_shy
+    be_shy,
+    bot_error_channel_id
 )
 from database.database import Database
 from servicemodules.discordConstants import (
     wiki_feed_channel_id,
-    stampy_error_log_channel_id,
 )
 from servicemodules.serviceConstants import Services
 from utilities.discordutils import DiscordUser, user_has_role
@@ -291,7 +291,7 @@ class Utilities:
     def error_channel(self) -> discord.channel.TextChannel:
         return cast(
             discord.channel.TextChannel,
-            self.client.get_channel(int(stampy_error_log_channel_id)),
+            self.client.get_channel(int(bot_error_channel_id)),
         )
 
     async def log_error(self, error_message: str) -> None:

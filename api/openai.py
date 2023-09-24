@@ -8,7 +8,8 @@ from config import (
     gpt4_whitelist_role_ids,
     bot_vip_ids,
     paid_service_all_channels,
-    use_helicone
+    use_helicone,
+    disable_prompt_moderation
 )
 from structlog import get_logger
 from servicemodules.serviceConstants import Services, openai_channel_ids
@@ -22,7 +23,16 @@ if use_helicone:
         from helicone import openai_proxy as openai
 else:
     import openai
+    from openai import Moderation
 import discord
+import requests
+import json # moderation response dump
+
+CURL_REQUEST: bool # helicone breaks some moderation attribute of openai module
+if use_helicone:
+    CURL_REQUEST = True
+else:
+    CURL_REQUEST = False
 
 openai.api_key = openai_api_key
 start_sequence = "\nA:"
@@ -46,78 +56,85 @@ class OpenAI:
             return True
         else:
             return False
-    def cf_risk_level(self, prompt):
-        """Ask the openai content filter if the prompt is risky
-        Returns:
-            0 - The text is safe.
-            1 - This text is sensitive.
-            2 - This text is unsafe.
+    def is_text_risky(self, text: str) -> bool:
+        """Ask the openai moderation endpoint if the text is risky
 
-        See https://beta.openai.com/docs/engines/content-filter for details"""
+        See https://platform.openai.com/docs/guides/moderation/quickstart for details"""
 
-        try:
-            response = openai.Completion.create(
-                engine="content-filter-alpha",
-                prompt="<|endoftext|>" + prompt + "\n--\nLabel:",
-                temperature=0,
-                max_tokens=1,
-                top_p=0,
-                logprobs=10,
-            )
-        except openai.error.AuthenticationError as e:
-            self.log.error(self.class_name, error="OpenAI Authentication Failed")
-            loop = asyncio.get_running_loop()
-            loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
-            loop.create_task(utils.log_exception(e))
-            return 2
-        except openai.error.RateLimitError as e:
-            self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
-            loop = asyncio.get_running_loop()
-            loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
-            loop.create_task(utils.log_exception(e))
-            return 2
+        allowed_categories = frozenset("violence") # Can be triggered by some AI safety terms
 
-        output_label = response["choices"][0]["text"]
+        if disable_prompt_moderation:
+            return False
 
-        # This is the probability at which we evaluate that a "2" is likely real
-        # vs. should be discarded as a false positive
-        toxic_threshold = -0.355
+        if CURL_REQUEST:
+            try:
+                http_response = requests.post(
+                        'https://api.openai.com/v1/moderations',
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {openai_api_key}"
+                            },
+                        json={
+                            "input": text
+                            }
+                        )
+            except Exception as e:
+                self.log.error(self.class_name, error="Error in Requests module trying to moderate content")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"Error in Requests module trying to moderate content"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            if http_response.status_code == 401:
+                self.log.error(self.class_name, error="OpenAI Authentication Failed")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            elif http_response.status_code == 429:
+                self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            elif http_response.status_code != 200:
+                self.log.warning(self.class_name, error=f"Possible issue with the OpenAI API. Status: {http_response.status_code}, Content: {http_response.text}")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"Possible issue with the OpenAI API. Status: {http_response.status_code}, Content: {http_response.text}"))
+                return True
+            response = http_response.json()
+        else:
+            try:
+                response = Moderation.create(input=text)
+            except openai.error.AuthenticationError as e:
+                self.log.error(self.class_name, error="OpenAI Authentication Failed")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
+                loop.create_task(utils.log_exception(e))
+                return True
+            except openai.error.RateLimitError as e:
+                self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
+                loop = asyncio.get_running_loop()
+                loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
+                loop.create_task(utils.log_exception(e))
+                return True
 
-        if output_label == "2":
-            # If the model returns "2", return its confidence in 2 or other output-labels
-            logprobs = response["choices"][0]["logprobs"]["top_logprobs"][0]
+        flagged: bool = response["results"][0]["flagged"]
 
-            # If the model is not sufficiently confident in "2",
-            # choose the most probable of "0" or "1"
-            # Guaranteed to have a confidence for 2 since this was the selected token.
-            if logprobs["2"] < toxic_threshold:
-                logprob_0 = logprobs.get("0", None)
-                logprob_1 = logprobs.get("1", None)
+        all_morals: frozenset[str] = ["sexual", "hate", "harassment", "self-harm", "sexual/minors", "hate/threatening", "violence/graphic", "self-harm/intent", "self-harm/instructions", "harassment/threatening", "violence"]
+        violated_categories = set()
 
-                # If both "0" and "1" have probabilities, set the output label
-                # to whichever is most probable
-                if logprob_0 is not None and logprob_1 is not None:
-                    if logprob_0 >= logprob_1:
-                        output_label = "0"
-                    else:
-                        output_label = "1"
-                # If only one of them is found, set output label to that one
-                elif logprob_0 is not None:
-                    output_label = "0"
-                elif logprob_1 is not None:
-                    output_label = "1"
+        if flagged:
+            for moral in all_morals - allowed_categories:
+                if response["results"][0][moral]:
+                    violated_categories.add(moral)
 
-                # If neither "0" or "1" are available, stick with "2"
-                # by leaving output_label unchanged.
-
-        # if the most probable token is none of "0", "1", or "2"
-        # this should be set as unsafe
-        if output_label not in ["0", "1", "2"]:
-            output_label = "2"
-
-        self.log.info(self.class_name, msg=f"Prompt is risk level {output_label}")
-
-        return int(output_label)
+        if len(violated_categories) > 0:
+            self.log.warning(self.class_name, msg=f"Text violated these unwanted categories: {violated_categories}")
+            self.log.debug(self.class_name, msg=f"OpenAI moderation response: {json.dumps(response)}")
+            return True
+        else:
+            self.log.info(self.class_name, msg=f"Checked with content filter, it says the text looks clean")
+            return False
 
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
@@ -131,8 +148,8 @@ class OpenAI:
             return OpenAIEngines.GPT_3_5_TURBO
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
-        if self.cf_risk_level(prompt) > 1:
-            self.log.info(self.class_name, msg="OpenAI's GPT-3 content filter thought the prompt was risky")
+        if self.is_text_risky(prompt):
+            self.log.info(self.class_name, msg="The content filter thought the prompt was risky")
             return ""
 
         try:
