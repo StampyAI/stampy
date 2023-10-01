@@ -415,7 +415,7 @@ class Questions(Module):
     def is_time_for_autopost_wip(self) -> bool:
         now = datetime.now()
         return (
-            now.weekday() in (0, 2, 4)  # Monday, Wednesday, or Friday
+            now.weekday() in (0, 4)  # Monday or Friday
             and 8 <= now.hour <= 12  # between 08:00 and 12:00
             and self.last_wip_autopost_attempt_date
             != now.date()  # Wasn't posted today yet
