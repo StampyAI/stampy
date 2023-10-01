@@ -44,7 +44,7 @@ from api.utilities.coda_utils import REVIEW_STATUSES, QuestionRow, QuestionStatu
 from config import coda_api_token, is_rob_server
 from servicemodules.discordConstants import (
     general_channel_id,
-    meta_editing_channel_id,
+    ai_safety_questions_channel_id,
 )
 from modules.module import Module, Response
 from utilities.utilities import (
@@ -415,15 +415,16 @@ class Questions(Module):
     def is_time_for_autopost_wip(self) -> bool:
         now = datetime.now()
         return (
-            now.weekday() in (0, 2, 4)  # Monday, Wednesday, or Friday
+            now.weekday() in (0, 4)  # Monday or Friday
             and 8 <= now.hour <= 12  # between 08:00 and 12:00
             and self.last_wip_autopost_attempt_date
             != now.date()  # Wasn't posted today yet
         )
 
-    async def last_msg_in_meta_editing_was_autoposted(self) -> bool:
+    async def last_msg_in_ai_safety_questions_was_autoposted(self) -> bool:
         channel = cast(
-            TextChannel, self.utils.client.get_channel(int(meta_editing_channel_id))
+            TextChannel,
+            self.utils.client.get_channel(int(ai_safety_questions_channel_id)),
         )
         async for msg in channel.history(limit=1):
             if msg.content.startswith(self.AUTOPOST_STAGNANT_MSG_PREFIX):
@@ -436,7 +437,7 @@ class Questions(Module):
         today = date.today()
         self.last_wip_autopost_attempt_date = today
 
-        if await self.last_msg_in_meta_editing_was_autoposted():
+        if await self.last_msg_in_ai_safety_questions_was_autoposted():
             self.log.info(
                 self.class_name,
                 msg="Last message in `#meta-editing` was one or more autoposted WIP question(s) -> skipping autoposting",
@@ -475,7 +476,8 @@ class Questions(Module):
             self.coda_api.last_question_id = questions[0]["id"]
 
         channel = cast(
-            TextChannel, self.utils.client.get_channel(int(meta_editing_channel_id))
+            TextChannel,
+            self.utils.client.get_channel(int(ai_safety_questions_channel_id)),
         )
         current_time = datetime.now()
         msg = self.AUTOPOST_STAGNANT_MSG_PREFIX + "\n\n"
