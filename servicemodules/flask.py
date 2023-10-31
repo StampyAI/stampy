@@ -1,6 +1,6 @@
 from flask import Response as FlaskResponse
 from collections.abc import Iterable
-from config import TEST_RESPONSE_PREFIX, maximum_recursion_depth
+from config import TEST_RESPONSE_PREFIX, maximum_recursion_depth, flask_port, flask_address
 from flask import Flask, request
 from modules.module import Response
 from structlog import get_logger
@@ -46,29 +46,51 @@ class FlaskHandler(threading.Thread):
         Keys are currently defined in utilities.flaskutils
         """
         if request.is_json:
-            message = request.get_json()
-            message[
-                "content"
-            ] += " s"  # This plus s should make it always trigger the is_at_me functions.
+            message = FlaskMessage.from_dict(request.get_json())
+        elif request.form:
+            message = FlaskMessage.from_dict(request.form)
         else:
-            content = (
-                request.form.get("content") + " s"
-            )  # This plus s should make it always trigger the is_at_me functions.
-            key = request.form.get("key")
-            modules = json.loads(
-                request.form.get("modules", json.dumps(list(self.modules.keys())))
-            )
-            message = {"content": content, "key": key, "modules": modules}
-        response = self.on_message(FlaskMessage(message))
+            return FlaskResponse("No data provided - aborting", 400)
+
+        try:
+            response = self.on_message(message)
+        except Exception as e:
+            response = FlaskResponse(str(e), 400)
+
         log.debug(class_name, response=response, type=type(response))
         return response
 
     def process_list_modules(self) -> FlaskResponse:
         return FlaskResponse(json.dumps(list(self.modules.keys())))
 
+    def _module_responses(self, message):
+        if message.modules is None:
+            message.modules = list(self.modules.keys())
+        elif not message.modules:
+            raise LookupError('No modules specified')
+
+        responses = [Response()]
+        for key, module in self.modules.items():
+            if key not in message.modules:
+                log.info(class_name, msg=f"# Skipping module: {key}")
+                continue  # Skip this module if it's not requested.
+
+            log.info(class_name, msg=f"# Asking module: {module}")
+            response = module.process_message(message)
+            if response:
+                response.module = module
+                if response.callback:
+                    response.confidence -= 0.001
+                responses.append(response)
+        return responses
+
     def on_message(self, message: FlaskMessage) -> FlaskResponse:
         if is_test_message(message.content) and self.utils.test_mode:
             log.info(class_name, type="TEST MESSAGE", message_content=message.content)
+        elif self.utils.stampy_is_author(message):
+            for module in self.modules.values():
+                module.process_message_from_stampy(message)
+            return FlaskResponse("ok - if that's what I said", 200)
 
         log.info(
             class_name,
@@ -80,19 +102,7 @@ class FlaskHandler(threading.Thread):
             message_content=message.content,
         )
 
-        responses = [Response()]
-        for key in self.modules:
-            if message.modules and key not in message.modules:
-                log.info(class_name, msg=f"# Skipping module: {key}")
-                continue  # Skip this module if it's not requested.
-            module = self.modules[key]
-            log.info(class_name, msg=f"# Asking module: {module}")
-            response = module.process_message(message)
-            if response:
-                response.module = module
-                if response.callback:
-                    response.confidence -= 0.001
-                responses.append(response)
+        responses = self._module_responses(message)
 
         for i in range(maximum_recursion_depth):
             responses = sorted(responses, key=(lambda x: x.confidence), reverse=True)
@@ -100,10 +110,10 @@ class FlaskHandler(threading.Thread):
             for response in responses:
                 args_string = ""
                 if response.callback:
-                    args_string = ", ".join([a.__repr__() for a in response.args])
+                    args_string = ", ".join([repr(a) for a in response.args])
                     if response.kwargs:
                         args_string += ", " + ", ".join(
-                            [f"{k}={v.__repr__()}" for k, v in response.kwargs.items()]
+                            [f"{k}={repr(v)}" for k, v in response.kwargs.items()]
                         )
                 log.info(
                     class_name,
@@ -159,7 +169,7 @@ class FlaskHandler(threading.Thread):
         app.add_url_rule(
             "/list_modules", view_func=self.process_list_modules, methods=["GET"]
         )
-        app.run(host="0.0.0.0", port=2300, debug=False)
+        app.run(host=flask_address, port=flask_port)
 
     def stop(self):
         exit()

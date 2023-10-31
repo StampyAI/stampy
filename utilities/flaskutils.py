@@ -1,9 +1,10 @@
-from servicemodules.serviceConstants import Services
-from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
-from typing import TYPE_CHECKING
+import json
 import threading
 import time
-
+from typing import TYPE_CHECKING
+from utilities.serviceutils import ServiceUser, ServiceServer, ServiceChannel, ServiceMessage
+from servicemodules.serviceConstants import Services
+from servicemodules.discordConstants import wiki_feed_channel_id
 
 if TYPE_CHECKING:
     from servicemodules.flask import FlaskHandler
@@ -47,8 +48,7 @@ def kill_thread(event: threading.Event, thread: "FlaskHandler"):
 
 class FlaskUser(ServiceUser):
     def __init__(self, key: str):
-        id = str(key)
-        super().__init__("User", "User", id)
+        super().__init__("User", "User", str(key))
 
 
 class FlaskServer(ServiceServer):
@@ -59,15 +59,37 @@ class FlaskServer(ServiceServer):
 
 
 class FlaskChannel(ServiceChannel):
-    def __init__(self, server: FlaskServer):
-        super().__init__("Web Interface", "flask_api", server)
+    def __init__(self, server: FlaskServer, channel=None):
+        super().__init__("Web Interface", channel or "flask_api", server)
 
 
 class FlaskMessage(ServiceMessage):
-    def __init__(self, msg):
-        self._message = msg
-        server = FlaskServer(msg["key"])
-        id = str(time.time())
-        service = Services.FLASK
-        super().__init__(id, msg["content"], FlaskUser(msg["key"]), FlaskChannel(server), service)
-        self.modules = msg["modules"]
+
+    @staticmethod
+    def from_dict(data):
+        key = data.get('key')
+        if not key:
+            raise ValueError('No key provided')
+
+        # FIXME: A very hacky way of allowing HTTP requests to claim to come from stampy
+        author = data.get('author')
+        if author == 'stampy':
+            author = FlaskUser(wiki_feed_channel_id)
+        else:
+            author = FlaskUser(key)
+
+        modules = data.get('modules')
+        if not modules:
+            raise ValueError('No modules provided')
+        if isinstance(modules, str):
+            modules = json.loads(modules)
+
+        msg = FlaskMessage(
+            content=data['content'],
+            service=Services.FLASK,
+            author=author,
+            channel=FlaskChannel(FlaskServer(key), data.get('channel')),
+            id=str(time.time()),
+        )
+        msg.modules = modules
+        return msg

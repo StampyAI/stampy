@@ -44,12 +44,11 @@ def get_stampy_modules() -> dict[str, Module]:
     loaded_module_filenames = set()
 
     # filenames of modules that were skipped because not enabled
-    skipped_module_filenames = set(ALL_STAMPY_MODULES - enabled_modules)
+    skipped_module_filenames = ALL_STAMPY_MODULES - enabled_modules
+    if invalid_modules := enabled_modules - ALL_STAMPY_MODULES:
+        raise AssertionError(f"Non existent modules enabled!: {', '.join(invalid_modules)}")
 
     for filename in enabled_modules:
-        if filename not in ALL_STAMPY_MODULES:
-            raise AssertionError(f"Module {filename} enabled but doesn't exist!")
-
         log.info("import", filename=filename)
         mod = __import__(f"modules.{filename}", fromlist=[filename])
         log.info("import", module_name=mod)
@@ -60,7 +59,7 @@ def get_stampy_modules() -> dict[str, Module]:
             # try instantiating it if it is a `Module`...
             if isinstance(cls, type) and issubclass(cls, Module) and cls is not Module:
                 log.info("import Module Found", module_name=attr_name)
-                # unless it has a classmethod is_available, which in this particular situation returns False
+                # unless it has a staticmethod is_available, which in this particular situation returns False
                 if (
                     (is_available := getattr(cls, "is_available", None))
                     and callable(is_available)

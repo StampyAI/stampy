@@ -1,5 +1,6 @@
 import os
 from typing import Literal, TypeVar, Optional, Union, cast, get_args, overload, Any, Tuple
+from pathlib import Path
 
 import dotenv
 from structlog import get_logger
@@ -10,16 +11,15 @@ log = get_logger()
 dotenv.load_dotenv()
 NOT_PROVIDED = "__NOT_PROVIDED__"
 
-module_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules")
+module_dir = Path(__file__).parent / 'modules'
 
 
 def get_all_modules() -> frozenset[str]:
-    modules = set()
-    for file_name in os.listdir(module_dir):
-        if file_name.endswith(".py") and file_name not in ("__init__.py", "module.py"):
-            modules.add(file_name[:-3])
-
-    return frozenset(modules)
+    return frozenset({
+        filename.stem
+        for filename in module_dir.glob('*.py')
+        if filename.suffix == '.py' and filename.name not in ('__init__.py', 'module.py')
+    })
 
 
 ALL_STAMPY_MODULES = get_all_modules()
@@ -47,8 +47,7 @@ def getenv(env_var: str, default = NOT_PROVIDED) -> str:
 
 
 def getenv_bool(env_var: str) -> bool:
-    e = getenv(env_var, default="UNDEFINED")
-    return e != "UNDEFINED"
+    return getenv(env_var, default="UNDEFINED") != "UNDEFINED"
 
 
 # fmt:off
@@ -64,12 +63,12 @@ def getenv_unique_set(var_name: str, default: T) -> Union[frozenset[str], T]:...
 
 
 def getenv_unique_set(var_name: str, default: T = frozenset()) -> Union[frozenset, T]:
-    l = getenv(var_name, default="EMPTY_SET").split(" ")
-    if l == ["EMPTY_SET"]:
+    var = getenv(var_name, default='')
+    if not var.strip():
         return default
-    s = frozenset(l)
-    assert len(l) == len(s), f"{var_name} has duplicate members! {l}"
-    return s
+    items = var.split()
+    assert len(items) == len(set(items)), f"{var_name} has duplicate members! {sorted(items)}"
+    return frozenset(items)
 
 
 maximum_recursion_depth = 30
@@ -149,6 +148,11 @@ llm_prompt: str
 be_shy: bool
 channel_whitelist: Optional[frozenset[str]]
 disable_prompt_moderation: bool
+
+## Flask settings
+if flask_port := getenv('FLASK_PORT', '2300'):
+    flask_port = int(flask_port)
+flask_address = getenv('FLASK_ADDRESS', "0.0.0.0")
 
 is_rob_server = getenv_bool("IS_ROB_SERVER")
 if is_rob_server:

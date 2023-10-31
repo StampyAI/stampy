@@ -135,13 +135,14 @@ class Utilities:
         return self.is_stampy(message.author)
 
     def is_stampy(self, user: ServiceUser) -> bool:
-        if (
-            user.id == wiki_feed_channel_id
-        ):  # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
+        if not user:
+            return False
+        # consider wiki-feed ID as stampy to ignore -- is it better to set a wiki user?
+        if user.id == wiki_feed_channel_id:
             return True
         if self.discord_user:
             return user == self.discord_user
-        if user.id == str(cast(discord.ClientUser, self.client.user).id):
+        if self.client.user and user.id == str(cast(discord.ClientUser, self.client.user).id):
             self.discord_user = user
             return True
         return False

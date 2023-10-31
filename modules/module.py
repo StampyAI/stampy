@@ -255,10 +255,7 @@ class Module:
             )
             at_me = True
 
-        if at_me:
-            return text
-        else:
-            return False
+        return at_me and text
 
     def get_guild_and_invite_role(self):
         return get_guild_and_invite_role()
