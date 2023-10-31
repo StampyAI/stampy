@@ -140,38 +140,39 @@ class ChatGPTModule(Module):
         else:
             im = default_italics_mark
 
-        if self.openai.is_channel_allowed(message):
-            if self.openai.is_text_risky(message.clean_content):
-                return Response(
-                    confidence=0,
-                    text="",
-                    why="GPT-3's content filter thought the prompt was risky",
-                )
-            self.log.info(
-                self.class_name,
-                msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})",
-            )
-            chatcompletion = cast(
-                OpenAIObject,
-                openai.ChatCompletion.create(model=str(engine), messages=messages),
-            )
-            print(chatcompletion)
-            if chatcompletion.choices:
-                response = chatcompletion.choices[0].message.content
-
-                # sometimes the response starts with "Stampy says:" or responds or replies etc, which we don't want
-                response = re.sub(r"^[sS]tampy\ ?[a-zA-Z]{,15}:\s?", "", response)
-
-                self.log.info(self.class_name, response=response)
-
-                if response:
-                    return Response(
-                        confidence=10,
-                        text=f"{im}{response}{im}",
-                        why="ChatGPT made me say it!",
-                    )
-        else:
+        if not self.openai.is_channel_allowed(message):
             self.log.info(self.class_name, msg="channel not allowed")
+            return Response()
+
+        if self.openai.is_text_risky(message.clean_content):
+            return Response(
+                confidence=0,
+                text="",
+                why="GPT-3's content filter thought the prompt was risky",
+            )
+
+        self.log.info(
+            self.class_name,
+            msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})",
+        )
+        chatcompletion = cast(
+            OpenAIObject,
+            openai.ChatCompletion.create(model=str(engine), messages=messages),
+        )
+        if chatcompletion.choices:
+            response = chatcompletion.choices[0].message.content
+
+            # sometimes the response starts with "Stampy says:" or responds or replies etc, which we don't want
+            response = re.sub(r"^[sS]tampy\ ?[a-zA-Z]{,15}:\s?", "", response)
+
+            self.log.info(self.class_name, response=response)
+
+            if response:
+                return Response(
+                    confidence=10,
+                    text=f"{im}{response}{im}",
+                    why="ChatGPT made me say it!",
+                )
         return Response()
 
     def __str__(self):

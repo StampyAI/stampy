@@ -9,8 +9,8 @@ from openai.openai_object import OpenAIObject
 import openai.error as oa_error
 
 from api.openai import OpenAI, OpenAIEngines
-from config import CONFUSED_RESPONSE, openai_api_key, bot_vip_ids
-from modules.module import IntegrationTest, Module, Response
+from config import openai_api_key, bot_vip_ids
+from modules.module import Module, Response
 from utilities import Utilities
 from utilities.serviceutils import ServiceChannel, ServiceMessage
 from servicemodules.serviceConstants import service_italics_marks, default_italics_mark
@@ -95,14 +95,6 @@ class GPT3Module(Module):
         self.message_logs[message.channel] = self.message_logs[message.channel][-self.log_max_messages :]  # fmt:skip
 
     def generate_chatlog_prompt(self, channel: ServiceChannel) -> str:
-        users = set()
-        for message in self.message_logs[channel]:
-            if message.author.name != "stampy":
-                users.add(message.author.name)
-        users_string = ", ".join(users)
-        if len(users) > 1:
-            users_string += ","
-
         chatlog_string = self.generate_chatlog(channel)
 
         prompt = (
@@ -166,6 +158,7 @@ class GPT3Module(Module):
         return engine.tokenizer(data)["input_ids"][0]  # type:ignore
 
     def get_engine(self, message: ServiceMessage) -> Optional[OpenAIEngines]:
+        print('getting enginr', self.openai, self.openai.is_channel_allowed(message))
         if self.openai and self.openai.is_channel_allowed(message):
             return self.openai.get_engine(message)
 
@@ -175,6 +168,7 @@ class GPT3Module(Module):
 
         engine = self.get_engine(message)
         if not engine:
+            print('no engine')
             return Response()
 
         prompt = self.generate_chatlog_prompt(message.channel)
