@@ -25,7 +25,7 @@ LOG_MAX_MESSAGES = 15  # don't store more than X messages back
 DATA_HEADER = 'data: '
 
 STAMPY_CHAT_ENDPOINT = "https://chat.stampy.ai:8443/chat"
-NLP_SEARCH_ENDPOINT = "https://stampy-nlp-t6p37v2uia-uw.a.run.app/"
+NLP_SEARCH_ENDPOINT = "https://nlp.stampy.ai"
 
 STAMPY_ANSWER_MIN_SCORE = 0.75
 STAMPY_CHAT_MIN_SCORE = 0.4
