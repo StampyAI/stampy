@@ -139,7 +139,6 @@ member_role_id: Optional[str]
 valid_bot_reboot_options = Literal["exec", False]
 bot_reboot: valid_bot_reboot_options
 paid_service_all_channels: bool
-paid_service_channel_ids: frozenset
 paid_service_for_all: bool
 paid_service_whitelist_role_ids: frozenset
 gpt4: bool
@@ -197,15 +196,27 @@ if is_rob_server:
     bot_reboot = cast(valid_bot_reboot_options, False)
     paid_service_for_all = True
     paid_service_all_channels = True
-    paid_service_channel_ids = frozenset()
+
     # NOTE: rob's approved stuff are in servicemodules/serviceConstants.py
+    from servicemodules import discordConstants
     paid_service_whitelist_role_ids = frozenset()
-    gpt4 = getenv_bool("GPT4")
-    gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
-    gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
-    use_helicone = getenv_bool("USE_HELICONE")
-    llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
-    be_shy = getenv_bool("BE_SHY")
+    openai_allowed_sources: dict[str, tuple[str, ...]] = {
+        "Discord": (
+            discordConstants.stampy_dev_priv_channel_id,
+            discordConstants.aligned_intelligences_only_channel_id,
+            discordConstants.ai_channel_id,
+            discordConstants.not_ai_channel_id,
+            discordConstants.events_channel_id,
+            discordConstants.projects_channel_id,
+            discordConstants.book_club_channel_id,
+            discordConstants.dialogues_with_stampy_channel_id,
+            discordConstants.meta_channel_id,
+            discordConstants.general_channel_id,
+            discordConstants.talk_to_stampy_channel_id,
+        ),
+        "Flask": ("flask_api",),
+    }
+
     channel_whitelist = None
     bot_error_channel_id = {
             "production": "1017527224540344380",
@@ -222,27 +233,34 @@ else:
     bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
     bot_dev_ids = getenv_unique_set("BOT_DEV_IDS", frozenset())
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
-    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID")
+    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", '')
     bot_error_channel_id = getenv("BOT_ERROR_CHANNEL_ID", bot_private_channel_id)
     # NOTE: Rob's invite/member management functions, not ported yet
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
     bot_reboot = cast(valid_bot_reboot_options, getenv("BOT_REBOOT", default=False))
     paid_service_all_channels = getenv_bool("PAID_SERVICE_ALL_CHANNELS")
-    paid_service_channel_ids = getenv_unique_set(
-        "PAID_SERVICE_CHANNEL_IDS", frozenset()
-    )
+    openai_allowed_sources: dict[str, tuple[str, ...]] = {
+        "Discord": tuple(getenv_unique_set("PAID_SERVICE_CHANNEL_IDS", frozenset())),
+        "Flask": {
+            'production': tuple(),
+            'development': ("flask_api",)
+        }[ENVIRONMENT_TYPE],
+    }
+
     paid_service_for_all = getenv_bool("PAID_SERVICE_FOR_ALL")
     paid_service_whitelist_role_ids = getenv_unique_set(
         "PAID_SERVICE_ROLE_IDS", frozenset()
     )
-    gpt4 = getenv_bool("GPT4")
-    gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
-    gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
-    use_helicone = getenv_bool("USE_HELICONE")
-    llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
-    be_shy = getenv_bool("BE_SHY")
+
     channel_whitelist = getenv_unique_set("CHANNEL_WHITELIST", None)
     disable_prompt_moderation = getenv_bool("DISABLE_PROMPT_MODERATION")
+
+gpt4 = getenv_bool("GPT4")
+gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
+gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
+use_helicone = getenv_bool("USE_HELICONE")
+llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
+be_shy = getenv_bool("BE_SHY")
 
 discord_token: str = getenv("DISCORD_TOKEN")
 database_path: str = getenv("DATABASE_PATH")
