@@ -126,7 +126,7 @@ class OpenAI:
             self.log.debug(self.class_name, msg=f"OpenAI moderation response: {json.dumps(response)}")
             return True
 
-        self.log.info(self.class_name, msg=f"Checked with content filter, it says the text looks clean")
+        self.log.info(self.class_name, msg="Checked with content filter, it doesn't violate any of our categories")
         return False
 
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
