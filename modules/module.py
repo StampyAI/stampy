@@ -243,6 +243,8 @@ class Module:
                 r",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", r"\g<punctuation>", text
             )
             at_me = True
+        elif re.search(r'^[sS]tamp[ys]?\?', text):
+            at_me = True
 
         if message.is_dm:
             # DMs are always at you

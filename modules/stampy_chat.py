@@ -141,11 +141,26 @@ class StampyChat(Module):
         self._messages[message.channel].append(message)
         return self._messages[message.channel]
 
+    def make_query(self, messages):
+        if not messages:
+            return '', messages
+
+        current = messages[-1]
+        query, history = '', list(messages)
+        while message := (history and history.pop()):
+            if message.author != current.author:
+                break
+            query = message.content + ' ' + query
+            current = message
+        return query, history
+
     def process_message(self, message: ServiceMessage) -> Response:
         history = self._add_message(message)
-        history.append(message)
 
-        query = message.content
+        if not self.is_at_me(message):
+            return Response()
+
+        query, history = self.make_query(history)
         nlp = top_nlp_search(query)
         if nlp.get('score', 0) > STAMPY_ANSWER_MIN_SCORE and nlp.get('status') == 'Live on site':
             return Response(confidence=5, text=f'Check out {nlp.get("url")} ({nlp.get("title")})')

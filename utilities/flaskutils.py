@@ -92,4 +92,5 @@ class FlaskMessage(ServiceMessage):
             id=str(time.time()),
         )
         msg.modules = modules
+        msg.clean_content = msg.content
         return msg
