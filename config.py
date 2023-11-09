@@ -237,7 +237,7 @@ else:
     bot_dev_roles = getenv_unique_set("BOT_DEV_ROLES", frozenset())
     bot_dev_ids = getenv_unique_set("BOT_DEV_IDS", frozenset())
     bot_control_channel_ids = getenv_unique_set("BOT_CONTROL_CHANNEL_IDS", frozenset())
-    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID", '')
+    bot_private_channel_id = getenv("BOT_PRIVATE_CHANNEL_ID")
     bot_error_channel_id = getenv("BOT_ERROR_CHANNEL_ID", bot_private_channel_id)
     # NOTE: Rob's invite/member management functions, not ported yet
     member_role_id = getenv("MEMBER_ROLE_ID", default=None)
