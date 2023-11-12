@@ -47,13 +47,15 @@ discordLimit = 20000
 
 
 # TODO: store long responses temporarily for viewing outside of discord
-def limit_text_and_notify(response: Response, why_traceback: list[str]) -> str:
+def limit_text_and_notify(response: Response, why_traceback: list[str]) -> Union[str, Iterable]:
     if isinstance(response.text, str):
         wastrimmed = False
         wastrimmed, text_to_return = limit_text(response.text, discordLimit)
         if wastrimmed:
             why_traceback.append(f"I had to trim the output from {response.module}")
         return text_to_return
+    elif isinstance(response.text, (list, tuple)):
+        return response.text
     return ""
 
 

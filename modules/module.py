@@ -243,6 +243,8 @@ class Module:
                 r",? @?[sS](tampy)?(?P<punctuation>[.!?]*)$", r"\g<punctuation>", text
             )
             at_me = True
+        elif re.search(r'^[sS]tamp[ys]?\?', text):
+            at_me = True
 
         if message.is_dm:
             # DMs are always at you
@@ -255,10 +257,7 @@ class Module:
             )
             at_me = True
 
-        if at_me:
-            return text
-        else:
-            return False
+        return at_me and text
 
     def get_guild_and_invite_role(self):
         return get_guild_and_invite_role()

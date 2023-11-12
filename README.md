@@ -61,6 +61,7 @@ You'll need at least these:
 - `DISCORD_GUILD`: your server ID
 - `DATABASE_PATH`: the path to the Q&A database (normally in `./database/stampy.db`).
 - `STAMPY_MODULES`: list of your desired modules, or leave unset to load all modules in the `./modules/` directory. You probably don't want all, as some of them aren't applicable to servers other than Rob's.
+- `BOT_PRIVATE_CHANNEL_ID`: single channel where private Stampy status updates and info are sent
 
 Not required:
 
@@ -68,7 +69,6 @@ Not required:
 - `BOT_DEV_ROLES`: list of roles representing bot devs.
 - `BOT_DEV_IDS`: list of user ids of bot devs. You may want to include `BOT_VIP_IDS` here.
 - `BOT_CONTROL_CHANNEL_IDS`: list of channels where control commands are accepted.
-- `BOT_PRIVATE_CHANNEL_ID`: single channel where private Stampy status updates are sent
 - `BOT_ERROR_CHANNEL_ID`: (defaults to private channel) low level error tracebacks from Python. with this variable they can be shunted to a seperate channel.
 - `CODA_API_TOKEN`: token to access Coda. Without it, modules `Questions` and `QuestionSetter` will not be available and `StampyControls` will have limited functionality.
 - `BOT_REBOOT`: how Stampy reboots himself. Unset, he only quits, expecting an external `while true` loop (like in `runstampy`/Dockerfile). Set to `exec` he will try to relaunch himself from his own CLI arguments.
