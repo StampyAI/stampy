@@ -291,7 +291,8 @@ class DiscordHandler:
                                     sent.append(await message.channel.send(chunk))
                             elif isinstance(top_response.text, Iterable):
                                 for chunk in top_response.text:
-                                    sent.append(await message.channel.send(chunk))
+                                    if chunk:
+                                        sent.append(await message.channel.send(chunk))
                             why_traceback.append("Responded with that response!")
                             for m in sent:
                                 self.messages[str(m.id)] = {

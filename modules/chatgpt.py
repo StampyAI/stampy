@@ -155,24 +155,27 @@ class ChatGPTModule(Module):
             self.class_name,
             msg=f"sending chat prompt to chatgpt, engine {engine} ({engine.description})",
         )
-        chatcompletion = cast(
-            OpenAIObject,
-            openai.ChatCompletion.create(model=str(engine), messages=messages),
-        )
-        if chatcompletion.choices:
-            response = chatcompletion.choices[0].message.content
+        try:
+            chatcompletion = cast(
+                OpenAIObject,
+                openai.ChatCompletion.create(model=str(engine), messages=messages),
+            )
+            if chatcompletion.choices:
+                response = chatcompletion.choices[0].message.content
 
-            # sometimes the response starts with "Stampy says:" or responds or replies etc, which we don't want
-            response = re.sub(r"^[sS]tampy\ ?[a-zA-Z]{,15}:\s?", "", response)
+                # sometimes the response starts with "Stampy says:" or responds or replies etc, which we don't want
+                response = re.sub(r"^[sS]tampy\ ?[a-zA-Z]{,15}:\s?", "", response)
 
-            self.log.info(self.class_name, response=response)
+                self.log.info(self.class_name, response=response)
 
-            if response:
-                return Response(
-                    confidence=10,
-                    text=f"{im}{response}{im}",
-                    why="ChatGPT made me say it!",
-                )
+                if response:
+                    return Response(
+                        confidence=10,
+                        text=f"{im}{response}{im}",
+                        why="ChatGPT made me say it!",
+                    )
+        except openai.error.Timeout:
+            pass
         return Response()
 
     def __str__(self):
