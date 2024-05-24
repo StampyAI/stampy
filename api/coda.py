@@ -51,7 +51,7 @@ class CodaAPI:
             raise Exception("Environmental variable CODA_API_TOKEN is not set")
         if CodaAPI.__instance is not None:
             raise Exception(
-                "This class is a singleton! Access it using `Utilities.get_instance()`"
+                "This class is a singleton! Access it using `CodaAPI.get_instance()`"
             )
         CodaAPI.__instance = self
         self.class_name = "Coda API"
