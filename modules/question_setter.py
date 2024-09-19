@@ -10,6 +10,7 @@ Request a review on an answer you wrote/edited
 On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@reviewer`s to give them feedback or review their changes to AI Safety Info questions. You just put one or more links to appropriate GDocs and mention one of: `@reviewer`, `@feedback`, or `@feedback-sketch`. Stampy will spot this and update their statuses in the coda table with answers appropriately.
 `@reviewer <gdoc-link(s)>` - change status to `In review`
 `@feedback <gdoc-link(s)>` - change status to `In progress`
+`@unlisted <gdoc-link(s)>` - change status to `Unlisted`
 `@feedback-sketch <gdoc-link(s)>` - change status to `Bulletpoint sketch`
 
 Review acceptance, accepted, approved, lgtm
@@ -73,7 +74,7 @@ if coda_api_token is not None:
 
 GDocLinks = list[str]
 MsgRefId = str
-ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress"]
+ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress", "Unlisted"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
 EditAction = Literal["add", "remove", "clear"]
 
@@ -203,6 +204,8 @@ class QuestionSetter(Module):
             status = "Bulletpoint sketch"
         elif "@feedback" in text:
             status = "In progress"
+        elif "@unlisted" in text:
+            status = "Unlisted"
         else:  # if neither of these three roles is mentioned, this is not a review request
             return
 
