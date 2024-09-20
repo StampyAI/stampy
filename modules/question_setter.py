@@ -764,6 +764,10 @@ class QuestionSetter(Module):
                 expected_regex="Changed status of 2 questions to `Duplicate`",
             ),
             self.create_integration_test(
+                test_message="@unlisted https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
+                expected_regex="Changed status of 2 questions to `Unlisted`",
+            ),
+            self.create_integration_test(
                 test_message="lgtm https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
                 expected_regex="2 more questions `Live on site`!",
                 test_wait_time=2,
