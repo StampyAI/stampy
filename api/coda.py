@@ -300,18 +300,6 @@ class CodaAPI:
         self.questions_df.at[question["id"], "tags"].extend(new_tags)
         self.last_question_id = question["id"]
 
-    # Alternate phrasings
-
-    def update_question_altphr(
-        self, question: QuestionRow, new_alt_phrs: list[str]
-    ) -> None:
-        self.doc.get_table(self.STAMPY_ANSWERS_API_ID).update_row(
-            question["row"], make_updated_cells({"Alternate Phrasings": new_alt_phrs})
-        )
-        self.questions_df.at[question["id"], "alternate_phrasings"].clear()
-        self.questions_df.at[question["id"], "alternate_phrasings"].extend(new_alt_phrs)
-        self.last_question_id = question["id"]
-
     ###############
     #   Finding   #
     ###############

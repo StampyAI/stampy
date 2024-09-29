@@ -33,15 +33,12 @@ Change status of a question
 `s, <set/change> <status/to/status to> <status> <gdoc-link(s)>`
 `s, <set/change> <status/to/status to> <status> question <question-title>` - change status of a question fuzzily matching that title
 
-Editing tags or alternate phrasings, Tags, Alternate phrasings, Altphr
-Add a tag or an alternate phrasing to a question (specified by title, GDocLink, or the last one)
+Editing tags, Tags
+Add a tag to a question (specified by title, GDocLink, or the last one)
 `s, <add/add tag> <tag-name> <gdoc-link(s)/question-title>` - specified by gdoc-links or question title (doesn't matter whether you put `<tag-name>` or `<gdoc-links/question-title>` first)
 `s, <tag/add tag> <tag-name>` - if you don't specify the question, Stampy assumes you refer to the last one
 `s, <delete/del/remove/rm> <tag-name> <gdoc-links/question-title>` - removing tags
 `s, clear tags <gdoc-links/question-title>` - clear all tags on a question
-`s, <altphr> "<alternate-phrasing>" <gdoc-link/question-title>` - you must put the alternate phrasing in double quotes and can do it only on one question at a time
-`s <delete/del/remove/rm> <alternate phrasing/alt> "<alternate-phrasing>" <gdoc-link/question-title>` - analogously
-`s, clear altphr` - here, on last question
 """
 from __future__ import annotations
 
@@ -102,13 +99,6 @@ class QuestionSetter(Module):
         # tag
         self.re_add_tag = re.compile(r"(add\s)?tag", re.I)
         self.re_remove_tag = re.compile(r"(delete|del|remove|rm)\stag", re.I)
-
-        # altphr
-        alt_phr_pat = "(alt|alternate|alt phrasing|alternate phrasing|alias)"
-        self.re_add_alt_phr = re.compile(r"(add )?" + alt_phr_pat, re.I)
-        self.re_remove_alt_phr = re.compile(
-            r"(delete|del|remove|rm) " + alt_phr_pat, re.I
-        )
 
         # status
         status_pat = "|".join(self.coda_api.status_shorthand_dict)
@@ -172,10 +162,6 @@ class QuestionSetter(Module):
 
         # tagging
         if response := self.parse_edit_tag(text, message):
-            return response
-
-        # alternate phrasings
-        if response := self.parse_edit_altphr(text, message):
             return response
 
         # even if message is not `at me`, it may contain GDoc links
@@ -370,9 +356,9 @@ class QuestionSetter(Module):
             why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.",
         )
 
-    #######################################################
-    #   Adding/removing tags and alternative phrasings    #
-    #######################################################
+    ############################
+    #   Adding/removing tags   #
+    ############################
 
     def parse_edit_tag(self, text: str, message: ServiceMessage) -> Optional[Response]:
         if self.re_add_tag.match(text):
@@ -394,87 +380,47 @@ class QuestionSetter(Module):
             query = "Last", "DEFAULT"
         return Response(
             confidence=10,
-            callback=self.cb_edit_tag_or_altphr,
-            args=[query, tag, message, edit_action, "tag"],
+            callback=self.cb_edit_tag,
+            args=[query, tag, message, edit_action],
         )
 
-    def parse_edit_altphr(
-        self, text: str, message: ServiceMessage
-    ) -> Optional[Response]:
-        if self.re_add_alt_phr.match(text):
-            edit_action: EditAction = "add"
-        elif self.re_remove_alt_phr.match(text):
-            edit_action = "remove"
-        elif text.startswith("clear alt"):
-            edit_action = "clear"
-        else:
-            return
-
-        if edit_action == "clear":
-            alt_phr = None
-        elif not (alt_phr := parse_alt_phr(text)):
-            return
-
-        query = parse_question_spec_query(text)
-        if query is None:
-            query = "Last", "DEFAULT"
-        return Response(
-            confidence=10,
-            callback=self.cb_edit_tag_or_altphr,
-            args=[query, alt_phr, message, edit_action, "alternate phrasing"],
-        )
-
-    async def cb_edit_tag_or_altphr(
+    async def cb_edit_tag(
         self,
         query: QuestionSpecQuery,
         val: Optional[str],  # tag or altphr (None only if edit_action == "clear")
         message: ServiceMessage,
         edit_action: EditAction,
-        tag_or_altphr: Literal["tag", "alternate phrasing"],
     ) -> Response:
         if not has_permissions(message.author):
             return Response(
                 confidence=10,
-                text=f"You don't have permissions required to edit {tag_or_altphr}s <@{message.author}>",
-                why=f"{message.author.display_name} does not have permissions edit {tag_or_altphr}s on questions",
+                text=f"You don't have permissions required to edit tags <@{message.author}>",
+                why=f"{message.author.display_name} does not have permissions edit tags on questions",
             )
 
         # inserts for generating messages
         to_from_on = {"add": "to", "remove": "from", "clear": "on"}[edit_action]
         verb_gerund = {"add": "Adding", "remove": "Removing", "clear": "Clearing"}[edit_action]  # fmt:skip
-        field = "tags" if tag_or_altphr == "tag" else "alternate_phrasings"
+        field = "tags"
         questions = await self.coda_api.query_for_questions(query, message)
 
         if not questions:
             Response(
                 confidence=10,
                 text=f"I found no questions conforming to the query\n{pformat_to_codeblock(dict([query]))}",
-                why=f"{message.author.display_name} asked me to {edit_action} {tag_or_altphr} `{val}` {to_from_on} some question(s) but I found nothing",
-            )
-        # adding/removing one altphr per many questions is not allowed
-        if (
-            len(questions) > 1
-            and edit_action != "clear"
-            and tag_or_altphr == "alternate phrasing"
-        ):
-            return Response(
-                confidence=10,
-                text=f"I don't think you want to {edit_action} the same alternate phrasing {to_from_on} {len(questions)} questions. Please, choose one.",
-                why=f"{message.author.display_name} asked me to more than one question at once which is not the way to go",
+                why=f"{message.author.display_name} asked me to {edit_action} tags `{val}` {to_from_on} some question(s) but I found nothing",
             )
 
         if edit_action != "clear":
-            msg = f"{verb_gerund} {tag_or_altphr} `{val}` {to_from_on} "
+            msg = f"{verb_gerund} tag `{val}` {to_from_on} "
         else:
-            msg = f"Clearing {tag_or_altphr}s on "
+            msg = f"Clearing tags on "
         msg += f"{len(questions)} questions" if len(questions) > 1 else "one question"
         await message.channel.send(msg)
 
         n_edited = 0
         update_method: Callable[[QuestionRow, list[str]], None] = (
             self.coda_api.update_question_tags
-            if tag_or_altphr == "tag"
-            else self.coda_api.update_question_altphr
         )
 
         if edit_action == "add":
@@ -482,56 +428,54 @@ class QuestionSetter(Module):
             for q in questions:
                 if val in q[field]:
                     await message.channel.send(
-                        f'"{q["title"]}" already has this {tag_or_altphr}'
+                        f'"{q["title"]}" already has this tag'
                     )
                 else:
                     update_method(q, q[field] + [val])
                     n_edited += 1
                     await message.channel.send(
-                        f'Added {tag_or_altphr} `{val}` to "{q["title"]}"'
+                        f'Added tag `{val}` to "{q["title"]}"'
                     )
         elif edit_action == "remove":
             for q in questions:
                 if val not in q[field]:
                     await message.channel.send(
-                        f'"{q["title"]}" doesn\'t have this {tag_or_altphr}'
+                        f'"{q["title"]}" doesn\'t have this tag'
                     )
                 else:
                     new_tags = [t for t in q[field] if t != val]
                     update_method(q, new_tags)
                     n_edited += 1
                     await message.channel.send(
-                        f'Removed {tag_or_altphr} `{val}` from "{q["title"]}"'
+                        f'Removed tag `{val}` from "{q["title"]}"'
                     )
         else:  # clear
             for q in questions:
                 if not q[field]:
                     await message.channel.send(
-                        f'"{q["title"]}" already has no {tag_or_altphr}s'
+                        f'"{q["title"]}" already has no tags'
                     )
                 else:
                     update_method(q, [])
                     n_edited += 1
                     await message.channel.send(
-                        f'Cleared {tag_or_altphr}s on "{q["title"]}"'
+                        f'Cleared tags on "{q["title"]}"'
                     )
 
         if n_edited == 0:
             response_text = "No questions were modified"
         elif edit_action == "clear":
-            response_text = f"Cleared {tag_or_altphr}s on {n_edited} questions"
+            response_text = f"Cleared tags on {n_edited} questions"
         else:
             response_text = "Added" if edit_action == "add" else "Removed"
-            response_text += f" {tag_or_altphr} `{val}` {to_from_on} "
+            response_text += f" tag `{val}` {to_from_on} "
             response_text += f"{n_edited} questions" if n_edited > 1 else "one question"
 
         why = f"{message.author.display_name} asked me to {edit_action} "
         if edit_action == "clear":
-            why += f"{tag_or_altphr}s"
-        elif tag_or_altphr == "tag":
-            why += "a tag"
+            why += "tags"
         else:
-            why += "an alternate question"
+            why += "a tag"
 
         return Response(confidence=10, text=response_text, why=why)
 
@@ -674,7 +618,6 @@ class QuestionSetter(Module):
         if ENVIRONMENT_TYPE != "development":
             return []
 
-        test_altphr = "TEST_ALTERNATE_PHRASING"
         return [
             ############
             #   Tags   #
@@ -708,46 +651,6 @@ class QuestionSetter(Module):
             self.create_integration_test(
                 test_message="add tag open problem",
                 expected_regex="Added tag `Open Problem` to one question",
-            ),
-            ###########################
-            #   Alternate phrasings   #
-            ###########################
-            self.create_integration_test(
-                test_message=f'alt "{test_altphr}" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
-                expected_regex=f"Added alternate phrasing `{test_altphr}` to one question",
-                test_wait_time=1,
-            ),
-            self.create_integration_test(
-                test_message=f'alt "{test_altphr}" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
-                expected_regex="No questions were modified",
-                test_wait_time=1,
-            ),
-            self.create_integration_test(
-                test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
-                expected_regex=f"Removed alternate phrasing `{test_altphr}` from one question",
-                test_wait_time=2,
-            ),
-            self.create_integration_test(
-                test_message=f'rm alt "{test_altphr}" from https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit',
-                expected_regex="No questions were modified",
-                test_wait_time=2,
-            ),
-            self.create_integration_test(
-                test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit",
-                expected_regex="No questions were modified",
-                test_wait_time=1,
-            ),
-            self.create_integration_test(
-                test_message='add alt "XYZ" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit',
-                expected_regex="I don't think you want",
-            ),
-            self.create_integration_test(
-                test_message='rm alt "XYZ" https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit',
-                expected_regex="I don't think you want",
-            ),
-            self.create_integration_test(
-                test_message="clear alt https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
-                expected_regex="No questions were modified",
             ),
             ##############
             #   Status   #
