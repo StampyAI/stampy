@@ -71,7 +71,7 @@ if coda_api_token is not None:
 
 GDocLinks = list[str]
 MsgRefId = str
-ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress", "Unlisted"]
+ReviewStatus = Literal["Bulletpoint sketch", "In progress", "Unlisted"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
 EditAction = Literal["add", "remove", "clear"]
 
