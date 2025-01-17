@@ -8,7 +8,7 @@ Changing status (in future perhaps also other attributes) of questions in Coda.
 Review request, @reviewer, @feedback, @feedback-sketch
 Request a review on an answer you wrote/edited
 On Rob Miles's Discord server, an `@editor` can ask other `@editor`s and `@reviewer`s to give them feedback or review their changes to AI Safety Info questions. You just put one or more links to appropriate GDocs and mention one of: `@reviewer`, `@feedback`, or `@feedback-sketch`. Stampy will spot this and update their statuses in the coda table with answers appropriately.
-`@reviewer <gdoc-link(s)>` - change status to `In review`
+`@reviewer <gdoc-link(s)>` - tag the article as `In review`
 `@feedback <gdoc-link(s)>` - change status to `In progress`
 `@unlisted <gdoc-link(s)>` - change status to `Unlisted`
 `@feedback-sketch <gdoc-link(s)>` - change status to `Bulletpoint sketch`
@@ -71,7 +71,7 @@ if coda_api_token is not None:
 
 GDocLinks = list[str]
 MsgRefId = str
-ReviewStatus = Literal["In review", "Bulletpoint sketch", "In progress", "Unlisted"]
+ReviewStatus = Literal["Bulletpoint sketch", "In progress", "Unlisted"]
 MarkingStatus = Literal["Marked for deletion", "Duplicate"]
 EditAction = Literal["add", "remove", "clear"]
 
@@ -183,9 +183,20 @@ class QuestionSetter(Module):
         """
         text = message.clean_content
 
+        # try parsing gdoc links and questions that have these gdoc links
+        # if you fail, assume this is not a review request
+        if not (gdoc_links := parse_gdoc_links(text)):
+            return
+        self.msg_id2gdoc_links[message.id] = gdoc_links
+        
         # get new status for questions
         if "@reviewer" in text:
-            status = "In review"
+            query = ("GDocLinks", gdoc_links)
+            return Response(
+                confidence=10,
+                callback=self.cb_edit_tag,
+                args=[query, "in-review", message, "add"],
+            )
         elif "@feedback-sketch" in text:
             status = "Bulletpoint sketch"
         elif "@feedback" in text:
@@ -194,12 +205,6 @@ class QuestionSetter(Module):
             status = "Unlisted"
         else:  # if neither of these three roles is mentioned, this is not a review request
             return
-
-        # try parsing gdoc links and questions that have these gdoc links
-        # if you fail, assume this is not a review request
-        if not (gdoc_links := parse_gdoc_links(text)):
-            return
-        self.msg_id2gdoc_links[message.id] = gdoc_links
 
         return Response(
             confidence=10,

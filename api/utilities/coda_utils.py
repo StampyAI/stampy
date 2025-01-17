@@ -63,10 +63,9 @@ class QuestionRow(TypedDict):
 # Status of question in coda table
 QuestionStatus = Literal[
     "Bulletpoint sketch",
-    "Duplicate",
     "Dormant",
     "In progress",
-    "In review",
+    "Unlisted"
     "Live on site",
     "Marked for deletion",
     "Not started",
@@ -85,5 +84,5 @@ QUESTION_STATUS_ALIASES: dict[str, QuestionStatus] = {
 REVIEW_STATUSES: set[QuestionStatus] = {
     "Bulletpoint sketch",
     "In progress",
-    "In review",
+    "Unlisted",
 }
