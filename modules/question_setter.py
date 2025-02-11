@@ -358,10 +358,23 @@ class QuestionSetter(Module):
             msg = "One more question `Live on site`!"
         else:
             msg = f"{n_new_los} more questions `Live on site`!"
+
+        why = f"I set {n_new_los} questions to `Live on site` because {message.author} approved them."
+
+        if n_new_los > 0:
+            # Remove in-review tag after setting to Live on site
+            return Response(
+                confidence=10,
+                callback=self.cb_edit_tag,
+                args=[("GDocLinks", gdoc_links), "in-review", message, "remove"],
+                text=msg,
+                why=why,
+            )
+
         return Response(
             confidence=10,
             text=msg,
-            why=f"I set {n_new_los} questions to `Live on site` because {message.author} approved them.",
+            why=why,
         )
 
     ############################
