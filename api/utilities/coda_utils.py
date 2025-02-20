@@ -77,7 +77,6 @@ QUESTION_STATUS_ALIASES: dict[str, QuestionStatus] = {
     "bulletpoint": "Bulletpoint sketch",
     "del": "Marked for deletion",
     "deleted": "Marked for deletion",
-    "duplicated": "Duplicate",
     "published": "Live on site",
 }
 

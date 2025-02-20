@@ -23,10 +23,10 @@ The keywords are (case-insensitive):
   - stands for "looks good to me"
 
 
-Mark for deletion or as duplicate, del, dup, deletion, duplicate
-Change status of questions to `Marked for deletion` or `Duplicate`
+Mark for deletion or as del, deletion
+Change status of questions to `Marked for deletion`
 `s, del <gdoc-link(s)>` - change status to `Marked for deletion`
-`s, dup <gdoc-link(s)>` - change status to `Duplicate`
+
 
 Set question status, Status
 Change status of a question
@@ -72,7 +72,7 @@ if coda_api_token is not None:
 GDocLinks = list[str]
 MsgRefId = str
 ReviewStatus = Literal["Bulletpoint sketch", "In progress", "Unlisted"]
-MarkingStatus = Literal["Marked for deletion", "Duplicate"]
+MarkingStatus = Literal["Marked for deletion"]
 EditAction = Literal["add", "remove", "clear"]
 
 
@@ -156,7 +156,7 @@ class QuestionSetter(Module):
             return Response()
 
         # setting question status
-        if response := self.parse_mark_question_del_dup(text, message):
+        if response := self.parse_mark_question_del(text, message):
             return response
         if response := self.parse_set_question_status(text, message):
             return response
@@ -504,16 +504,13 @@ class QuestionSetter(Module):
     #   Setting question status   #
     ###############################
 
-    def parse_mark_question_del_dup(
+    def parse_mark_question_del(
         self, text: str, message: ServiceMessage
     ) -> Optional[Response]:
-        """Somebody is tring to mark one or more questions for deletion
-        or as duplicates.
+        """Somebody is tring to mark one or more questions for deletion.
         """
         if text.startswith("del "):
             status = "Marked for deletion"
-        elif text.startswith("dup "):
-            status = "Duplicate"
         else:
             return
         if not (spec := parse_question_spec_query(text)):
@@ -573,18 +570,12 @@ class QuestionSetter(Module):
             )
             return Response(confidence=10, text=response_text, why=why)
 
-        # Different response if triggered with `s, del` or `s, dup`
-        if text[:3] in ("del", "dup"):
+        # Different response if triggered with `s, del`
+        if text[:3] == "del":
             msg = f"Ok, <@{message.author}>, I'll mark " + (
-                "it" if len(questions) == 1 else "them"
+                "it" if len(questions) == 1 else "them" +
+                " for deletion."
             )
-            if status == "Marked for deletion":
-                msg += " for deletion."
-            else:
-                if len(questions) == 1:
-                    msg += " as a duplicate."
-                else:
-                    msg += " as duplicates."
         else:
             msg = (
                 f"Ok, <@{message.author}>, setting status of "
@@ -679,10 +670,6 @@ class QuestionSetter(Module):
             self.create_integration_test(
                 test_message="del https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
                 expected_regex="Changed status of 2 questions to `Marked for deletion`",
-            ),
-            self.create_integration_test(
-                test_message="dup https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
-                expected_regex="Changed status of 2 questions to `Duplicate`",
             ),
             self.create_integration_test(
                 test_message="@unlisted https://docs.google.com/document/d/1vg2kUNaMcQA2lB9zvJTn9npqVS-pkquLeODG7eVOyWE/edit https://docs.google.com/document/d/1KOHkRf1TCwB3x1OSUPOVKvUMvUDZPlOII4Ycrc0Aynk/edit",
