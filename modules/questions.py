@@ -1,5 +1,5 @@
 """
-Querying question database. This module also autoposts questions with status `Not started` to `#general` every 24 hours.
+Querying question database.
 
 How many questions, Count questions
 Count questions, optionally queried by status and/or tag
@@ -24,22 +24,18 @@ Refresh bot's questions cache so that it's in sync with coda. (Only for bot devs
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-import random
+from datetime import datetime
 import re
 from typing import cast, Optional
 
-from discord.channel import TextChannel
 from dotenv import load_dotenv
 
 from api.coda import (
     CodaAPI,
     filter_on_tag,
-    get_least_recently_asked_on_discord,
 )
 from api.utilities.coda_utils import QuestionRow, QuestionStatus
-from config import coda_api_token, is_rob_server
-from servicemodules.discordConstants import general_channel_id
+from config import coda_api_token
 from modules.module import Module, Response
 from utilities.utilities import (
     has_permissions,
@@ -62,8 +58,6 @@ load_dotenv()
 
 
 class Questions(Module):
-    AUTOPOST_NOT_STARTED_MSG_PREFIX = "Recently I've been wondering..."
-
     @staticmethod
     def is_available() -> bool:
         return coda_api_token is not None and not is_in_testing_mode()
@@ -79,24 +73,6 @@ class Questions(Module):
 
         super().__init__()
         self.coda_api = CodaAPI.get_instance()
-
-        ###################
-        #   Autoposting   #
-        ###################
-
-        # How often Stampy posts random not started questions to `#general`
-        self.not_started_question_autopost_interval = timedelta(hours=24)
-
-        # Time of last (attempted) autopost of not started question
-        self.last_not_started_autopost_attempt_dt = (
-            datetime.now() - self.not_started_question_autopost_interval / 2
-        )
-
-        if is_rob_server:
-            @self.utils.client.event  # fmt:skip
-            async def on_socket_event_type(_event_type) -> None:
-                if self.is_time_for_autopost_not_started():
-                    await self.autopost_not_started()
 
         ###############
         #   Regexes   #
@@ -336,64 +312,6 @@ class Questions(Module):
             text=response_text,
             why=why,
         )
-
-    def is_time_for_autopost_not_started(self) -> bool:
-        return (
-            self.last_not_started_autopost_attempt_dt
-            < datetime.now() - self.not_started_question_autopost_interval
-        )
-
-    async def last_msg_in_general_was_autoposted(self) -> bool:
-        channel = cast(
-            TextChannel, self.utils.client.get_channel(int(general_channel_id))
-        )
-        async for msg in channel.history(limit=20):
-            if msg.content.startswith(self.AUTOPOST_NOT_STARTED_MSG_PREFIX):
-                return True
-        return False
-
-    async def autopost_not_started(self) -> None:
-        """Choose a random question from the oldest not started questions and post to `#general` channel"""
-        current_time = datetime.now()
-        self.last_not_started_autopost_attempt_dt = current_time
-
-        if await self.last_msg_in_general_was_autoposted():
-            self.log.info(
-                self.class_name,
-                msg="Last message in #general was an autoposted question with status `Not started` -> skipping autoposting",
-            )
-            return
-
-        self.log.info(
-            self.class_name,
-            msg="Autoposting a question with status `Not started` to #general",
-        )
-        questions_df = self.coda_api.questions_df.query("status == 'Not started'")
-        questions_df = questions_df[
-            questions_df["tags"].map(lambda tags: "Stampy" not in tags)
-        ]
-        if questions_df.empty:
-            self.log.info(
-                self.class_name,
-                msg='Found no questions with status `Not started` without tag "Stampy"',
-            )
-            return
-
-        question = random.choice(
-            self.coda_api.q_df_to_rows(
-                get_least_recently_asked_on_discord(questions_df)
-            )
-        )
-
-        channel = cast(
-            TextChannel, self.utils.client.get_channel(int(general_channel_id))
-        )
-
-        msg = f"{self.AUTOPOST_NOT_STARTED_MSG_PREFIX}\n\n{make_post_question_message(question)}"
-        self.coda_api.update_question_last_asked_date(question, current_time)
-        self.coda_api.last_question_id = question["id"]
-
-        await channel.send(msg)
 
     #########################
     #   Get question info   #
