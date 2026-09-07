@@ -2,31 +2,27 @@ name: Deploy to Production Server
 on:
   push:
     branches: [master]
+  # Lets a repo admin re-run the deploy from the Actions tab without pushing a commit.
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env: 
-        CODA_API_TOKEN: ${{secrets.CODA_API_TOKEN}}
+    env:
+      CODA_API_TOKEN: ${{secrets.CODA_API_TOKEN}}
     steps:
       - name: Deploy Stampy to Production Server
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{secrets.SSH_PROD_HOST}}
           username: ${{secrets.SSH_PROD_USERNAME}}
           password: ${{secrets.SSH_PROD_PASSWORD}}
           port: ${{secrets.SSH_PROD_PORT}}
+          # Building the conda environment can take a while.
+          command_timeout: 40m
           script: |
             export PATH=$PATH:/home/rob/miniconda3/condabin/
             source ~/.bashrc
-            
-            # Set up an environment variable to overide the SSL certificate location
-            # because for some reason by default it looks for:
-            # /root/miniconda3/envs/stampy/ssl/cert.pem
-            # which no longer exists
-            export SSL_CERT_FILE=/home/rob/miniconda3/envs/stampy/ssl/cert.pem
-
-
 
             # >>> conda initialize >>>
             # !! Contents within this block are managed by 'conda init' !!
@@ -48,28 +44,6 @@ jobs:
             export ENVIRONMENT_TYPE="production"
             export DATABASE_PATH="/home/rob/stampy.local/stampy.db"
 
-            
-            echo "Rebooting Stampy $(date +"%F-%T")"
-
-            # These for loops kill the existing stampy processes
-            # they check to make sure that they only kill processes
-            # that have been running for 60 seconds so that this
-            # update process does not kill itself.
-            for i in $(pgrep -f runstampy)
-            do
-                TIME=$(ps --no-headers -o etimes $i)
-                if [ "$TIME" -ge 60 ] ; then
-                    kill $i
-                fi
-            done
-            for i in $(pgrep -f stam.py)
-            do
-                TIME=$(ps --no-headers -o etimes $i)
-                if [ "$TIME" -ge 60 ] ; then
-                    kill $i
-                fi
-            done
-
             export DISCORD_TOKEN="$(cat ~/.discordtoken)"
             export DISCORD_GUILD="$(cat ~/.discordguild)"
             export YOUTUBE_API_KEY="$(cat ~/.youtubeapikey)"
@@ -79,18 +53,64 @@ jobs:
             export CODA_API_TOKEN=$(cat ~/.codatoken);
 
             export IS_ROB_SERVER="TRUE"
+            # Only speak when spoken to: no unprompted band-name jokes, dice rolls or factoids.
+            # (config.getenv_bool treats the variable as on whenever it is defined, whatever its value.)
+            export BE_SHY="TRUE"
 
+            echo "Updating Stampy $(date +"%F-%T")"
             cd ~/stampy
-            conda activate stampy
-            python -m scripts.notify-discord-stampy-offline
             git stash
-            git pull --rebase
-            conda deactivate
-            conda env remove -n stampy
-            conda env create -f environment.yml
-            conda activate stampy
+            if ! git pull --rebase; then
+                echo "git pull failed; the running Stampy has been left untouched."
+                exit 1
+            fi
+
+            # Build the new environment BEFORE stopping the running bot, so that a failed
+            # build leaves the old Stampy running instead of taking it offline.
+            NEW_ENV="stampy-$(date +"%Y%m%d%H%M%S")"
+            # Recent conda releases refuse the default channels until their terms are accepted;
+            # older releases don't know this command, hence the "|| true".
+            conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main --channel https://repo.anaconda.com/pkgs/r > /dev/null 2>&1 || true
+            if ! conda env create -n "$NEW_ENV" -f environment.yml; then
+                echo "Building $NEW_ENV failed; the running Stampy has been left untouched."
+                conda env remove -n "$NEW_ENV" -y > /dev/null 2>&1 || true
+                exit 1
+            fi
+            conda activate "$NEW_ENV"
+
+            # Point Python at the new environment's certificate bundle.
+            CERT_FILE="$(python -c 'import certifi; print(certifi.where())' 2> /dev/null || true)"
+            if [ -n "$CERT_FILE" ] && [ -f "$CERT_FILE" ]; then
+                export SSL_CERT_FILE="$CERT_FILE"
+            fi
+
+            echo "Rebooting Stampy $(date +"%F-%T")"
+            timeout 120 python -m scripts.notify-discord-stampy-offline || true
+
+            # Stop the running bot: the runstampy loop first (so it cannot respawn stam.py), then stam.py.
+            # The deploy shell itself can match these patterns (the script text is on its command line),
+            # so our own PID and parent are skipped.
+            stop_matching () {
+                for i in $(pgrep -f "$1"); do
+                    if [ "$i" != "$$" ] && [ "$i" != "$PPID" ]; then
+                        kill "$i" 2> /dev/null || true
+                    fi
+                done
+            }
+            stop_matching runstampy
+            stop_matching "stam\.py"
+            sleep 3
+            stop_matching "stam\.py"
+
             mkdir -p ~/stampy.local/logs/
             export log_file=~/stampy.local/logs/stampy-log-$(date +"%F-%T.log")
-            ./runstampy > $log_file 2>&1 &
-            ln -s -f $log_file ~/stampy.local/logs/stampy-latest.log
+            nohup ./runstampy > "$log_file" 2>&1 < /dev/null &
+            ln -s -f "$log_file" ~/stampy.local/logs/stampy-latest.log
             conda deactivate
+
+            # Remove environments left over from earlier deploys: never the one just started,
+            # and never the original "stampy" environment, which is kept as a manual fallback.
+            for old_env in $(conda env list | awk '{print $1}' | grep -E '^stampy-[0-9]{14}$' | grep -v "^$NEW_ENV$"); do
+                conda env remove -n "$old_env" -y > /dev/null 2>&1 || true
+            done
+            echo "Stampy restarted from $NEW_ENV $(date +"%F-%T")"

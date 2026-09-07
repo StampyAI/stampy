@@ -16,7 +16,7 @@ from config import factoid_database_path
 from modules.module import Module, Response
 from utilities.serviceutils import ServiceMessage
 from utilities.discordutils import DiscordUser
-from utilities.utilities import get_user_handle, randbool, is_bot_dev, Utilities
+from utilities.utilities import get_user_handle, randbool, is_bot_dev, is_shy, Utilities
 
 
 class Factoids(Module):
@@ -90,8 +90,8 @@ class Factoids(Module):
             ):
                 return response
 
-        # if the text is a valid factoid, maybe reply
-        if factoids and (at_me or randbool(0.3)):
+        # if the text is a valid factoid, maybe reply (never unprompted when shy)
+        if factoids and (at_me or (not is_shy() and randbool(0.3))):
             if response := self.parse_factoid_reply(
                 factoids=factoids, message=message, room=room, key=key, at_me=at_me
             ):
