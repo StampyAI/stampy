@@ -62,16 +62,9 @@ class OpenAIEngines(Enum):
         tokenizers.gpt2,
     )
 
-    GPT_3_5_TURBO = (
-        "gpt-3.5-turbo",
-        "GPT 3.5 Turbo",
-        "Medium-cost, general-purpose model",
-        tokenizers.gpt2
-    )
-
-    GPT_4 = (
-        "gpt-4",
-        "GPT 4",
-        "wicked slow",
+    GPT_5_6_LUNA = (
+        "gpt-5.6-luna",
+        "GPT 5.6 Luna",
+        "Small, low-cost model",
         tokenizers.gpt2
     )

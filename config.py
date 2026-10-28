@@ -140,9 +140,6 @@ bot_reboot: valid_bot_reboot_options
 paid_service_all_channels: bool
 paid_service_for_all: bool
 paid_service_whitelist_role_ids: frozenset
-gpt4: bool
-gpt4_for_all: bool
-gpt4_whitelist_role_ids: frozenset
 use_helicone: bool
 llm_prompt: str
 be_shy: bool
@@ -259,9 +256,6 @@ else:
     channel_whitelist = getenv_unique_set("CHANNEL_WHITELIST", None)
     disable_prompt_moderation = getenv_bool("DISABLE_PROMPT_MODERATION")
 
-gpt4 = getenv_bool("GPT4")
-gpt4_for_all = getenv_bool("GPT4_FOR_ALL")
-gpt4_whitelist_role_ids = getenv_unique_set("GPT4_WHITELIST_ROLE_IDS", frozenset())
 use_helicone = getenv_bool("USE_HELICONE")
 llm_prompt = getenv("LLM_PROMPT", default=stampy_default_prompt)
 be_shy = getenv_bool("BE_SHY")
