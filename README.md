@@ -89,9 +89,6 @@ LLM stuff:
 - `PAID_SERVICE_CHANNEL_IDS`: if the above is unset, this is a list of channels where Stampy is allowed to call paid services.
 - `PAID_SERVICE_FOR_ALL`: if set, Stampy can use paid services to respond to anyone.
 - `PAID_SERVICE_WHITELIST_ROLE_IDS`: if the above is unset, Stampy responds with paid services only for users with these roles.
-- `GPT4`: if set, allow using GPT4 instead of GPT3.5-TURBO. (Slow!)
-- `GPT4_FOR_ALL`: if set, don't restrict who gets GPT4 responses.
-- `GPT4_WHITELIST_ROLE_IDS`: if the above is unset, Stampy responds with GPT4 only for users with these roles.
 - `USE_HELICONE`: if set, GPT prompts call the helicone API rather than OpenAI.
 - `LLM_PROMPT`: What prompt is the language model being fed? This describes the personality and behavior of the bot.
 - `DISABLE_PROMPT_MODERATION`: don't check safety of prompts for LLM

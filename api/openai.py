@@ -2,10 +2,6 @@ import asyncio
 from api.utilities.openai import OpenAIEngines
 from config import (
     openai_api_key,
-    gpt4,
-    gpt4_for_all,
-    gpt4_whitelist_role_ids,
-    bot_vip_ids,
     paid_service_all_channels,
     use_helicone,
     disable_prompt_moderation,
@@ -13,7 +9,7 @@ from config import (
 )
 from structlog import get_logger
 from utilities.serviceutils import ServiceMessage
-from utilities import Utilities, discordutils
+from utilities import Utilities
 if use_helicone:
     try:
         from helicone import openai
@@ -131,14 +127,7 @@ class OpenAI:
 
     def get_engine(self, message: ServiceMessage) -> OpenAIEngines:
         """Pick the appropriate engine to respond to a message with"""
-
-        if gpt4:
-            if gpt4_for_all or message.author.id in bot_vip_ids or \
-                    any(discordutils.user_has_role(message.author, x)
-                        for x in gpt4_whitelist_role_ids):
-                return OpenAIEngines.GPT_4
-        else:
-            return OpenAIEngines.GPT_3_5_TURBO
+        return OpenAIEngines.GPT_5_6_LUNA
 
     def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
         if self.is_text_risky(prompt):
