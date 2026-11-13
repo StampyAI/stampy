@@ -21,7 +21,6 @@ dependencies:
       - python-dotenv
       - slack-sdk
       - structlog
-      - transformers
       - codaio
       - helicone
       - mypy
