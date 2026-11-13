@@ -148,7 +148,7 @@ class ChatGPTModule(Module):
             return Response(
                 confidence=0,
                 text="",
-                why="GPT-3's content filter thought the prompt was risky",
+                why="OpenAI's content filter thought the prompt was risky",
             )
 
         self.log.info(

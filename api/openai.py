@@ -103,7 +103,7 @@ class OpenAI:
                 self.log_error("OpenAI Authentication Failed", e)
                 return True
             except openai.error.RateLimitError as e:
-                self.log_error(self.class_name, "OpenAI Rate Limit Exceeded", e, warning=True)
+                self.log_error("OpenAI Rate Limit Exceeded", e, warning=True)
                 return True
 
         results = response.get("results", [])[0]
@@ -129,7 +129,7 @@ class OpenAI:
         """Pick the appropriate engine to respond to a message with"""
         return OpenAIEngines.GPT_5_6_LUNA
 
-    def get_response(self, engine: OpenAIEngines, prompt: str, logit_bias: dict[int, int]) -> str:
+    def get_response(self, engine: OpenAIEngines, prompt: str) -> str:
         if self.is_text_risky(prompt):
             self.log.info(self.class_name, msg="The content filter thought the prompt was risky")
             return ""
@@ -138,31 +138,22 @@ class OpenAI:
             response = openai.ChatCompletion.create(
                 model=str(engine),
                 messages=[{'role': 'user', 'content': prompt}],
-                temperature=0,
-                max_tokens=100,
-                top_p=1,
-                # stop=["\n"],
-                logit_bias=logit_bias,
-                # user=str(message.author.id),
             )
         except openai.error.AuthenticationError as e:
-            self.log.error(self.class_name, error="OpenAI Authentication Failed")
-            loop = asyncio.get_running_loop()
-            loop.create_task(utils.log_error(f"OpenAI Authenication Failed"))
-            loop.create_task(utils.log_exception(e))
+            self.log_error("OpenAI Authentication Failed", e)
             return ""
         except openai.error.RateLimitError as e:
-            self.log.warning(self.class_name, error="OpenAI Rate Limit Exceeded")
-            loop = asyncio.get_running_loop()
-            loop.create_task(utils.log_error(f"OpenAI Rate Limit Exceeded"))
-            loop.create_task(utils.log_exception(e))
+            self.log_error("OpenAI Rate Limit Exceeded", e, warning=True)
+            return ""
+        except openai.error.OpenAIError as e:
+            self.log_error("OpenAI request failed", e)
             return ""
 
         if response["choices"]:
             choice = response["choices"][0]
             text = choice.get('message', {}).get('content', '').strip()
             if choice["finish_reason"] == "stop" and text != "Unknown":
-                text = text.strip(". \n").split("\n")[0]
+                text = text.split("\n")[0].strip(". *_")
                 self.log.info(self.class_name, gpt_response=text)
                 return text
 
